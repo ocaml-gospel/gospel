@@ -1,25 +1,27 @@
 # VOCaL
 
-VOCaL -- The Verified OCaml Library
+VOCaL -- a Verified OCaml Library
+
+VOCaL is a general-purpose data structure and algorithm OCaml library.
+
+What distinguishes this library from many other is the fact that its
+implementation has been formally verified.  The verification includes
+absence of run-time errors and functional correctness. The latter uses
+formal specifications inserted in .mli files with special comments
+starting with ``(*@``. The specification language for OCaml is still
+under development and a quick documentation is given below.
+The .mli files also contain traditional, informal documentation,
+similar to that of any other OCaml library.
+
+The github repository also contains some of the source files for the
+proofs of correctness (eventually, it will contain all of them). Yet
+these proofs are not needed to compile and use the VOCaL library.
+Have a look in proofs/ if you are curious.
+
 ## OCaml Interface Specification Language
 
-Specification elements are added to .mli files
-
-.mli files feature hand-written natural language comments and formal specification
-
-specification is written inside `` (*@ xxxx *)``
-
-### Short Example
-
-The following is an excerpt of [Vector.mli](/src/Vector.mli) example.
-
-Symbols from the specification library can be imported via the `use` keyword.
-```OCaml
-(*@ use Seq *)
-```
-The `Seq` module provides a type for mathematical sequences, together with
-direct-access and concatenation operations. This type can be used
-to mathematically model the elements of a container data structure.
+We briefly describe the specification language using an example,
+taken from [Vector.mli](/src/Vector.mli).
 
 The abstract type `t` of vectors below is identified as `ephemeral` (elements
 can be mutated in-place) and is modeled using a polymorphic sequence, introduced
@@ -39,13 +41,7 @@ To provide specification for function declarations, the parameters and the
 returned value must be named first. Preconditions are stated in `requires`
 clause, while postconditions are introduced after `ensures`.
 
-* mathematical integers in specification
-
 ```OCaml
-(** [create] returns a fresh vector of length [0].
-   All the elements of this new vector are initially
-   physically equal to [dummy] (in the sense of the [==] predicate).
-   When [capacity] is omitted, it defaults to 0. *)
 val create: ?capacity:int -> dummy:'a -> 'a t
 (*@ a = create capacity dummy
       requires let capacity = match capacity with
@@ -54,40 +50,23 @@ val create: ?capacity:int -> dummy:'a -> 'a t
       ensures  length a.view = 0 *)
 ```
 
+Whenever type `int` is mentioned, it refers to the OCaml type `int`
+of native machine integer (e.g. 63-bit signed integers on a 64-bit
+platform). A type `integer` for mathematical integers is also
+provided. Here is an example:
+
 ```OCaml
-(** [make dummy n x] returns a fresh vector of length [n] with all elements
-    initialized with [x]. If [dummy] is omitted, [x] is also used as a
-    dummy value for this vector. *)
 val make: ?dummy:'a -> int -> 'a -> 'a t
 (*@ a = make ?dummy n x
       requires 0 <= n <= Sys.max_array_length
       ensures  length a.view = n
       ensures  forall i: integer. 0 <= i < n -> a.view[i] = x *)
-
-(** [init n f] returns a fresh vector of length [n],
-   with element number [i] initialized to the result of [f i].
-   In other terms, [init n f] tabulates the results of [f]
-   applied to the integers [0] to [n-1].
-
-   Raise [Invalid_argument] if [n < 0] or [n > Sys.max_array_length]. *)
-val init: dummy:'a -> int -> (int -> 'a) -> 'a t
-(*@ a = init ~dummy n f
-      requires 0 <= n <= Sys.max_array_length
-      ensures  length a.view = n
-      ensures  forall i: int. 0 <= i < n -> a.view[i] = f i *)
 ```
 
-* `checks`
-* `modifies`
+Whenever a function has side effects, this is indicated using a
+`modifies` clause. Here is an example:
 
 ```OCaml
-(** [resize a n] sets the length of vector [a] to [n].
-
-   The elements that are no longer part of the vector, if any, are
-   internally replaced by the dummy value of vector [a], so that they
-   can be garbage collected when possible.
-
-   Raise [Invalid_argument] if [n < 0] or [n > Sys.max_array_length]. *)
 val resize: 'a t -> int -> unit
 (*@ resize a n
       checks   0 <= n <= Sys.max_array_length
@@ -97,11 +76,29 @@ val resize: 'a t -> int -> unit
                  a.view[i] = (old a.view)[i] *)
 ```
 
+This last example also features the `checks` clause. This is an
+alternative to `requires`. Contrary to the latter, a `checks` clause
+is checked at run-time, and raises an `Invalid_argument` exception
+when it is not satisfied.
+
+Last, an `equivalent` clause is sometimes used to describe the
+behavior of an OCaml function using an equivalent piece of OCaml
+code. Here is an example:
+
+```OCaml
+val iter : ('a -> unit) -> 'a t -> unit
+(*@ iter f a
+      equivalent "for i = 0 to length a - 1 do f (get a i) done" *)
+```
+
+A forthcoming documentation of this specification language (work in
+progress) will hopefully provide more details and clarify the semantics.
+
 ## Copyright
-under the conditions stated in file LICENSE.
+
+See the enclosed file LICENSE.
 
 ## Bugs report
 
-```OCaml
-let x = x
-```
+Please use the [github issues](https://github.com/vocal-project/vocal/issues)
+to report bugs.
