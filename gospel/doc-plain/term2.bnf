@@ -1,0 +1,29 @@
+\begin{syntax}
+  term ::= ...                 ; see Fig.~\ref{fig:bnf:term1}
+    | "not" term               ; negation
+    | term "/\" term           ; conjunction
+    | term "&&" term           ; asymmetric conjunction
+    | term "\/" term           ; disjunction
+    | term "||" term           ; asymmetric disjunction
+    | term "->" term           ; implication
+    | term "<->" term          ; equivalence
+    | term ":" type            ; type cast
+    | attribute+ term          ; attributes
+    | "(" term ("," term)+ ")" ; tuple
+    | quantifier quant-vars triggers? "." term ; quantifier
+    | ...                      ; continued in Fig.~\ref{fig:bnf:term3}
+  \
+  quantifier ::= "forall" | "exists"
+  \
+  quant-vars ::= quant-cast ("," quant-cast)*
+  \
+  quant-cast ::= binder+ (":" type)?
+  \
+  binder ::= "_" | bound-var
+  \
+  bound-var ::= lident attribute*
+  \
+  triggers ::= "[" trigger ("|" trigger)* "]" ;
+  \
+  trigger ::= term ("," term)*  ; %
+\end{syntax}

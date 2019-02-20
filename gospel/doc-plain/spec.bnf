@@ -1,0 +1,12 @@
+\begin{syntax}
+  specification ::= \ldots                                ;
+                | "val" lident-ext ":" typexpr val-spec?  ; val declaration
+                | type-definition type-spec*              ; type definition
+                | ghost-val-declaration                   ; ghost val declaration
+                | ghost-type-definition                   ; ghost type definition
+                | use-module                              ; use module
+                | predicate-def                           ; predicate declaration
+                | function-decl                           ; function declaration
+                | axiom                                   ; axiom introduction
+  \
+\end{syntax}

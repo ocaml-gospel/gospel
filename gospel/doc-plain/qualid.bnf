@@ -1,0 +1,7 @@
+\begin{syntax}
+  qualifier ::= (uident ".")+
+  \
+  lqualid ::= qualifier? lident
+  \
+  uqualid ::= qualifier? uident %
+\end{syntax}

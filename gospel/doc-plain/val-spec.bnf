@@ -1,0 +1,24 @@
+
+\begin{syntax}
+  val-spec ::= "(*@" (return-val "=")? lident-text fun-arg* val-spec-body* "*)"
+  \
+\end{syntax}
+
+\begin{syntax}
+  return-val ::= lident "="                     ; returns a value
+             | "("lident ( "," lident)* ")" "=" ; returns a tuple
+  \
+  val-spec-body ::= "diverges"                ; may not terminate
+                | "modifies" term ("," term)* ; may modify memory
+                | "requires" term             ; precondition
+                | "checks" term               ; precondition check
+                | "ensures" term              ; postcondition
+                | "raises" "|"? raise-post ("|" raise-post)* ; exceptional postconditions
+  \
+  raise-post ::= uqualid "->" term        ; no arguments
+             | uqualid pat-arg "->" term  ; with arguments
+  \
+  func-arg ::= "(" ")"                ; unit
+           | lident                   ; simple argument
+           | "[" lident ":" type "]"  ; ghost argument
+\end{syntax}

@@ -1,0 +1,124 @@
+\documentclass[a4paper,12pt]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[pdftex,colorlinks=true,urlcolor=blue,pdfstartview=FitH]{hyperref}
+\usepackage{xspace}
+\usepackage{ocaml}
+\usepackage{makeidx,index}
+\usepackage{ifthen}
+\usepackage{why3lang}
+
+\makeindex
+% avoid double spacing after '.' and ':' in texttt
+%BEGIN LATEX
+\makeatletter
+\let\ttfamily\relax
+\DeclareRobustCommand\ttfamily
+   {\not@math@alphabet\ttfamily\mathtt\fontfamily\ttdefault\selectfont\frenchspacing}
+\makeatother
+%END LATEX
+
+\input{macros}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+  \Large\bf
+  OCaml Specification Language
+\end{center}
+
+
+\chapter{Reference Language}
+
+\section{Lexical Conventions}
+
+Some lexical conventions, such as \emph{Blanks}, \emph{Comments}, and
+integer/floating literals are inherited from the OCaml reference
+manual~\cite{OCamlRM}. Comments of the form \term{(*@ ... *)}{} are interpreted as
+specification.
+
+\begin{center}\input{./generated/ident_bnf.tex}\end{center}
+
+\begin{center}\input{./generated/qualid_bnf.tex}\end{center}
+
+\begin{center}\input{./generated/operator_bnf.tex}\end{center}
+
+\begin{center}\input{./generated/attribute_bnf.tex}\end{center}
+
+\section{Type Expressions}
+
+\begin{center}\input{./generated/type_bnf.tex}\end{center}
+
+\section{Logic Expressions}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/term1_bnf.tex}\end{center}
+\caption{Terms (part I).}
+\label{fig:bnf:term1}
+\end{figure}
+
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/term2_bnf.tex}\end{center}
+\caption{Terms (part II).}
+\label{fig:bnf:term2}
+\end{figure}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/term3_bnf.tex}\end{center}
+\caption{Terms (part III).}
+\label{fig:bnf:term3}
+\end{figure}
+
+\section{Specification}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/spec_bnf.tex}\end{center}
+\caption{Extension to OCaml Interface. Symbol
+  specification is part of the OCaml
+  syntax~\cite{OCamlRM}.}
+\label{fig:bnf:spec}
+\end{figure}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/ghost-spec_bnf.tex}\end{center}
+\caption{Ghost Val and Type declaration}
+\label{fig:bnf:ghost-spec}
+\end{figure}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/val-spec_bnf.tex}\end{center}
+\caption{Val Specification}
+\label{fig:bnf:val-spec}
+\end{figure}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/type-spec_bnf.tex}\end{center}
+\caption{Type Specification}
+\label{fig:bnf:type-spec}
+\end{figure}
+
+\begin{figure}[p!]
+\begin{center}\input{./generated/logic-spec_bnf.tex}\end{center}
+\caption{Logic Specification.}
+\label{fig:bnf:spec}
+\end{figure}
+
+% %%% Index
+% \cleardoublepage
+% \addcontentsline{toc}{chapter}{Index}\label{index}
+% \printindex
+% \label{lastpage}
+
+
+\bibliographystyle{plain}
+\bibliography{ref-manual}
+
+\end{document}
+
+% Local Variables:
+% compile-command: "make"
+% ispell-local-dictionary: "american"
+% End:

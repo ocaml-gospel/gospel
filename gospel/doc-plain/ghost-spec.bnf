@@ -1,0 +1,5 @@
+\begin{syntax}
+  ghost-val-declaration ::= "(*@" "val" lident-text ":" typeexpr val-spec? "*)"
+  \
+  ghost-type-definition ::= "(*@" type-definition type-spec* "*)"
+\end{syntax}
