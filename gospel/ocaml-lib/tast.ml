@@ -7,18 +7,29 @@ open Tterm
 
 type attrs = Oparsetree.attributes
 
-type args = vsymbol * bool (* ghost status *)
-type pre = term * bool (* whether it is a checks *)
+type lb_arg =
+  | Lnone     of vsymbol
+  | Lquestion of vsymbol
+  | Lnamed    of vsymbol
+  | Lghost    of vsymbol
+
+let vs_of_lb_arg = function
+  | Lnone     vs -> vs
+  | Lquestion vs -> vs
+  | Lnamed    vs -> vs
+  | Lghost    vs -> vs
+
+type pre  = term * bool (* whether it is a checks *)
 type post = term
 
 type val_spec = {
-    sp_args    : args list;
-    sp_ret     : args list;
+    sp_args    : lb_arg list;
+    sp_ret     : lb_arg list; (* can only be Lnone or Lghost *)
     sp_pre     : pre list;
     sp_post    : post list;
     (* sp_xpost   : xpost list; TODO*)
     (* sp_reads   : qualid list;TODO *)
-    sp_writes  : term list;
+    sp_wr  : term list;
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge : bool;
     sp_equiv   : string list;
@@ -33,7 +44,7 @@ let val_spec args ret pre post wr dv equiv = {
     sp_post    = post;
     (* sp_xpost   : xpost list; TODO*)
     (* sp_reads   : qualid list;TODO *)
-    sp_writes  = wr;
+    sp_wr  = wr;
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge = dv;
     sp_equiv   = equiv;
@@ -47,8 +58,9 @@ let val_spec args ret pre post wr dv equiv = {
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
 let mk_val_spec args ret pre post wr dv equiv =
-  let add args (vs,_) =
-    check (Svs.mem vs args) (DuplicatedArg vs);
+  let add args a =
+    let vs = vs_of_lb_arg a in
+    check (not(Svs.mem vs args)) (DuplicatedArg vs);
     Svs.add vs args in
   ignore(List.fold_left add Svs.empty args);
   let ty_check ty t = t_ty_check t ty in
@@ -348,15 +360,38 @@ open Opprintast
 open Oparsetree
 open Upretty_printer
 
-let print_arg fmt (vs,ghost) =
-  (if ghost then pp fmt "[%a]" else pp fmt "%a")
-    print_vs vs
+let print_lb_arg fmt = function
+  | Lnone vs -> print_vs fmt vs
+  | Lquestion vs -> pp fmt "?%a" print_vs vs
+  | Lnamed vs -> pp fmt "~%a" print_vs vs
+  | Lghost vs -> pp fmt "[%a]" print_vs vs
 
-let print_vd_spec  val_id fmt = function
+let print_vd_spec val_id fmt = function
   | None -> ()
-  | Some vs -> pp fmt "(*@ %a%a... *)"
-                 (list ~sep:", " ~last:" = " print_arg) vs.sp_ret
-                 print_ident val_id
+  | Some {sp_args;sp_ret;sp_pre;sp_post;sp_wr;sp_diverge;sp_equiv} ->
+     let pres,checks =
+       List.fold_left (fun (pres,checks) (p,c) ->
+        if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
+     pp fmt "(*@ %a%s@ %a@ %a%a%a%a%a%a*)"
+       (list ~sep:", " print_lb_arg) sp_ret
+       (if sp_ret = [] then "" else " =")
+       print_ident val_id
+       (list ~sep:" " print_lb_arg) sp_args
+    (list_with_first_last ~first:"@\n@[<hov 2>@[requires "
+         ~sep:"@\nrequires " ~last:"@]@]"
+         print_term) pres
+    (list_with_first_last ~first:"@\n@[<hov 2>@[checks "
+         ~sep:"@\nchecks " ~last:"@]@]"
+         print_term) checks
+    (list_with_first_last ~first:"@\n@[<hov 2>@[ensures "
+         ~sep:"@\nensures " ~last:"@]@]"
+         print_term) sp_post
+    (list_with_first_last ~first:"@\n@[<hov 2>@[writes "
+         ~sep:"@\nwrites " ~last:"@]@]"
+         print_term) sp_wr
+    (list_with_first_last ~first:"@\n@[<hov 2>@[equivalent "
+         ~sep:"@\nequivalent " ~last:"@]@]"
+         constant_string) sp_equiv
 
 let print_param f p =
   pp f "(%a:%a)" print_ident p.vs_name print_ty p.vs_ty
@@ -370,13 +405,17 @@ let print_function f x =
       print_ident x.fun_ls.ls_name
       (list ~sep:" " print_param) x.fun_params
       (print_option ~first:": " print_ty) x.fun_ls.ls_value
-      (print_option ~first:" =@\n@[<hov 2>@[" ~last:"@]@]" print_term) x.fun_def
+      (print_option ~first:" =@\n@[<hov 2>@["
+         ~last:"@]@]" print_term) x.fun_def
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
-      (list_with_first_last ~first:"@\n@[@[<hov 2>variant " ~sep:"@\nvariant " ~last:"@]@]"
+      (list_with_first_last ~first:"@\n@[@[<hov 2>variant "
+         ~sep:"@\nvariant " ~last:"@]@]"
          print_term) x.fun_spec.fun_variant
-      (list_with_first_last ~first:"@\n@[<hov 2>@[requires " ~sep:"@\nrequires " ~last:"@]@]"
+      (list_with_first_last ~first:"@\n@[<hov 2>@[requires "
+         ~sep:"@\nrequires " ~last:"@]@]"
          print_term) x.fun_spec.fun_req
-      (list_with_first_last ~first:"@\n@[<hov 2>@[ensures " ~sep:"@\nensures " ~last:"@]@]"
+      (list_with_first_last ~first:"@\n@[<hov 2>@[ensures "
+         ~sep:"@\nensures " ~last:"@]@]"
          print_term) x.fun_spec.fun_ens
   in
   spec func f x
@@ -388,11 +427,11 @@ let rec print_signature_item f x =
        (list ~sep:"@\nand " print_type_declaration) td
   | Sig_val (vd,g) ->
       let intro = if vd.vd_prim = [] then "val" else "external" in
-      pp f (if g then "(*@@@\n@[<2>%s@ %a@ :@ ... %a@]%a@\n%a@\n*)"
-            else "@[<2>%s@ %a@ :@ ... %a@]%a@\n%a")
+      pp f (if g then "(*@@@\n@[<2>%s@ %a@ :@ %a %a@]%a@\n%a@\n*)"
+            else "@[<2>%s@ %a@ :@ %a %a@]%a@\n%a")
         intro
         print_ident vd.vd_name
-        (* print_ty vd.vd_type *)
+        core_type vd.vd_type
         (item_attributes reset_ctxt) vd.vd_attrs
         (fun f x ->
           if x.vd_prim <> []

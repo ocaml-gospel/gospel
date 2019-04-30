@@ -279,7 +279,7 @@ let f_iff      = f_binop Tiff
 open Opprintast
 
 let print_vs fmt {vs_name; vs_ty} =
-  pp fmt "@[%a:%a@]" print_ident vs_name print_ty vs_ty
+  pp fmt "@[%a@]" print_ident vs_name
 
 let print_ls_decl fmt {ls_name;ls_args;ls_value} =
   let is_func = Utils.is_some ls_value in

@@ -147,6 +147,8 @@ rule token = parse
       { COMMA }
   | ";"
       { SEMICOLON }
+  | "~"
+      { TILDA }
   | "?"
       { QUESTION }
   | "."

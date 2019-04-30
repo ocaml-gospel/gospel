@@ -408,7 +408,9 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
   let sig_desc = Sig_type (rec_flag r,tdl,ghost) in
   mk_sig_item sig_desc loc
 
-let rec val_parse_core ns cty =
+(** process val *)
+
+let rec val_parse_core_type ns cty =
   let open Oparsetree in
   let rec ty_of_core cty = match cty.ptyp_desc with
     | Ptyp_any ->
@@ -419,7 +421,7 @@ let rec val_parse_core ns cty =
        let tyl = List.map ty_of_core ctl in
        ty_app (ts_tuple (List.length tyl)) tyl
     | Ptyp_constr (lid,ctl) ->
-       let ts = find_ts ns (Longident.flatten lid.txt) in
+       let ts = ns_find_ts ns (Longident.flatten lid.txt) in
        let tyl = List.map ty_of_core ctl in
        ty_app ts tyl
     | Ptyp_arrow (lbl,ct1,ct2) ->
@@ -429,63 +431,81 @@ let rec val_parse_core ns cty =
     | _ -> assert false in
   match cty.ptyp_desc with
   | Ptyp_arrow (lbl,ct1,ct2) ->
-     (* TODO check what to do with the lbl *)
-     let args, res = val_parse_core ns ct2 in
-     ty_of_core ct1 :: args, res
+     let args, res = val_parse_core_type ns ct2 in
+     (ty_of_core ct1,lbl) :: args, res
   | _ -> [], ty_of_core cty
-
-exception IllegalValHeader
 
 (* Checks the following
    1 - the val id string is equal to the name in val header
-   2 - no duplicated names in arguments and
-   arguments in header match core type
+   2 - no duplicated names in arguments and arguments in header
+   match core type
    3 -
 *)
-let rec process_val_spec md id tyl ty (vs:Uast.val_spec) =
-  check ~loc:vs.sp_hd_nm.pid_loc
-    (id.id_str = vs.sp_hd_nm.pid_str) IllegalValHeader;
+let rec process_val_spec md id cty (vs:Uast.val_spec) =
+  check_report ~loc:vs.sp_hd_nm.pid_loc
+    (id.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
+                                       not match name";
 
-  let add_var nm vs = function
-    | None -> Some vs
-    | Some s -> raise (DuplicatedVar nm) in
-  let add_to_env ?(ghost=false) pid ty env vsl =
-    let vs = create_vsymbol pid ty in
-    Mstr.update pid.pid_str (add_var pid.pid_str vs) env, (vs,ghost):: vsl in
-  let pid_of_lb = Uast_utils.pid_of_label in
-  let rec mk_env args tyl env vsl = match args, tyl with
-    | [], [] -> env, List.rev vsl
-    | [], _ -> error ~loc:(vs.sp_hd_nm.pid_loc) IllegalValHeader (* TODO try a best loc*)
-    | Lghost (pid,pty) :: args, _ ->
+  let args, ret = val_parse_core_type md.mod_ns cty in
+
+  let add_arg la env lal =
+    let vs = vs_of_lb_arg la in
+    let vs_str = vs.vs_name.id_str in
+    let add = function
+      | None -> Some vs
+      | Some s -> raise (DuplicatedVar vs_str) in
+    Mstr.update vs_str add env, la :: lal in
+
+  let rec process_args args tyl env lal = match args, tyl with
+    | [], [] -> env, List.rev lal
+    | [], _ -> error_report ~loc:(vs.sp_hd_nm.pid_loc) "too few parameters"
+    | Uast.Lghost (pid,pty) :: args, _ ->
        let ty = ty_of_pty md.mod_ns pty in
-       let env, vsl = add_to_env ~ghost:true pid ty env vsl in
-       mk_env args tyl env vsl
-    | la::_, [] ->
-       error ~loc:((pid_of_lb la).pid_loc) IllegalValHeader
-    | la::args, ty::tyl ->
-       let env, vsl = add_to_env (pid_of_lb la) ty env vsl in
-       mk_env args tyl env vsl in
-  let env, sp_args = mk_env vs.sp_hd_args tyl Mstr.empty [] in
-  let env, sp_ret = match vs.sp_hd_ret, ty.ty_node with
+       let vs = create_vsymbol pid ty in
+       let env, lal = add_arg (Lghost vs) env lal in
+       process_args args tyl env lal
+    | (Lquestion pid)::args, (ty,Oasttypes.Optional s)::tyl ->
+       check_report ~loc:pid.pid_loc (pid.pid_str = s)
+         "parameter do not match with val type";
+       let ty = ty_app ts_option [ty] in
+       let vs = create_vsymbol pid ty in
+       let env, lal = add_arg (Lquestion vs) env lal in
+       process_args args tyl env lal
+    | (Lnamed pid)::args, (ty,Oasttypes.Labelled s)::tyl ->
+       check_report ~loc:pid.pid_loc (pid.pid_str = s)
+         "parameter do not match with val type";
+       let vs = create_vsymbol pid ty in
+       let env, lal = add_arg (Lnamed vs) env lal in
+       process_args args tyl env lal
+    | (Lnone pid)::args, (ty,Oasttypes.Nolabel)::tyl ->
+       let vs = create_vsymbol pid ty in
+       let env, lal = add_arg (Lnone vs) env lal in
+       process_args args tyl env lal
+    | la::_, _ ->
+       error_report ~loc:((Uast_utils.pid_of_label la).pid_loc)
+         "too many parameters" in
+
+  let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
+  let env, ret = match vs.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []
-    | ret, Tyapp (ts,tyl) when is_ts_tuple ts -> mk_env ret tyl env []
-    | ret, _ -> mk_env ret [ty] env [] in
-  let sp_pre = List.map (fun (t,c) ->
+    | _, Tyapp (ts,tyl) when is_ts_tuple ts ->
+       let tyl = List.map (fun ty -> (ty,Oasttypes.Nolabel)) tyl in
+       process_args vs.sp_hd_ret tyl env []
+    | _, _ -> process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
+
+  let pre = List.map (fun (t,c) ->
                    fmla md.mod_ns env t, c) vs.sp_pre in
-  let sp_post = List.map (fmla md.mod_ns env) vs.sp_post in
-  let sp_writes = List.map (fmla md.mod_ns env) vs.sp_writes in
-  { sp_ret; sp_args; sp_pre; sp_post; sp_writes;
-    sp_diverge = vs.sp_diverge;
-    sp_equiv   = vs.sp_equiv }
+  let post = List.map (fmla md.mod_ns env) vs.sp_post in
+  let writes = List.map (fmla md.mod_ns env) vs.sp_writes in
+
+  mk_val_spec args ret pre post writes vs.sp_diverge vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) vd md =
   let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in
-  let ty_arg,ty_ret = val_parse_core md vd.vtype in
-  let spec = opmap (process_val_spec md id ty_arg ty_ret) vd.vspec in
+  let spec = opmap (process_val_spec md id vd.vtype) vd.vspec in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
-  let sig_desc = Sig_val (vd,ghost) in
-  mk_sig_item sig_desc loc
+  mk_sig_item (Sig_val (vd,ghost)) loc
 
 (* Currently checking:
    1 - arguments have different names *)
@@ -573,6 +593,6 @@ let () =
          Some (errorf "Symbol %a cannot be partially applied" print_ls_nm ls)
       | SymbolNotFound sl ->
          Some (errorf "Symbol %s not found" (String.concat "." sl))
-      | IllegalValHeader ->
-         Some (errorf "Illegal val header in value specification")
+      | EmptyUse ->
+         Some (errorf "Empty use")
       | _ -> None)

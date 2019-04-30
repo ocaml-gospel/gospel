@@ -13,8 +13,5 @@ dependency_graph: gospel
 	depgraph _build/src/ > dependencies.dot
 #	use xdot for instance to see dependencies.dot
 
-doc: ocaml-lib/*.ml ocaml-lib/*.mli ocaml-lib/*.mly tools/*.ml
-	$(OCAMLBUILD) doc.docdir/index.html
-
 clean:
 	ocamlbuild -clean

@@ -120,6 +120,7 @@ let get_op_nm s =
   | [x1;x2] -> x2
   | _ -> assert false
 
+exception TypeCheckingError of string
 exception Located of Location.t * exn
 
 let error ?loc e = match loc with
@@ -129,6 +130,12 @@ let error ?loc e = match loc with
 let check ?loc c exn =
   if not c then error ?loc exn
 
+let error_report ?loc s =
+  error ?loc (TypeCheckingError s)
+
+let check_report ?loc c s =
+  check ?loc c (TypeCheckingError s)
+
 let () =
   let open Location in
   register_error_of_exn (function
@@ -137,4 +144,6 @@ let () =
          | None | Some `Already_displayed -> None
          | Some `Ok e -> Some {e with loc = loc}
          end
+      | TypeCheckingError s ->
+         Some (errorf "Type checking error: %s" s)
       | _ -> None)

@@ -49,7 +49,7 @@ let run_on_file file =
         pp fmt "@[%a@]@." Upretty_printer.s_signature sigs
       end;
 
-    (* if !parse_only then raise Exit; *)
+    if !parse_only then raise Exit;
     let md = type_check file sigs in
     pp fmt "@[@\n*******************************@]@.";
     pp fmt    "@[********* Typed GOSPEL ********@]@.";

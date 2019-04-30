@@ -53,7 +53,7 @@ let ts id ar = {ts_ident = id; ts_arity = ar}
 let ts_ident ts = ts.ts_ident
 let ts_arity ts = ts.ts_arity
 
-let fresh_ty_var s = {ty_node = Tyvar {tv_name = fresh_id s}}
+let fresh_ty_var s = {ty_node = Tyvar (tv_of_string s)}
 
 let ty_of_var tv = {ty_node = Tyvar tv}
 
@@ -105,13 +105,7 @@ let ts_bool    = ts (fresh_id "bool"   ) 0
 let ts_float   = ts (fresh_id "float"  ) 0
 let ts_char    = ts (fresh_id "char"   ) 0
 let ts_string  = ts (fresh_id "string" ) 0
-
-let ty_integer = ty_app ts_integer []
-let ty_int     = ty_app ts_int     []
-let ty_bool    = ty_app ts_bool    []
-let ty_float   = ty_app ts_float   []
-let ty_char    = ty_app ts_char    []
-let ty_string  = ty_app ts_string  []
+let ts_option  = ts (fresh_id "option" ) 1
 
 let ts_tuple =
   let ts_tuples = Hint.create 17 in
@@ -130,12 +124,13 @@ let ts_arrow =
 let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
 let is_ts_arrow ts = ts_arrow == ts
 
-let ty_int     = {ty_node = Tyapp (ts_int,     [])}
-let ty_integer = {ty_node = Tyapp (ts_integer, [])}
-let ty_bool    = {ty_node = Tyapp (ts_bool,    [])}
-let ty_float   = {ty_node = Tyapp (ts_float,   [])}
-let ty_char    = {ty_node = Tyapp (ts_char,    [])}
-let ty_string  = {ty_node = Tyapp (ts_string,  [])}
+let ty_integer = ty_app ts_integer []
+let ty_int     = ty_app ts_int     []
+let ty_bool    = ty_app ts_bool    []
+let ty_float   = ty_app ts_float   []
+let ty_char    = ty_app ts_char    []
+let ty_string  = ty_app ts_string  []
+let ty_option  = ty_app ts_option  [fresh_ty_var "a"]
 
 (** Pretty printers *)
 

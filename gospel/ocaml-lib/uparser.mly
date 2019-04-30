@@ -100,7 +100,7 @@
 %token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTPAR_STAR_RIGHTPAR
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
-%token STAR UNDERSCORE
+%token STAR TILDA UNDERSCORE
 
 (* priorities *)
 
@@ -262,6 +262,10 @@ fun_arg:
    { Lnone (create_pid "()" []  (mk_loc $startpos $endpos)) }
 | lident
    { Lnone $1 }
+| TILDA lident
+   { Lnamed $2 }
+| QUESTION lident
+   { Lquestion $2 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
    { Lghost (id, ty) }
 ;

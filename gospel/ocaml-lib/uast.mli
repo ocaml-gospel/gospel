@@ -8,7 +8,6 @@ type qualid =
   | Qpreid of preid
   | Qdot   of qualid * preid
 
-(* SUGGESTION maybe the core can be used instead *)
 type pty =
   | PTtyvar  of preid
   | PTtyapp  of qualid * pty list

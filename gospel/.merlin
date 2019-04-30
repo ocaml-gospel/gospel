@@ -1,8 +1,8 @@
 
-S ocaml-libs
+S ocaml-lib
 S tools
 
-B _build/ocaml-libs
+B _build/ocaml-lib
 B _build/tools
 
 PKG compiler-libs
