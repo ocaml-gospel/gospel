@@ -187,6 +187,7 @@ let mk_term n ty = {
     t_loc   = None;
 }
 
+(* TODO: missing locations when reporting errors *)
 let ls_arg_inst ls tl =
   try List.fold_left2 (fun tvm ty t ->
         ty_match tvm ty (t_type t)) Mtv.empty ls.ls_args tl

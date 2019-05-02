@@ -363,10 +363,9 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
       let mk_ld ld =
         let id = fresh_id ld.pld_name.txt in
         let ty_res = parse_core ~alias tvl ld.pld_type in
-        let ld_field = Rec_pj (fsymbol id [ty] ty_res) in
-        let ld_mut = mutable_flag ld.pld_mutable in
-        {ld_field;ld_mut;ld_loc=ld.pld_loc;
-         ld_attrs=ld.pld_attributes} in
+        let field = Rec_pj (fsymbol id [ty] ty_res) in
+        let mut = mutable_flag ld.pld_mutable in
+        label_declaration field mut ld.pld_loc ld.pld_attributes in
       {rd_cs;rd_ldl = List.map mk_ld ldl} in
     let make_cd cd =
       assert (cd.pcd_res = None); (* TODO check what this is*)
@@ -382,14 +381,14 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
            let add ld (ldl,tyl) =
              let id = fresh_id ld.pld_name.txt in
              let ty = parse_core ~alias tvl ld.pld_type in
-             let ld_field = Constr_field (id,ty) in
-             let ld_mut = mutable_flag ld.pld_mutable in
-             let ld = {ld_field;ld_mut;ld_loc=ld.pld_loc;
-                       ld_attrs=ld.pld_attributes} in
+             let field = Constr_field (id,ty) in
+             let mut = mutable_flag ld.pld_mutable in
+             let loc, attrs =  ld.pld_loc, ld.pld_attributes in
+             let ld = label_declaration field mut loc attrs in
              ld :: ldl, ty :: tyl in
            let ldl,tyl = List.fold_right add ldl ([],[]) in
            fsymbol ~constr:true cs_id tyl ty, ldl in
-      {cd_cs;cd_ld;cd_loc=cd.pcd_loc;cd_attrs=cd.pcd_attributes} in
+      constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes in
     let td_kind = match td.tkind with
       | Ptype_abstract -> Pty_abstract
       | Ptype_variant cdl ->
@@ -398,9 +397,8 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
       | Ptype_open -> assert false in
 
     let td_spec = type_spec td.tspec in
-    let td =
-      {td_ts; td_params; td_cstrs; td_kind; td_private;
-       td_manifest; td_attrs; td_spec; td_loc} in
+    let td = type_declaration td_ts td_params td_cstrs td_kind
+               td_private td_manifest td_attrs td_spec td_loc in
     Hstr.add htd s td in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;

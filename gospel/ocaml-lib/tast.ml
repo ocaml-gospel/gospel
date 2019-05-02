@@ -113,6 +113,9 @@ type label_declaration = {
     ld_attrs : attrs; (* l : T [@id1] [@id2] *)
   }
 
+let label_declaration ld_field ld_mut ld_loc ld_attrs =
+  {ld_field;ld_mut;ld_loc;ld_attrs}
+
 let get_pjl_of_ld ldl =
   let get acc ld = match ld.ld_field with
       Rec_pj ls -> ls :: acc | _ -> acc in
@@ -129,6 +132,9 @@ type constructor_decl = {
     cd_loc   : Location.t;
     cd_attrs : attrs; (* C of ... [@id1] [@id2] *)
 }
+
+let constructor_decl cd_cs cd_ld cd_loc cd_attrs =
+  {cd_cs; cd_ld; cd_loc; cd_attrs}
 
 type type_kind =
   | Pty_abstract
@@ -158,6 +164,11 @@ type type_declaration = {
     td_spec     : type_spec;
     td_loc      : Location.t;
 }
+
+let type_declaration td_ts td_params td_cstrs td_kind td_private
+      td_manifest td_attrs td_spec td_loc =
+  {td_ts; td_params; td_cstrs; td_kind; td_private;
+   td_manifest; td_attrs; td_spec; td_loc}
 
 type axiom = {
     ax_name : ident;
