@@ -53,7 +53,7 @@ let ts id ar = {ts_ident = id; ts_arity = ar}
 let ts_ident ts = ts.ts_ident
 let ts_arity ts = ts.ts_arity
 
-let fresh_ty_var s = {ty_node = Tyvar (tv_of_string s)}
+let fresh_ty_var s = {ty_node = Tyvar {tv_name = fresh_id s}}
 
 let ty_of_var tv = {ty_node = Tyvar tv}
 

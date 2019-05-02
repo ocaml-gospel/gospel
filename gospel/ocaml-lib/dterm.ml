@@ -135,25 +135,23 @@ let rec occur i dty = match head dty with
      try List.iter (fun x -> if occur i x then raise Exit) dtys; false
      with Exit -> true
 
-let rec match_dty_ty dty ty = match dty, ty.ty_node with
-  | Tvar {dtv_def=Some dty}, _ -> match_dty_ty dty ty
+let rec unify_dty_ty dty ty = match head dty, ty.ty_node with
   | Tvar tvar, _ -> tvar.dtv_def <- Some (Tty ty)
   | Tty ty1, _ when ty_equal ty1 ty -> ()
   | Tapp (ts1,dl), Tyapp (ts2,tl) when ts_equal ts1 ts2 -> begin
-      try List.iter2 match_dty_ty dl tl with
+      try List.iter2 unify_dty_ty dl tl with
         Invalid_argument _ -> raise Exit end
   | _ -> raise Exit
 
 let rec unify dty1 dty2 = match head dty1, head dty2 with
   | Tvar {dtv_id=id1}, Tvar {dtv_id=id2} when id1 = id2 -> ()
-  | Tvar ({dtv_id;dtv_def} as tvar), dty
-  | dty, Tvar ({dtv_id;dtv_def} as tvar) ->
-     if occur dtv_id dty then raise Exit else
+  | Tvar tvar, dty | dty, Tvar tvar ->
+     if occur tvar.dtv_id dty then raise Exit else
        tvar.dtv_def <- Some dty
   | Tapp (ts1,dtyl1), Tapp (ts2,dtyl2) when ts_equal ts1 ts2 -> begin
       try List.iter2 unify dtyl1 dtyl2 with
         Invalid_argument _ -> raise Exit end
-  | Tty ty, dty | dty, Tty ty -> match_dty_ty dty ty
+  | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
   | _ -> raise Exit
 
 exception BadArity of lsymbol * int
