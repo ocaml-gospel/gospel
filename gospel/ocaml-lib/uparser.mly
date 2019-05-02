@@ -544,7 +544,18 @@ pat_arg_shared_:
 | LEFTSQRIGHTSQ
   { Papp (Qpreid (mk_pid "[]"  $startpos $endpos), []) }
 | LEFTPAR pattern_ RIGHTPAR             { $2 }
-| LEFTBRC field_list1(pattern) RIGHTBRC { Prec $2 }
+| LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
+;
+
+field_pattern(X):
+| fl = semicolon_list1(separated_pair_or_lqualid(X)) { fl }
+;
+
+separated_pair_or_lqualid(X):
+| separated_pair(lqualid, EQUAL, X) { $1 }
+| lqualid { let pwild = {pat_desc = Pwild;
+                         pat_loc = loc_of_qualid $1} in
+            ($1,pwild)}
 ;
 
 (* Symbolic operation names *)

@@ -57,3 +57,6 @@ let pid_of_label = function
     | Lnone p | Lquestion p | Lnamed p | Lghost (p,_) -> p
 
 let str_of_label l = (pid_of_label l).pid_str
+
+let loc_of_qualid = function
+  | Qpreid pid | Qdot (_,pid) -> pid.pid_loc
