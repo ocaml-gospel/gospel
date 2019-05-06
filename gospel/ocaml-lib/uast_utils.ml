@@ -60,3 +60,9 @@ let str_of_label l = (pid_of_label l).pid_str
 
 let loc_of_qualid = function
   | Qpreid pid | Qdot (_,pid) -> pid.pid_loc
+
+let field f_loc f_preid f_pty f_mutable =
+  {f_loc; f_preid; f_pty; f_mutable}
+
+let type_spec ty_ephemeral ty_field ty_invariant =
+  {ty_ephemeral; ty_field; ty_invariant}

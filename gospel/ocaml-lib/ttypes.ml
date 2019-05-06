@@ -99,6 +99,7 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
+let ts_unit = ts (fresh_id "unit") 0
 let ts_integer = ts (fresh_id "integer") 0
 let ts_int     = ts (fresh_id "int"    ) 0
 let ts_bool    = ts (fresh_id "bool"   ) 0
@@ -124,6 +125,7 @@ let ts_arrow =
 let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
 let is_ts_arrow ts = ts_arrow == ts
 
+let ty_unit    = ty_app ts_unit    []
 let ty_integer = ty_app ts_integer []
 let ty_int     = ty_app ts_int     []
 let ty_bool    = ty_app ts_bool    []

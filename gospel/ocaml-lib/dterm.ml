@@ -163,7 +163,7 @@ exception FmlaExpected
 exception TermExpected
 
 (* the following functions should receive dterms for precise locations
-   to be give properly -- based on why3 *)
+   to be given properly -- based on why3 *)
 
 let app_unify ls unify l dtyl2 =
   try List.iter2 unify l dtyl2 with Invalid_argument _ ->

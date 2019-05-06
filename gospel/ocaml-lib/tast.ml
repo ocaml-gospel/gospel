@@ -21,6 +21,7 @@ let vs_of_lb_arg = function
 
 type pre  = term * bool (* whether it is a checks *)
 type post = term
+type invariant = term list
 
 type val_spec = {
     sp_args    : lb_arg list;
@@ -95,9 +96,12 @@ let mk_val_description id cty prim attrs spec loc =
 
 type type_spec = {
   ty_ephemeral : bool;
-  (* ty_field     : field list;
-   * ty_invariant : invariant; *)
+  ty_field     : lsymbol list;
+  ty_invariant : invariant;
 }
+
+let type_spec ty_ephemeral ty_field ty_invariant =
+  {ty_ephemeral; ty_field; ty_invariant }
 
 type mutable_flag = Immutable | Mutable
 

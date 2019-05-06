@@ -18,20 +18,29 @@ let rec q_loc = function
   | Qpreid pid -> pid.pid_loc
   | Qdot (q,p) -> q_loc q
 
+let find_ts ?loc ns s =
+  try ns_find_ts ns s with
+    Not_found -> error ?loc (SymbolNotFound s)
+
+let find_ls ?loc ns s =
+  try ns_find_ls ns s with
+    Not_found -> error ?loc (SymbolNotFound s)
+
+let find_ns ?loc ns s =
+  try ns_find_ns ns s with
+    Not_found -> error ?loc (SymbolNotFound s)
+
 let find_q_ts ns q =
   let ln = string_list_of_qualid q in
-  try ns_find_ts ns ln with
-    Not_found -> error ~loc:(q_loc q) (SymbolNotFound ln)
+  find_ts ~loc:(q_loc q) ns ln
 
 let find_q_ls ns q =
   let ln = string_list_of_qualid q in
-  try ns_find_ls ns ln with
-    Not_found -> error ~loc:(q_loc q) (SymbolNotFound ln)
+  find_ls ~loc:(q_loc q) ns ln
 
 let find_q_ns ns q =
   let ln = string_list_of_qualid q in
-  try ns_find_ns ns ln with
-    Not_found -> error ~loc:(q_loc q) (SymbolNotFound ln)
+  find_ns ~loc:(q_loc q) ns ln
 
 (** Typing types *)
 
@@ -196,7 +205,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
      let dt2 = dterm ns denv t2 in
      mk_dterm  (DTlet (pid,dt1,dt2)) dt2.dt_dty
   | Uast.Tinfix (t1,op,t2) ->
-     let op = ns_find_ls ns [op.pid_str] in
+     let op = find_ls ~loc:op.pid_loc ns [op.pid_str] in
      fun_app op [t1;t2]
   | Uast.Tbinop (t1,op,t2) ->
      let dt1 = dterm ns denv t1 in
@@ -274,21 +283,31 @@ let mutable_flag = function
   | Oasttypes.Mutable -> Mutable
   | Oasttypes.Immutable -> Immutable
 
+let process_type_spec ns ty (spec:Uast.type_spec) =
+  let field (ns,fields) f =
+    let f_ty = ty_of_pty ns f.f_pty in
+    let ls = fsymbol (id_register f.f_preid) [ty] f_ty in
+    let ls_inv = fsymbol (id_register f.f_preid) [] f_ty in
+    (ns_add_ls ns f.f_preid.pid_str ls_inv, ls::fields) in
+  let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
+  let fields = List.rev fields in
+  let env = Mstr.empty in
+  let invariant = List.map (fmla ns env) spec.ty_invariant in
+  type_spec spec.ty_ephemeral fields invariant
+
 exception CyclicTypeDecl of string
 
 (* TODO
    - I'm still not sure how I should threat Ptyp_any
    - compare manifest with td_kind
-   - deal with type_spec
  *)
-let process_sig_type ~loc ?(ghost=false) r tdl md =
+let process_sig_type ~loc ?(ghost=false) md r tdl =
   let add_new tdm ({tname} as td) =
     if Mstr.mem tname.txt tdm then raise (NameClash tname.txt) else
       Mstr.add tname.txt td tdm in
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hstr.create 5 in
   let htd = Hstr.create 5 in
-  let type_spec spec = {ty_ephemeral = spec.Uast.ty_ephemeral} in
   let open Oparsetree in
 
   let rec parse_core ~alias tvl core = match core.ptyp_desc with
@@ -318,7 +337,7 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
          | [s] when Mstr.mem s tdm ->
             visit ~alias s (Mstr.find s tdm);
             Hstr.find hts s
-         | s -> find_ts md s in
+         | s -> find_ts ~loc:lid.loc md.mod_ns s in
        if List.length tyl <> ts_arity ts then
          error ~loc:core.ptyp_loc (BadTypeArity (ts, List.length tyl));
        ty_app ts tyl
@@ -396,7 +415,7 @@ let process_sig_type ~loc ?(ghost=false) r tdl md =
       | Ptype_record ldl -> Pty_record (make_rd ldl)
       | Ptype_open -> assert false in
 
-    let td_spec = type_spec td.tspec in
+    let td_spec = process_type_spec md.mod_ns ty td.tspec in
     let td = type_declaration td_ts td_params td_cstrs td_kind
                td_private td_manifest td_attrs td_spec td_loc in
     Hstr.add htd s td in
@@ -419,7 +438,7 @@ let rec val_parse_core_type ns cty =
        let tyl = List.map ty_of_core ctl in
        ty_app (ts_tuple (List.length tyl)) tyl
     | Ptyp_constr (lid,ctl) ->
-       let ts = ns_find_ts ns (Longident.flatten lid.txt) in
+       let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
        let tyl = List.map ty_of_core ctl in
        ty_app ts tyl
     | Ptyp_arrow (lbl,ct1,ct2) ->
@@ -563,7 +582,7 @@ let rec process_use loc md q =
 
 and process_signature md {sdesc;sloc} =
   let md, signature = match sdesc with
-  | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc r tdl md
+  | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc md r tdl
   | Uast.Sig_val vd          -> md, process_val ~loc:sloc vd md
   | Uast.Sig_typext te       -> md, mk_sig_item (Sig_typext te) sloc
   | Uast.Sig_module m        -> md, mk_sig_item (Sig_module m) sloc
@@ -580,7 +599,7 @@ and process_signature md {sdesc;sloc} =
   | Uast.Sig_function f      -> md, process_function md.mod_ns f
   | Uast.Sig_axiom a         -> md, process_axiom sloc md.mod_ns a
   | Uast.Sig_ghost_type (r,tdl) ->
-     md, process_sig_type ~loc:sloc ~ghost:true r tdl md
+     md, process_sig_type ~loc:sloc ~ghost:true md r tdl
   | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true vd md
   in add_sig_contents md signature
 

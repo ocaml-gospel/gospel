@@ -27,8 +27,8 @@ let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
 
 let ns_with_primitives =
   let primitive_tys =
-    [ ("integer", ts_integer); ("int", ts_int); ("string", ts_string);
-      ("float", ts_float); ("bool", ts_bool)] in
+    [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
+      ("string", ts_string); ("float", ts_float); ("bool", ts_bool)] in
   let primitive_ps =
     [ ps_equ.ls_name.id_str, ps_equ;
       (let id = fresh_id (infix "<") in
@@ -39,6 +39,8 @@ let ns_with_primitives =
        id.id_str, psymbol id [ty_integer;ty_integer]);
       (let id = fresh_id (infix ">=") in
        id.id_str, psymbol id [ty_integer;ty_integer]);
+      (let id = fresh_id (infix "->") in
+       id.id_str, psymbol id [ty_bool;ty_bool]);
     ] in
   let primitive_ls =
     [ (let id = fresh_id (infix "+") in
@@ -87,9 +89,9 @@ let module_ mod_nm mod_sigs mod_ns = {mod_nm;mod_sigs;mod_ns}
 let md_with_primitives s =
   module_ (fresh_id s) [] ns_with_primitives
 
-let find_ts md s = ns_find_ts md.mod_ns s
-let find_ls md s = ns_find_ls md.mod_ns s
-let find_ns md s = ns_find_ns md.mod_ns s
+let md_find_ts md s = ns_find_ts md.mod_ns s
+let md_find_ls md s = ns_find_ls md.mod_ns s
+let md_find_ns md s = ns_find_ns md.mod_ns s
 
 let add_ts md s ts  = {md with mod_ns = ns_add_ts md.mod_ns s ts}
 let add_ls md s ls  = {md with mod_ns = ns_add_ls md.mod_ns s ls}
@@ -117,8 +119,10 @@ let add_sig_contents md sig_ =
        let s = (ts_ident td.td_ts).id_str in
        let md = add_ts md s td.td_ts in
        let csl = get_cs_pjs td.td_kind in
-       List.fold_left (fun md cs ->
-           add_ls md cs.ls_name.id_str cs) md csl in
+       let md = List.fold_left (fun md cs ->
+         add_ls md cs.ls_name.id_str cs) md csl in
+       List.fold_left (fun md ls ->
+         add_ls md ls.ls_name.id_str ls) md td.td_spec.ty_field in
      List.fold_left add_td md tdl
   | _ -> md (* TODO *)
 
