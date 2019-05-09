@@ -379,7 +379,7 @@ let print_lb_arg fmt = function
   | Lnone vs -> print_vs fmt vs
   | Lquestion vs -> pp fmt "?%a" print_vs vs
   | Lnamed vs -> pp fmt "~%a" print_vs vs
-  | Lghost vs -> pp fmt "[%a]" print_vs vs
+  | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
 
 let print_vd_spec val_id fmt = function
   | None -> ()
@@ -387,7 +387,7 @@ let print_vd_spec val_id fmt = function
      let pres,checks =
        List.fold_left (fun (pres,checks) (p,c) ->
         if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
-     pp fmt "(*@ %a%s@ %a@ %a%a%a%a%a%a*)"
+     pp fmt "(*@ @[%a%s@ %a@ %a@]%a%a%a%a%a*)"
        (list ~sep:", " print_lb_arg) sp_ret
        (if sp_ret = [] then "" else " =")
        print_ident val_id
@@ -442,7 +442,7 @@ let rec print_signature_item f x =
        (list ~sep:"@\nand " print_type_declaration) td
   | Sig_val (vd,g) ->
       let intro = if vd.vd_prim = [] then "val" else "external" in
-      pp f (if g then "(*@@@\n@[<2>%s@ %a@ :@ %a %a@]%a@\n%a@\n*)"
+      pp f (if g then "@[(*@@@\n@[<2>%s@ %a@ :@ %a %a@]%a@\n%a@\n*)@]"
             else "@[<2>%s@ %a@ :@ %a %a@]%a@\n%a")
         intro
         print_ident vd.vd_name

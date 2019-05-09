@@ -252,15 +252,17 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
   | Uast.Trecord _ -> Format.eprintf "\n\n Trecord \n@."; assert false
   | Uast.Tupdate _ -> Format.eprintf "\n\n Tupdate \n@."; assert false
 
-let term ty ns env t =
+let dterm ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
-  let dt = dterm ns denv t in
+  dterm ns denv t
+
+let term_with_unify ty ns env t =
+  let dt = dterm ns env t in
   dterm_unify dt (dty_of_ty ty);
   term env dt
 
 let fmla ns env t =
-  let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
-  let dt = dterm ns denv t in
+  let dt = dterm ns env t in
   fmla env dt
 
 (** Typing declarations *)
@@ -513,7 +515,9 @@ let rec process_val_spec md id cty (vs:Uast.val_spec) =
   let pre = List.map (fun (t,c) ->
                    fmla md.mod_ns env t, c) vs.sp_pre in
   let post = List.map (fmla md.mod_ns env) vs.sp_post in
-  let writes = List.map (fmla md.mod_ns env) vs.sp_writes in
+  let writes = List.map (fun t ->
+                   let dt = dterm md.mod_ns env t in
+                   term env dt) vs.sp_writes in
 
   mk_val_spec args ret pre post writes vs.sp_diverge vs.sp_equiv
 
@@ -552,12 +556,14 @@ let process_function ns f =
 
   let def = match f_ty with
     | None -> opmap (fmla ns env) f.fun_def
-    | Some ty -> opmap (term ty ns env) f.fun_def in
+    | Some ty -> opmap (term_with_unify ty ns env) f.fun_def in
 
   let spec =
     let req = List.map (fmla ns env) f.fun_spec.fun_req in
     let ens = List.map (fmla ns env) f.fun_spec.fun_ens in
-    let variant = List.map (term ty_integer ns env) f.fun_spec.fun_variant in
+    let variant =
+      List.map (term_with_unify ty_integer ns env)
+        f.fun_spec.fun_variant in
     mk_fun_spec req ens variant f.fun_spec.fun_coer in
 
   let f = mk_function ls f.fun_rec params def spec f.fun_loc in
