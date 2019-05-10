@@ -148,7 +148,7 @@ axiom:
 ;
 
 func:
-| FUNCTION r=REC? fname=lident_rich ps=params? COLON ty=typ
+| FUNCTION r=REC? fname=func_name ps=params? COLON ty=typ
     def=preceded(EQUAL, term)? spec=func_spec?
   { let ps = match ps with | None -> [] | Some ps -> ps in
     let spec = match spec with
@@ -156,7 +156,7 @@ func:
     { fun_name = fname; fun_rec = Utils.opt2bool r; fun_type = Some ty;
       fun_params = ps; fun_def = def; fun_spec = spec;
       fun_loc = mk_loc $startpos $endpos} }
-| PREDICATE r=REC? fname=lident_rich ps=params
+| PREDICATE r=REC? fname=func_name ps=params
     def=preceded(EQUAL, term)? spec=func_spec?
   { let spec = match spec with
         None -> empty_fspec | Some spec -> rev_fspec spec in
@@ -164,6 +164,13 @@ func:
       fun_params = ps; fun_def = def; fun_spec = spec ;
       fun_loc = mk_loc $startpos $endpos} }
 ;
+
+func_name:
+| lident_rich {$1}
+| LEFTPAR LEFTBRC RIGHTBRC RIGHTPAR
+    { mk_pid (mixfix "{}") $startpos $endpos }
+| LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
+    { mk_pid (mixfix "{:_:}") $startpos $endpos }
 
 func_spec:
 | t=requires { {empty_fspec with fun_req = [t]} }
@@ -357,9 +364,9 @@ term_:
 | term cast
     { Tcast ($1, $2) }
 | LEFTBRC RIGHTBRC
-    { Tpreid (Qpreid (mk_pid "empty" $startpos $endpos)) }
+    { Tpreid (Qpreid (mk_pid (mixfix "{}") $startpos $endpos)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = Qpreid (mk_pid "singleton" $startpos $endpos) in
+    { let id = Qpreid (mk_pid (mixfix "{:_:}") $startpos $endpos) in
       Tidapp (id, [t]) }
 ;
 
