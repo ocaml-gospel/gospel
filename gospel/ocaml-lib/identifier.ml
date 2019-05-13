@@ -1,3 +1,5 @@
+open Utils
+
 (** Attributes  *)
 
 type attr = string
@@ -54,12 +56,8 @@ let create_id =
       id_tag = (incr r; !r)
     }
 
-let id_register = let r = ref 0 in fun pid -> {
-  id_str = pid.pid_str;
-  id_ats = Sattr.of_list pid.pid_ats;
-  id_loc = pid.pid_loc;
-  id_tag = (incr r; !r);
-}
+let id_register pid =
+  create_id pid.pid_str (Sattr.of_list pid.pid_ats) pid.pid_loc
 
 let fresh_id s = create_id s Sattr.empty Location.none
 
@@ -69,6 +67,29 @@ let id_add_lab id l = { id with id_ats = Sattr.add l id.id_ats }
 
 (* pretty-printer *)
 
+type context = {
+    current : int Hstr.t;
+    output  : string Hint.t;
+  }
+
+let default_ctx = {
+    current = Hstr.create (1 lsl 8);
+    output  = Hint.create (1 lsl 8)
+}
+
+let current ctx s =
+  try let x = Hstr.find ctx.current s in
+      Hstr.replace ctx.current s (x + 1); x with
+  | Not_found -> Hstr.add ctx.current s 0; 0
+
+let str_of_id ctx id =
+  try Hint.find ctx.output id.id_tag with
+  | Not_found ->
+     let x = current ctx id.id_str in
+     let str = if x = 0 then id.id_str else
+                 id.id_str ^ "#" ^ string_of_int x in
+     Hint.replace ctx.output id.id_tag str; str
+
 open Opprintast
 
 let print_attr fmt a = pp fmt "[@%s]" a
@@ -77,5 +98,5 @@ let print_attrs = list ~sep:" " print_attr
 let print_pid fmt pid = pp fmt "%s@ %a" pid.pid_str
                             print_attrs pid.pid_ats
 
-let print_ident fmt id = pp fmt "%s%a" id.id_str
+let print_ident fmt id = pp fmt "%s%a" (str_of_id default_ctx id)
                            print_attrs (Sattr.elements id.id_ats)
