@@ -204,9 +204,23 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
      let denv = denv_add_var denv pid.pid_str (dty_of_dterm dt1) in
      let dt2 = dterm ns denv t2 in
      mk_dterm  (DTlet (pid,dt1,dt2)) dt2.dt_dty
-  | Uast.Tinfix (t1,op,t2) ->
-     let op = find_ls ~loc:op.pid_loc ns [op.pid_str] in
-     fun_app op [t1;t2]
+  | Uast.Tinfix (t1,op1,t23) ->
+     let apply de1 op de2 =
+       let ls = ns_find_ls ns [op.pid_str] in
+       let dtyl, dty = specialize_ls ls in
+       app_unify ls dterm_unify [de1;de2] dtyl;
+       mk_dterm (DTapp (ls,[de1;de2])) dty in
+     let rec chain loc de1 op1 = function
+       | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
+          let de2 = dterm ns denv t2 in
+          (* let loc12 = loc_cutoff loc loc23 t2.term_loc in *)
+          unify de1 de2.dt_dty;
+          let de12 = apply de1 op1 de2 in
+          let de23 = chain loc23 de2 op2 t3 in
+          mk_dterm (DTbinop (Tand, de12, de23)) None
+       | e23 ->
+          apply de1 op1 (dterm ns denv e23) in
+     chain loc (dterm ns denv t1) op1 t23
   | Uast.Tbinop (t1,op,t2) ->
      let dt1 = dterm ns denv t1 in
      let dt2 = dterm ns denv t2 in

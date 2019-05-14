@@ -364,8 +364,8 @@ let rec print_term fmt {t_node; t_ty; t_attrs; t_loc } =
        pp fmt "let %a = %a in %a" print_vs vs
          print_term t1 print_term t2
     | Tbinop (op,t1,t2) ->
-       pp fmt "%a %a %a" print_binop op
-         print_term t1 print_term t2
+       pp fmt "%a %a %a" print_term t1
+         print_binop op print_term t2
     | Tquant (q,vsl,trl,t) ->
        pp fmt "%a %a %a. %a"
          print_quantifier q
