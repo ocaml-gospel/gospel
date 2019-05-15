@@ -154,13 +154,20 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
     let dt1 = mk_dterm (DTapp (ls,params)) dty in
     if extra = [] then dt1 else
       List.fold_left map_apply dt1 extra in
-  let rec unfold_map t1 t2 dtl = match t1.term_desc with
-    | Uast.Tpreid q ->
-       let ls = find_q_ls ns q in
-       fun_app ls (t2::dtl)
-    | Uast.Tapply (t11,t12) -> unfold_map t11 t12 (t2::dtl)
+  let qualid_app q tl = fun_app (find_q_ls ns q) tl in
+  let qualid_app q tl = match q with
+    | Qpreid pid ->
+        (match denv_get_opt denv pid.pid_str with
+        | Some dty ->
+           let dtv = mk_dterm ~loc:(Some pid.pid_loc) (DTvar pid) (Some dty) in
+           List.fold_left map_apply dtv tl
+        | None -> qualid_app q tl)
+    | _ -> qualid_app q tl in
+  let rec unfold_app t1 t2 tl = match t1.term_desc with
+    | Uast.Tpreid q -> qualid_app q (t2::tl)
+    | Uast.Tapply (t11,t12) -> unfold_app t11 t12 (t2::tl)
     | _ -> let dt1 = dterm ns denv t1 in
-           List.fold_left map_apply dt1 (t2::dtl) in
+           List.fold_left map_apply dt1 (t2::tl) in
   match term_desc with
   | Uast.Ttrue -> mk_dterm DTtrue (Some dty_bool)
   | Uast.Tfalse -> mk_dterm DTfalse (Some dty_bool)
@@ -181,11 +188,9 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
      let _, dty = specialize_ls ls in
      let node,dty = DTapp (ls,[]), dty in
      mk_dterm node dty
-  | Uast.Tidapp (q,tl) ->
-     let ls = find_q_ls ns q in
-     fun_app ls tl
+  | Uast.Tidapp (q,tl) -> qualid_app q tl
   | Uast.Tapply  (t1,t2) ->
-     unfold_map t1 t2 []
+     unfold_app t1 t2 []
   | Uast.Tnot t ->
      let dt = dterm ns denv t in
      dfmla_unify dt;
