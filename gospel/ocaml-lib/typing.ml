@@ -136,38 +136,38 @@ let quant = function
 exception PartialApplication of lsymbol
 
 let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
-  let mk_dterm ?(loc=Some loc) dt_node dty =
+  let mk_dterm ?(loc = Some loc) dt_node dty =
     {dt_node;dt_dty=dty;dt_loc=loc} in
-  let map_apply dt1 t2 =
+  let apply dt1 t2 =
     let dt2 = dterm ns denv t2 in
     let dty = dty_fresh () in
     unify dt1 (Some (Tapp (ts_arrow, [dty_of_dterm dt2;dty])));
     let dt_app = DTapp (fs_fun_apply, [dt1;dt2]) in
     mk_dterm ~loc:dt2.dt_loc dt_app (Some dty) in (* CHECK location *)
+  let map_apply dt tl = List.fold_left apply dt tl in
   let fun_app ls tl =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
-    let params, extra = split_at_i (List.length ls.ls_args) tl in
-    let params = List.map (dterm ns denv) params in
+    let args, extra = split_at_i (List.length ls.ls_args) tl in
+    let dtl = List.map (dterm ns denv) args in
     let dtyl, dty = specialize_ls ls in
-    app_unify ls dterm_unify params dtyl;
-    let dt1 = mk_dterm (DTapp (ls,params)) dty in
-    if extra = [] then dt1 else
-      List.fold_left map_apply dt1 extra in
-  let qualid_app q tl = fun_app (find_q_ls ns q) tl in
+    app_unify ls dterm_unify dtl dtyl;
+    let dt1 = mk_dterm (DTapp (ls,dtl)) dty in
+    if extra = [] then dt1 else map_apply dt1 extra in
   let qualid_app q tl = match q with
-    | Qpreid pid ->
-        (match denv_get_opt denv pid.pid_str with
+    | Qpreid ({pid_loc = loc; pid_str = s} as pid) ->
+        (match denv_get_opt denv s with
         | Some dty ->
-           let dtv = mk_dterm ~loc:(Some pid.pid_loc) (DTvar pid) (Some dty) in
-           List.fold_left map_apply dtv tl
-        | None -> qualid_app q tl)
-    | _ -> qualid_app q tl in
+           let dtv =
+             mk_dterm ~loc:(Some loc) (DTvar pid) (Some dty) in
+           map_apply dtv tl
+        | None -> fun_app (find_q_ls ns q) tl)
+    | _ -> fun_app (find_q_ls ns q) tl in
   let rec unfold_app t1 t2 tl = match t1.term_desc with
     | Uast.Tpreid q -> qualid_app q (t2::tl)
     | Uast.Tapply (t11,t12) -> unfold_app t11 t12 (t2::tl)
     | _ -> let dt1 = dterm ns denv t1 in
-           List.fold_left map_apply dt1 (t2::tl) in
+           map_apply dt1 (t2::tl) in
   match term_desc with
   | Uast.Ttrue -> mk_dterm DTtrue (Some dty_bool)
   | Uast.Tfalse -> mk_dterm DTfalse (Some dty_bool)
@@ -218,6 +218,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
      let rec chain loc de1 op1 = function
        | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
           let de2 = dterm ns denv t2 in
+          (* TODO: improve locations of subterms. See loc_cutoff function in why3 typing.ml *)
           (* let loc12 = loc_cutoff loc loc23 t2.term_loc in *)
           unify de1 de2.dt_dty;
           let de12 = apply de1 op1 de2 in

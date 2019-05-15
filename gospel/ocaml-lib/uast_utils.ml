@@ -16,7 +16,7 @@ let mk_pid pid s e = create_pid pid [] (mk_loc s e )
 let mk_term d s e = { term_desc = d; term_loc = mk_loc s e }
 let mk_pat  d s e = { pat_desc  = d; pat_loc  = mk_loc s e }
 
-let get_op   s e = Qpreid (mk_pid (mixfix "[]") s e)
+let get_op   s e = Qpreid (mk_pid (mixfix "[_]") s e)
 let set_op   s e = Qpreid (mk_pid (mixfix "[<-]") s e)
 let sub_op   s e = Qpreid (mk_pid (mixfix "[_.._]") s e)
 let above_op s e = Qpreid (mk_pid (mixfix "[_..]") s e)
