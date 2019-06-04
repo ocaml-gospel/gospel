@@ -151,9 +151,9 @@ let rec t_free_vars t = match t.t_node with
 
 exception FreeVariables of Svs.t
 
-let t_free_vs_in_set t svs =
+let t_free_vs_in_set svs t =
   let diff = Svs.diff (t_free_vars t) svs in
-  check (diff = Svs.empty) (FreeVariables diff);
+  check ?loc:t.t_loc (Svs.is_empty diff) (FreeVariables diff)
 
 (** type checking *)
 
@@ -401,4 +401,7 @@ let () =
          Some (errorf "Not a predicate symbol: %a" print_ls_nm ls)
       | FunctionSymbolExpected ls ->
          Some (errorf "Not a function symbol: %a" print_ls_nm ls)
+      | FreeVariables svs ->
+         Some (errorf "Unbound variables: %a" (list ~sep:"," print_vs)
+                 (Svs.elements svs) )
       | _ -> None)

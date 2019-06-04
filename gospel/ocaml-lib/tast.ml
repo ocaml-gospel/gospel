@@ -248,17 +248,17 @@ let mk_function ?result ls r params def spec loc =
   let args = List.fold_left2 add_v Svs.empty params ls.ls_args in
 
   (* check 3 *)
-  let check_free_vars args t = t_free_vs_in_set t args in
-  ignore (opmap (check_free_vars args) def);
-  List.iter (check_free_vars args) spec.fun_req;
+  ignore (opmap (t_free_vs_in_set args) def);
+  List.iter (t_free_vs_in_set args) spec.fun_req;
   let args_r = match result,ls.ls_value with
-    | Some vs, Some ty -> ty_equal_check vs.vs_ty ty; Svs.add vs args
+    | Some vs, Some ty ->
+       ty_equal_check vs.vs_ty ty; Svs.add vs args
     | _ -> args in
-  List.iter (check_free_vars args_r) spec.fun_ens;
+  List.iter (t_free_vs_in_set args_r) spec.fun_ens;
 
   (* check 4 and 5 *)
   let check_ty ty t = t_ty_check t ty in
-  (* ignore (opmap (check_ty ls.ls_value) def); *)
+  ignore (opmap (check_ty ls.ls_value) def);
   List.iter (check_ty (Some ty_integer)) spec.fun_variant;
   List.iter (check_ty None) spec.fun_ens;
 

@@ -568,11 +568,11 @@ let process_function ns f =
   let env = List.fold_left (fun env vs ->
     let nm = vs.vs_name.id_str in
     Mstr.update nm (add_var nm vs) env) Mstr.empty params in
-  let env = match f_ty with
-    | None -> env
+  let env, result = match f_ty with
+    | None -> env, None
     | Some ty ->
        let result = create_vsymbol (pid_of_string "result") ty in
-       Mstr.add "result" result env in
+       Mstr.add "result" result env, Some result in
 
   let def = match f_ty with
     | None -> opmap (fmla ns env) f.fun_def
@@ -586,7 +586,7 @@ let process_function ns f =
         f.fun_spec.fun_variant in
     mk_fun_spec req ens variant f.fun_spec.fun_coer in
 
-  let f = mk_function ls f.fun_rec params def spec f.fun_loc in
+  let f = mk_function ?result ls f.fun_rec params def spec f.fun_loc in
   mk_sig_item (Sig_function f) f.fun_loc
 
 let process_axiom loc ns a =
