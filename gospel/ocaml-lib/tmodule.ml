@@ -24,8 +24,13 @@ let ns_add_ts ns s ts =
   if Mstr.mem s ns.ns_ts then raise (NameClash s) else
   {ns with ns_ts = Mstr.add s ts ns.ns_ts}
 let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
+let ns_add_ns ns s new_ns =
+  {ns with ns_ns = Mstr.add s new_ns ns.ns_ns}
 
 let ns_with_primitives =
+  (* There is a good reason for these types to be built-in: they are
+     already declared in OCaml, and we want them to represent those
+     same types. *)
   let primitive_tys =
     [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
       ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
@@ -51,14 +56,14 @@ let ns_with_primitives =
       (let id = fresh_id (infix "*") in
        id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
       (let id = fresh_id "None" in
-       id.id_str, fsymbol id [] ty_option);
+       id.id_str, fsymbol ~constr:true id [] ty_option);
       (let id = fresh_id "Some" in
-       id.id_str, fsymbol id [fresh_ty_var "a"] ty_option);
+       id.id_str, fsymbol ~constr:true id [fresh_ty_var "a"] ty_option);
       (let id = fresh_id "nil" in
-       id.id_str, fsymbol id [] ty_list);
+       id.id_str, fsymbol ~constr:true id [] ty_list);
       (let id = fresh_id "cons" in
        let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol id [tv; ty_app ts_list [tv]] ty_list);
+       id.id_str, fsymbol ~constr:true id [tv; ty_app ts_list [tv]] ty_list);
     ] in
   let ns = List.fold_left (fun ns (s,ts) ->
                ns_add_ts ns s ts) empty_ns primitive_tys in
@@ -108,7 +113,8 @@ let add_ls md s ls  = {md with mod_ns = ns_add_ls md.mod_ns s ls}
 let add_sig md sig_ = {md with mod_sigs = sig_::md.mod_sigs}
 
 let add_ns_to_md ns md =
-  { md with mod_ns = join_ns md.mod_ns ns }
+  let mod_ns = join_ns md.mod_ns ns in
+  { md with mod_ns }
 
 let add_sig_contents md sig_ =
   let md = add_sig md sig_ in
