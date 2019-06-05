@@ -18,7 +18,7 @@
       forall i. 0 <= i < n -> (create n f)[i] = f i *)
 
 (* TODO : DO WE WANT SOMETHING LIKE THIS ? *)
-(*@ function create (n: integer) (f: int -> 'a) : 'a seq *)
+(*@ function create (n: integer) (f: integer -> 'a) : 'a seq *)
 (*@ requires 0 <= n
     ensures  length result = n
     ensures  forall i. 0 <= i < n -> result[i] = f i *)
