@@ -129,10 +129,6 @@ let binop = function
   | Uast.Tor -> Tor | Uast.Tor_asym -> Tor_asym
   | Uast.Timplies -> Timplies | Uast.Tiff -> Tiff
 
-let quant = function
-  | Uast.Tforall -> Tforall | Uast.Texists -> Tforall
-  | Uast.Tlambda -> Tlambda
-
 exception PartialApplication of lsymbol
 
 let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
@@ -248,8 +244,14 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
      let denv = denv_add_var_quant denv vl in
      let dtrl = List.map (List.map (dterm ns denv)) trl in
      let dt = dterm ns denv t in
-     dfmla_unify dt;
-     mk_dterm (DTquant (quant q,vl,dtrl,dt)) None
+     let dty, q = match q with
+     | Uast.Tforall -> dfmla_unify dt; None, Tforall
+     | Uast.Texists -> dfmla_unify dt; None, Texists
+     | Uast.Tlambda ->
+        let dty = opget_def dty_bool dt.dt_dty in
+        let apply (_,dty1) dty2 = Dterm.Tapp (ts_arrow,[dty1;dty2]) in
+        Some (List.fold_right apply vl dty), Tlambda in
+     mk_dterm (DTquant (q,vl,dtrl,dt)) dty
   | Uast.Tcase (t,ptl) ->
      let dt = dterm ns denv t in
      let dt_dty = dty_of_dterm dt in

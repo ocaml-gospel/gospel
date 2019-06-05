@@ -295,8 +295,8 @@ and term_node ?loc env prop dty dterm_node =
      let env,vsl = List.fold_left add_var (env,[]) bl in
      (* CHECK not sure if we want prop in triggers *)
      let tl = List.map (List.map (term env false)) dtl in
-     let t = term env true dt in
-     t_quant q (List.rev vsl) tl t
+     let t = term env prop dt in
+     t_quant q (List.rev vsl) tl t (opmap ty_of_dty dty)
   | DTcase (dt,ptl) ->
      let t = term env false dt in
      let branch (dp,dt) =

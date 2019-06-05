@@ -47,6 +47,8 @@ let opiter f = function | None -> () | Some v -> f v
 
 let opget = function | None -> assert false | Some x -> x
 
+let opget_def x = function | None -> x | Some x -> x
+
 let app_pair f g (a,b) = (f a, g b)
 
 let app_triple f g h (a,b,c) = (f a, g b, h c)

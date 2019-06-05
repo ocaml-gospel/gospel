@@ -236,7 +236,7 @@ let t_let vs t1 t2     = mk_term (Tlet (vs,t1,t2)) t2.t_ty
 let t_case t1 ptl      = match ptl with
   | [] -> error ?loc:t1.t_loc EmptyCase
   | (_,t) :: _ -> mk_term (Tcase (t1,ptl)) t.t_ty
-let t_quant q vsl tr t = mk_term (Tquant (q,vsl,tr,t)) t.t_ty
+let t_quant q vsl tr t ty = mk_term (Tquant (q,vsl,tr,t)) ty
 let t_binop b t1 t2    = mk_term (Tbinop (b,t1,t2)) None
 let t_not t            = mk_term (Tnot t) None
 let t_old t            = mk_term (Told t) t.t_ty
@@ -258,11 +258,13 @@ let t_neq t1 t2 = t_not (t_equ t1 t2)
 let f_binop op f1 f2  = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)
 
-let t_quant q vsl tr t = match q,vsl with
+let t_quant q vsl tr t ty = match q,vsl with
   | Tlambda, [] -> t
-  | _, [] -> t_prop t
-  | Tlambda, _ -> t_quant q vsl tr t
-  | _, _ -> t_quant q vsl tr (t_prop t)
+  | _, []       -> t_prop t
+  | Tlambda, _  -> t_quant q vsl tr t ty
+  | _, _        ->
+     check_report (ty = None) "Quantifiers must be of type prop.";
+     t_quant q vsl tr (t_prop t) None
 
 let f_forall = t_quant Tforall
 let f_exists = t_quant Texists
