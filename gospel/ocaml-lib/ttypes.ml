@@ -107,6 +107,7 @@ let ts_float   = ts (fresh_id "float"  ) 0
 let ts_char    = ts (fresh_id "char"   ) 0
 let ts_string  = ts (fresh_id "string" ) 0
 let ts_option  = ts (fresh_id "option" ) 1
+let ts_list    = ts (fresh_id "list"   ) 1
 
 let ts_tuple =
   let ts_tuples = Hint.create 17 in
@@ -133,6 +134,7 @@ let ty_float   = ty_app ts_float   []
 let ty_char    = ty_app ts_char    []
 let ty_string  = ty_app ts_string  []
 let ty_option  = ty_app ts_option  [fresh_ty_var "a"]
+let ty_list    = ty_app ts_list    [fresh_ty_var "a"]
 
 (** Pretty printers *)
 

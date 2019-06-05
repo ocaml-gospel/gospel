@@ -28,7 +28,8 @@ let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
 let ns_with_primitives =
   let primitive_tys =
     [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
-      ("string", ts_string); ("float", ts_float); ("bool", ts_bool)] in
+      ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
+      ("list", ts_list); ("option",ts_option)] in
   let primitive_ps =
     [ ps_equ.ls_name.id_str, ps_equ;
       (let id = fresh_id (infix "<") in
@@ -49,6 +50,15 @@ let ns_with_primitives =
        id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
       (let id = fresh_id (infix "*") in
        id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
+      (let id = fresh_id "None" in
+       id.id_str, fsymbol id [] ty_option);
+      (let id = fresh_id "Some" in
+       id.id_str, fsymbol id [fresh_ty_var "a"] ty_option);
+      (let id = fresh_id "nil" in
+       id.id_str, fsymbol id [] ty_list);
+      (let id = fresh_id "cons" in
+       let tv = fresh_ty_var "a" in
+       id.id_str, fsymbol id [tv; ty_app ts_list [tv]] ty_list);
     ] in
   let ns = List.fold_left (fun ns (s,ts) ->
                ns_add_ts ns s ts) empty_ns primitive_tys in
