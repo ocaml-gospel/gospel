@@ -19,6 +19,19 @@ let vs_of_lb_arg = function
   | Lnamed    vs -> vs
   | Lghost    vs -> vs
 
+type xsymbol = {
+    xs_ident : ident;
+    xs_ty    : ty
+}
+
+module Xs = struct
+  type t = xsymbol
+  let equal = (=)
+  let compare = Pervasives.compare
+end
+
+module Mxs = Map.Make(Xs)
+
 type pre  = term * bool (* whether it is a checks *)
 type post = term
 type invariant = term list
@@ -28,7 +41,7 @@ type val_spec = {
     sp_ret     : lb_arg list; (* can only be Lnone or Lghost *)
     sp_pre     : pre list;
     sp_post    : post list;
-    (* sp_xpost   : xpost list; TODO*)
+    sp_xpost   : post list Mxs.t;
     (* sp_reads   : qualid list;TODO *)
     sp_wr  : term list;
     (* sp_alias   : (term * term) list; TODO *)
@@ -38,12 +51,12 @@ type val_spec = {
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre post wr dv equiv = {
+let val_spec args ret pre post xpost wr dv equiv = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
     sp_post    = post;
-    (* sp_xpost   : xpost list; TODO*)
+    sp_xpost   = xpost;
     (* sp_reads   : qualid list;TODO *)
     sp_wr  = wr;
     (* sp_alias   : (term * term) list; TODO *)

@@ -532,7 +532,7 @@ let rec process_val_spec md id cty (vs:Uast.val_spec) =
        process_args args tyl env lal
     | la::_, _ ->
        error_report ~loc:((Uast_utils.pid_of_label la).pid_loc)
-         "too many parameters" in
+         "parameter do not match with val type" in
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
   let env, ret = match vs.sp_hd_ret, ret.ty_node with
@@ -545,11 +545,12 @@ let rec process_val_spec md id cty (vs:Uast.val_spec) =
   let pre = List.map (fun (t,c) ->
                    fmla md.mod_ns env t, c) vs.sp_pre in
   let post = List.map (fmla md.mod_ns env) vs.sp_post in
-  let writes = List.map (fun t ->
-                   let dt = dterm md.mod_ns env t in
-                   term env dt) vs.sp_writes in
+  let xpost = Mxs.empty (* TODO *) in
+  let wr = List.map (fun t ->
+               let dt = dterm md.mod_ns env t in
+               term env dt) vs.sp_writes in
 
-  mk_val_spec args ret pre post writes vs.sp_diverge vs.sp_equiv
+  mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) vd md =
   let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in
@@ -605,6 +606,8 @@ let process_axiom loc ns a =
   let ax = mk_axiom id t a.ax_loc in
   mk_sig_item (Sig_axiom ax) loc
 
+let process_exception loc te = assert false
+
 exception EmptyUse
 
 let rec process_use loc md q =
@@ -624,7 +627,7 @@ and process_signature md {sdesc;sloc} =
   | Uast.Sig_module m        -> md, mk_sig_item (Sig_module m) sloc
   | Uast.Sig_recmodule ml    -> md, mk_sig_item (Sig_recmodule ml) sloc
   | Uast.Sig_modtype ml      -> md, mk_sig_item (Sig_modtype ml) sloc
-  | Uast.Sig_exception te    -> md, mk_sig_item (Sig_exception te) sloc
+  | Uast.Sig_exception te    -> md, process_exception sloc te
   | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
   | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
   | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc

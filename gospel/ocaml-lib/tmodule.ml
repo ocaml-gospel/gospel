@@ -9,13 +9,15 @@ open Tast
 type namespace = {
     ns_ts : tysymbol  Mstr.t;
     ns_ls : lsymbol   Mstr.t;
+    ns_xs : xsymbol   Mstr.t;
     ns_ns : namespace Mstr.t
 }
 
 let empty_ns = {
     ns_ts = Mstr.empty;
     ns_ls = Mstr.empty;
-    ns_ns = Mstr.empty;
+    ns_xs = Mstr.empty;
+    ns_ns = Mstr.empty
   }
 
 exception NameClash of string
@@ -24,6 +26,7 @@ let ns_add_ts ns s ts =
   if Mstr.mem s ns.ns_ts then raise (NameClash s) else
   {ns with ns_ts = Mstr.add s ts ns.ns_ts}
 let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
+let ns_add_xs ns s xs = {ns with ns_xs = Mstr.add s xs ns.ns_xs}
 let ns_add_ns ns s new_ns =
   {ns with ns_ns = Mstr.add s new_ns ns.ns_ns}
 
@@ -77,13 +80,16 @@ let rec ns_find get_map ns = function
 
 let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts) ns s
 let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls) ns s
+let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
 let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
 
 let join_ns old_ns new_ns =
   let choose_snd _ _ x = Some x in
-  {ns_ts = Mstr.union choose_snd old_ns.ns_ts new_ns.ns_ts;
-   ns_ls = Mstr.union choose_snd old_ns.ns_ls new_ns.ns_ls;
-   ns_ns = Mstr.union choose_snd old_ns.ns_ns new_ns.ns_ns;}
+  let union m1 m2 = Mstr.union choose_snd m1 m2 in
+  { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
+    ns_ls = union old_ns.ns_ls new_ns.ns_ls;
+    ns_xs = union old_ns.ns_xs new_ns.ns_xs;
+    ns_ns = union old_ns.ns_ns new_ns.ns_ns;}
 
 (** Modules *)
 
@@ -106,10 +112,12 @@ let md_with_primitives s =
 
 let md_find_ts md s = ns_find_ts md.mod_ns s
 let md_find_ls md s = ns_find_ls md.mod_ns s
+let md_find_xs md s = ns_find_xs md.mod_ns s
 let md_find_ns md s = ns_find_ns md.mod_ns s
 
 let add_ts md s ts  = {md with mod_ns = ns_add_ts md.mod_ns s ts}
 let add_ls md s ls  = {md with mod_ns = ns_add_ls md.mod_ns s ls}
+let add_xs md s xs  = {md with mod_ns = ns_add_xs md.mod_ns s xs}
 let add_sig md sig_ = {md with mod_sigs = sig_::md.mod_sigs}
 
 let add_ns_to_md ns md =

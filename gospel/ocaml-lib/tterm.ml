@@ -263,7 +263,7 @@ let t_quant q vsl tr t ty = match q,vsl with
   | _, []       -> t_prop t
   | Tlambda, _  -> t_quant q vsl tr t ty
   | _, _        ->
-     check_report (ty = None) "Quantifiers must be of type prop.";
+     check_report (ty = None) "Quantifiers terms must be of type prop.";
      t_quant q vsl tr (t_prop t) None
 
 let f_forall = t_quant Tforall
