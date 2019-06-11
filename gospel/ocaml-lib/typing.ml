@@ -18,29 +18,23 @@ let rec q_loc = function
   | Qpreid pid -> pid.pid_loc
   | Qdot (q,p) -> q_loc q
 
-let find_ts ?loc ns s =
-  try ns_find_ts ns s with
+let ns_find ?loc f ns s =
+  try f ns s with
     Not_found -> error ?loc (SymbolNotFound s)
 
-let find_ls ?loc ns s =
-  try ns_find_ls ns s with
-    Not_found -> error ?loc (SymbolNotFound s)
+let find_ts ?loc = ns_find ?loc ns_find_ts
+let find_ls ?loc = ns_find ?loc ns_find_ls
+let find_xs ?loc = ns_find ?loc ns_find_xs
+let find_ns ?loc = ns_find ?loc ns_find_ns
 
-let find_ns ?loc ns s =
-  try ns_find_ns ns s with
-    Not_found -> error ?loc (SymbolNotFound s)
-
-let find_q_ts ns q =
+let find_q (f:?loc:Location.t -> 'a) ns q =
   let ln = string_list_of_qualid q in
-  find_ts ~loc:(q_loc q) ns ln
+  f ~loc:(q_loc q) ns ln
 
-let find_q_ls ns q =
-  let ln = string_list_of_qualid q in
-  find_ls ~loc:(q_loc q) ns ln
-
-let find_q_ns ns q =
-  let ln = string_list_of_qualid q in
-  find_ns ~loc:(q_loc q) ns ln
+let find_q_ts = find_q find_ts
+let find_q_ls = find_q find_ls
+let find_q_xs = find_q find_xs
+let find_q_ns = find_q find_ns
 
 (** Typing types *)
 
