@@ -19,19 +19,6 @@ let vs_of_lb_arg = function
   | Lnamed    vs -> vs
   | Lghost    vs -> vs
 
-type xsymbol = {
-    xs_ident : ident;
-    xs_ty    : ty
-}
-
-module Xs = struct
-  type t = xsymbol
-  let equal = (=)
-  let compare = Pervasives.compare
-end
-
-module Mxs = Map.Make(Xs)
-
 type pre  = term * bool (* whether it is a checks *)
 type post = term
 type invariant = term list
@@ -277,6 +264,29 @@ let mk_function ?result ls r params def spec loc =
 
   function_ ls r params def spec loc
 
+type extension_constructor =
+    {
+     ext_ident     : ident;
+     ext_xs        : xsymbol;
+     ext_kind      : Oparsetree.extension_constructor_kind;
+     ext_loc       : Location.t;
+     ext_attributes: Oparsetree.attributes; (* C of ... [@id1] [@id2] *)
+   }
+
+let extension_constructor id xs kd loc attrs =
+  {ext_ident = id; ext_xs = xs; ext_kind = kd;
+   ext_loc = loc; ext_attributes = attrs}
+
+type type_exception =
+  {
+    exn_constructor : extension_constructor;
+    exn_loc         : Location.t;
+    exn_attributes  : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+  }
+
+let type_exception ctr loc attrs =
+  {exn_constructor = ctr; exn_loc = loc; exn_attributes = attrs}
+
 type rec_flag = Nonrecursive | Recursive
 
 type ghost = bool
@@ -295,7 +305,7 @@ type signature_item_desc =
         (* module type S = MT
            module type S *)
   (* these were not modified *)
-  | Sig_exception of Oparsetree.type_exception
+  | Sig_exception of type_exception
         (* exception C of T *)
   | Sig_open of Oparsetree.open_description
         (* open X *)
@@ -447,6 +457,21 @@ let print_function f x =
          print_term) x.fun_spec.fun_ens
   in
   spec func f x
+
+let print_extension_constructor ctxt f x =
+  (* Cf: #7200 *)
+  match x.ext_kind with
+  | Pext_decl (_, _) ->
+     print_xs f x.ext_xs
+  | Pext_rebind li ->
+      pp f "%a%a@;=@;%a" print_ident x.ext_xs.xs_ident
+        (attributes ctxt) x.ext_attributes
+        longident_loc li
+
+let exception_declaration ctxt f x =
+  pp f "@[<hov2>exception@ %a@]%a"
+    (print_extension_constructor ctxt) x.exn_constructor
+    (item_attributes ctxt) x.exn_attributes
 
 let rec print_signature_item f x =
   match x.sig_desc with

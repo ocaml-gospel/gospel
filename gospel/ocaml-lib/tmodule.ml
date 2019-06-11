@@ -148,6 +148,10 @@ let add_sig_contents md sig_ =
        List.fold_left (fun md ls ->
          add_ls md ls.ls_name.id_str ls) md td.td_spec.ty_field in
      List.fold_left add_td md tdl
+  | Sig_exception te ->
+     let s = te.exn_constructor.ext_ident.id_str in
+     let xs = te.exn_constructor.ext_xs in
+     add_xs md s xs
   | _ -> md (* TODO *)
 
 let close_md md =
@@ -161,11 +165,12 @@ let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
   Mstr.iter (fun _ -> print_elem) m
 
-let print_ns fmt {ns_ts;ns_ls;ns_ns} =
+let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns} =
   assert (Mstr.is_empty ns_ns);
-  pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@.@]"
+  pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@\nException Symbols@\n%a@.@]"
     (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl) ns_ls
+    (print_mstr_vals print_xs) ns_xs
 
 let print_mod fmt {mod_nm;mod_sigs;mod_ns} =
   pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"

@@ -453,30 +453,35 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
 
 (** process val *)
 
+(* TODO move this to a better place. Maybe it can be replaced with
+   function parse_core function that is inside process_sig_type. *)
+let rec ty_of_core ns cty =
+  let open Oparsetree in
+  match cty.ptyp_desc with
+  | Ptyp_any ->
+     {ty_node = Tyvar (create_tv (fresh_id "_"))}
+  | Ptyp_var s ->
+     {ty_node = Tyvar (tv_of_string s)}
+  | Ptyp_tuple ctl ->
+     let tyl = List.map (ty_of_core ns) ctl in
+     ty_app (ts_tuple (List.length tyl)) tyl
+  | Ptyp_constr (lid,ctl) ->
+     let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
+     let tyl = List.map (ty_of_core ns) ctl in
+     ty_app ts tyl
+  | Ptyp_arrow (lbl,ct1,ct2) ->
+     (* TODO check what to do with the lbl *)
+     let ty1, ty2 = (ty_of_core ns) ct1, (ty_of_core ns) ct2 in
+     ty_app ts_arrow [ty1;ty2]
+  | _ -> assert false
+
 let rec val_parse_core_type ns cty =
   let open Oparsetree in
-  let rec ty_of_core cty = match cty.ptyp_desc with
-    | Ptyp_any ->
-       {ty_node = Tyvar (create_tv (fresh_id "_"))}
-    | Ptyp_var s ->
-       {ty_node = Tyvar (tv_of_string s)}
-    | Ptyp_tuple ctl ->
-       let tyl = List.map ty_of_core ctl in
-       ty_app (ts_tuple (List.length tyl)) tyl
-    | Ptyp_constr (lid,ctl) ->
-       let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
-       let tyl = List.map ty_of_core ctl in
-       ty_app ts tyl
-    | Ptyp_arrow (lbl,ct1,ct2) ->
-       (* TODO check what to do with the lbl *)
-       let ty1, ty2 = ty_of_core ct1, ty_of_core ct2 in
-       ty_app ts_arrow [ty1;ty2]
-    | _ -> assert false in
   match cty.ptyp_desc with
   | Ptyp_arrow (lbl,ct1,ct2) ->
      let args, res = val_parse_core_type ns ct2 in
-     (ty_of_core ct1,lbl) :: args, res
-  | _ -> [], ty_of_core cty
+     (ty_of_core ns ct1,lbl) :: args, res
+  | _ -> [], ty_of_core ns cty
 
 (* Checks the following
    1 - the val id string is equal to the name in val header
@@ -600,7 +605,30 @@ let process_axiom loc ns a =
   let ax = mk_axiom id t a.ax_loc in
   mk_sig_item (Sig_axiom ax) loc
 
-let process_exception loc te = assert false
+let process_exception_sig loc ns te =
+  let ec = te.Oparsetree.ptyexn_constructor in
+  let id = id_add_loc ec.pext_name.loc (fresh_id ec.pext_name.txt) in
+  let xs = match ec.pext_kind with
+    | Pext_rebind lid ->
+       find_xs ~loc:lid.loc ns (Longident.flatten lid.txt)
+    | Pext_decl (ca,None) ->
+       let args = match ca with
+         | Pcstr_tuple ctyl ->
+            Exn_tuple (List.map (ty_of_core ns) ctyl)
+         | Pcstr_record ldl ->
+            let get Oparsetree.{pld_name;pld_type} =
+              fresh_id_with_loc pld_name.txt pld_name.loc,
+              ty_of_core ns pld_type in
+            Exn_record (List.map get ldl) in
+       xsymbol id args
+    | Pext_decl (_,_) ->
+       not_supported ~loc "this type of exceptions declaration is not \
+                           supported" in
+  let ec = extension_constructor id xs ec.pext_kind
+             ec.pext_loc ec.pext_attributes in
+  let te = type_exception ec te.Oparsetree.ptyexn_loc
+             te.Oparsetree.ptyexn_attributes in
+  mk_sig_item (Sig_exception te) loc
 
 exception EmptyUse
 
@@ -621,7 +649,7 @@ and process_signature md {sdesc;sloc} =
   | Uast.Sig_module m        -> md, mk_sig_item (Sig_module m) sloc
   | Uast.Sig_recmodule ml    -> md, mk_sig_item (Sig_recmodule ml) sloc
   | Uast.Sig_modtype ml      -> md, mk_sig_item (Sig_modtype ml) sloc
-  | Uast.Sig_exception te    -> md, process_exception sloc te
+  | Uast.Sig_exception te    -> md, process_exception_sig sloc md.mod_ns te
   | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
   | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
   | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc

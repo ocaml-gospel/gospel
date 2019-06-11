@@ -123,6 +123,7 @@ let get_op_nm s =
   | _ -> assert false
 
 exception TypeCheckingError of string
+exception NotSupported of string
 exception Located of Location.t * exn
 
 let error ?loc e = match loc with
@@ -137,6 +138,9 @@ let error_report ?loc s =
 
 let check_report ?loc c s =
   check ?loc c (TypeCheckingError s)
+
+let not_supported ?loc s =
+  error ?loc (NotSupported s)
 
 let () =
   let open Location in

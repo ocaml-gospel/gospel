@@ -136,6 +136,25 @@ let ty_string  = ty_app ts_string  []
 let ty_option  = ty_app ts_option  [fresh_ty_var "a"]
 let ty_list    = ty_app ts_list    [fresh_ty_var "a"]
 
+type exn_args =
+  | Exn_tuple of ty list
+  | Exn_record of (ident * ty) list
+
+type xsymbol = {
+    xs_ident : ident;
+    xs_args  : exn_args
+}
+
+let xsymbol id ty = {xs_ident = id; xs_args = ty}
+
+module Xs = struct
+  type t = xsymbol
+  let equal = (=)
+  let compare = Pervasives.compare
+end
+
+module Mxs = Map.Make(Xs)
+
 (** Pretty printers *)
 
 open Opprintast
@@ -162,6 +181,15 @@ and print_ty_node fmt = function
      pp fmt "(%a)" (list ~sep:"," print_ty) tyl
   | Tyapp (ts,tyl) ->
      pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts ts
+
+let print_exn_arg f = function
+  | Exn_tuple tyl -> list ~sep:"," ~first:"(" ~last:")" print_ty f tyl
+  | Exn_record args ->
+     let print_arg f (id,ty) = pp f "%a:%a" print_ident id print_ty ty in
+     list_with_first_last ~sep:";" ~first:"{" ~last:"}" print_arg f args
+
+let print_xs f x =
+  pp f "%a : %a" print_ident x.xs_ident print_exn_arg x.xs_args
 
 (* register exceptions *)
 
