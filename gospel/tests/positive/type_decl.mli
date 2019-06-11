@@ -4,8 +4,6 @@ type 'a t2
 
 type ('a,'b) t3
 
-type 'a list
-
 type test = T1 | T2 | T3 | T4
 
 type test2 = T5 of int
