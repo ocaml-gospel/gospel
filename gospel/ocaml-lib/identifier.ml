@@ -61,6 +61,8 @@ let id_register pid =
 
 let fresh_id s = create_id s Sattr.empty Location.none
 
+let fresh_id_with_loc s l = create_id s Sattr.empty l
+
 let id_add_loc l id = {id with id_loc = l}
 
 let id_add_lab id l = { id with id_ats = Sattr.add l id.id_ats }

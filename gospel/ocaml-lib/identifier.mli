@@ -33,6 +33,8 @@ val id_register : preid -> ident
 
 val fresh_id : string -> ident
 
+val fresh_id_with_loc : string -> Location.t -> ident
+
 val id_add_loc : Location.t -> ident -> ident
 
 val id_add_lab : ident -> Sattr.elt -> ident
