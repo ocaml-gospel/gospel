@@ -404,13 +404,23 @@ let print_lb_arg fmt = function
   | Lnamed vs -> pp fmt "~%a" print_vs vs
   | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
 
+let print_xposts f xposts =
+  if Mxs.is_empty xposts then () else
+  let print xs f t = pp f "%a -> %a" print_xs xs print_term t in
+  let print_xpost xs = function
+    | [] -> pp f "@\n@[<hov 2>@[raises %a@]@]" print_xs xs
+    | tl -> list_with_first_last ~first:"@\n@[<hov 2>@[raises "
+              ~sep:"@\nraises " ~last:"@]@]"
+              (print xs) f tl  in
+  Mxs.iter (fun xs tl -> print_xpost xs tl) xposts
+
 let print_vd_spec val_id fmt = function
   | None -> ()
-  | Some {sp_args;sp_ret;sp_pre;sp_post;sp_wr;sp_diverge;sp_equiv} ->
+  | Some {sp_args;sp_ret;sp_pre;sp_post;sp_xpost;sp_wr;sp_diverge;sp_equiv} ->
      let pres,checks =
        List.fold_left (fun (pres,checks) (p,c) ->
         if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
-     pp fmt "(*@ @[%a%s@ %a@ %a@]%a%a%a%a%a*)"
+     pp fmt "(*@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
        (list ~sep:", " print_lb_arg) sp_ret
        (if sp_ret = [] then "" else " =")
        print_ident val_id
@@ -424,6 +434,7 @@ let print_vd_spec val_id fmt = function
     (list_with_first_last ~first:"@\n@[<hov 2>@[ensures "
          ~sep:"@\nensures " ~last:"@]@]"
          print_term) sp_post
+    print_xposts sp_xpost
     (list_with_first_last ~first:"@\n@[<hov 2>@[writes "
          ~sep:"@\nwrites " ~last:"@]@]"
          print_term) sp_wr
