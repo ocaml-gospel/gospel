@@ -126,15 +126,15 @@ let ts_arrow =
 let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
 let is_ts_arrow ts = ts_arrow == ts
 
-let ty_unit    = ty_app ts_unit    []
-let ty_integer = ty_app ts_integer []
-let ty_int     = ty_app ts_int     []
-let ty_bool    = ty_app ts_bool    []
-let ty_float   = ty_app ts_float   []
-let ty_char    = ty_app ts_char    []
-let ty_string  = ty_app ts_string  []
-let ty_option  = ty_app ts_option  [fresh_ty_var "a"]
-let ty_list    = ty_app ts_list    [fresh_ty_var "a"]
+let ty_unit      = ty_app ts_unit    []
+let ty_integer   = ty_app ts_integer []
+let ty_int       = ty_app ts_int     []
+let ty_bool      = ty_app ts_bool    []
+let ty_float     = ty_app ts_float   []
+let ty_char      = ty_app ts_char    []
+let ty_string    = ty_app ts_string  []
+let ty_option ty = ty_app ts_option  [ty]
+let ty_list ty   = ty_app ts_list    [ty]
 
 type exn_args =
   | Exn_tuple of ty list

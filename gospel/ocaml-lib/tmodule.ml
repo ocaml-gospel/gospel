@@ -59,14 +59,17 @@ let ns_with_primitives =
       (let id = fresh_id (infix "*") in
        id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
       (let id = fresh_id "None" in
-       id.id_str, fsymbol ~constr:true id [] ty_option);
+       let tv = fresh_ty_var "a" in
+       id.id_str, fsymbol ~constr:true id [] (ty_option tv));
       (let id = fresh_id "Some" in
-       id.id_str, fsymbol ~constr:true id [fresh_ty_var "a"] ty_option);
+       let tv = fresh_ty_var "a" in
+       id.id_str, fsymbol ~constr:true id [tv] (ty_option tv));
       (let id = fresh_id "[]" in
-       id.id_str, fsymbol ~constr:true id [] ty_list);
+       let tv = fresh_ty_var "a" in
+       id.id_str, fsymbol ~constr:true id [] (ty_list tv));
       (let id = fresh_id (infix "::") in
        let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol ~constr:true id [tv; ty_app ts_list [tv]] ty_list);
+       id.id_str, fsymbol ~constr:true id [tv; ty_app ts_list [tv]] (ty_list tv));
     ] in
   let ns = List.fold_left (fun ns (s,ts) ->
                ns_add_ts ns s ts) empty_ns primitive_tys in
