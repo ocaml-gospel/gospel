@@ -62,9 +62,9 @@ let ns_with_primitives =
        id.id_str, fsymbol ~constr:true id [] ty_option);
       (let id = fresh_id "Some" in
        id.id_str, fsymbol ~constr:true id [fresh_ty_var "a"] ty_option);
-      (let id = fresh_id "nil" in
+      (let id = fresh_id "[]" in
        id.id_str, fsymbol ~constr:true id [] ty_list);
-      (let id = fresh_id "cons" in
+      (let id = fresh_id (infix "::") in
        let tv = fresh_ty_var "a" in
        id.id_str, fsymbol ~constr:true id [tv; ty_app ts_list [tv]] ty_list);
     ] in
