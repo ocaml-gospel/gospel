@@ -295,6 +295,8 @@ raises:
     { q, Some (mk_pat (Ptuple []) $startpos(q) $endpos(q), t) }
 | q=uqualid p=pat_arg ARROW t=term
     { q, Some (p, t) }
+| q=uqualid
+    { q, None}
 ;
 
 params:
@@ -532,7 +534,7 @@ pat_conj_:
 pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON pat_arg
-    { Papp (Qpreid (mk_pid "::" $startpos $endpos),[$1;$3]) }
+    { Papp (Qpreid (mk_pid (infix "::") $startpos $endpos),[$1;$3]) }
 | uqualid pat_arg+                      { Papp ($1,$2) }
 | mk_pat(pat_uni_) AS attrs(lident)
                                         { Pas ($1,$3) }
