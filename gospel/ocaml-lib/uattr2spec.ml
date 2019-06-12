@@ -244,6 +244,11 @@ let with_constraint c =
   | Pwith_typesubst (l,t) -> Wtype (l,no_spec_type_decl t)
   | Pwith_modsubst (l1,l2) -> Wmodsubst (l1,l2)
 
+
+let get_spec_attrs attrs =
+  let specs,attrs = split_attr attrs in
+  attrs, floating_specs (List.map attr2spec specs)
+
 (** Translats OCaml signatures with specification attached to
    attributes into our intermediate representation. Beaware,
    prev_floats must be reverted before used *)
@@ -260,43 +265,70 @@ let rec signature_ sigs acc prev_floats = match sigs with
      let current_specs = match psig_desc with
        | Psig_value v ->
           let vd,fspec = val_description v in
-          let current = [{sdesc=Sig_val vd;sloc}] in
+          let current = {sdesc=Sig_val vd;sloc} in
           let attached = floating_specs fspec in
-          current @ attached
+          current :: attached
        | Psig_type (r,t) ->
           let td,fspec = type_declaration t in
-          let current = [{sdesc=Sig_type (r,td);sloc}] in
+          let current = {sdesc=Sig_type (r,td);sloc} in
           let attached = floating_specs fspec in
-          current @ attached
+          current :: attached
        | Psig_attribute a ->
           [{sdesc=Sig_attribute a;sloc}]
        | Psig_module m ->
-          [{sdesc=Sig_module (module_declaration m);sloc}]
+          let md, spec = module_declaration m in
+          {sdesc=Sig_module md;sloc} :: spec
        | Psig_recmodule d ->
-          [{sdesc=Sig_recmodule (List.map module_declaration d);sloc}]
+          let mds,spec = List.fold_right (fun m (mds,specs) ->
+                             let md, spec = module_declaration m in
+                             (md::mds,spec @ specs)
+                           ) d ([],[]) in
+          {sdesc=Sig_recmodule mds;sloc} :: spec
        | Psig_modtype d ->
-          [{sdesc=Sig_modtype (module_type_declaration d);sloc}]
+          let m, spec = module_type_declaration d in
+          {sdesc=Sig_modtype m;sloc} :: spec
        | Psig_typext t ->
+          let attrs,specs = get_spec_attrs t.ptyext_attributes in
+          let t = {t with ptyext_attributes = attrs} in
           uns_gospel.type_extension uns_gospel t;
           [{sdesc=Sig_typext t;sloc}]
        | Psig_exception e ->
+          let attrs,specs = get_spec_attrs e.ptyexn_attributes in
+          let e = {e with ptyexn_attributes = attrs} in
           uns_gospel.type_exception  uns_gospel e;
-          [{sdesc=Sig_exception e;sloc}]
+          let current = {sdesc=Sig_exception e;sloc} in
+          current :: specs
        | Psig_open o ->
+          let attrs,specs = get_spec_attrs o.popen_attributes in
+          let o = {o with popen_attributes = attrs } in
           uns_gospel.open_description uns_gospel o;
-          [{sdesc=Sig_open o;sloc}]
+          {sdesc=Sig_open o;sloc} :: specs
        | Psig_include i ->
+          let attrs,specs = get_spec_attrs i.pincl_attributes in
+          let i = {i with pincl_attributes = attrs} in
           uns_gospel.include_description uns_gospel i;
           [{sdesc=Sig_include i;sloc}]
        | Psig_class c ->
-          List.iter (uns_gospel.class_description uns_gospel) c;
-          [{sdesc=Sig_class c;sloc}]
+          let c,specs =
+            List.fold_right (fun cd (cl,specl) ->
+                let attrs,specs = get_spec_attrs cd.pci_attributes in
+                let c = {cd with pci_attributes = attrs} in
+                uns_gospel.class_description uns_gospel c;
+                c::cl, specs @ specl
+              ) c ([],[]) in
+          {sdesc=Sig_class c;sloc} :: specs
        | Psig_class_type c ->
-          List.iter (uns_gospel.class_type_declaration uns_gospel) c;
+          let c,specs =
+            List.fold_right (fun cd (cl,specl) ->
+                let attrs,specs = get_spec_attrs cd.pci_attributes in
+                let c = {cd with pci_attributes = attrs} in
+                uns_gospel.class_type_declaration uns_gospel c;
+                c::cl, specs @ specl
+              ) c ([],[]) in
           [{sdesc=Sig_class_type c;sloc}]
        | Psig_extension (e,a) ->
-          uns_gospel.extension uns_gospel e; uns_gospel.attributes uns_gospel a;
-          [{sdesc=Sig_extension (e,a);sloc}] in
+          let attrs,specs = get_spec_attrs a in
+          {sdesc=Sig_extension (e,attrs);sloc} :: specs in
      let all_specs = acc @ prev_specs @ current_specs in
      signature_ xs all_specs []
 
@@ -323,11 +355,14 @@ and module_type m =
     mloc = m.pmty_loc; mattributes = m.pmty_attributes}
 
 and module_declaration m =
-  uns_gospel.attributes uns_gospel m.pmd_attributes;
-  { mdname = m.pmd_name; mdtype = module_type m.pmd_type;
-    mdattributes = m.pmd_attributes; mdloc = m.pmd_loc }
+  let attrs, specs = get_spec_attrs m.pmd_attributes in
+  let m = { mdname = m.pmd_name; mdtype = module_type m.pmd_type;
+    mdattributes = attrs; mdloc = m.pmd_loc } in
+  m, specs
 
 and module_type_declaration m =
-  uns_gospel.attributes uns_gospel m.pmtd_attributes;
-  { mtdname = m.pmtd_name; mtdtype = Utils.opmap module_type m.pmtd_type;
-    mtdattributes = m.pmtd_attributes; mtdloc = m.pmtd_loc}
+  let attrs, specs = get_spec_attrs m.pmtd_attributes in
+  let mtd = { mtdname = m.pmtd_name;
+              mtdtype = Utils.opmap module_type m.pmtd_type;
+              mtdattributes = attrs; mtdloc = m.pmtd_loc} in
+  mtd, specs
