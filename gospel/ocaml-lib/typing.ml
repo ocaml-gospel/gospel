@@ -535,6 +535,11 @@ let rec process_val_spec md id cty vs =
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
 
+  let pre   = List.map (fun (t,c) -> fmla md.mod_ns env t, c) vs.sp_pre in
+
+  let wr = List.map (fun t -> let dt = dterm md.mod_ns env t in
+                              term env dt) vs.sp_writes in
+
   let process_xpost mxs (loc,exn) =
     let merge_xpost t tl = match t, tl with
       | None, None -> Some []
@@ -547,8 +552,7 @@ let rec process_val_spec md id cty vs =
       | None -> Mxs.update xs (merge_xpost None) mxs
       | Some (p,t) ->
          let dp = dpattern md.mod_ns p in
-         let ty =
-           match p.pat_desc, xs.xs_type with
+         let ty = match p.pat_desc, xs.xs_type with
            | Pvar vs, Exn_tuple [ty] -> ty
            | Ptuple pl, Exn_tuple tyl ->
               ty_app (ts_tuple (List.length tyl)) tyl
@@ -562,10 +566,7 @@ let rec process_val_spec md id cty vs =
          let env = Mstr.union choose_snd env vars in
          let t = fmla md.mod_ns env t in
          Mxs.update xs (merge_xpost (Some (p,t))) mxs in
-    List.fold_left process mxs exn
-  in
-
-  let pre   = List.map (fun (t,c) -> fmla md.mod_ns env t, c) vs.sp_pre in
+    List.fold_left process mxs exn in
   let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
 
   let env, ret = match vs.sp_hd_ret, ret.ty_node with
@@ -576,9 +577,6 @@ let rec process_val_spec md id cty vs =
     | _, _ ->
        process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
   let post = List.map (fmla md.mod_ns env) vs.sp_post in
-
-  let wr = List.map (fun t -> let dt = dterm md.mod_ns env t in
-                              term env dt) vs.sp_writes in
 
   mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
 
