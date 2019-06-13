@@ -534,54 +534,51 @@ let rec process_val_spec md id cty vs =
          "parameter do not match with val type" in
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
+
+  let process_xpost mxs (loc,exn) =
+    let merge_xpost t tl = match t, tl with
+      | None, None -> Some []
+      | None, Some tl -> Some tl
+      | Some t, None -> Some [t]
+      | Some t, Some tl -> Some (t::tl) in
+    let process mxs (q,pt) =
+      let xs = find_q_xs md.mod_ns q in
+      match pt with
+      | None -> Mxs.update xs (merge_xpost None) mxs
+      | Some (p,t) ->
+         let dp = dpattern md.mod_ns p in
+         let ty =
+           match p.pat_desc, xs.xs_type with
+           | Pvar vs, Exn_tuple [ty] -> ty
+           | Ptuple pl, Exn_tuple tyl ->
+              ty_app (ts_tuple (List.length tyl)) tyl
+           | Prec _, Exn_record _ -> (* TODO unify types and field names *)
+              error_report ~loc "exception pattern doesn't match its type"
+           | _, _ ->
+              error_report ~loc "exception pattern doesn't match its type" in
+         dpattern_unify dp (dty_of_ty ty);
+         let p,vars = pattern dp in
+         let choose_snd _ _ vs = Some vs in
+         let env = Mstr.union choose_snd env vars in
+         let t = fmla md.mod_ns env t in
+         Mxs.update xs (merge_xpost (Some (p,t))) mxs in
+    List.fold_left process mxs exn
+  in
+
+  let pre   = List.map (fun (t,c) -> fmla md.mod_ns env t, c) vs.sp_pre in
+  let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
+
   let env, ret = match vs.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []
     | _, Tyapp (ts,tyl) when is_ts_tuple ts ->
        let tyl = List.map (fun ty -> (ty,Oasttypes.Nolabel)) tyl in
        process_args vs.sp_hd_ret tyl env []
-    | _, _ -> process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
-
-  (* TODO the variable representing the return value should not be in env *)
-
-  let process_xpost mxs (loc,exn) =
-    let merge_xpost tl = function
-      | None -> Some tl | Some v -> Some (v @ tl) in
-    let process mxs (q,pt) =
-      let xs = find_q_xs md.mod_ns q in
-      match pt with
-      | None -> Mxs.update xs (merge_xpost []) mxs
-      | Some (p,t) ->
-         let env, p =
-           match p.pat_desc, xs.xs_type with
-           | Pvar vs, Exn_tuple [ty] ->
-              let dp = dpattern md.mod_ns p in
-              dpattern_unify dp (dty_of_ty ty);
-              let p,vars = pattern dp in
-              let choose_snd _ _ vs = Some vs in
-              Mstr.union choose_snd env vars, p
-           | Ptuple pl, Exn_tuple tyl ->
-              let dp = dpattern md.mod_ns p in
-              let ty = ty_app (ts_tuple (List.length tyl)) tyl in
-              dpattern_unify dp (dty_of_ty ty);
-              let p,vars = pattern dp in
-              let choose_snd _ _ vs = Some vs in
-              Mstr.union choose_snd env vars, p
-           | Prec _, Exn_record _ -> (* unify types and field names *)
-              error_report ~loc "exception pattern doesn't match \
-                                 its type"
-           | _, _ -> error_report ~loc "exception pattern doesn't match \
-                                        its type" in
-         let t = fmla md.mod_ns env t in
-         Mxs.update xs (merge_xpost [(p,t)]) mxs in
-    List.fold_left process mxs exn in
-
-  let pre = List.map (fun (t,c) ->
-                   fmla md.mod_ns env t, c) vs.sp_pre in
+    | _, _ ->
+       process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
   let post = List.map (fmla md.mod_ns env) vs.sp_post in
-  let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
-  let wr = List.map (fun t ->
-               let dt = dterm md.mod_ns env t in
-               term env dt) vs.sp_writes in
+
+  let wr = List.map (fun t -> let dt = dterm md.mod_ns env t in
+                              term env dt) vs.sp_writes in
 
   mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
 
