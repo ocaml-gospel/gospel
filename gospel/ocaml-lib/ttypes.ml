@@ -136,16 +136,20 @@ let ty_string    = ty_app ts_string  []
 let ty_option ty = ty_app ts_option  [ty]
 let ty_list ty   = ty_app ts_list    [ty]
 
-type exn_args =
+type exn_type =
   | Exn_tuple of ty list
+  (* exception E of int * int
+       -> Exn_tuple [int_ty;int_ty]
+     exception E of (int*int)
+       -> Exn_tuple [Tyapp (ts_tuple 2) [ty_int;ty_int]] *)
   | Exn_record of (ident * ty) list
 
 type xsymbol = {
     xs_ident : ident;
-    xs_args  : exn_args
+    xs_type  : exn_type
 }
 
-let xsymbol id ty = {xs_ident = id; xs_args = ty}
+let xsymbol id ty = {xs_ident = id; xs_type = ty}
 
 module Xs = struct
   type t = xsymbol
@@ -182,14 +186,14 @@ and print_ty_node fmt = function
   | Tyapp (ts,tyl) ->
      pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts ts
 
-let print_exn_arg f = function
+let print_exn_type f = function
   | Exn_tuple tyl -> list ~sep:"," ~first:"(" ~last:")" print_ty f tyl
   | Exn_record args ->
      let print_arg f (id,ty) = pp f "%a:%a" print_ident id print_ty ty in
      list_with_first_last ~sep:";" ~first:"{" ~last:"}" print_arg f args
 
 let print_xs f x =
-  pp f "%a : %a" print_ident x.xs_ident print_exn_arg x.xs_args
+  pp f "%a : %a" print_ident x.xs_ident print_exn_type x.xs_type
 
 (* register exceptions *)
 

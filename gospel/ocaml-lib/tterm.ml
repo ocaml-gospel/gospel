@@ -282,7 +282,7 @@ let f_iff      = f_binop Tiff
 open Opprintast
 
 let print_vs fmt {vs_name; vs_ty} =
-  pp fmt "@[%a@]" print_ident vs_name
+  pp fmt "@[%a:%a@]" print_ident vs_name print_ty vs_ty
 
 let print_ls_decl fmt {ls_name;ls_args;ls_value} =
   let is_func = Utils.is_some ls_value in
@@ -319,7 +319,7 @@ let rec print_pat_node pri fmt p = match p.p_node with
       pp fmt (protect_on (pri > 1) "%a@ %a")
         print_ls_nm cs (list ~sep:" " (print_pat_node 2)) pl
 
-let print_pat = print_pat_node 0
+let print_pattern = print_pat_node 0
 
 let print_binop fmt = function
   | Tand -> pp fmt "/\\"
@@ -376,7 +376,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; t_loc } =
          print_term t
     | Tcase (t, ptl) ->
        let print_branch fmt (p,t) =
-         pp fmt "| %a -> %a" print_pat p print_term t in
+         pp fmt "| %a -> %a" print_pattern p print_term t in
        pp fmt "match %a with@\n%a@\nend:%a"
          print_term t
          (list ~sep:"@\n" print_branch) ptl

@@ -24,3 +24,19 @@ exception E10 of {x : int -> int -> float;
                   y : float;
                   z : bool}
 
+[@@@gospel "val id : 'a -> 'a" ]
+
+(*@ function integer_of_int (x:int): integer *)
+(*@ function int_of_integer (x:integer): int *)
+
+
+val f : 'a -> 'a
+(*@ x = f y
+    raises E1 x -> integer_of_int x = 1
+    raises E3 l -> (match l with
+                   | [] -> false
+                   | y :: ys -> integer_of_int y = 2)
+         | E4 (i,l) -> match l with
+                   | [] -> true
+                   | y :: ys -> y = i
+    raises E5 f -> integer_of_int (f (int_of_integer 3)) = 4 *)

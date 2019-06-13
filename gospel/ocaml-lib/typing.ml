@@ -489,7 +489,7 @@ let rec val_parse_core_type ns cty =
    match core type
    3 -
 *)
-let rec process_val_spec md id cty (vs:Uast.val_spec) =
+let rec process_val_spec md id cty vs =
   check_report ~loc:vs.sp_hd_nm.pid_loc
     (id.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
@@ -541,10 +541,44 @@ let rec process_val_spec md id cty (vs:Uast.val_spec) =
        process_args vs.sp_hd_ret tyl env []
     | _, _ -> process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
 
+  (* TODO the variable representing the return value should not be in env *)
+
+  let process_xpost mxs (loc,exn) =
+    let merge_xpost tl = function
+      | None -> Some tl | Some v -> Some (v @ tl) in
+    let process mxs (q,pt) =
+      let xs = find_q_xs md.mod_ns q in
+      match pt with
+      | None -> Mxs.update xs (merge_xpost []) mxs
+      | Some (p,t) ->
+         let env, p =
+           match p.pat_desc, xs.xs_type with
+           | Pvar vs, Exn_tuple [ty] ->
+              let dp = dpattern md.mod_ns p in
+              dpattern_unify dp (dty_of_ty ty);
+              let p,vars = pattern dp in
+              let choose_snd _ _ vs = Some vs in
+              Mstr.union choose_snd env vars, p
+           | Ptuple pl, Exn_tuple tyl ->
+              let dp = dpattern md.mod_ns p in
+              let ty = ty_app (ts_tuple (List.length tyl)) tyl in
+              dpattern_unify dp (dty_of_ty ty);
+              let p,vars = pattern dp in
+              let choose_snd _ _ vs = Some vs in
+              Mstr.union choose_snd env vars, p
+           | Prec _, Exn_record _ -> (* unify types and field names *)
+              error_report ~loc "exception pattern doesn't match \
+                                 its type"
+           | _, _ -> error_report ~loc "exception pattern doesn't match \
+                                        its type" in
+         let t = fmla md.mod_ns env t in
+         Mxs.update xs (merge_xpost [(p,t)]) mxs in
+    List.fold_left process mxs exn in
+
   let pre = List.map (fun (t,c) ->
                    fmla md.mod_ns env t, c) vs.sp_pre in
   let post = List.map (fmla md.mod_ns env) vs.sp_post in
-  let xpost = Mxs.empty (* TODO *) in
+  let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
   let wr = List.map (fun t ->
                let dt = dterm md.mod_ns env t in
                term env dt) vs.sp_writes in

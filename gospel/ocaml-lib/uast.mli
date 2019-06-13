@@ -98,6 +98,17 @@ type val_spec = {
     sp_equiv   : string list;
 }
 
+(*
+1  val f : 'a -> 'b
+2  (*@ x = f y
+3      raises E1, E2                l1 = [(E1,None); (E2,None)]
+4      raises E1 -> t1
+5           | E2 -> t2              l2 = [(E1, Some (..., t1)); (E2, Some (...,t2))]
+6  *)
+
+  [(3,l1); (4,l2)]
+*)
+
 type field = {
   f_loc     : Location.t;
   f_preid   : preid;

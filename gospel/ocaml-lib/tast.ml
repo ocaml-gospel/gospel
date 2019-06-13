@@ -28,7 +28,7 @@ type val_spec = {
     sp_ret     : lb_arg list; (* can only be Lnone or Lghost *)
     sp_pre     : pre list;
     sp_post    : post list;
-    sp_xpost   : post list Mxs.t;
+    sp_xpost   : (pattern * post) list Mxs.t;
     (* sp_reads   : qualid list;TODO *)
     sp_wr  : term list;
     (* sp_alias   : (term * term) list; TODO *)
@@ -406,7 +406,8 @@ let print_lb_arg fmt = function
 
 let print_xposts f xposts =
   if Mxs.is_empty xposts then () else
-  let print xs f t = pp f "%a -> %a" print_xs xs print_term t in
+  let print xs f (p,t) = pp f "%a@ %a -> %a"
+                           print_xs xs print_pattern p print_term t in
   let print_xpost xs = function
     | [] -> pp f "@\n@[<hov 2>@[raises %a@]@]" print_xs xs
     | tl -> list_with_first_last ~first:"@\n@[<hov 2>@[raises "
