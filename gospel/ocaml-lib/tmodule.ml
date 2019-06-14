@@ -140,11 +140,9 @@ let add_sig_contents md sig_ =
   let get_cs_pjs = function
     | Pty_abstract -> []
     | Pty_variant cdl ->
-       let lsll = List.map (fun cd ->
-                      cd.cd_cs :: get_pjl_of_ld cd.cd_ld) cdl in
-       List.concat lsll
+       List.map (fun cd -> cd.cd_cs) cdl
     | Pty_record rd ->
-       rd.rd_cs :: get_pjl_of_ld rd.rd_ldl
+       rd.rd_cs :: (List.map (fun ld -> ld.ld_field) rd.rd_ldl)
     | _ -> assert false in
   match sig_.sig_desc with
   | Sig_function f ->

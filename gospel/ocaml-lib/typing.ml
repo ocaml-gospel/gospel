@@ -412,7 +412,7 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
       let mk_ld ld =
         let id = fresh_id ld.pld_name.txt in
         let ty_res = parse_core ~alias tvl ld.pld_type in
-        let field = Rec_pj (fsymbol id [ty] ty_res) in
+        let field = fsymbol id [ty] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         label_declaration field mut ld.pld_loc ld.pld_attributes in
       {rd_cs;rd_ldl = List.map mk_ld ldl} in
@@ -430,7 +430,7 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
            let add ld (ldl,tyl) =
              let id = fresh_id ld.pld_name.txt in
              let ty = parse_core ~alias tvl ld.pld_type in
-             let field = Constr_field (id,ty) in
+             let field = id,ty in
              let mut = mutable_flag ld.pld_mutable in
              let loc, attrs =  ld.pld_loc, ld.pld_attributes in
              let ld = label_declaration field mut loc attrs in

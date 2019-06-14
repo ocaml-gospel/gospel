@@ -105,13 +105,9 @@ let type_spec ty_ephemeral ty_field ty_invariant =
 
 type mutable_flag = Immutable | Mutable
 
-type field = Constr_field of ident * ty
-           (* this field is part of a constructor record *)
-           | Rec_pj of lsymbol
-           (* projection *)
-
-type label_declaration = {
-    ld_field : field;
+(* used for both record declarations and variant declarations *)
+type 'a label_declaration = {
+    ld_field : 'a;
     ld_mut   : mutable_flag;
     ld_loc   : Location.t;
     ld_attrs : attrs; (* l : T [@id1] [@id2] *)
@@ -121,18 +117,18 @@ let label_declaration ld_field ld_mut ld_loc ld_attrs =
   {ld_field;ld_mut;ld_loc;ld_attrs}
 
 let get_pjl_of_ld ldl =
-  let get acc ld = match ld.ld_field with
-      Rec_pj ls -> ls :: acc | _ -> acc in
+  let get acc ld = ld.ld_field in
   List.fold_left get [] ldl
 
 type rec_declaration = {
     rd_cs  : lsymbol;
-    rd_ldl : label_declaration list
+    rd_ldl : lsymbol label_declaration list
 }
 
 type constructor_decl = {
     cd_cs    : lsymbol;                (* constructor *)
-    cd_ld    : label_declaration list; (* empty if defined through a tuple *)
+    (* cd_ld is empty if defined through a tuple *)
+    cd_ld    : (ident * ty) label_declaration list;
     cd_loc   : Location.t;
     cd_attrs : attrs; (* C of ... [@id1] [@id2] *)
 }
@@ -339,25 +335,29 @@ type signature = signature_item list
 
 open Opprintast
 
-let print_field fmt ld =
-  let id,ty = match ld.ld_field with
-    | Constr_field (id,ty) -> id,ty
-    | Rec_pj ls -> ls.ls_name, opget ls.ls_value in
+let print_variant_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
-    print_ident id
-    print_ty ty
+    print_ident (fst ld.ld_field) print_ty (snd ld.ld_field)
 
-let print_label_decl_list fmt fields =
+let print_rec_field fmt ld =
+  pp fmt "%s%a:%a"
+    (if ld.ld_mut = Mutable then "mutable " else "")
+    print_ident (ld.ld_field.ls_name)
+    print_ty (opget ld.ld_field.ls_value)
+
+let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}"
     (list ~sep:"; " print_field) fields
+
+    (* cd_ld    : (ident * ty) label_declaration list; *)
 
 let print_type_kind fmt = function
   | Pty_abstract -> ()
   | Pty_variant cpl ->
      let print_args cs fmt = function
        | [] -> list ~sep:" * " print_ty fmt cs.ls_args
-       | ld -> print_label_decl_list fmt ld in
+       | ld -> print_label_decl_list print_variant_field fmt ld in
      let print_constructor fmt {cd_cs;cd_ld} =
        pp fmt "@[%a of %a@\n@[<h 2>%a@]@]"
          print_ident cd_cs.ls_name
@@ -366,9 +366,9 @@ let print_type_kind fmt = function
      pp fmt "@[ = %a@]"
        (list ~sep:"@\n| " print_constructor) cpl
   | Pty_record rd ->
-     let pjs = get_pjl_of_ld rd.rd_ldl in
+     let pjs = List.map (fun ld -> ld.ld_field) rd.rd_ldl in
      pp fmt "@[ = %a@\n@[<h 2>%a@]@]"
-       print_label_decl_list rd.rd_ldl
+       (print_label_decl_list print_rec_field) rd.rd_ldl
        (list ~sep:"@\n" print_ls_decl) (rd.rd_cs::pjs)
   | Pty_open -> assert false
 
