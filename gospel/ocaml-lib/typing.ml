@@ -61,14 +61,18 @@ open Tast
 
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
 
-(* let parse_record ns fl =
- *   let fl = List.map (fun (q,p) -> find_q_ls ns q,p) fl in
- *   let fs = match fl with
- *     | [] -> assert false (\* empty record *\)
- *     | (fs,_)::_ -> fs in
- *   let ts = match fs.ls_args with
- *     | [{ ty_node = Tyapp (ts,_) }] -> ts
- *     | _ -> assert false (\* bad record field *\) in *)
+exception EmptyRecord
+exception BadRecordField
+
+let parse_record ~loc kid ns fl =
+  let fl = List.map (fun (q,t) -> find_q_ls ns q,t) fl in
+  let fs = match fl with
+    | [] -> error ~loc EmptyRecord
+    | (fs,_)::_ -> fs in
+  let ts = match fs.ls_args with
+    | [{ ty_node = Tyapp (ts,_) }] -> ts
+    | _ -> error ~loc BadRecordField in
+
 
 let rec dpattern ns {pat_desc;pat_loc=loc} =
   let mk_dpattern ?loc dp_node dp_dty dp_vars =
@@ -125,11 +129,11 @@ let binop = function
 
 exception PartialApplication of lsymbol
 
-let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
+let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
   let mk_dterm ?(loc = Some loc) dt_node dty =
     {dt_node;dt_dty=dty;dt_loc=loc} in
   let apply dt1 t2 =
-    let dt2 = dterm ns denv t2 in
+    let dt2 = dterm kid ns denv t2 in
     let dty = dty_fresh () in
     unify dt1 (Some (Tapp (ts_arrow, [dty_of_dterm dt2;dty])));
     let dt_app = DTapp (fs_fun_apply, [dt1;dt2]) in
@@ -139,7 +143,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
     let args, extra = split_at_i (List.length ls.ls_args) tl in
-    let dtl = List.map (dterm ns denv) args in
+    let dtl = List.map (dterm kid ns denv) args in
     let dtyl, dty = specialize_ls ls in
     app_unify ls dterm_unify dtl dtyl;
     let dt1 = mk_dterm (DTapp (ls,dtl)) dty in
@@ -156,7 +160,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
   let rec unfold_app t1 t2 tl = match t1.term_desc with
     | Uast.Tpreid q -> qualid_app q (t2::tl)
     | Uast.Tapply (t11,t12) -> unfold_app t11 t12 (t2::tl)
-    | _ -> let dt1 = dterm ns denv t1 in
+    | _ -> let dt1 = dterm kid ns denv t1 in
            map_apply dt1 (t2::tl) in
   match term_desc with
   | Uast.Ttrue -> mk_dterm DTtrue (Some dty_bool)
@@ -182,22 +186,22 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
   | Uast.Tapply  (t1,t2) ->
      unfold_app t1 t2 []
   | Uast.Tnot t ->
-     let dt = dterm ns denv t in
+     let dt = dterm kid ns denv t in
      dfmla_unify dt;
      mk_dterm  (DTnot dt) (dt.dt_dty)
   | Uast.Tif (t1,t2,t3) ->
-     let dt1 = dterm ns denv t1 in
-     let dt2 = dterm ns denv t2 in
-     let dt3 = dterm ns denv t3 in
+     let dt1 = dterm kid ns denv t1 in
+     let dt2 = dterm kid ns denv t2 in
+     let dt3 = dterm kid ns denv t3 in
      dfmla_unify dt1;
      unify dt2 dt3.dt_dty;
      mk_dterm (DTif (dt1,dt2,dt3)) dt2.dt_dty
   | Uast.Ttuple tl ->
      fun_app (fs_tuple (List.length tl)) tl
   | Uast.Tlet (pid,t1,t2) ->
-     let dt1 = dterm ns denv t1 in
+     let dt1 = dterm kid ns denv t1 in
      let denv = denv_add_var denv pid.pid_str (dty_of_dterm dt1) in
-     let dt2 = dterm ns denv t2 in
+     let dt2 = dterm kid ns denv t2 in
      mk_dterm  (DTlet (pid,dt1,dt2)) dt2.dt_dty
   | Uast.Tinfix (t1,op1,t23) ->
      let apply de1 op de2 =
@@ -215,7 +219,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
          mk_dterm (DTapp (ls,[de1;de2])) dty) in
      let rec chain loc de1 op1 = function
        | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
-          let de2 = dterm ns denv t2 in
+          let de2 = dterm kid ns denv t2 in
           (* TODO: improve locations of subterms. See loc_cutoff function in why3 typing.ml *)
           (* let loc12 = loc_cutoff loc loc23 t2.term_loc in *)
           unify de1 de2.dt_dty;
@@ -223,11 +227,11 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
           let de23 = chain loc23 de2 op2 t3 in
           mk_dterm (DTbinop (Tand, de12, de23)) None
        | e23 ->
-          apply de1 op1 (dterm ns denv e23) in
-     chain loc (dterm ns denv t1) op1 t23
+          apply de1 op1 (dterm kid ns denv e23) in
+     chain loc (dterm kid ns denv t1) op1 t23
   | Uast.Tbinop (t1,op,t2) ->
-     let dt1 = dterm ns denv t1 in
-     let dt2 = dterm ns denv t2 in
+     let dt1 = dterm kid ns denv t1 in
+     let dt2 = dterm kid ns denv t2 in
      dfmla_unify dt1; dfmla_unify dt2;
      mk_dterm (DTbinop (binop op,dt1,dt2)) None
   | Uast.Tquant (q,vl,trl,t) ->
@@ -236,8 +240,8 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
        | Some pty -> dty_of_pty ns pty in
      let vl = List.map (fun (pid,pty) -> pid,get_dty pty) vl in
      let denv = denv_add_var_quant denv vl in
-     let dtrl = List.map (List.map (dterm ns denv)) trl in
-     let dt = dterm ns denv t in
+     let dtrl = List.map (List.map (dterm kid ns denv)) trl in
+     let dt = dterm kid ns denv t in
      let dty, q = match q with
      | Uast.Tforall -> dfmla_unify dt; None, Tforall
      | Uast.Texists -> dfmla_unify dt; None, Texists
@@ -247,7 +251,7 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
         Some (List.fold_right apply vl dty), Tlambda in
      mk_dterm (DTquant (q,vl,dtrl,dt)) dty
   | Uast.Tcase (t,ptl) ->
-     let dt = dterm ns denv t in
+     let dt = dterm kid ns denv t in
      let dt_dty = dty_of_dterm dt in
      let dty = dty_fresh () in
      let branch (p,t) =
@@ -255,38 +259,38 @@ let rec dterm ns denv {term_desc;term_loc=loc}: dterm =
        dpattern_unify dp dt_dty;
        let choose_snd _ _ x = Some x in
        let denv = Mstr.union choose_snd denv dp.dp_vars in
-       let dt = dterm ns denv t in
+       let dt = dterm kid ns denv t in
        dterm_unify dt dty;
        dp, dt in
      let pdtl = List.map branch ptl in
      mk_dterm (DTcase (dt,pdtl)) (Some dty)
   | Uast.Tcast (t,pty) ->
-     let dt = dterm ns denv t in
+     let dt = dterm kid ns denv t in
      let dty = dty_of_pty ns pty in
      dterm_unify dt dty; dt
   | Uast.Tscope (q,t) ->
      let ns = find_q_ns ns q in
-     dterm ns denv t
+     dterm kid ns denv t
   | Uast.Tattr (at,t) ->
-     let dt = dterm ns denv t in
+     let dt = dterm kid ns denv t in
      mk_dterm (DTattr (dt,Sattr.singleton at)) dt.dt_dty
   | Uast.Told t ->
-     let dt = dterm ns denv t in
+     let dt = dterm kid ns denv t in
      mk_dterm (DTold dt) dt.dt_dty
   | Uast.Trecord _ -> Format.eprintf "\n\n Trecord \n@."; assert false
   | Uast.Tupdate _ -> Format.eprintf "\n\n Tupdate \n@."; assert false
 
-let dterm ns env t =
+let dterm kid ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
-  dterm ns denv t
+  dterm kid ns denv t
 
-let term_with_unify ty ns env t =
-  let dt = dterm ns env t in
+let term_with_unify kid ty ns env t =
+  let dt = dterm kid ns env t in
   dterm_unify dt (dty_of_ty ty);
   term env dt
 
-let fmla ns env t =
-  let dt = dterm ns env t in
+let fmla kid ns env t =
+  let dt = dterm kid ns env t in
   fmla env dt
 
 (** Typing declarations *)
@@ -309,7 +313,7 @@ let mutable_flag = function
   | Oasttypes.Mutable -> Mutable
   | Oasttypes.Immutable -> Immutable
 
-let process_type_spec ns ty (spec:Uast.type_spec) =
+let process_type_spec kid ns ty (spec:Uast.type_spec) =
   let field (ns,fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol (id_register f.f_preid) [ty] f_ty in
@@ -318,7 +322,7 @@ let process_type_spec ns ty (spec:Uast.type_spec) =
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
   let env = Mstr.empty in
-  let invariant = List.map (fmla ns env) spec.ty_invariant in
+  let invariant = List.map (fmla kid ns env) spec.ty_invariant in
   type_spec spec.ty_ephemeral fields invariant
 
 exception CyclicTypeDecl of string
@@ -441,7 +445,7 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
       | Ptype_record ldl -> Pty_record (make_rd ldl)
       | Ptype_open -> assert false in
 
-    let td_spec = process_type_spec md.mod_ns ty td.tspec in
+    let td_spec = process_type_spec md.mod_kid md.mod_ns ty td.tspec in
     let td = type_declaration td_ts td_params td_cstrs td_kind
                td_private td_manifest td_attrs td_spec td_loc in
     Hstr.add htd s td in
@@ -535,9 +539,10 @@ let rec process_val_spec md id cty vs =
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
 
-  let pre   = List.map (fun (t,c) -> fmla md.mod_ns env t, c) vs.sp_pre in
+  let pre   = List.map (fun (t,c) ->
+                  fmla md.mod_kid md.mod_ns env t, c) vs.sp_pre in
 
-  let wr = List.map (fun t -> let dt = dterm md.mod_ns env t in
+  let wr = List.map (fun t -> let dt = dterm md.mod_kid md.mod_ns env t in
                               term env dt) vs.sp_writes in
 
   let process_xpost mxs (loc,exn) =
@@ -564,7 +569,7 @@ let rec process_val_spec md id cty vs =
          let p,vars = pattern dp in
          let choose_snd _ _ vs = Some vs in
          let env = Mstr.union choose_snd env vars in
-         let t = fmla md.mod_ns env t in
+         let t = fmla md.mod_kid md.mod_ns env t in
          Mxs.update xs (merge_xpost (Some (p,t))) mxs in
     List.fold_left process mxs exn in
   let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
@@ -576,7 +581,7 @@ let rec process_val_spec md id cty vs =
        process_args vs.sp_hd_ret tyl env []
     | _, _ ->
        process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
-  let post = List.map (fmla md.mod_ns env) vs.sp_post in
+  let post = List.map (fmla md.mod_kid md.mod_ns env) vs.sp_post in
 
   mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
 
@@ -589,7 +594,7 @@ let process_val ~loc ?(ghost=false) vd md =
 
 (* Currently checking:
    1 - arguments have different names *)
-let process_function ns f =
+let process_function kid ns f =
   let f_ty = opmap (ty_of_pty ns) f.fun_type in
 
   let params = List.map (fun (_,pid,pty) ->
@@ -614,23 +619,23 @@ let process_function ns f =
        Mstr.add "result" result env, Some result in
 
   let def = match f_ty with
-    | None -> opmap (fmla ns env) f.fun_def
-    | Some ty -> opmap (term_with_unify ty ns env) f.fun_def in
+    | None -> opmap (fmla kid ns env) f.fun_def
+    | Some ty -> opmap (term_with_unify kid ty ns env) f.fun_def in
 
   let spec =
-    let req = List.map (fmla ns env) f.fun_spec.fun_req in
-    let ens = List.map (fmla ns env) f.fun_spec.fun_ens in
+    let req = List.map (fmla kid ns env) f.fun_spec.fun_req in
+    let ens = List.map (fmla kid ns env) f.fun_spec.fun_ens in
     let variant =
-      List.map (term_with_unify ty_integer ns env)
+      List.map (term_with_unify kid ty_integer ns env)
         f.fun_spec.fun_variant in
     mk_fun_spec req ens variant f.fun_spec.fun_coer in
 
   let f = mk_function ?result ls f.fun_rec params def spec f.fun_loc in
   mk_sig_item (Sig_function f) f.fun_loc
 
-let process_axiom loc ns a =
+let process_axiom loc kid ns a =
   let id = id_register a.Uast.ax_name in
-  let t  = fmla ns Mstr.empty a.Uast.ax_term in
+  let t  = fmla kid ns Mstr.empty a.Uast.ax_term in
   let ax = mk_axiom id t a.ax_loc in
   mk_sig_item (Sig_axiom ax) loc
 
@@ -686,8 +691,8 @@ and process_signature md {sdesc;sloc} =
   | Uast.Sig_attribute a     -> md, mk_sig_item (Sig_attribute a) sloc
   | Uast.Sig_extension (e,a) -> md, mk_sig_item (Sig_extension (e,a)) sloc
   | Uast.Sig_use q           -> process_use sloc md q
-  | Uast.Sig_function f      -> md, process_function md.mod_ns f
-  | Uast.Sig_axiom a         -> md, process_axiom sloc md.mod_ns a
+  | Uast.Sig_function f      -> md, process_function md.mod_kid md.mod_ns f
+  | Uast.Sig_axiom a         -> md, process_axiom sloc md.mod_kid md.mod_ns a
   | Uast.Sig_ghost_type (r,tdl) ->
      md, process_sig_type ~loc:sloc ~ghost:true md r tdl
   | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true vd md
