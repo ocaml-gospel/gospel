@@ -96,31 +96,39 @@ let join_ns old_ns new_ns =
 
 (** Modules *)
 
+type known_ids = signature_item Mid.t
+
 type module_ = {
     mod_nm   : ident;
     mod_sigs : signature;
     mod_ns   : namespace;
+    mod_kid  : known_ids;
 }
 
 let empty_module id = {
     mod_nm   = id;
     mod_sigs = [];
     mod_ns   = empty_ns;
+    mod_kid  = Mid.empty;
   }
 
-let module_ mod_nm mod_sigs mod_ns = {mod_nm;mod_sigs;mod_ns}
+let module_ mod_nm mod_sigs mod_ns mod_kid =
+  {mod_nm;mod_sigs;mod_ns;mod_kid}
 
 let md_with_primitives s =
-  module_ (fresh_id s) [] ns_with_primitives
+  module_ (fresh_id s) [] ns_with_primitives Mid.empty
 
 let md_find_ts md s = ns_find_ts md.mod_ns s
 let md_find_ls md s = ns_find_ls md.mod_ns s
 let md_find_xs md s = ns_find_xs md.mod_ns s
 let md_find_ns md s = ns_find_ns md.mod_ns s
 
+let md_find_id md id = Mid.find id md.mod_kid
+
 let add_ts md s ts  = {md with mod_ns = ns_add_ts md.mod_ns s ts}
 let add_ls md s ls  = {md with mod_ns = ns_add_ls md.mod_ns s ls}
 let add_xs md s xs  = {md with mod_ns = ns_add_xs md.mod_ns s xs}
+let add_kid md id s = {md with mod_kid = Mid.add id s md.mod_kid}
 let add_sig md sig_ = {md with mod_sigs = sig_::md.mod_sigs}
 
 let add_ns_to_md ns md =
@@ -140,7 +148,8 @@ let add_sig_contents md sig_ =
     | _ -> assert false in
   match sig_.sig_desc with
   | Sig_function f ->
-     add_ls md f.fun_ls.ls_name.id_str f.fun_ls
+     let md = add_ls md f.fun_ls.ls_name.id_str f.fun_ls in
+     add_kid md f.fun_ls.ls_name sig_
   | Sig_type (rf,tdl,g) ->
      let add_td md td =
        let s = (ts_ident td.td_ts).id_str in
@@ -148,13 +157,15 @@ let add_sig_contents md sig_ =
        let csl = get_cs_pjs td.td_kind in
        let md = List.fold_left (fun md cs ->
          add_ls md cs.ls_name.id_str cs) md csl in
-       List.fold_left (fun md ls ->
+       let md = List.fold_left (fun md ls ->
          add_ls md ls.ls_name.id_str ls) md td.td_spec.ty_field in
+       add_kid md td.td_ts.ts_ident sig_  in
      List.fold_left add_td md tdl
   | Sig_exception te ->
      let s = te.exn_constructor.ext_ident.id_str in
      let xs = te.exn_constructor.ext_xs in
-     add_xs md s xs
+     let md = add_xs md s xs in
+     add_kid md te.exn_constructor.ext_ident sig_
   | _ -> md (* TODO *)
 
 let close_md md =

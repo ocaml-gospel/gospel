@@ -26,6 +26,7 @@ type ident = private {
 }
 
 module Hid : Hashtbl.S with type key = ident
+module Mid : Map.S with type key = ident
 
 val create_id : string -> Sattr.t -> Location.t -> ident
 

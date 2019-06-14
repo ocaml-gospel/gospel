@@ -46,6 +46,7 @@ module Ident = struct
 end
 
 module Hid = Hashtbl.Make(Ident)
+module Mid = Map.Make(Ident)
 
 let create_id =
   let r = ref 0 in
