@@ -373,7 +373,15 @@ term_:
 ;
 
 field_list1(X):
-| fl = semicolon_list1(separated_pair(lqualid, EQUAL, X)) { fl }
+| fl = semicolon_list1(term_rec_field(X)) { fl }
+;
+
+term_rec_field(X):
+| separated_pair(lqualid, EQUAL, X) { $1 }
+| lqualid { let t = {term_desc = Tpreid $1;
+                     term_loc = loc_of_qualid $1} in
+            ($1,t)
+          }
 ;
 
 match_cases(X):
@@ -557,15 +565,15 @@ pat_arg_shared_:
 ;
 
 field_pattern(X):
-| fl = semicolon_list1(separated_pair_or_lqualid(X)) { fl }
+| fl = semicolon_list1(pattern_rec_field(X)) { fl }
 ;
 
-separated_pair_or_lqualid(X):
+pattern_rec_field(X):
 | separated_pair(lqualid, EQUAL, X) { $1 }
 | lqualid { let p = {pat_desc = Pvar (qualid_preid $1);
                      pat_loc = loc_of_qualid $1} in
             ($1,p)
-}
+          }
 ;
 
 (* Symbolic operation names *)

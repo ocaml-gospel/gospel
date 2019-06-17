@@ -91,3 +91,25 @@ val f : int -> int -> int
 type 'a t3 = A
 
 (*@ function f (x: int) : int t3 = A *)
+
+(*@ function integer_of_int (x:int) : integer *)
+
+type t4 = A | B
+type 'a t5 = {x: int; y: 'a}
+
+(* @ function f (x: t4 t5) : integer =
+  match x with
+  | {x;y=A} -> integer_of_int x + 1
+  | {x;y=B} -> integer_of_int x + 2 *)
+
+type 'a t6 = {xx: 'a; yy: int}
+
+(* @ function f (xx: 'a): 'a t6 =
+  let a = {yy = int_of_integer 2; xx} in
+  {a with yy = int_of_integer 3} *)
+
+(*@ function g (a: t4) (b: t4 t5) : t4 t6 =
+  match b with
+  | {x; y = A} -> {xx=B;yy=x}
+  | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
+ *)

@@ -64,6 +64,7 @@ let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
 exception EmptyRecord
 exception BadRecordField of lsymbol
 exception DuplicateRecordField of lsymbol
+exception RecordFieldMissing of lsymbol
 
 let find_constructors kid ts =
   match (Mid.find ts.ts_ident kid).sig_desc with
@@ -162,15 +163,17 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
     let dt_app = DTapp (fs_fun_apply, [dt1;dt2]) in
     mk_dterm ~loc:dt2.dt_loc dt_app (Some dty) in (* CHECK location *)
   let map_apply dt tl = List.fold_left apply dt tl in
+  let mk_app ?loc ls dtl =
+    let dtyl, dty = specialize_ls ls in
+    app_unify ls dterm_unify dtl dtyl;
+    mk_dterm ~loc (DTapp (ls,dtl)) dty in
   let fun_app ?loc ls tl =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
     let args, extra = split_at_i (List.length ls.ls_args) tl in
-    let dtl = List.map (dterm kid ns denv) args in
-    let dtyl, dty = specialize_ls ls in
-    app_unify ls dterm_unify dtl dtyl;
-    let dt1 = mk_dterm (DTapp (ls,dtl)) dty in
-    if extra = [] then dt1 else map_apply dt1 extra in
+    let dtl = List.map (dterm kid ns denv) tl in
+    let dt = mk_app ?loc ls dtl in
+    if extra = [] then dt else map_apply dt extra in
   let qualid_app q tl = match q with
     | Qpreid ({pid_loc = loc; pid_str = s} as pid) ->
         (match denv_get_opt denv s with
@@ -300,8 +303,16 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
   | Uast.Told t ->
      let dt = dterm kid ns denv t in
      mk_dterm (DTold dt) dt.dt_dty
-  | Uast.Trecord _ -> Format.eprintf "\n\n Trecord \n@."; assert false
-  | Uast.Tupdate _ -> Format.eprintf "\n\n Tupdate \n@."; assert false
+  | Uast.Trecord qtl ->
+     let cs,pjl,fll = parse_record ~loc kid ns qtl in
+     let get_term pj = try dterm kid ns denv (Mls.find pj fll) with
+       Not_found -> error ~loc (RecordFieldMissing pj) in
+     mk_app ~loc cs (List.map get_term pjl)
+  | Uast.Tupdate (t,qtl) ->
+     let cs, pjl, fll = parse_record ~loc kid ns qtl in
+     let get_term pj = try dterm kid ns denv (Mls.find pj fll)
+       with Not_found -> fun_app ~loc:t.term_loc pj [t] in
+     mk_app ~loc:t.term_loc cs (List.map get_term pjl)
 
 let dterm kid ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
