@@ -562,9 +562,10 @@ field_pattern(X):
 
 separated_pair_or_lqualid(X):
 | separated_pair(lqualid, EQUAL, X) { $1 }
-| lqualid { let pwild = {pat_desc = Pwild;
-                         pat_loc = loc_of_qualid $1} in
-            ($1,pwild)}
+| lqualid { let p = {pat_desc = Pvar (qualid_preid $1);
+                     pat_loc = loc_of_qualid $1} in
+            ($1,p)
+}
 ;
 
 (* Symbolic operation names *)
