@@ -66,8 +66,8 @@ let specialize_ls ls =
 
 exception ConstructorExpected of lsymbol
 
-let specialize_cs cs =
-  if cs.ls_constr = false then raise (ConstructorExpected cs);
+let specialize_cs ?loc cs =
+  if cs.ls_constr = false then error ?loc (ConstructorExpected cs);
   let dtyl, dty = specialize_ls cs in
   dtyl, opget dty
 
@@ -198,9 +198,9 @@ type denv = dty Mstr.t
 exception DuplicatedVar of string
 exception UnboundVar of string
 
-let denv_find s denv =
+let denv_find ?loc s denv =
   try Mstr.find s denv with
-    Not_found -> raise (UnboundVar s)
+    Not_found -> error ?loc (UnboundVar s)
 
 let is_in_denv denv s = Mstr.mem s denv
 
@@ -213,7 +213,7 @@ let denv_add_var denv s dty = Mstr.add s dty denv
 let denv_add_var_quant denv vl =
   let add acc (pid,dty) =
     if Mstr.mem pid.pid_str acc
-    then raise (DuplicatedVar pid.pid_str)
+    then error ~loc:pid.pid_loc (DuplicatedVar pid.pid_str)
     else Mstr.add pid.pid_str dty acc  in
   let vl = List.fold_left add Mstr.empty vl in
   let choose_snd _ _ x = Some x in
@@ -254,7 +254,7 @@ let rec term env prop dt =
 and term_node ?loc env prop dty dterm_node =
   match dterm_node with
   | DTvar pid ->
-     let vs = denv_find pid.pid_str env in (* TODO should I match vs.vs_ty with dty? *)
+     let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in (* TODO should I match vs.vs_ty with dty? *)
      t_var vs
   | DTconst c ->
      t_const c (ty_of_dty (opget dty))
@@ -411,4 +411,8 @@ let () =
       | BadType (dty1,dty2) ->
          Some (errorf "Type mysmatch. Cannot match %a with %a"
                  print_dty dty1 print_dty dty2)
+      | DuplicatedVar s ->
+         Some (errorf "Variable %s is duplicated in pattern" s)
+      | UnboundVar s ->
+         Some (errorf "Variable %s does not appear in pattern" s)
       | _ -> None)
