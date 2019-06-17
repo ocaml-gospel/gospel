@@ -62,65 +62,88 @@ open Tast
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
 
 exception EmptyRecord
-exception BadRecordField
+exception BadRecordField of lsymbol
+exception DuplicateRecordField of lsymbol
 
-let parse_record ~loc kid ns fl =
-  let fl = List.map (fun (q,t) -> find_q_ls ns q,t) fl in
-  let fs = match fl with
+let find_constructors kid ts =
+  match (Mid.find ts.ts_ident kid).sig_desc with
+  | Sig_type (_,tdl,_) -> begin
+     match (List.find (fun td -> td.td_ts = ts) tdl).td_kind with
+     | Pty_record {rd_cs;rd_ldl} ->
+        rd_cs, List.map (fun ld -> ld.ld_field) rd_ldl
+     | _ -> assert false
+    end
+  | _ -> assert false
+
+let parse_record ~loc kid ns fll =
+  let fll = List.map (fun (q,v) -> find_q_ls ns q,v) fll in
+  let fs = match fll with
     | [] -> error ~loc EmptyRecord
     | (fs,_)::_ -> fs in
   let ts = match fs.ls_args with
     | [{ ty_node = Tyapp (ts,_) }] -> ts
-    | _ -> error ~loc BadRecordField in
+    | _ -> error ~loc (BadRecordField fs) in
+  let cs, pjl = find_constructors kid ts in
+  let pjs = Sls.of_list pjl in
+  let fll = List.fold_left (fun m (pj,v) ->
+    if not (Sls.mem pj pjs) then raise (BadRecordField pj) else
+      if Mls.mem pj m then raise (DuplicateRecordField pj) else
+        Mls.add pj v m) Mls.empty fll in
+  cs,pjl,fll
 
-
-let rec dpattern ns {pat_desc;pat_loc=loc} =
+let rec dpattern kid ns {pat_desc;pat_loc=loc} =
   let mk_dpattern ?loc dp_node dp_dty dp_vars =
     {dp_node;dp_dty;dp_vars;dp_loc=loc} in
-  let mk_papp cs dpl =
-    let dtyl, dty = specialize_cs cs in
+  let mk_papp ?loc cs dpl =
+    let dtyl, dty = specialize_cs ?loc cs in
     app_unify cs dpattern_unify dpl dtyl;
-    let check_duplicate s _ _ = raise (DuplicatedVar s) in
+    let check_duplicate s _ _ = error ?loc (DuplicatedVar s) in
     let vars = List.fold_left (fun acc dp ->
       Mstr.union check_duplicate acc dp.dp_vars) Mstr.empty dpl in
-    mk_dpattern ~loc (DPapp (cs,dpl)) dty vars
+    mk_dpattern ?loc (DPapp (cs,dpl)) dty vars
   in
+  let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
   | Pwild ->
      let dty = dty_fresh () in
-     mk_dpattern ~loc DPwild dty Mstr.empty
+     mk_pwild loc dty
   | Pvar pid ->
      let dty = dty_fresh () in
      let vars = Mstr.singleton pid.pid_str dty in
      mk_dpattern ~loc (DPvar pid) dty vars
   | Papp (q,pl) ->
      let cs = find_q_ls ns q in
-     let dpl = List.map (dpattern ns) pl in
-     mk_papp cs dpl
+     let dpl = List.map (dpattern kid ns) pl in
+     mk_papp ~loc cs dpl
   | Ptuple pl ->
      let cs = fs_tuple (List.length pl) in
-     let dpl = List.map (dpattern ns) pl in
-     mk_papp cs dpl
+     let dpl = List.map (dpattern kid ns) pl in
+     mk_papp ~loc cs dpl
   | Pas (p,pid) ->
-     let dp = dpattern ns p in
+     let dp = dpattern kid ns p in
      if Mstr.mem pid.pid_str dp.dp_vars
-       then raise (DuplicatedVar pid.pid_str);
+       then error ~loc:pid.pid_loc (DuplicatedVar pid.pid_str);
      let vars = Mstr.add pid.pid_str dp.dp_dty dp.dp_vars in
      mk_dpattern ~loc (DPas (dp,pid)) dp.dp_dty vars
   | Por (p1,p2) ->
-     let dp1 = dpattern ns p1 in
-     let dp2 = dpattern ns p2 in
+     let dp1 = dpattern kid ns p1 in
+     let dp2 = dpattern kid ns p2 in
      dpattern_unify dp1 dp2.dp_dty;
      let join _ dty1 dty2 =
        dty_unify ?loc:dp1.dp_loc dty1 dty2; Some dty1 in
      let vars = Mstr.union join dp1.dp_vars dp2.dp_vars in
      mk_dpattern ~loc (DPor (dp1,dp2)) dp1.dp_dty vars
   | Pcast (p,pty) ->
-     let dp = dpattern ns p in
+     let dp = dpattern kid ns p in
      let dty = dty_of_pty ns pty in
      dpattern_unify dp dty;
      mk_dpattern ~loc (DPcast (dp,dty)) dty dp.dp_vars
-  | Prec qpl -> assert false
+  | Prec qpl ->
+     let cs,pjl,fll = parse_record ~loc kid ns qpl in
+     let get_pattern pj = try dpattern kid ns (Mls.find pj fll) with
+       Not_found -> mk_pwild loc (dty_of_ty (opget pj.ls_value)) in
+     let dpl = List.map get_pattern pjl in
+     mk_papp ~loc cs dpl
 
 let binop = function
   | Uast.Tand -> Tand | Uast.Tand_asym -> Tand_asym
@@ -139,7 +162,7 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
     let dt_app = DTapp (fs_fun_apply, [dt1;dt2]) in
     mk_dterm ~loc:dt2.dt_loc dt_app (Some dty) in (* CHECK location *)
   let map_apply dt tl = List.fold_left apply dt tl in
-  let fun_app ls tl =
+  let fun_app ?loc ls tl =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
     let args, extra = split_at_i (List.length ls.ls_args) tl in
@@ -173,7 +196,7 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
        | Pconst_float   _ -> dty_float in
      mk_dterm (DTconst c) (Some dty)
   | Uast.Tpreid (Qpreid pid) when is_in_denv denv pid.pid_str ->
-     let dty = denv_find pid.pid_str denv in
+     let dty = denv_find ~loc:pid.pid_loc pid.pid_str denv in
      mk_dterm (DTvar pid) (Some dty)
   | Uast.Tpreid q -> (* in this case it must be a constant *)
      let ls = find_q_ls ns q in
@@ -255,7 +278,7 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
      let dt_dty = dty_of_dterm dt in
      let dty = dty_fresh () in
      let branch (p,t) =
-       let dp = dpattern ns p in
+       let dp = dpattern kid ns p in
        dpattern_unify dp dt_dty;
        let choose_snd _ _ x = Some x in
        let denv = Mstr.union choose_snd denv dp.dp_vars in
@@ -405,10 +428,10 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
     let alias = Sstr.empty in (* TODO check if this is the right place to do it *)
 
     let make_rd ?(constr=false) ldl =
-      let cs_id = fresh_id ("constr_" ^ s) in
+      let cs_id = fresh_id ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core ~alias tvl ld.pld_type) ldl in
-      let rd_cs = fsymbol ~constr cs_id fields_ty ty in
+      let rd_cs = fsymbol ~constr:true cs_id fields_ty ty in
       let mk_ld ld =
         let id = fresh_id ld.pld_name.txt in
         let ty_res = parse_core ~alias tvl ld.pld_type in
@@ -505,7 +528,7 @@ let rec process_val_spec md id cty vs =
     let vs_str = vs.vs_name.id_str in
     let add = function
       | None -> Some vs
-      | Some s -> raise (DuplicatedVar vs_str) in
+      | Some s -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str) in
     Mstr.update vs_str add env, la :: lal in
 
   let rec process_args args tyl env lal = match args, tyl with
@@ -556,7 +579,7 @@ let rec process_val_spec md id cty vs =
       match pt with
       | None -> Mxs.update xs (merge_xpost None) mxs
       | Some (p,t) ->
-         let dp = dpattern md.mod_ns p in
+         let dp = dpattern md.mod_kid md.mod_ns p in
          let ty = match p.pat_desc, xs.xs_type with
            | Pvar vs, Exn_tuple [ty] -> ty
            | Ptuple pl, Exn_tuple tyl ->
@@ -608,7 +631,7 @@ let process_function kid ns f =
      here, before creating identifiers *)
   let add_var nm vs = function
     | None -> Some vs
-    | Some s -> raise (DuplicatedVar nm) in
+    | Some s -> error ~loc:vs.vs_name.id_loc (DuplicatedVar nm) in
   let env = List.fold_left (fun env vs ->
     let nm = vs.vs_name.id_str in
     Mstr.update nm (add_var nm vs) env) Mstr.empty params in
@@ -707,4 +730,10 @@ let () =
          Some (errorf "Symbol %s not found" (String.concat "." sl))
       | EmptyUse ->
          Some (errorf "Empty use")
+      | EmptyRecord ->
+         Some (errorf "Record cannot be empty")
+      | BadRecordField ls ->
+         Some (errorf "The record field %a does not exist" print_ls_nm ls)
+      | DuplicateRecordField ls ->
+         Some (errorf "Duplicated record field %a" print_ls_nm ls)
       | _ -> None)

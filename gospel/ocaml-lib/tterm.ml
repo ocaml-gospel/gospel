@@ -30,6 +30,20 @@ type lsymbol = {
   ls_constr : bool; (* true if it is a construct, false otherwise*)
 }
 
+(* CHECK *)
+let ls_equal : lsymbol -> lsymbol -> bool = (==)
+
+module LS = struct
+  type t = lsymbol
+  let compare = Pervasives.compare
+  let equal = ls_equal
+  let hash = (Hashtbl.hash : lsymbol -> int)
+end
+
+module Sls = Set.Make(LS)
+module Mls = Map.Make(LS)
+
+
 let lsymbol ?(constr=false) ls_name ls_args ls_value =
   {ls_name;ls_args;ls_value;ls_constr=constr}
 
@@ -38,9 +52,6 @@ let fsymbol ?(constr=false) nm tyl ty =
 
 let psymbol nm ty =
   lsymbol nm ty None
-
-(* CHECK *)
-let ls_equal : lsymbol -> lsymbol -> bool = (==)
 
 (** buil-in lsymbols *)
 
