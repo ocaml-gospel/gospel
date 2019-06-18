@@ -68,6 +68,37 @@ let id_add_loc l id = {id with id_loc = l}
 
 let id_add_lab id l = { id with id_ats = Sattr.add l id.id_ats }
 
+(* utils *)
+
+let prefix s = "prefix " ^ s
+let infix  s = "infix "  ^ s
+let mixfix s = "mixfix " ^ s
+
+let is_somefix f s =
+  let sl = String.split_on_char ' ' s in
+  List.length sl > 1 && List.hd sl = f
+
+let is_prefix = is_somefix "prefix"
+let is_infix  = is_somefix "infix"
+let is_mixfix = is_somefix "mixfix"
+
+(* hard-coded ids *)
+
+let eq    = fresh_id (infix "=")
+let neq   = fresh_id (infix "<>")
+let lt    = fresh_id (infix "<")
+let le    = fresh_id (infix "<=")
+let gt    = fresh_id (infix ">")
+let ge    = fresh_id (infix ">=")
+let impl  = fresh_id (infix "->")
+let plus  = fresh_id (infix "+")
+let minus = fresh_id (infix "-")
+let mult  = fresh_id (infix "*")
+let none  = fresh_id (infix "None")
+let some  = fresh_id (infix "Some")
+let nil   = fresh_id ("[]")
+let cons  = fresh_id (infix "::")
+
 (* pretty-printer *)
 
 type context = {

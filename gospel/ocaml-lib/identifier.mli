@@ -40,6 +40,33 @@ val id_add_loc : Location.t -> ident -> ident
 
 val id_add_lab : ident -> Sattr.elt -> ident
 
+(* hard-coded ids *)
+
+val eq   : ident
+val neq  : ident
+val lt   : ident
+val le   : ident
+val gt   : ident
+val ge   : ident
+val impl : ident
+val plus : ident
+val minus: ident
+val mult : ident
+val none : ident
+val some : ident
+val nil  : ident
+val cons : ident
+
+(* utils *)
+
+val prefix : string -> string
+val infix  : string -> string
+val mixfix : string -> string
+
+val is_prefix : string -> bool
+val is_infix  : string -> bool
+val is_mixfix : string -> bool
+
 (* pretty-printer *)
 
 val print_pid : Format.formatter -> preid -> unit

@@ -40,36 +40,24 @@ let ns_with_primitives =
       ("list", ts_list); ("option",ts_option)] in
   let primitive_ps =
     [ ps_equ.ls_name.id_str, ps_equ;
-      (let id = fresh_id (infix "<") in
-       id.id_str, psymbol id [ty_integer;ty_integer]);
-      (let id = fresh_id (infix "<=") in
-       id.id_str, psymbol id [ty_integer;ty_integer]);
-      (let id = fresh_id (infix ">") in
-       id.id_str, psymbol id [ty_integer;ty_integer]);
-      (let id = fresh_id (infix ">=") in
-       id.id_str, psymbol id [ty_integer;ty_integer]);
-      (let id = fresh_id (infix "->") in
-       id.id_str, psymbol id [ty_bool;ty_bool]);
+      (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
+      (le.id_str, psymbol le     [ty_integer;ty_integer]);
+      (gt.id_str, psymbol gt     [ty_integer;ty_integer]);
+      (ge.id_str, psymbol ge     [ty_integer;ty_integer]);
+      (impl.id_str, psymbol impl [ty_bool;ty_bool]);
     ] in
   let primitive_ls =
-    [ (let id = fresh_id (infix "+") in
-       id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
-      (let id = fresh_id (infix "-") in
-       id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
-      (let id = fresh_id (infix "*") in
-       id.id_str, fsymbol id [ty_integer;ty_integer] ty_integer);
-      (let id = fresh_id "None" in
-       let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol ~constr:true id [] (ty_option tv));
-      (let id = fresh_id "Some" in
-       let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol ~constr:true id [tv] (ty_option tv));
-      (let id = fresh_id "[]" in
-       let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol ~constr:true id [] (ty_list tv));
-      (let id = fresh_id (infix "::") in
-       let tv = fresh_ty_var "a" in
-       id.id_str, fsymbol ~constr:true id [tv; ty_app ts_list [tv]] (ty_list tv));
+    [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
+      (minus.id_str, fsymbol minus [ty_integer;ty_integer] ty_integer);
+      (mult.id_str, fsymbol mult   [ty_integer;ty_integer] ty_integer);
+      (let tv = fresh_ty_var "a" in
+       none.id_str, fsymbol ~constr:true none [] (ty_option tv));
+      (let tv = fresh_ty_var "a" in
+       some.id_str, fsymbol ~constr:true some [tv] (ty_option tv));
+      (let tv = fresh_ty_var "a" in
+       nil.id_str, fsymbol ~constr:true nil [] (ty_list tv));
+      (let tv = fresh_ty_var "a" in
+       cons.id_str, fsymbol ~constr:true cons [tv; ty_app ts_list [tv]] (ty_list tv));
     ] in
   let ns = List.fold_left (fun ns (s,ts) ->
                ns_add_ts ns s ts) empty_ns primitive_tys in

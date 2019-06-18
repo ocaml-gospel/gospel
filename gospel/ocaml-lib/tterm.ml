@@ -57,7 +57,7 @@ let psymbol nm ty =
 
 let ps_equ =
   let tv = fresh_ty_var "a" in
-  psymbol (fresh_id (infix "=")) [tv; tv]
+  psymbol eq [tv; tv]
 
 let fs_bool_true  = fsymbol ~constr:true (fresh_id "True")  [] ty_bool
 let fs_bool_false = fsymbol ~constr:true (fresh_id "False") [] ty_bool

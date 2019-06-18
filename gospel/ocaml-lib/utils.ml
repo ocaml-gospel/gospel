@@ -107,14 +107,6 @@ module Sstr = Set.Make(String)
 
 (* to be moved to a better place *)
 
-let prefix s = "prefix " ^ s
-let infix  s = "infix "  ^ s
-let mixfix s = "mixfix " ^ s
-
-let is_infix s =
-  let sl = String.split_on_char ' ' s in
-  List.length sl > 1 && List.hd sl = "infix"
-
 let get_op_nm s =
   let sl = String.split_on_char ' ' s in
   match sl with
