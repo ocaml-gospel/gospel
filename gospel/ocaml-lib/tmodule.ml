@@ -30,6 +30,33 @@ let ns_add_xs ns s xs = {ns with ns_xs = Mstr.add s xs ns.ns_xs}
 let ns_add_ns ns s new_ns =
   {ns with ns_ns = Mstr.add s new_ns ns.ns_ns}
 
+let join_ns old_ns new_ns =
+  let choose_snd _ _ x = Some x in
+  let union m1 m2 = Mstr.union choose_snd m1 m2 in
+  { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
+    ns_ls = union old_ns.ns_ls new_ns.ns_ls;
+    ns_xs = union old_ns.ns_xs new_ns.ns_xs;
+    ns_ns = union old_ns.ns_ns new_ns.ns_ns;}
+
+let rec ns_find get_map ns = function
+  | [] -> assert false
+  | [x] -> Mstr.find x (get_map ns)
+  | x::xs -> ns_find get_map (Mstr.find x ns.ns_ns) xs
+
+let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts) ns s
+let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls) ns s
+let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
+let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
+
+(* let rec add_ns_under_name ml source target = match ml with
+ *   | []    -> assert false
+ *   | [s]   -> ns_add_ns target s source
+ *   | x::xs ->
+ *      let ns = try Mstr.find x target.ns_ns with
+ *                 Not_found -> empty_ns in
+ *      let ns = add_ns_under_name xs source ns in
+ *      ns_add_ns target x ns *)
+
 let ns_with_primitives =
   (* There is a good reason for these types to be built-in: they are
      already declared in OCaml, and we want them to represent those
@@ -64,23 +91,6 @@ let ns_with_primitives =
   List.fold_left (fun ns (s,ls) ->
       ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
 
-let rec ns_find get_map ns = function
-  | [] -> assert false
-  | [x] -> Mstr.find x (get_map ns)
-  | x::xs -> ns_find get_map (Mstr.find x ns.ns_ns) xs
-
-let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts) ns s
-let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls) ns s
-let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
-let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
-
-let join_ns old_ns new_ns =
-  let choose_snd _ _ x = Some x in
-  let union m1 m2 = Mstr.union choose_snd m1 m2 in
-  { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
-    ns_ls = union old_ns.ns_ls new_ns.ns_ls;
-    ns_xs = union old_ns.ns_xs new_ns.ns_xs;
-    ns_ns = union old_ns.ns_ns new_ns.ns_ns;}
 
 (** Modules *)
 
@@ -113,15 +123,24 @@ let md_find_ns md s = ns_find_ns md.mod_ns s
 
 let md_find_id md id = Mid.find id md.mod_kid
 
-let add_ts md s ts  = {md with mod_ns = ns_add_ts md.mod_ns s ts}
-let add_ls md s ls  = {md with mod_ns = ns_add_ls md.mod_ns s ls}
-let add_xs md s xs  = {md with mod_ns = ns_add_xs md.mod_ns s xs}
+let add_ts  md s ts = {md with mod_ns = ns_add_ts md.mod_ns s ts}
+let add_ls  md s ls = {md with mod_ns = ns_add_ls md.mod_ns s ls}
+let add_xs  md s xs = {md with mod_ns = ns_add_xs md.mod_ns s xs}
 let add_kid md id s = {md with mod_kid = Mid.add id s md.mod_kid}
 let add_sig md sig_ = {md with mod_sigs = sig_::md.mod_sigs}
 
 let add_ns_to_md ns md =
   let mod_ns = join_ns md.mod_ns ns in
   { md with mod_ns }
+
+let add_md f source target =
+  let target = add_ns_to_md source.mod_ns target in
+  let target = {target with mod_ns = ns_add_ns target.mod_ns f source.mod_ns} in
+  let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
+  (* CHECK we taking all the known ids from source, but in fact we
+     just need those from ml *)
+  let kid = Mid.union combine source.mod_kid target.mod_kid in
+  {target with mod_kid = kid}
 
 let add_sig_contents md sig_ =
   let md = add_sig md sig_ in
@@ -161,16 +180,20 @@ let close_md md =
 
 open Opprintast
 
+let rec ns_names nsm =
+  List.map fst (Mstr.bindings nsm)
+
 let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
   Mstr.iter (fun _ -> print_elem) m
 
 let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns} =
-  assert (Mstr.is_empty ns_ns);
-  pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@\nException Symbols@\n%a@.@]"
+  pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@\nException \
+          Symbols@\n%a@\nNamespaces@\n%a@.@]"
     (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl) ns_ls
     (print_mstr_vals print_xs) ns_xs
+    (list ~sep:"\n" constant_string) (ns_names ns_ns)
 
 let print_mod fmt {mod_nm;mod_sigs;mod_ns} =
   pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"

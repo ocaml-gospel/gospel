@@ -660,7 +660,6 @@ let process_function kid ns f =
       List.map (term_with_unify kid ty_integer ns env)
         f.fun_spec.fun_variant in
     mk_fun_spec req ens variant f.fun_spec.fun_coer in
-
   let f = mk_function ?result ls f.fun_rec params def spec f.fun_loc in
   mk_sig_item (Sig_function f) f.fun_loc
 
@@ -695,16 +694,17 @@ let process_exception_sig loc ns te =
              te.Oparsetree.ptyexn_attributes in
   mk_sig_item (Sig_exception te) loc
 
-exception EmptyUse
-
 let rec process_use loc md q =
-  let f = string_list_of_qualid q in
-  let file = match f with
-    | []     -> error ~loc EmptyUse
-    | f :: m -> String.uncapitalize_ascii f ^ ".mli" in
-  let sl = Parser_frontend.parse_all file in
-  let f_md = List.fold_left process_signature (md_with_primitives file) sl in
-  add_ns_to_md f_md.mod_ns md, mk_sig_item (Sig_use f) loc
+  let f = match string_list_of_qualid q with [q] -> q | _ -> assert false in
+  let sig_ = mk_sig_item (Sig_use [f]) loc in
+  try add_ns_to_md (find_q_ns md.mod_ns q) md, sig_ with Located (_,SymbolNotFound _) ->
+    let file = match [f] with
+      | []     -> error_report ~loc "Empty use"
+      | f :: m -> String.uncapitalize_ascii f ^ ".mli" in
+    let sl = Parser_frontend.parse_all file in
+    let md2 =
+      List.fold_left process_signature (md_with_primitives file) sl in
+    add_md f md2 md, sig_
 
 and process_signature md {sdesc;sloc} =
   let md, signature = match sdesc with
@@ -736,8 +736,6 @@ let () =
          Some (errorf "Symbol %a cannot be partially applied" print_ls_nm ls)
       | SymbolNotFound sl ->
          Some (errorf "Symbol %s not found" (String.concat "." sl))
-      | EmptyUse ->
-         Some (errorf "Empty use")
       | EmptyRecord ->
          Some (errorf "Record cannot be empty")
       | BadRecordField ls ->

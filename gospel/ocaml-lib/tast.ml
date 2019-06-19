@@ -624,8 +624,8 @@ and print_modyle_type1 f x =
         pp f "%a" longident_loc li;
     | Mod_alias li ->
         pp f "(module %a)" longident_loc li;
-    | Mod_signature (s) ->
-        pp f "@[<hv0>@[<hv2>sig@ %a@]@ end@]" (* "@[<hov>sig@ %a@ end@]" *)
+    | Mod_signature s ->
+        pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
           (list s_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
         pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
