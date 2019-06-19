@@ -154,19 +154,19 @@ let binop = function
 exception PartialApplication of lsymbol
 
 let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
-  let mk_dterm ?(loc = Some loc) dt_node dty =
-    {dt_node;dt_dty=dty;dt_loc=loc} in
+  let mk_dterm ?(loc = loc) dt_node dty =
+    {dt_node;dt_dty=dty;dt_loc=Some loc} in
   let apply dt1 t2 =
     let dt2 = dterm kid ns denv t2 in
     let dty = dty_fresh () in
     unify dt1 (Some (Tapp (ts_arrow, [dty_of_dterm dt2;dty])));
     let dt_app = DTapp (fs_fun_apply, [dt1;dt2]) in
-    mk_dterm ~loc:dt2.dt_loc dt_app (Some dty) in (* CHECK location *)
+    mk_dterm ?loc:dt2.dt_loc dt_app (Some dty) in (* CHECK location *)
   let map_apply dt tl = List.fold_left apply dt tl in
   let mk_app ?loc ls dtl =
     let dtyl, dty = specialize_ls ls in
     app_unify ls dterm_unify dtl dtyl;
-    mk_dterm ~loc (DTapp (ls,dtl)) dty in
+    mk_dterm ?loc (DTapp (ls,dtl)) dty in
   let fun_app ?loc ls tl =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
@@ -179,7 +179,7 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
         (match denv_get_opt denv s with
         | Some dty ->
            let dtv =
-             mk_dterm ~loc:(Some loc) (DTvar pid) (Some dty) in
+             mk_dterm ~loc:loc (DTvar pid) (Some dty) in
            map_apply dtv tl
         | None -> fun_app (find_q_ls ns q) tl)
     | _ -> fun_app (find_q_ls ns q) tl in
