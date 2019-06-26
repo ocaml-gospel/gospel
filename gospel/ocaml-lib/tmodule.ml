@@ -96,51 +96,56 @@ let ns_with_primitives =
 
 type known_ids = signature_item Mid.t
 
-type module_ = {
-    mod_nm   : ident;
-    mod_sigs : signature;
-    mod_ns   : namespace;
-    mod_kid  : known_ids;
+(* and module_aaa =
+ *   | Functor of module_aaa * module_aaa
+ *   | Flat of module_typeee *)
+
+type module_uc = {
+    md_nm   : ident;
+    md_sigs : signature;
+    md_ns   : namespace;
+    md_kid  : known_ids;
 }
 
+
 let empty_module id = {
-    mod_nm   = id;
-    mod_sigs = [];
-    mod_ns   = empty_ns;
-    mod_kid  = Mid.empty;
+    md_nm   = id;
+    md_sigs = [];
+    md_ns   = empty_ns;
+    md_kid  = Mid.empty;
   }
 
-let module_ mod_nm mod_sigs mod_ns mod_kid =
-  {mod_nm;mod_sigs;mod_ns;mod_kid}
+let module_ md_nm md_sigs md_ns md_kid =
+  {md_nm;md_sigs;md_ns;md_kid}
 
 let md_with_primitives s =
   module_ (fresh_id s) [] ns_with_primitives Mid.empty
 
-let md_find_ts md s = ns_find_ts md.mod_ns s
-let md_find_ls md s = ns_find_ls md.mod_ns s
-let md_find_xs md s = ns_find_xs md.mod_ns s
-let md_find_ns md s = ns_find_ns md.mod_ns s
+let md_find_ts md s = ns_find_ts md.md_ns s
+let md_find_ls md s = ns_find_ls md.md_ns s
+let md_find_xs md s = ns_find_xs md.md_ns s
+let md_find_ns md s = ns_find_ns md.md_ns s
 
-let md_find_id md id = Mid.find id md.mod_kid
+let md_find_id md id = Mid.find id md.md_kid
 
-let add_ts  md s ts = {md with mod_ns = ns_add_ts md.mod_ns s ts}
-let add_ls  md s ls = {md with mod_ns = ns_add_ls md.mod_ns s ls}
-let add_xs  md s xs = {md with mod_ns = ns_add_xs md.mod_ns s xs}
-let add_kid md id s = {md with mod_kid = Mid.add id s md.mod_kid}
-let add_sig md sig_ = {md with mod_sigs = sig_::md.mod_sigs}
+let add_ts  md s ts = {md with md_ns = ns_add_ts md.md_ns s ts}
+let add_ls  md s ls = {md with md_ns = ns_add_ls md.md_ns s ls}
+let add_xs  md s xs = {md with md_ns = ns_add_xs md.md_ns s xs}
+let add_kid md id s = {md with md_kid = Mid.add id s md.md_kid}
+let add_sig md sig_ = {md with md_sigs = sig_::md.md_sigs}
 
 let add_ns_to_md ns md =
-  let mod_ns = join_ns md.mod_ns ns in
-  { md with mod_ns }
+  let md_ns = join_ns md.md_ns ns in
+  { md with md_ns }
 
 let add_md f source target =
-  let target = add_ns_to_md source.mod_ns target in
-  let target = {target with mod_ns = ns_add_ns target.mod_ns f source.mod_ns} in
+  let target = add_ns_to_md source.md_ns target in
+  let target = {target with md_ns = ns_add_ns target.md_ns f source.md_ns} in
   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
   (* CHECK we taking all the known ids from source, but in fact we
      just need those from ml *)
-  let kid = Mid.union combine source.mod_kid target.mod_kid in
-  {target with mod_kid = kid}
+  let kid = Mid.union combine source.md_kid target.md_kid in
+  {target with md_kid = kid}
 
 let add_sig_contents md sig_ =
   let md = add_sig md sig_ in
@@ -174,7 +179,7 @@ let add_sig_contents md sig_ =
   | _ -> md (* TODO *)
 
 let close_md md =
-  {md with mod_sigs = List.rev md.mod_sigs}
+  {md with md_sigs = List.rev md.md_sigs}
 
 (** Pretty printing *)
 
@@ -195,8 +200,8 @@ let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns} =
     (print_mstr_vals print_xs) ns_xs
     (list ~sep:"\n" constant_string) (ns_names ns_ns)
 
-let print_mod fmt {mod_nm;mod_sigs;mod_ns} =
+let rec print_mod fmt {md_nm;md_sigs;md_ns} =
   pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"
-    print_ident mod_nm
-    print_ns mod_ns
-    print_signature mod_sigs
+    print_ident md_nm
+    print_ns md_ns
+    print_signature md_sigs

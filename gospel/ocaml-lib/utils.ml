@@ -144,4 +144,6 @@ let () =
          end
       | TypeCheckingError s ->
          Some (errorf "Type checking error: %s" s)
+      | NotSupported s ->
+         Some (errorf "Not supported: %s" s)
       | _ -> None)

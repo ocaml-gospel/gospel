@@ -5,8 +5,6 @@ open Tterm
 
 (** signatures / top level declarations *)
 
-type attrs = Oparsetree.attributes
-
 type lb_arg =
   | Lnone     of vsymbol
   | Lquestion of vsymbol
@@ -73,7 +71,7 @@ type val_description = {
     vd_name  : ident;
     vd_type  : Oparsetree.core_type;
     vd_prim  : string list; (* primitive declaration *)
-    vd_attrs : attrs;
+    vd_attrs : Oparsetree.attributes;
     vd_spec  : val_spec option;
     vd_loc   : Location.t;
 }
@@ -110,7 +108,7 @@ type 'a label_declaration = {
     ld_field : 'a;
     ld_mut   : mutable_flag;
     ld_loc   : Location.t;
-    ld_attrs : attrs; (* l : T [@id1] [@id2] *)
+    ld_attrs : Oparsetree.attributes; (* l : T [@id1] [@id2] *)
   }
 
 let label_declaration ld_field ld_mut ld_loc ld_attrs =
@@ -130,7 +128,7 @@ type constructor_decl = {
     (* cd_ld is empty if defined through a tuple *)
     cd_ld    : (ident * ty) label_declaration list;
     cd_loc   : Location.t;
-    cd_attrs : attrs; (* C of ... [@id1] [@id2] *)
+    cd_attrs : Oparsetree.attributes; (* C of ... [@id1] [@id2] *)
 }
 
 let constructor_decl cd_cs cd_ld cd_loc cd_attrs =
@@ -160,7 +158,7 @@ type type_declaration = {
     td_kind     : type_kind;
     td_private  : private_flag;
     td_manifest : ty option;
-    td_attrs    : attrs;
+    td_attrs    : Oparsetree.attributes;
     td_spec     : type_spec;
     td_loc      : Location.t;
 }
@@ -284,20 +282,39 @@ let type_exception ctr loc attrs =
   {exn_constructor = ctr; exn_loc = loc; exn_attributes = attrs}
 
 type rec_flag = Nonrecursive | Recursive
+type ghost    = bool
 
-type ghost = bool
+type with_constraint =
+  | Wtype of ident * type_declaration
+        (* with type X.t = ...
 
-type signature_item_desc =
+           Note: the last component of the longident must match
+           the name of the type_declaration. *)
+  | Wmodule of ident * ident
+        (* with module X.Y = Z *)
+  | Wtypesubst of ident * type_declaration
+        (* with type X.t := ..., same format as [Pwith_type] *)
+  | Wmodsubst of ident * ident
+        (* with module X.Y := Z *)
+
+type signature = signature_item list
+
+and signature_item = {
+    sig_desc: signature_item_desc;
+    sig_loc: Location.t;
+}
+
+and signature_item_desc =
   | Sig_val of val_description * ghost
   | Sig_type of rec_flag * type_declaration list * ghost
         (* type t1 = ... and ... and tn = ... *)
   | Sig_typext of Oparsetree.type_extension
         (* type t1 += ... *)
-  | Sig_module of Uast.s_module_declaration
+  | Sig_module of module_declaration
         (* module X : MT *)
-  | Sig_recmodule of Uast.s_module_declaration list
+  | Sig_recmodule of module_declaration list
         (* module rec X1 : MT1 and ... and Xn : MTn *)
-  | Sig_modtype of Uast.s_module_type_declaration
+  | Sig_modtype of module_type_declaration
         (* module type S = MT
            module type S *)
   (* these were not modified *)
@@ -320,16 +337,46 @@ type signature_item_desc =
   | Sig_function of function_
   | Sig_axiom of axiom
 
-type signature_item = {
-    sig_desc: signature_item_desc;
-    sig_loc: Location.t;
-}
+and module_declaration = {
+    md_name  : ident;
+    md_type  : module_type;
+    md_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+    md_loc   : Location.t;
+  }
+
+and module_type_declaration = {
+     mtd_name  : ident;
+     mtd_type  : module_type option;
+     mtd_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+     mtd_loc   : Location.t;
+  }
+
+and module_type =
+  {
+    mt_desc  : module_type_desc;
+    mt_loc   : Location.t;
+    mt_attrs : Oparsetree.attributes; (* ... [@id1] [@id2] *)
+  }
+
+and module_type_desc =
+  | Mod_ident of ident
+        (* S *)
+  | Mod_signature of signature
+        (* sig ... end *)
+  | Mod_functor of ident * module_type option * module_type
+        (* functor(X : MT1) -> MT2 *)
+  | Mod_with of module_type * with_constraint list
+        (* MT with ... *)
+  | Mod_typeof of Oparsetree.module_expr
+        (* module type of ME *)
+  | Mod_extension of Oparsetree.extension
+        (* [%id] *)
+  | Mod_alias of ident
+        (* (module M) *)
 
 let sig_item sig_desc sig_loc = {sig_desc; sig_loc}
 
 let mk_sig_item desc loc = sig_item desc loc
-
-type signature = signature_item list
 
 (** Pretty printing *)
 
@@ -508,6 +555,7 @@ let rec print_signature_item f x =
   | Sig_exception ed ->
       exception_declaration reset_ctxt f ed
   | Sig_class l ->
+      let open Oparsetree in
       let class_description kwd f ({pci_params=ls;pci_name={txt;_};_} as x) =
         pp f "@[<2>%s %a%a%s@;:@;%a@]%a" kwd
           virtual_flag x.pci_virt
@@ -523,16 +571,16 @@ let rec print_signature_item f x =
               (class_description "class") x
               (list ~sep:"@," (class_description "and")) xs
       end
-  | Sig_module ({mdtype={mdesc=Mod_alias alias;
-                            mattributes=[]; _};_} as pmd) ->
-      pp f "@[<hov>module@ %s@ =@ %a@]%a" pmd.mdname.txt
-        longident_loc alias
-        (item_attributes reset_ctxt) pmd.mdattributes
+  | Sig_module ({md_type={mt_desc=Mod_alias alias;
+                            mt_attrs=[]; _};_} as pmd) ->
+      pp f "@[<hov>module@ %a@ =@ %a@]%a" print_ident pmd.md_name
+        print_ident alias
+        (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_module pmd ->
-      pp f "@[<hov>module@ %s@ :@ %a@]%a"
-        pmd.mdname.txt
-        print_module_type pmd.mdtype
-        (item_attributes reset_ctxt) pmd.mdattributes
+      pp f "@[<hov>module@ %a@ :@ %a@]%a"
+        print_ident pmd.md_name
+        print_module_type pmd.md_type
+        (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_open od ->
       pp f "@[<hov2>open%s@ %a@]%a"
         (override od.popen_override)
@@ -542,33 +590,33 @@ let rec print_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a"
         (module_type reset_ctxt) incl.pincl_mod
         (item_attributes reset_ctxt) incl.pincl_attributes
-  | Sig_modtype {mtdname=s; mtdtype=md; mtdattributes=attrs} ->
-      pp f "@[<hov2>module@ type@ %s%a@]%a"
-        s.txt
-        (fun f md -> match md with
-           | None -> ()
-           | Some mt ->
-               Format.pp_print_space f () ;
-               pp f "@ =@ %a" print_module_type mt
-        ) md
-        (item_attributes reset_ctxt) attrs
+  (* | Sig_modtype {mtdname=s; mtdtype=md; mtdattributes=attrs} ->
+   *     pp f "@[<hov2>module@ type@ %a%a@]%a"
+   *       print_ident s
+   *       (fun f md -> match md with
+   *          | None -> ()
+   *          | Some mt ->
+   *              Format.pp_print_space f () ;
+   *              pp f "@ =@ %a" print_module_type mt
+   *       ) md
+   *       (item_attributes reset_ctxt) attrs *)
   | Sig_class_type (l) -> class_type_declaration_list reset_ctxt f l
-  | Sig_recmodule decls ->
-      let rec  string_x_module_type_list f ?(first=true) l =
-        match l with
-        | [] -> () ;
-        | pmd :: tl ->
-            if not first then
-              pp f "@ @[<hov2>and@ %s:@ %a@]%a" pmd.Uast.mdname.txt
-                print_modyle_type1 pmd.mdtype
-                (item_attributes reset_ctxt) pmd.mdattributes
-            else
-              pp f "@[<hov2>module@ rec@ %s:@ %a@]%a" pmd.mdname.txt
-                print_modyle_type1 pmd.mdtype
-                (item_attributes reset_ctxt) pmd.mdattributes;
-            string_x_module_type_list f ~first:false tl
-      in
-      string_x_module_type_list f decls
+  (* | Sig_recmodule decls ->
+   *     let rec  string_x_module_type_list f ?(first=true) l =
+   *       match l with
+   *       | [] -> () ;
+   *       | pmd :: tl ->
+   *           if not first then
+   *             pp f "@ @[<hov2>and@ %a:@ %a@]%a" print_ident pmd.mdname
+   *               print_modyle_type1 pmd.mdtype
+   *               (item_attributes reset_ctxt) pmd.mdattributes
+   *           else
+   *             pp f "@[<hov2>module@ rec@ %a:@ %a@]%a" print_ident pmd.mdname
+   *               print_modyle_type1 pmd.mdtype
+   *               (item_attributes reset_ctxt) pmd.mdattributes;
+   *           string_x_module_type_list f ~first:false tl
+   *     in
+   *     string_x_module_type_list f decls *)
   | Sig_attribute a -> floating_attribute reset_ctxt f a
   | Sig_extension(e, a) ->
       item_extension reset_ctxt f e;
@@ -577,56 +625,57 @@ let rec print_signature_item f x =
   | Sig_axiom x -> pp f "(*@@ axiom %a: %a *)"
                      print_ident x.ax_name print_term x.ax_term
   | Sig_use sl -> pp f "(*@@ use %a *)" (list ~sep:"." constant_string) sl
+  | _ -> assert false
 
 and print_signature f x = list ~sep:"@\n@\n" print_signature_item f x
 
 and print_module_type f x =
-  if x.mattributes <> [] then begin
-    pp f "((%a)%a)" print_module_type {x with mattributes=[]}
-      (attributes reset_ctxt) x.mattributes
+  if x.mt_attrs <> [] then begin
+    pp f "((%a)%a)" print_module_type {x with mt_attrs=[]}
+      (attributes reset_ctxt) x.mt_attrs
   end else
-    match x.mdesc with
+    match x.mt_desc with
     | Mod_functor (_, None, mt2) ->
         pp f "@[<hov2>functor () ->@ %a@]" print_module_type mt2
     | Mod_functor (s, Some mt1, mt2) ->
-        if s.txt = "_" then
+        if s.id_str = "_" then
           pp f "@[<hov2>%a@ ->@ %a@]"
             print_modyle_type1 mt1 print_module_type mt2
         else
-          pp f "@[<hov2>functor@ (%s@ :@ %a)@ ->@ %a@]" s.txt
+          pp f "@[<hov2>functor@ (%a@ :@ %a)@ ->@ %a@]" print_ident s
             print_module_type mt1 print_module_type mt2
     | Mod_with (mt, []) -> print_module_type f mt
     | Mod_with (mt, l) ->
         let with_constraint f = function
-          | Uast.Wtype (li, ({tparams= ls ;_} as td)) ->
+          | Wtype (li, ({td_params= ls ;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a =@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
-                ls longident_loc li s_type_declaration td
+                (list print_tv ~sep:"," ~first:"(" ~last:")")
+                ls print_ident li print_type_declaration td
           | Wmodule (li, li2) ->
-              pp f "module %a =@ %a" longident_loc li longident_loc li2;
-          | Wtypesubst (li, ({tparams=ls;_} as td)) ->
+              pp f "module %a =@ %a" print_ident li print_ident li2;
+          | Wtypesubst (li, ({td_params=ls;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a :=@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
-                ls longident_loc li
-                s_type_declaration td
+                (list print_tv ~sep:"," ~first:"(" ~last:")")
+                ls print_ident li
+                print_type_declaration td
           | Wmodsubst (li, li2) ->
-             pp f "module %a :=@ %a" longident_loc li longident_loc li2 in
+             pp f "module %a :=@ %a" print_ident li print_ident li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
           print_modyle_type1 mt (list with_constraint ~sep:"@ and@ ") l
     | _ -> print_modyle_type1 f x
 
 and print_modyle_type1 f x =
-  if x.mattributes <> [] then print_module_type f x
-  else match x.mdesc with
+  if x.mt_attrs <> [] then print_module_type f x
+  else match x.mt_desc with
     | Mod_ident li ->
-        pp f "%a" longident_loc li;
+        pp f "%a" print_ident li;
     | Mod_alias li ->
-        pp f "(module %a)" longident_loc li;
+        pp f "(module %a)" print_ident li;
     | Mod_signature s ->
         pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
-          (list s_signature_item) s (* FIXME wrong indentation*)
+          (list print_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
         pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
     | Mod_extension e -> extension reset_ctxt f e
