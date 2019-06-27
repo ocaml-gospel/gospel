@@ -12,7 +12,7 @@ let pp = Format.fprintf
 let type_check name sigs =
   let md = md_with_primitives name in
   let md = List.fold_left process_signature md sigs in
-  close_md md
+  wrap_up_module md
 
 let run_bench () =
   let ok,error = ref 0, ref 0 in

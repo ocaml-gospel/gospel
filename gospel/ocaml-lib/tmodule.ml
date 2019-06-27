@@ -30,7 +30,7 @@ let ns_add_xs ns s xs = {ns with ns_xs = Mstr.add s xs ns.ns_xs}
 let ns_add_ns ns s new_ns =
   {ns with ns_ns = Mstr.add s new_ns ns.ns_ns}
 
-let join_ns old_ns new_ns =
+let merge_ns old_ns new_ns =
   let choose_snd _ _ x = Some x in
   let union m1 m2 = Mstr.union choose_snd m1 m2 in
   { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
@@ -101,51 +101,98 @@ type known_ids = signature_item Mid.t
  *   | Flat of module_typeee *)
 
 type module_uc = {
-    md_nm   : ident;
-    md_sigs : signature;
-    md_ns   : namespace;
-    md_kid  : known_ids;
+    md_nm     : ident;
+    md_sigs   : signature list;
+    md_prefix : string    list;
+    md_in_ns  : namespace list;
+    md_out_ns : namespace list;
+    md_kid    : known_ids;
 }
 
-
 let empty_module id = {
-    md_nm   = id;
-    md_sigs = [];
-    md_ns   = empty_ns;
-    md_kid  = Mid.empty;
+    md_nm     = id;
+    md_sigs   = [];
+    md_prefix = [id.id_str];
+    md_in_ns  = [empty_ns];
+    md_out_ns = [empty_ns];
+    md_kid    = Mid.empty;
   }
 
-let module_ md_nm md_sigs md_ns md_kid =
-  {md_nm;md_sigs;md_ns;md_kid}
+let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid =
+  {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid}
 
 let md_with_primitives s =
-  module_ (fresh_id s) [] ns_with_primitives Mid.empty
+  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns] Mid.empty
 
-let md_find_ts md s = ns_find_ts md.md_ns s
-let md_find_ls md s = ns_find_ls md.md_ns s
-let md_find_xs md s = ns_find_xs md.md_ns s
-let md_find_ns md s = ns_find_ns md.md_ns s
+let md_add ns_add md s x =
+  match md.md_in_ns, md.md_out_ns with
+  | i0 :: ins, o0 :: ons ->
+     {md with md_in_ns  = ns_add i0 s x :: ins;
+              md_out_ns = ns_add o0 s x :: ons}
+  | _ -> assert false
 
-let md_find_id md id = Mid.find id md.md_kid
-
-let add_ts  md s ts = {md with md_ns = ns_add_ts md.md_ns s ts}
-let add_ls  md s ls = {md with md_ns = ns_add_ls md.md_ns s ls}
-let add_xs  md s xs = {md with md_ns = ns_add_xs md.md_ns s xs}
+let add_ts  = md_add ns_add_ts
+let add_ls  = md_add ns_add_ls
+let add_xs  = md_add ns_add_xs
+let add_ns  = md_add ns_add_ns
 let add_kid md id s = {md with md_kid = Mid.add id s md.md_kid}
-let add_sig md sig_ = {md with md_sigs = sig_::md.md_sigs}
+let add_sig md sig_ = match md.md_sigs with
+  | s0 :: sl ->
+     {md with md_sigs = (sig_ :: s0) :: sl}
+  | _ -> assert false
 
-let add_ns_to_md ns md =
-  let md_ns = join_ns md.md_ns ns in
-  { md with md_ns }
+let open_module md s =
+  match md.md_in_ns with
+  | i0 :: _ ->
+     {md with md_prefix = s :: md.md_prefix;
+              md_sigs   = [] :: md.md_sigs;
+              md_in_ns  = i0 :: md.md_in_ns;
+              md_out_ns = empty_ns :: md.md_out_ns}
+  | _ -> assert false
 
-let add_md f source target =
-  let target = add_ns_to_md source.md_ns target in
-  let target = {target with md_ns = ns_add_ns target.md_ns f source.md_ns} in
-  let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
-  (* CHECK we taking all the known ids from source, but in fact we
-     just need those from ml *)
-  let kid = Mid.union combine source.md_kid target.md_kid in
-  {target with md_kid = kid}
+let close_module md =
+  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+     {md with md_prefix = pl;
+              md_in_ns  = ns_add_ns i1 p0 o0 :: ins;
+              md_out_ns = ns_add_ns o1 p0 o0 :: ons;
+              md_sigs   = sl;}
+  | _ -> assert false
+
+let close_merge_module md =
+  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+     let i1, o1 = merge_ns o0 i1, merge_ns o0 o1 in
+     let i1, o1 = ns_add_ns i1 p0 o0, ns_add_ns o1 p0 o0 in
+     {md with md_prefix = pl;
+              md_in_ns  = i1 :: ins;
+              md_out_ns = o1 :: ons;
+              md_sigs   = sl}
+  | _ -> assert false
+
+let wrap_up_module md =
+  {md with md_sigs = List.rev md.md_sigs}
+
+let get_top_sigs md = match md.md_sigs with
+  | s0 :: _ -> List.rev s0
+  | _ -> assert false
+
+let get_top_in_ns md = match md.md_in_ns with
+  | i0 :: _ -> i0
+  | _ -> assert false
+
+(* let add_ns_to_md ns md =
+ *   let md_in_ns = join_ns md.md_in_ns ns in
+ *   { md with md_in_ns } *)
+
+(* let add_md f kid ns md =
+ *   let md = add_ns_to_md ns md in
+ *   let md = {md with md_in_ns = ns_add_ns md.md_in_ns f ns} in
+ *   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
+ *   (\* CHECK we taking all the known ids from source, but in fact we
+ *      just need those from ml *\)
+ *   let kid = Mid.union combine kid md.md_kid in
+ *   {md with md_kid = kid} *)
 
 let add_sig_contents md sig_ =
   let md = add_sig md sig_ in
@@ -178,9 +225,6 @@ let add_sig_contents md sig_ =
      add_kid md te.exn_constructor.ext_ident sig_
   | _ -> md (* TODO *)
 
-let close_md md =
-  {md with md_sigs = List.rev md.md_sigs}
-
 (** Pretty printing *)
 
 open Opprintast
@@ -200,8 +244,11 @@ let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns} =
     (print_mstr_vals print_xs) ns_xs
     (list ~sep:"\n" constant_string) (ns_names ns_ns)
 
-let rec print_mod fmt {md_nm;md_sigs;md_ns} =
-  pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"
-    print_ident md_nm
-    print_ns md_ns
-    print_signature md_sigs
+let rec print_mod fmt {md_nm;md_sigs;md_out_ns} =
+  match md_out_ns, md_sigs with
+  | o0 :: _, s0 :: _ ->
+     pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"
+       print_ident md_nm
+       print_ns o0
+       print_signature s0
+  | _ -> assert false

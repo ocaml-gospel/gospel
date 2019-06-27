@@ -362,7 +362,7 @@ exception CyclicTypeDecl of string
    - I'm still not sure how I should threat Ptyp_any
    - compare manifest with td_kind
  *)
-let process_sig_type ~loc ?(ghost=false) md r tdl =
+let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
   let add_new tdm ({tname} as td) =
     if Mstr.mem tname.txt tdm then raise (NameClash tname.txt) else
       Mstr.add tname.txt td tdm in
@@ -398,7 +398,7 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
          | [s] when Mstr.mem s tdm ->
             visit ~alias s (Mstr.find s tdm);
             Hstr.find hts s
-         | s -> find_ts ~loc:lid.loc md.md_ns s in
+         | s -> find_ts ~loc:lid.loc ns s in
        if List.length tyl <> ts_arity ts then
          error ~loc:core.ptyp_loc (BadTypeArity (ts, List.length tyl));
        ty_app ts tyl
@@ -476,7 +476,7 @@ let process_sig_type ~loc ?(ghost=false) md r tdl =
       | Ptype_record ldl -> Pty_record (make_rd ldl)
       | Ptype_open -> assert false in
 
-    let td_spec = process_type_spec md.md_kid md.md_ns ty td.tspec in
+    let td_spec = process_type_spec kid ns ty td.tspec in
     let td = type_declaration td_ts td_params td_cstrs td_kind
                td_private td_manifest td_attrs td_spec td_loc in
     Hstr.add htd s td in
@@ -524,12 +524,12 @@ let rec val_parse_core_type ns cty =
    match core type
    3 -
 *)
-let rec process_val_spec md id cty vs =
+let rec process_val_spec kid ns id cty vs =
   check_report ~loc:vs.sp_hd_nm.pid_loc
     (id.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
 
-  let args, ret = val_parse_core_type md.md_ns cty in
+  let args, ret = val_parse_core_type ns cty in
 
   let add_arg la env lal =
     let vs = vs_of_lb_arg la in
@@ -543,7 +543,7 @@ let rec process_val_spec md id cty vs =
     | [], [] -> env, List.rev lal
     | [], _ -> error_report ~loc:(vs.sp_hd_nm.pid_loc) "too few parameters"
     | Uast.Lghost (pid,pty) :: args, _ ->
-       let ty = ty_of_pty md.md_ns pty in
+       let ty = ty_of_pty ns pty in
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lghost vs) env lal in
        process_args args tyl env lal
@@ -571,9 +571,9 @@ let rec process_val_spec md id cty vs =
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
 
   let pre   = List.map (fun (t,c) ->
-                  fmla md.md_kid md.md_ns env t, c) vs.sp_pre in
+                  fmla kid ns env t, c) vs.sp_pre in
 
-  let wr = List.map (fun t -> let dt = dterm md.md_kid md.md_ns env t in
+  let wr = List.map (fun t -> let dt = dterm kid ns env t in
                               term env dt) vs.sp_writes in
 
   let process_xpost mxs (loc,exn) =
@@ -583,11 +583,11 @@ let rec process_val_spec md id cty vs =
       | Some t, None -> Some [t]
       | Some t, Some tl -> Some (t::tl) in
     let process mxs (q,pt) =
-      let xs = find_q_xs md.md_ns q in
+      let xs = find_q_xs ns q in
       match pt with
       | None -> Mxs.update xs (merge_xpost None) mxs
       | Some (p,t) ->
-         let dp = dpattern md.md_kid md.md_ns p in
+         let dp = dpattern kid ns p in
          let ty = match p.pat_desc, xs.xs_type with
            | Pvar vs, Exn_tuple [ty] -> ty
            | Ptuple pl, Exn_tuple tyl ->
@@ -600,7 +600,7 @@ let rec process_val_spec md id cty vs =
          let p,vars = pattern dp in
          let choose_snd _ _ vs = Some vs in
          let env = Mstr.union choose_snd env vars in
-         let t = fmla md.md_kid md.md_ns env t in
+         let t = fmla kid ns env t in
          Mxs.update xs (merge_xpost (Some (p,t))) mxs in
     List.fold_left process mxs exn in
   let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
@@ -612,13 +612,13 @@ let rec process_val_spec md id cty vs =
        process_args vs.sp_hd_ret tyl env []
     | _, _ ->
        process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
-  let post = List.map (fmla md.md_kid md.md_ns env) vs.sp_post in
+  let post = List.map (fmla kid ns env) vs.sp_post in
 
   mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
 
-let process_val ~loc ?(ghost=false) vd md =
+let process_val ~loc ?(ghost=false) kid ns vd =
   let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in
-  let spec = opmap (process_val_spec md id vd.vtype) vd.vspec in
+  let spec = opmap (process_val_spec kid ns id vd.vtype) vd.vspec in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
   mk_sig_item (Sig_val (vd,ghost)) loc
@@ -696,41 +696,60 @@ let process_exception_sig loc ns te =
 
 let rec process_use loc md q =
   let f = match string_list_of_qualid q with [q] -> q | _ -> assert false in
-  let sig_ = mk_sig_item (Sig_use [f]) loc in
-  try add_ns_to_md (find_q_ns md.md_ns q) md, sig_ with Located (_,SymbolNotFound _) ->
+  try add_ns md f (find_q_ns (get_top_in_ns md) q)
+  with Located (_,SymbolNotFound _) ->
     let file = match [f] with
       | []     -> error_report ~loc "Empty use"
       | f :: m -> String.uncapitalize_ascii f ^ ".mli" in
     let sl = Parser_frontend.parse_all file in
-    let md2 =
-      List.fold_left process_signature (md_with_primitives file) sl in
-    add_md f md2 md, sig_
+    let md = open_module md f in
+    let md = List.fold_left process_signature md sl in
+    close_merge_module md
 
-and process_mod loc m = assert false
+and process_mod loc m md = match m.mdtype.mdesc with
+  | Mod_ident li -> assert false
+  | Mod_signature s ->
+     let md = open_module md m.mdname.txt in
+     let md = List.fold_left process_signature md s in
+     let ms = Mod_signature (get_top_sigs md) in
+     let mt = {mt_desc = ms; mt_loc = m.mdtype.mloc;
+               mt_attrs=m.mdtype.mattributes} in
+     let decl = {md_name = fresh_id m.mdname.txt;md_type = mt;
+               md_attrs = m.mdattributes; md_loc = m.mdloc} in
+     close_module md, mk_sig_item (Sig_module decl) loc
+
+  | Mod_functor (nm,mto,mt) -> assert false
+  | Mod_with (mt,cl) -> assert false
+  | Mod_typeof me -> assert false
+  | Mod_extension e -> assert false
+  | Mod_alias nm -> assert false
+
 
 and process_signature md {sdesc;sloc} =
+  let kid,ns = md.md_kid, get_top_in_ns md in
   let md, signature = match sdesc with
-  | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc md r tdl
-  | Uast.Sig_val vd          -> md, process_val ~loc:sloc vd md
+  | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc kid ns r tdl
+  | Uast.Sig_val vd          -> md, process_val ~loc:sloc kid ns vd
   | Uast.Sig_typext te       -> md, mk_sig_item (Sig_typext te) sloc
-  | Uast.Sig_module m        -> assert false
-     (* md, mk_sig_item (Sig_module (process_mod sloc m)) sloc *)
+  | Uast.Sig_module m        -> process_mod sloc m md
   | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
      (* md, mk_sig_item (Sig_recmodule (List.map (process_mod sloc) ml)) sloc *)
   | Uast.Sig_modtype ml      -> not_supported ~loc:sloc "module type not supported"
-  | Uast.Sig_exception te    -> md, process_exception_sig sloc md.md_ns te
+  | Uast.Sig_exception te    -> md, process_exception_sig sloc ns te
   | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
   | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
   | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc
   | Uast.Sig_class_type ctdl -> md, mk_sig_item (Sig_class_type ctdl) sloc
   | Uast.Sig_attribute a     -> md, mk_sig_item (Sig_attribute a) sloc
   | Uast.Sig_extension (e,a) -> md, mk_sig_item (Sig_extension (e,a)) sloc
-  | Uast.Sig_use q           -> process_use sloc md q
-  | Uast.Sig_function f      -> md, process_function md.md_kid md.md_ns f
-  | Uast.Sig_axiom a         -> md, process_axiom sloc md.md_kid md.md_ns a
+  | Uast.Sig_use q           ->
+     process_use sloc md q,
+     mk_sig_item (Sig_use (string_list_of_qualid q)) sloc
+  | Uast.Sig_function f      -> md, process_function kid ns f
+  | Uast.Sig_axiom a         -> md, process_axiom sloc kid ns a
   | Uast.Sig_ghost_type (r,tdl) ->
-     md, process_sig_type ~loc:sloc ~ghost:true md r tdl
-  | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true vd md
+     md, process_sig_type ~loc:sloc ~ghost:true kid ns r tdl
+  | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true kid ns vd
   in add_sig_contents md signature
 
 let () =
