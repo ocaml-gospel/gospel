@@ -170,8 +170,9 @@ let close_merge_module md =
               md_sigs   = sl}
   | _ -> assert false
 
-let wrap_up_module md =
-  {md with md_sigs = List.rev md.md_sigs}
+let wrap_up_module md = match md.md_sigs with
+  | [s] -> {md with md_sigs = [List.rev s]}
+  | _ -> assert false
 
 let get_top_sigs md = match md.md_sigs with
   | s0 :: _ -> List.rev s0

@@ -359,7 +359,7 @@ and module_type =
   }
 
 and module_type_desc =
-  | Mod_ident of ident
+  | Mod_ident of string list
         (* S *)
   | Mod_signature of signature
         (* sig ... end *)
@@ -670,7 +670,7 @@ and print_modyle_type1 f x =
   if x.mt_attrs <> [] then print_module_type f x
   else match x.mt_desc with
     | Mod_ident li ->
-        pp f "%a" print_ident li;
+        pp f "%a" (list ~sep:"." constant_string) li;
     | Mod_alias li ->
         pp f "(module %a)" print_ident li;
     | Mod_signature s ->

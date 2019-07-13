@@ -707,22 +707,30 @@ let rec process_use loc md q =
     close_merge_module md
 
 and process_mod loc m md = match m.mdtype.mdesc with
-  | Mod_ident li -> assert false
   | Mod_signature s ->
      let md = open_module md m.mdname.txt in
      let md = List.fold_left process_signature md s in
-     let ms = Mod_signature (get_top_sigs md) in
-     let mt = {mt_desc = ms; mt_loc = m.mdtype.mloc;
+     let msig = Mod_signature (get_top_sigs md) in
+     let mty = {mt_desc = msig; mt_loc = m.mdtype.mloc;
                mt_attrs=m.mdtype.mattributes} in
-     let decl = {md_name = fresh_id m.mdname.txt;md_type = mt;
+     let decl = {md_name = fresh_id m.mdname.txt;md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc} in
      close_module md, mk_sig_item (Sig_module decl) loc
 
   | Mod_functor (nm,mto,mt) -> assert false
-  | Mod_with (mt,cl) -> assert false
+  | Mod_with (mty,cl) -> assert false
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
-  | Mod_alias nm -> assert false
+  | Mod_ident li -> assert false
+  | Mod_alias li ->
+     let nm = Longident.flatten li.txt in
+     let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
+     let md = add_ns md m.mdname.txt ns in
+     let mty = { mt_desc = Mod_ident nm; mt_loc = m.mdtype.mloc;
+                mt_attrs = m.mdtype.mattributes } in
+     let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
+                md_attrs = m.mdattributes; md_loc = m.mdloc} in
+     md, mk_sig_item (Sig_module decl) loc
 
 
 and process_signature md {sdesc;sloc} =
