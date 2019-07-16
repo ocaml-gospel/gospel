@@ -371,7 +371,7 @@ and module_type_desc =
         (* module type of ME *)
   | Mod_extension of Oparsetree.extension
         (* [%id] *)
-  | Mod_alias of ident
+  | Mod_alias of string list
         (* (module M) *)
 
 let sig_item sig_desc sig_loc = {sig_desc; sig_loc}
@@ -574,7 +574,7 @@ let rec print_signature_item f x =
   | Sig_module ({md_type={mt_desc=Mod_alias alias;
                             mt_attrs=[]; _};_} as pmd) ->
       pp f "@[<hov>module@ %a@ =@ %a@]%a" print_ident pmd.md_name
-        print_ident alias
+        (list ~sep:"." Format.pp_print_string) alias
         (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_module pmd ->
       pp f "@[<hov>module@ %a@ :@ %a@]%a"
@@ -590,16 +590,16 @@ let rec print_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a"
         (module_type reset_ctxt) incl.pincl_mod
         (item_attributes reset_ctxt) incl.pincl_attributes
-  (* | Sig_modtype {mtdname=s; mtdtype=md; mtdattributes=attrs} ->
-   *     pp f "@[<hov2>module@ type@ %a%a@]%a"
-   *       print_ident s
-   *       (fun f md -> match md with
-   *          | None -> ()
-   *          | Some mt ->
-   *              Format.pp_print_space f () ;
-   *              pp f "@ =@ %a" print_module_type mt
-   *       ) md
-   *       (item_attributes reset_ctxt) attrs *)
+  | Sig_modtype {mtd_name=s; mtd_type=md; mtd_attrs=attrs} ->
+      pp f "@[<hov2>module@ type@ %a%a@]%a"
+        print_ident s
+        (fun f md -> match md with
+           | None -> ()
+           | Some mt ->
+               Format.pp_print_space f () ;
+               pp f "@ =@ %a" print_module_type mt
+        ) md
+        (item_attributes reset_ctxt) attrs
   | Sig_class_type (l) -> class_type_declaration_list reset_ctxt f l
   (* | Sig_recmodule decls ->
    *     let rec  string_x_module_type_list f ?(first=true) l =
@@ -624,7 +624,7 @@ let rec print_signature_item f x =
   | Sig_function x -> print_function f x
   | Sig_axiom x -> pp f "(*@@ axiom %a: %a *)"
                      print_ident x.ax_name print_term x.ax_term
-  | Sig_use sl -> pp f "(*@@ use %a *)" (list ~sep:"." constant_string) sl
+  | Sig_use sl -> pp f "(*@@ use %a *)" (list ~sep:"." Format.pp_print_string) sl
   | _ -> assert false
 
 and print_signature f x = list ~sep:"@\n@\n" print_signature_item f x
@@ -670,9 +670,9 @@ and print_modyle_type1 f x =
   if x.mt_attrs <> [] then print_module_type f x
   else match x.mt_desc with
     | Mod_ident li ->
-        pp f "%a" (list ~sep:"." constant_string) li;
+        pp f "%a" (list ~sep:"." Format.pp_print_string) li;
     | Mod_alias li ->
-        pp f "(module %a)" print_ident li;
+        pp f "(module %a)" (list ~sep:"." Format.pp_print_string) li
     | Mod_signature s ->
         pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
           (list print_signature_item) s (* FIXME wrong indentation*)

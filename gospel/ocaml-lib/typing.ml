@@ -26,6 +26,7 @@ let find_ts ?loc = ns_find ?loc ns_find_ts
 let find_ls ?loc = ns_find ?loc ns_find_ls
 let find_xs ?loc = ns_find ?loc ns_find_xs
 let find_ns ?loc = ns_find ?loc ns_find_ns
+let find_tns ?loc = ns_find ?loc ns_find_tns
 
 let find_q (f:?loc:Location.t -> 'a) ns q =
   let ln = string_list_of_qualid q in
@@ -706,58 +707,153 @@ let rec process_use loc md q =
     let md = List.fold_left process_signature md sl in
     close_merge_module md
 
-and process_mod loc m md = match m.mdtype.mdesc with
-  | Mod_signature s ->
-     let md = open_module md m.mdname.txt in
-     let md = List.fold_left process_signature md s in
-     let msig = Mod_signature (get_top_sigs md) in
-     let mty = {mt_desc = msig; mt_loc = m.mdtype.mloc;
-               mt_attrs=m.mdtype.mattributes} in
-     let decl = {md_name = fresh_id m.mdname.txt;md_type = mty;
-               md_attrs = m.mdattributes; md_loc = m.mdloc} in
-     close_module md, mk_sig_item (Sig_module decl) loc
-
+(* assumes that a new namespace has been opened *)
+and process_modtype md mty = match mty.mdesc with
+  | Mod_signature usig ->
+     let md = List.fold_left process_signature md usig in
+     let tsig = Mod_signature (get_top_sigs md) in
+     let tmty = {mt_desc = tsig; mt_loc = mty.mloc;
+                 mt_attrs = mty.mattributes} in
+     md, tmty
+  | Mod_ident li ->
+     (* module type MTB = *MTA*  module MA : *MTA* *)
+     let nm = Longident.flatten li.txt in
+     let tmty = {mt_desc = Mod_ident nm; mt_loc = mty.mloc;
+                 mt_attrs = mty.mattributes} in
+     let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
+     add_ns_top md ns, tmty
+  | Mod_alias li ->
+     (* module MB = *MA* *)
+     let nm = Longident.flatten li.txt in
+     let tmty = {mt_desc = Mod_alias nm; mt_loc = mty.mloc;
+                 mt_attrs = mty.mattributes} in
+     let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
+     add_ns_top md ns, tmty
   | Mod_functor (nm,mto,mt) -> assert false
   | Mod_with (mty,cl) -> assert false
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
-  | Mod_ident li -> assert false
-  | Mod_alias li ->
-     let nm = Longident.flatten li.txt in
-     let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
-     let md = add_ns md m.mdname.txt ns in
-     let mty = { mt_desc = Mod_ident nm; mt_loc = m.mdtype.mloc;
-                mt_attrs = m.mdtype.mattributes } in
-     let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
-                md_attrs = m.mdattributes; md_loc = m.mdloc} in
-     md, mk_sig_item (Sig_module decl) loc
 
+(* TODO not the best code. Function process_mod and
+   process_mod_type_decl can be simplified and there's some code
+   replication *)
+and process_mod loc m md =
+  let nm = m.mdname.txt in
+  let md = open_module md nm in
+  let md, mty = process_modtype md m.mdtype in
+  let decl = { md_name = fresh_id nm; md_type = mty;
+               md_attrs = m.mdattributes; md_loc = m.mdloc } in
+  close_module md, mk_sig_item (Sig_module decl) loc
+
+  (* match m.mdtype.mdesc with
+   * | Mod_signature s ->
+   *    let md = open_module md m.mdname.txt in
+   *    let md = List.fold_left process_signature md s in
+   *    let msig = Mod_signature (get_top_sigs md) in
+   *    let mty = {mt_desc = msig; mt_loc = m.mdtype.mloc;
+   *               mt_attrs=m.mdtype.mattributes} in
+   *    let decl = {md_name = fresh_id m.mdname.txt;md_type = mty;
+   *                md_attrs = m.mdattributes; md_loc = m.mdloc} in
+   *    close_module md, mk_sig_item (Sig_module decl) loc
+   *
+   * | Mod_functor (nm,mto,mt) -> assert false
+   * | Mod_with (mty,cl) -> assert false
+   * | Mod_typeof me -> assert false
+   * | Mod_extension e -> assert false
+   * | Mod_ident li ->
+   *    let nm = Longident.flatten li.txt in
+   *    let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
+   *    let md = add_ns md m.mdname.txt ns in
+   *    let mty = { mt_desc = Mod_ident nm; mt_loc = m.mdtype.mloc;
+   *                mt_attrs = m.mdtype.mattributes } in
+   *    let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
+   *                 md_attrs = m.mdattributes; md_loc = m.mdloc} in
+   *    md, mk_sig_item (Sig_module decl) loc
+   * | Mod_alias li ->Format.eprintf "\nModule decl\n\n@."; assert false
+   *    (\* let nm = Longident.flatten li.txt in
+   *     * let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
+   *     * let md = add_ns md m.mdname.txt ns in
+   *     * let mty = { mt_desc = Mod_alias nm; mt_loc = m.mdtype.mloc;
+   *     *             mt_attrs = m.mdtype.mattributes } in
+   *     * let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
+   *     *              md_attrs = m.mdattributes; md_loc = m.mdloc} in
+   *     * md, mk_sig_item (Sig_module decl) loc *\) *)
+
+and process_modtype_decl loc decl md =
+  let nm = decl.mtdname.txt in
+  let md = open_module md nm in
+  let md_mty = opmap (process_modtype md) decl.mtdtype in
+  let md, mty = match md_mty with
+    | None -> md, None
+    | Some (md,mty) -> md, Some mty in
+  let decl = {mtd_name = fresh_id nm; mtd_type = mty;
+              mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
+  close_module_type md, mk_sig_item (Sig_modtype decl) loc
+
+  (* match mty_decl.mtdtype with
+   * | None ->
+   *    let nm = mty_decl.mtdname.txt in
+   *    let md = open_module md nm in
+   *    let decl = {mtd_name = fresh_id nm; mtd_type = None;
+   *                mtd_attrs = mty_decl.mtdattributes;
+   *                mtd_loc = mty_decl.mtdloc} in
+   *    close_module_type md, mk_sig_item (Sig_modtype decl) loc
+   * | Some mty -> begin
+   *     match mty.mdesc with
+   *     | Mod_signature s ->
+   *        let md = open_module md mty_decl.mtdname.txt in
+   *        let md = List.fold_left process_signature md s in
+   *        let msig = Mod_signature (get_top_sigs md) in
+   *        let mty = {mt_desc = msig; mt_loc = mty.mloc;
+   *                   mt_attrs=mty.mattributes} in
+   *        let decl = {mtd_name = fresh_id mty_decl.mtdname.txt;
+   *                    mtd_type = Some mty;
+   *                    mtd_attrs = mty_decl.mtdattributes;
+   *                    mtd_loc = mty_decl.mtdloc} in
+   *        close_module_type md, mk_sig_item (Sig_modtype decl) loc
+   *     | Mod_functor (nm,mto,mt) -> assert false
+   *     | Mod_with (mty,cl) -> assert false
+   *     | Mod_typeof me -> assert false
+   *     | Mod_extension e -> assert false
+   *     | Mod_ident li ->
+   *        let nm = Longident.flatten li.txt in
+   *        let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
+   *        let md = add_tns md mty_decl.mtdname.txt ns in
+   *        let mty = { mt_desc = Mod_ident nm; mt_loc = mty.mloc;
+   *                    mt_attrs = mty.mattributes } in
+   *        let decl = { mtd_name = fresh_id mty_decl.mtdname.txt;
+   *                     mtd_type = Some mty;
+   *                     mtd_attrs = mty_decl.mtdattributes;
+   *                     mtd_loc = mty_decl.mtdloc} in
+   *        md, mk_sig_item (Sig_modtype decl) loc
+   *     | Mod_alias li -> Format.eprintf "\nTYPE DECL\n\n@."; assert false(\* assert false *\)
+   *   end *)
 
 and process_signature md {sdesc;sloc} =
   let kid,ns = md.md_kid, get_top_in_ns md in
   let md, signature = match sdesc with
-  | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc kid ns r tdl
-  | Uast.Sig_val vd          -> md, process_val ~loc:sloc kid ns vd
-  | Uast.Sig_typext te       -> md, mk_sig_item (Sig_typext te) sloc
-  | Uast.Sig_module m        -> process_mod sloc m md
-  | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
-     (* md, mk_sig_item (Sig_recmodule (List.map (process_mod sloc) ml)) sloc *)
-  | Uast.Sig_modtype ml      -> not_supported ~loc:sloc "module type not supported"
-  | Uast.Sig_exception te    -> md, process_exception_sig sloc ns te
-  | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
-  | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
-  | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc
-  | Uast.Sig_class_type ctdl -> md, mk_sig_item (Sig_class_type ctdl) sloc
-  | Uast.Sig_attribute a     -> md, mk_sig_item (Sig_attribute a) sloc
-  | Uast.Sig_extension (e,a) -> md, mk_sig_item (Sig_extension (e,a)) sloc
-  | Uast.Sig_use q           ->
-     process_use sloc md q,
-     mk_sig_item (Sig_use (string_list_of_qualid q)) sloc
-  | Uast.Sig_function f      -> md, process_function kid ns f
-  | Uast.Sig_axiom a         -> md, process_axiom sloc kid ns a
-  | Uast.Sig_ghost_type (r,tdl) ->
-     md, process_sig_type ~loc:sloc ~ghost:true kid ns r tdl
-  | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true kid ns vd
+    | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc kid ns r tdl
+    | Uast.Sig_val vd          -> md, process_val ~loc:sloc kid ns vd
+    | Uast.Sig_typext te       -> md, mk_sig_item (Sig_typext te) sloc
+    | Uast.Sig_module m        -> process_mod sloc m md
+    | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
+    (* md, mk_sig_item (Sig_recmodule (List.map (process_mod sloc) ml)) sloc *)
+    | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl md
+    | Uast.Sig_exception te    -> md, process_exception_sig sloc ns te
+    | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
+    | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
+    | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc
+    | Uast.Sig_class_type ctdl -> md, mk_sig_item (Sig_class_type ctdl) sloc
+    | Uast.Sig_attribute a     -> md, mk_sig_item (Sig_attribute a) sloc
+    | Uast.Sig_extension (e,a) -> md, mk_sig_item (Sig_extension (e,a)) sloc
+    | Uast.Sig_use q           ->
+       process_use sloc md q,
+       mk_sig_item (Sig_use (string_list_of_qualid q)) sloc
+    | Uast.Sig_function f      -> md, process_function kid ns f
+    | Uast.Sig_axiom a         -> md, process_axiom sloc kid ns a
+    | Uast.Sig_ghost_type (r,tdl) ->
+       md, process_sig_type ~loc:sloc ~ghost:true kid ns r tdl
+    | Uast.Sig_ghost_val vd    -> md, process_val ~loc:sloc ~ghost:true kid ns vd
   in add_sig_contents md signature
 
 let () =

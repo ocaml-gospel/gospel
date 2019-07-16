@@ -7,17 +7,19 @@ open Tast
 (** Namespace *)
 
 type namespace = {
-    ns_ts : tysymbol  Mstr.t;
-    ns_ls : lsymbol   Mstr.t;
-    ns_xs : xsymbol   Mstr.t;
-    ns_ns : namespace Mstr.t
+    ns_ts  : tysymbol  Mstr.t;
+    ns_ls  : lsymbol   Mstr.t;
+    ns_xs  : xsymbol   Mstr.t;
+    ns_ns  : namespace Mstr.t;
+    ns_tns : namespace Mstr.t
 }
 
 let empty_ns = {
-    ns_ts = Mstr.empty;
-    ns_ls = Mstr.empty;
-    ns_xs = Mstr.empty;
-    ns_ns = Mstr.empty
+    ns_ts  = Mstr.empty;
+    ns_ls  = Mstr.empty;
+    ns_xs  = Mstr.empty;
+    ns_ns  = Mstr.empty;
+    ns_tns = Mstr.empty
   }
 
 exception NameClash of string
@@ -29,6 +31,8 @@ let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
 let ns_add_xs ns s xs = {ns with ns_xs = Mstr.add s xs ns.ns_xs}
 let ns_add_ns ns s new_ns =
   {ns with ns_ns = Mstr.add s new_ns ns.ns_ns}
+let ns_add_tns ns s tns =
+  {ns with ns_tns = Mstr.add s tns ns.ns_tns}
 
 let merge_ns old_ns new_ns =
   let choose_snd _ _ x = Some x in
@@ -36,26 +40,19 @@ let merge_ns old_ns new_ns =
   { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
     ns_ls = union old_ns.ns_ls new_ns.ns_ls;
     ns_xs = union old_ns.ns_xs new_ns.ns_xs;
-    ns_ns = union old_ns.ns_ns new_ns.ns_ns;}
+    ns_ns = union old_ns.ns_ns new_ns.ns_ns;
+    ns_tns = union old_ns.ns_tns new_ns.ns_tns;}
 
 let rec ns_find get_map ns = function
   | [] -> assert false
   | [x] -> Mstr.find x (get_map ns)
   | x::xs -> ns_find get_map (Mstr.find x ns.ns_ns) xs
 
-let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts) ns s
-let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls) ns s
-let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
-let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
-
-(* let rec add_ns_under_name ml source target = match ml with
- *   | []    -> assert false
- *   | [s]   -> ns_add_ns target s source
- *   | x::xs ->
- *      let ns = try Mstr.find x target.ns_ns with
- *                 Not_found -> empty_ns in
- *      let ns = add_ns_under_name xs source ns in
- *      ns_add_ns target x ns *)
+let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts)   ns s
+let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls)   ns s
+let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs)   ns s
+let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns)   ns s
+let ns_find_tns ns s = ns_find (fun ns -> ns.ns_tns) ns s
 
 let ns_with_primitives =
   (* There is a good reason for these types to be built-in: they are
@@ -109,15 +106,6 @@ type module_uc = {
     md_kid    : known_ids;
 }
 
-let empty_module id = {
-    md_nm     = id;
-    md_sigs   = [];
-    md_prefix = [id.id_str];
-    md_in_ns  = [empty_ns];
-    md_out_ns = [empty_ns];
-    md_kid    = Mid.empty;
-  }
-
 let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid =
   {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid}
 
@@ -131,15 +119,29 @@ let md_add ns_add md s x =
               md_out_ns = ns_add o0 s x :: ons}
   | _ -> assert false
 
-let add_ts  = md_add ns_add_ts
-let add_ls  = md_add ns_add_ls
-let add_xs  = md_add ns_add_xs
-let add_ns  = md_add ns_add_ns
-let add_kid md id s = {md with md_kid = Mid.add id s md.md_kid}
-let add_sig md sig_ = match md.md_sigs with
+let add_ts   = md_add ns_add_ts
+let add_ls   = md_add ns_add_ls
+let add_xs   = md_add ns_add_xs
+let add_ns   = md_add ns_add_ns
+let add_tns  = md_add ns_add_tns
+
+let add_kid md id s =
+  {md with md_kid = Mid.add id s md.md_kid}
+
+let add_sig md sig_ =
+  match md.md_sigs with
   | s0 :: sl ->
      {md with md_sigs = (sig_ :: s0) :: sl}
   | _ -> assert false
+
+let add_ns_top md ns =
+  let add f md map = Mstr.fold (fun s v md -> f md s v) map md in
+  let md = add add_ts  md ns.ns_ts in
+  let md = add add_ls  md ns.ns_ls in
+  let md = add add_xs  md ns.ns_xs in
+  let md = add add_ns  md ns.ns_ns in
+  let md = add add_tns md ns.ns_tns in
+  md
 
 let open_module md s =
   match md.md_in_ns with
@@ -168,6 +170,15 @@ let close_merge_module md =
               md_in_ns  = i1 :: ins;
               md_out_ns = o1 :: ons;
               md_sigs   = sl}
+  | _ -> assert false
+
+let close_module_type md =
+  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+     {md with md_prefix = pl;
+              md_in_ns  = ns_add_tns i1 p0 o0 :: ins;
+              md_out_ns = ns_add_tns o1 p0 o0 :: ons;
+              md_sigs   = sl;}
   | _ -> assert false
 
 let wrap_up_module md = match md.md_sigs with
@@ -230,6 +241,13 @@ let add_sig_contents md sig_ =
 
 open Opprintast
 
+let rec tree_ns f fmt ns =
+  Mstr.iter (fun s ns ->
+      if f ns = Mstr.empty then
+        pp fmt "@[%s@\n@]" s
+      else
+        pp fmt "@[%s:@\n@ @[%a@]@\n@]" s (tree_ns f) (f ns)) ns
+
 let rec ns_names nsm =
   List.map fst (Mstr.bindings nsm)
 
@@ -237,13 +255,16 @@ let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
   Mstr.iter (fun _ -> print_elem) m
 
-let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns} =
+let print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
   pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@\nException \
-          Symbols@\n%a@\nNamespaces@\n%a@.@]"
+          Symbols@\n%a@\nNamespaces@\n%a@\nType Namespaces@\n%a@.@]"
     (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl) ns_ls
     (print_mstr_vals print_xs) ns_xs
-    (list ~sep:"\n" constant_string) (ns_names ns_ns)
+    (tree_ns (fun ns -> ns.ns_ns)) ns_ns
+    (tree_ns (fun ns -> ns.ns_tns)) ns_tns
+    (* (list ~sep:"\n" constant_string) (ns_names ns_ns)
+     * (list ~sep:"\n" constant_string) (ns_names ns_tns) *)
 
 let rec print_mod fmt {md_nm;md_sigs;md_out_ns} =
   match md_out_ns, md_sigs with
