@@ -285,16 +285,16 @@ type rec_flag = Nonrecursive | Recursive
 type ghost    = bool
 
 type with_constraint =
-  | Wtype of ident * type_declaration
+  | Wty of ident * type_declaration
         (* with type X.t = ...
 
            Note: the last component of the longident must match
            the name of the type_declaration. *)
-  | Wmodule of ident * ident
+  | Wmod of ident * ident
         (* with module X.Y = Z *)
-  | Wtypesubst of ident * type_declaration
+  | Wtysubs of ident * type_declaration
         (* with type X.t := ..., same format as [Pwith_type] *)
-  | Wmodsubst of ident * ident
+  | Wmodsubs of ident * ident
         (* with module X.Y := Z *)
 
 type signature = signature_item list
@@ -647,20 +647,20 @@ and print_module_type f x =
     | Mod_with (mt, []) -> print_module_type f mt
     | Mod_with (mt, l) ->
         let with_constraint f = function
-          | Wtype (li, ({td_params= ls ;_} as td)) ->
+          | Wty (li, ({td_params= ls ;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a =@ %a"
                 (list print_tv ~sep:"," ~first:"(" ~last:")")
                 ls print_ident li print_type_declaration td
-          | Wmodule (li, li2) ->
+          | Wmod (li, li2) ->
               pp f "module %a =@ %a" print_ident li print_ident li2;
-          | Wtypesubst (li, ({td_params=ls;_} as td)) ->
+          | Wtysubs (li, ({td_params=ls;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a :=@ %a"
                 (list print_tv ~sep:"," ~first:"(" ~last:")")
                 ls print_ident li
                 print_type_declaration td
-          | Wmodsubst (li, li2) ->
+          | Wmodsubs (li, li2) ->
              pp f "module %a :=@ %a" print_ident li print_ident li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
           print_modyle_type1 mt (list with_constraint ~sep:"@ and@ ") l

@@ -708,35 +708,42 @@ let rec process_use loc md q =
     close_merge_module md
 
 (* assumes that a new namespace has been opened *)
-and process_modtype md mty = match mty.mdesc with
+and process_modtype md umty = match umty.mdesc with
   | Mod_signature usig ->
      let md = List.fold_left process_signature md usig in
      let tsig = Mod_signature (get_top_sigs md) in
-     let tmty = {mt_desc = tsig; mt_loc = mty.mloc;
-                 mt_attrs = mty.mattributes} in
+     let tmty = {mt_desc = tsig; mt_loc = umty.mloc;
+                 mt_attrs = umty.mattributes} in
      md, tmty
   | Mod_ident li ->
      (* module type MTB = *MTA*  module MA : *MTA* *)
      let nm = Longident.flatten li.txt in
-     let tmty = {mt_desc = Mod_ident nm; mt_loc = mty.mloc;
-                 mt_attrs = mty.mattributes} in
+     let tmty = {mt_desc = Mod_ident nm; mt_loc = umty.mloc;
+                 mt_attrs = umty.mattributes} in
      let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
      add_ns_top md ns, tmty
   | Mod_alias li ->
      (* module MB = *MA* *)
      let nm = Longident.flatten li.txt in
-     let tmty = {mt_desc = Mod_alias nm; mt_loc = mty.mloc;
-                 mt_attrs = mty.mattributes} in
+     let tmty = {mt_desc = Mod_alias nm; mt_loc = umty.mloc;
+                 mt_attrs = umty.mattributes} in
      let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
      add_ns_top md ns, tmty
+  | Mod_with (umty2,cl) ->
+     let md, tmty2 = process_modtype md umty2 in
+     let process_constraint md c = match c with
+       | Wtype (li,tyd) -> assert false
+       | Wtypesubst (li,tyd) -> assert false
+       | Wmodule (li1,li2) -> assert false
+       | Wmodsubst (li1,li2) -> assert false in
+     let md,cl = List.fold_left process_constraint (md,[]) cl in
+     let tmty = {mt_desc = Mod_with (tmty2,List.rev cl); mt_loc = umty.mloc;
+                 mt_attrs = umty.mattributes} in
+     md, tmty
   | Mod_functor (nm,mto,mt) -> assert false
-  | Mod_with (mty,cl) -> assert false
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
 
-(* TODO not the best code. Function process_mod and
-   process_mod_type_decl can be simplified and there's some code
-   replication *)
 and process_mod loc m md =
   let nm = m.mdname.txt in
   let md = open_module md nm in
@@ -744,40 +751,6 @@ and process_mod loc m md =
   let decl = { md_name = fresh_id nm; md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc } in
   close_module md, mk_sig_item (Sig_module decl) loc
-
-  (* match m.mdtype.mdesc with
-   * | Mod_signature s ->
-   *    let md = open_module md m.mdname.txt in
-   *    let md = List.fold_left process_signature md s in
-   *    let msig = Mod_signature (get_top_sigs md) in
-   *    let mty = {mt_desc = msig; mt_loc = m.mdtype.mloc;
-   *               mt_attrs=m.mdtype.mattributes} in
-   *    let decl = {md_name = fresh_id m.mdname.txt;md_type = mty;
-   *                md_attrs = m.mdattributes; md_loc = m.mdloc} in
-   *    close_module md, mk_sig_item (Sig_module decl) loc
-   *
-   * | Mod_functor (nm,mto,mt) -> assert false
-   * | Mod_with (mty,cl) -> assert false
-   * | Mod_typeof me -> assert false
-   * | Mod_extension e -> assert false
-   * | Mod_ident li ->
-   *    let nm = Longident.flatten li.txt in
-   *    let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
-   *    let md = add_ns md m.mdname.txt ns in
-   *    let mty = { mt_desc = Mod_ident nm; mt_loc = m.mdtype.mloc;
-   *                mt_attrs = m.mdtype.mattributes } in
-   *    let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
-   *                 md_attrs = m.mdattributes; md_loc = m.mdloc} in
-   *    md, mk_sig_item (Sig_module decl) loc
-   * | Mod_alias li ->Format.eprintf "\nModule decl\n\n@."; assert false
-   *    (\* let nm = Longident.flatten li.txt in
-   *     * let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
-   *     * let md = add_ns md m.mdname.txt ns in
-   *     * let mty = { mt_desc = Mod_alias nm; mt_loc = m.mdtype.mloc;
-   *     *             mt_attrs = m.mdtype.mattributes } in
-   *     * let decl = { md_name = fresh_id m.mdname.txt;md_type = mty;
-   *     *              md_attrs = m.mdattributes; md_loc = m.mdloc} in
-   *     * md, mk_sig_item (Sig_module decl) loc *\) *)
 
 and process_modtype_decl loc decl md =
   let nm = decl.mtdname.txt in
@@ -789,45 +762,6 @@ and process_modtype_decl loc decl md =
   let decl = {mtd_name = fresh_id nm; mtd_type = mty;
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
   close_module_type md, mk_sig_item (Sig_modtype decl) loc
-
-  (* match mty_decl.mtdtype with
-   * | None ->
-   *    let nm = mty_decl.mtdname.txt in
-   *    let md = open_module md nm in
-   *    let decl = {mtd_name = fresh_id nm; mtd_type = None;
-   *                mtd_attrs = mty_decl.mtdattributes;
-   *                mtd_loc = mty_decl.mtdloc} in
-   *    close_module_type md, mk_sig_item (Sig_modtype decl) loc
-   * | Some mty -> begin
-   *     match mty.mdesc with
-   *     | Mod_signature s ->
-   *        let md = open_module md mty_decl.mtdname.txt in
-   *        let md = List.fold_left process_signature md s in
-   *        let msig = Mod_signature (get_top_sigs md) in
-   *        let mty = {mt_desc = msig; mt_loc = mty.mloc;
-   *                   mt_attrs=mty.mattributes} in
-   *        let decl = {mtd_name = fresh_id mty_decl.mtdname.txt;
-   *                    mtd_type = Some mty;
-   *                    mtd_attrs = mty_decl.mtdattributes;
-   *                    mtd_loc = mty_decl.mtdloc} in
-   *        close_module_type md, mk_sig_item (Sig_modtype decl) loc
-   *     | Mod_functor (nm,mto,mt) -> assert false
-   *     | Mod_with (mty,cl) -> assert false
-   *     | Mod_typeof me -> assert false
-   *     | Mod_extension e -> assert false
-   *     | Mod_ident li ->
-   *        let nm = Longident.flatten li.txt in
-   *        let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
-   *        let md = add_tns md mty_decl.mtdname.txt ns in
-   *        let mty = { mt_desc = Mod_ident nm; mt_loc = mty.mloc;
-   *                    mt_attrs = mty.mattributes } in
-   *        let decl = { mtd_name = fresh_id mty_decl.mtdname.txt;
-   *                     mtd_type = Some mty;
-   *                     mtd_attrs = mty_decl.mtdattributes;
-   *                     mtd_loc = mty_decl.mtdloc} in
-   *        md, mk_sig_item (Sig_modtype decl) loc
-   *     | Mod_alias li -> Format.eprintf "\nTYPE DECL\n\n@."; assert false(\* assert false *\)
-   *   end *)
 
 and process_signature md {sdesc;sloc} =
   let kid,ns = md.md_kid, get_top_in_ns md in
