@@ -40,8 +40,8 @@ end
 module MF : MTF
 
 val default : MF.ft -> MF.ft
-(* @ x = default y
-    requires A.fp1 y
-    ensures A.fp2 x
+(*@ x = default y
+    requires MF.fp1 y
+    ensures MF.fp2 x
  *)
 

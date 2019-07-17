@@ -16,7 +16,7 @@ type 'a test5 = T9 of int * 'a
 
 type ('a,'b) test6 = T10 of int * 'a | T11 of 'b * 'a
 
-type (_,'g) test7 = T12 of 'g * int
+type ('x,'g) test7 = T12 of 'g * int
 
 type t10 = {x:int}
 
@@ -30,9 +30,9 @@ type 'a t14 = T14 of {x:'a; y:int}
 
 type 'a t15 = T151 of {x:'a; y:int} | T152 of int * 'a
 
-type 'a t16 constraint 'a = int
+type 'a t16 = int
 
-type 'a t17 constraint int * float = 'a
+type 'a t17 = 'a
 
 type ('a,'b,'c) t18 = C1 of 'a * 'b
                     | C2 of {i: int; a:'a}

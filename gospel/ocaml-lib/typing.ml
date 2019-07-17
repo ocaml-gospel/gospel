@@ -364,33 +364,31 @@ exception CyclicTypeDecl of string
    - compare manifest with td_kind
  *)
 let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
-  let add_new tdm ({tname} as td) =
-    if Mstr.mem tname.txt tdm then raise (NameClash tname.txt) else
-      Mstr.add tname.txt td tdm in
+  let add_new tdm td =
+    if Mstr.mem td.tname.txt tdm then raise (NameClash td.tname.txt) else
+      Mstr.add td.tname.txt td tdm in
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hstr.create 5 in
   let htd = Hstr.create 5 in
   let open Oparsetree in
 
-  let rec parse_core ~alias tvl core = match core.ptyp_desc with
+  let rec parse_core alias tvl core = match core.ptyp_desc with
     | Ptyp_any ->
-       fresh_ty_var "_" (* TODO not sure about this - i think we should
-                        not support this *)
+       not_supported ~loc:core.ptyp_loc "_ type parameters not supported yet"
     | Ptyp_var s -> begin
        try {ty_node = Tyvar (Mstr.find s tvl)} with Not_found ->
          error ~loc:core.ptyp_loc (UnboundVar s) end
-    (* TODO use smart-constructor ? *)
     | Ptyp_arrow (lbl,ct1,ct2) ->
        assert (lbl != Nolabel); (* TODO check what to do *)
-       let ty1, ty2 = parse_core ~alias tvl ct1,
-                      parse_core ~alias tvl ct2 in
+       let ty1, ty2 = parse_core alias tvl ct1,
+                      parse_core alias tvl ct2 in
        ty_app ts_arrow [ty1;ty2]
     | Ptyp_tuple ctl ->
-       let tyl = List.map (parse_core ~alias tvl) ctl in
+       let tyl = List.map (parse_core alias tvl) ctl in
        ty_app (ts_tuple (List.length tyl)) tyl
     | Ptyp_constr (lid,ctl) ->
        let idl = Longident.flatten lid.txt in
-       let tyl = List.map (parse_core ~alias tvl) ctl in
+       let tyl = List.map (parse_core alias tvl) ctl in
        let ts = match idl with
          | [s] when Sstr.mem s alias ->
             error ~loc:core.ptyp_loc (CyclicTypeDecl s)
@@ -403,57 +401,47 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
        if List.length tyl <> ts_arity ts then
          error ~loc:core.ptyp_loc (BadTypeArity (ts, List.length tyl));
        ty_app ts tyl
-    | _ -> assert false (* TODO what to do with other cases? keep them
-                           as they are? *)
+    | _ -> assert false (* TODO what to do with other cases? *)
 
-  (* TODO in the style of why3 use an alias set for the types
-     currently visited and an alg for the type symbols known *)
-  and visit ~alias s td : unit =
-    let id = fresh_id s in
-    let td_private = private_flag td.tprivate in
-    let td_attrs = td.tattributes and td_loc = td.tloc in
-    let td_ts = ts id (List.length td.tparams) in
-    Hstr.add hts s td_ts;
+  and visit ~alias s td =
 
-    let parse_params (tvl,params,vs) (ct,v) = match ct.ptyp_desc with
-      | Ptyp_any -> tvl, tv_of_string "_" :: params, variance v :: vs
+    let parse_params (ct,v) (tvl,params,vs) = match ct.ptyp_desc with
       | Ptyp_var s ->
          let tv = tv_of_string s in
          Mstr.add s tv tvl, tv :: params, variance v :: vs
-      | _ -> assert false (* should not happen *) in
-    let tvl,params,vl =
-      List.fold_left parse_params (Mstr.empty,[],[]) td.tparams in
-    let params,vl = List.rev params, List.rev vl in
-    let ty = ty_app td_ts (List.map ty_of_var params) in
-    let td_params = List.combine params vl in
+      | Ptyp_any ->
+         not_supported ~loc:ct.ptyp_loc "_ type parameters not supported yet"
+      | _ -> assert false (* should not happen -- see parser optional_type_variable *)
+    in
 
-    let alias = Sstr.add s alias in
-    let td_manifest = opmap (parse_core ~alias tvl) td.tmanifest; in
+    let tvl,params,variance_list =
+      List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
-    let constraints (ct1,ct2,l) =
-      parse_core ~alias tvl ct1, parse_core ~alias tvl ct2,l in
-    let td_cstrs = List.map constraints td.tcstrs in
+    let manifest = opmap (parse_core (Sstr.add s alias) tvl) td.tmanifest in
+    let td_ts = ts_with_alias (fresh_id s) params manifest in
+    Hstr.add hts s td_ts;
 
-    let alias = Sstr.empty in (* TODO check if this is the right place to do it *)
-
-    let make_rd ?(constr=false) ldl =
+    let make_rd ?(constr=false) ty alias ldl =
       let cs_id = fresh_id ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
-                          parse_core ~alias tvl ld.pld_type) ldl in
+                          parse_core alias tvl ld.pld_type) ldl in
       let rd_cs = fsymbol ~constr:true cs_id fields_ty ty in
       let mk_ld ld =
         let id = fresh_id ld.pld_name.txt in
-        let ty_res = parse_core ~alias tvl ld.pld_type in
+        let ty_res = parse_core alias tvl ld.pld_type in
         let field = fsymbol id [ty] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         label_declaration field mut ld.pld_loc ld.pld_attributes in
-      {rd_cs;rd_ldl = List.map mk_ld ldl} in
-    let make_cd cd =
-      assert (cd.pcd_res = None); (* TODO check what this is*)
+      {rd_cs;rd_ldl = List.map mk_ld ldl}
+    in
+
+    let make_cd ty alias cd =
+      if cd.pcd_res != None then
+        not_supported ~loc:cd.pcd_loc "type in constructors not supported";
       let cs_id = fresh_id cd.pcd_name.txt in
       let cd_cs,cd_ld = match cd.pcd_args with
         | Pcstr_tuple ctl ->
-           let tyl = List.map (parse_core ~alias tvl) ctl in
+           let tyl = List.map (parse_core alias tvl) ctl in
            let arg = match tyl with
              | [] | [_] -> tyl
              | _ -> [ty_app (ts_tuple (List.length tyl)) tyl] in
@@ -461,7 +449,7 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
         | Pcstr_record ldl ->
            let add ld (ldl,tyl) =
              let id = fresh_id ld.pld_name.txt in
-             let ty = parse_core ~alias tvl ld.pld_type in
+             let ty = parse_core alias tvl ld.pld_type in
              let field = id,ty in
              let mut = mutable_flag ld.pld_mutable in
              let loc, attrs =  ld.pld_loc, ld.pld_attributes in
@@ -469,17 +457,29 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
              ld :: ldl, ty :: tyl in
            let ldl,tyl = List.fold_right add ldl ([],[]) in
            fsymbol ~constr:true cs_id tyl ty, ldl in
-      constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes in
-    let td_kind = match td.tkind with
+      constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes
+    in
+
+    let ty = ty_app td_ts (List.map ty_of_var params) in
+    let kind =
+      let alias = Sstr.empty in
+      match td.tkind with
       | Ptype_abstract -> Pty_abstract
       | Ptype_variant cdl ->
-         Pty_variant (List.map make_cd cdl)
-      | Ptype_record ldl -> Pty_record (make_rd ldl)
-      | Ptype_open -> assert false in
+         Pty_variant (List.map (make_cd ty alias) cdl)
+      | Ptype_record ldl -> Pty_record (make_rd ty alias ldl)
+      | Ptype_open -> assert false
+    in
 
-    let td_spec = process_type_spec kid ns ty td.tspec in
-    let td = type_declaration td_ts td_params td_cstrs td_kind
-               td_private td_manifest td_attrs td_spec td_loc in
+    let params = List.combine params variance_list in
+    let spec = process_type_spec kid ns ty td.tspec in
+
+    if  td.tcstrs != [] then
+      not_supported ~loc:td.tloc "type constraints not supported";
+
+    let td = type_declaration td_ts params [] kind
+               (private_flag td.tprivate) manifest
+               td.tattributes spec td.tloc in
     Hstr.add htd s td in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;

@@ -21,6 +21,8 @@ module Mtv = Map.Make(Tvar)
 
 let create_tv id = { tv_name = id }
 
+let fresh_tv s = { tv_name = fresh_id s }
+
 let tv_of_string =
   let hs = Hstr.create (1 lsl 5) in fun s ->
   try Hstr.find hs s with Not_found ->
@@ -39,19 +41,23 @@ and ty_node =
 
 and tysymbol = {
   ts_ident : ident;
-  ts_arity : int;
+  ts_args  : tvsymbol list; (* we need to keep variables to do things like
+                             type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
+  ts_alias : ty option
 }
 
 let ts_equal : tysymbol -> tysymbol -> bool = (==)
-(* We cannot use == here because the definition of ty_of_pty in
-   typing.ml. For instance, with the current definition of ty_of_pty,
-   the following definition will not type check:
-   (*@ function f (x:int):int = x *) *)
+(* TODO use hash consing for the ty_equal *)
 let ty_equal : ty       -> ty       -> bool = (=)
 
-let ts id ar = {ts_ident = id; ts_arity = ar}
+let ts id args =
+  { ts_ident = id; ts_args = args; ts_alias = None }
+let ts_with_alias id args alias =
+  { ts_ident = id; ts_args = args; ts_alias = alias }
 let ts_ident ts = ts.ts_ident
-let ts_arity ts = ts.ts_arity
+let ts_args  ts = ts.ts_args
+let ts_alias ts = ts.ts_alias
+let ts_arity ts = List.length ts.ts_args
 
 let fresh_ty_var s = {ty_node = Tyvar {tv_name = fresh_id s}}
 
@@ -60,7 +66,7 @@ let ty_of_var tv = {ty_node = Tyvar tv}
 
 (* let ty_app ts tl = {ty_node = Tyapp (ts,tl)} *)
 
-(** smart constructors *)
+(** smart constructors & utils *)
 
 exception BadTypeArity of tysymbol * int
 
@@ -69,12 +75,19 @@ let ty_app ts tyl =
     {ty_node = Tyapp (ts,tyl)}
   else raise (BadTypeArity (ts,List.length tyl))
 
-(** type matching *)
+let rec ty_full_inst m ty = match ty.ty_node with
+  | Tyvar tv -> Mtv.find tv m
+  | Tyapp (ts,tyl) -> ty_app ts (List.map (ty_full_inst m) tyl)
 
-let rec ty_inst mtv ty = match ty.ty_node with
-  | Tyvar n -> begin try Mtv.find n mtv with Not_found -> ty end
-  | Tyapp (ts,tyl) ->
-     { ty_node = Tyapp (ts, List.map (ty_inst mtv) tyl) }
+let ts_match_args ts tl =
+  try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
+  with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
+
+let ty_app ts tyl = match ts.ts_alias with
+  | None -> ty_app ts tyl
+  | Some ty -> ty_full_inst (ts_match_args ts tyl) ty
+
+(** type matching *)
 
 (* if possible returns the map that allows to instanciate ty1 with ty2 *)
 let rec ty_match mtv ty1 ty2 =
@@ -91,6 +104,10 @@ let rec ty_match mtv ty1 ty2 =
 exception TypeMismatch of ty * ty
 
 let ty_match mtv ty1 ty2 =
+  let rec ty_inst mtv ty = match ty.ty_node with
+  | Tyvar n -> begin try Mtv.find n mtv with Not_found -> ty end
+  | Tyapp (ts,tyl) ->
+     { ty_node = Tyapp (ts, List.map (ty_inst mtv) tyl) } in
   try ty_match mtv ty1 ty2 with
   | Exit -> raise (TypeMismatch (ty_inst mtv ty1, ty2))
 
@@ -99,29 +116,33 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
-let ts_unit = ts (fresh_id "unit") 0
-let ts_integer = ts (fresh_id "integer") 0
-let ts_int     = ts (fresh_id "int"    ) 0
-let ts_bool    = ts (fresh_id "bool"   ) 0
-let ts_float   = ts (fresh_id "float"  ) 0
-let ts_char    = ts (fresh_id "char"   ) 0
-let ts_string  = ts (fresh_id "string" ) 0
-let ts_option  = ts (fresh_id "option" ) 1
-let ts_list    = ts (fresh_id "list"   ) 1
+let ts_unit = ts (fresh_id "unit") []
+let ts_integer = ts (fresh_id "integer") []
+let ts_int     = ts (fresh_id "int"    ) []
+let ts_bool    = ts (fresh_id "bool"   ) []
+let ts_float   = ts (fresh_id "float"  ) []
+let ts_char    = ts (fresh_id "char"   ) []
+let ts_string  = ts (fresh_id "string" ) []
+let ts_option  = ts (fresh_id "option" ) [fresh_tv "a"]
+let ts_list    = ts (fresh_id "list"   ) [fresh_tv "a"]
 
 let ts_tuple =
   let ts_tuples = Hint.create 17 in
   begin fun n ->
   try Hint.find ts_tuples n with | Not_found ->
      let ts_id = fresh_id ("tuple" ^ string_of_int n) in
-     let ts = ts ts_id n in
+     let ts_args = List.init n (fun x ->
+                       fresh_tv ("a" ^ string_of_int x)) in
+     let ts = ts ts_id ts_args in
      Hint.add ts_tuples n ts;
      ts
   end
 
 let ts_arrow =
+  let ta = fresh_tv "a"  in
+  let tb = fresh_tv "b"  in
   let id = fresh_id "->" in
-  ts id 2
+  ts id [ta;tb]
 
 let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
 let is_ts_arrow ts = ts_arrow == ts
@@ -168,7 +189,13 @@ let print_tv fmt tv =
     print_ident tv.tv_name
 
 let print_ts fmt ts =
-  pp fmt "@[%a@]" print_ident (ts_ident ts)
+  pp fmt "@[%a %a@]"
+    (list ~sep:"," ~first:"(" ~last:")" print_tv) ts.ts_args
+    print_ident (ts_ident ts)
+
+let print_ts_name fmt ts =
+  pp fmt "@[%a@]"
+    print_ident (ts_ident ts)
 
 let rec print_ty fmt {ty_node} = print_ty_node fmt ty_node
 
@@ -176,15 +203,15 @@ and print_arrow_ty fmt = list ~sep:" -> " print_ty fmt
 
 and print_ty_node fmt = function
   | Tyvar v -> pp fmt "%a" print_tv v
-  | Tyapp (ts,[]) -> print_ts fmt ts
+  | Tyapp (ts,[]) -> print_ts_name fmt ts
   | Tyapp (ts,tys) when is_ts_arrow ts ->
      print_arrow_ty fmt tys
   | Tyapp (ts,[ty]) ->
-     pp fmt "%a %a" print_ty ty print_ts ts
+     pp fmt "%a %a" print_ty ty print_ts_name ts
   | Tyapp (ts,tyl) when is_ts_tuple ts ->
      pp fmt "(%a)" (list ~sep:"," print_ty) tyl
   | Tyapp (ts,tyl) ->
-     pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts ts
+     pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts_name ts
 
 let print_exn_type f = function
   | Exn_tuple tyl -> list ~sep:"," ~first:"(" ~last:")" print_ty f tyl
@@ -204,5 +231,5 @@ let () =
       | BadTypeArity (ts,i) ->
          Some (Location.errorf
                  "Type %a expects %d arguments as opposed to %d"
-                 print_ts ts (ts_arity ts) i)
+                 print_ts_name ts (ts_arity ts) i)
       | _ -> None)
