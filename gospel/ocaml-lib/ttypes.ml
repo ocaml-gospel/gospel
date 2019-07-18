@@ -206,10 +206,10 @@ and print_ty_node fmt = function
   | Tyapp (ts,[]) -> print_ts_name fmt ts
   | Tyapp (ts,tys) when is_ts_arrow ts ->
      print_arrow_ty fmt tys
-  | Tyapp (ts,[ty]) ->
-     pp fmt "%a %a" print_ty ty print_ts_name ts
   | Tyapp (ts,tyl) when is_ts_tuple ts ->
      pp fmt "(%a)" (list ~sep:"," print_ty) tyl
+  | Tyapp (ts,[ty]) ->
+     pp fmt "%a %a" print_ty ty print_ts_name ts
   | Tyapp (ts,tyl) ->
      pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts_name ts
 

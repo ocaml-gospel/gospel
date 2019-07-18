@@ -329,13 +329,13 @@ let rec print_dty fmt dty = match flatten dty with
   | Tvar {dtv_id;dtv_def=None} -> pp fmt "@%d@" dtv_id
   | Tvar {dtv_id;dtv_def=Some dty} -> assert false (* it is flattened *)
   | Tapp (ts,dtyl) -> match dtyl with
-     | [] -> print_ts fmt ts
+     | [] -> print_ts_name fmt ts
      | dtyl when is_ts_arrow ts ->
         pp fmt "(%a)" (list ~sep:" -> " print_dty) dtyl
      | [dty] ->
-        pp fmt "%a %a" print_dty dty print_ts ts
+        pp fmt "%a %a" print_dty dty print_ts_name ts
      | dtyl ->
-        pp fmt "(%a) %a" (list ~sep:"," print_dty) dtyl print_ts ts
+        pp fmt "(%a) %a" (list ~sep:"," print_dty) dtyl print_ts_name ts
 
 let rec print_dpattern fmt {dp_node;dp_dty} = match dp_node with
   | DPwild -> pp fmt "_"
