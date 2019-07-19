@@ -241,7 +241,7 @@ let with_constraint c =
   in match c with
   | Pwith_type (l,t) -> Wtype (l,no_spec_type_decl t)
   | Pwith_module (l1,l2) -> Wmodule (l1,l2)
-  | Pwith_typesubst (l,t) -> Wtype (l,no_spec_type_decl t)
+  | Pwith_typesubst (l,t) -> Wtypesubst (l,no_spec_type_decl t)
   | Pwith_modsubst (l1,l2) -> Wmodsubst (l1,l2)
 
 
