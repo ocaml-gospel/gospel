@@ -734,15 +734,19 @@ and process_modtype md umty = match umty.mdesc with
      let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
      add_ns_top md ns, tmty
   | Mod_with (umty2,cl) ->
+     let ns_init =
+       get_top_in_ns md in (* required to type type decls in constraints *)
      let md, tmty2 = process_modtype md umty2 in
      let process_constraint (md,cl) c = match c with
        | Wtype (li,tyd) ->
+          let tdl = type_type_declaration ~loc:tyd.tloc
+                      md.md_kid ns_init [tyd] in
+          let td = match tdl with
+            | [td] -> td | _ -> assert false in
+
           let q = Longident.flatten li.txt in
           let ns = get_top_in_ns md in
           let ts = find_ts ~loc:li.loc ns q in
-          let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
-          let td = match tdl with
-            | [td] -> td | _ -> assert false (* should not happen *) in
 
           (* check that type symbols are compatible
              TODO there are other checks that need to be performed, for
@@ -757,17 +761,32 @@ and process_modtype md umty = match umty.mdesc with
           let md = md_replace_ts md td.td_ts q in
           let md = md_subst_ts md ts td.td_ts in
           md, Wty (ts.ts_ident, td) :: cl
-       | Wtypesubst (li,tyd) -> assert false
-          (* let ns = get_top_in_ns md in
-           * let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
-           * let md = md_rm_ts md (Longident.flatten li.txt) in
-           * let td = match tdl with
-           *   | [td] -> td | _ -> assert false (\* should not happen *\) in
-           * let ty = match td.td_ts.ts_alias with
-           *   | None -> assert false (\* should not happen *\)
-           *   | Some ty -> ty in
-           * let md = md_subst_ty md td.td_ts ty in
-           * md, Wty (td.td_ts.ts_ident, td) :: cl *)
+       | Wtypesubst (li,tyd) ->
+          let tdl = type_type_declaration ~loc:tyd.tloc
+                      md.md_kid ns_init [tyd] in
+          let td = match tdl with
+            | [td] -> td | _ -> assert false in
+          let ty = match td.td_ts.ts_alias with
+            | None -> assert false (* should not happen *)
+            | Some ty -> ty in
+
+          let q = Longident.flatten li.txt in
+          let ns = get_top_in_ns md in
+          let ts = find_ts ~loc:li.loc ns q in
+          let md = md_rm_ts md q in
+
+          (* check that type symbols are compatible
+             TODO there are other checks that need to be performed, for
+             now we assume that the file passes the ocaml compiler type checker *)
+          check ~loc:li.loc (ts_arity ts = ts_arity td.td_ts)
+            (BadTypeArity (ts,ts_arity td.td_ts));
+          begin match ts.ts_alias, td.td_ts.ts_alias with
+          | None, Some ty2 -> ()
+          | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
+          | _ -> assert false end;
+
+          let md = md_subst_ty md ts td.td_ts ty in
+          md, Wty (ts.ts_ident, td) :: cl
        | Wmodule (li1,li2) -> assert false
        | Wmodsubst (li1,li2) -> assert false in
      let md,cl = List.fold_left process_constraint (md,[]) cl in

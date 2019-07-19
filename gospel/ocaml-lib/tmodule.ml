@@ -61,40 +61,6 @@ let rec ns_rm_ts ns = function
      let x_ns = ns_rm_ts (Mstr.find x ns.ns_ns) xs in
      {ns with ns_ns = Mstr.add x x_ns ns.ns_ns}
 
-let ns_with_primitives =
-  (* There is a good reason for these types to be built-in: they are
-     already declared in OCaml, and we want them to represent those
-     same types. *)
-  let primitive_tys =
-    [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
-      ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
-      ("list", ts_list); ("option",ts_option)] in
-  let primitive_ps =
-    [ ps_equ.ls_name.id_str, ps_equ;
-      (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
-      (le.id_str, psymbol le     [ty_integer;ty_integer]);
-      (gt.id_str, psymbol gt     [ty_integer;ty_integer]);
-      (ge.id_str, psymbol ge     [ty_integer;ty_integer]);
-      (impl.id_str, psymbol impl [ty_bool;ty_bool]);
-    ] in
-  let primitive_ls =
-    [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
-      (minus.id_str, fsymbol minus [ty_integer;ty_integer] ty_integer);
-      (mult.id_str, fsymbol mult   [ty_integer;ty_integer] ty_integer);
-      (let tv = fresh_ty_var "a" in
-       none.id_str, fsymbol ~constr:true none [] (ty_option tv));
-      (let tv = fresh_ty_var "a" in
-       some.id_str, fsymbol ~constr:true some [tv] (ty_option tv));
-      (let tv = fresh_ty_var "a" in
-       nil.id_str, fsymbol ~constr:true nil [] (ty_list tv));
-      (let tv = fresh_ty_var "a" in
-       cons.id_str, fsymbol ~constr:true cons [tv; ty_app ts_list [tv]] (ty_list tv));
-    ] in
-  let ns = List.fold_left (fun ns (s,ts) ->
-               ns_add_ts ns s ts) empty_ns primitive_tys in
-  List.fold_left (fun ns (s,ls) ->
-      ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
-
 let rec ns_replace_ts new_ts sl ns = match sl with
   | [] -> assert false
   | [x] -> {ns with ns_ts = Mstr.add x new_ts ns.ns_ts}
@@ -110,13 +76,13 @@ let rec ns_subst_ts old_ns new_ts {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
    ns_ns = Mstr.map (ns_subst_ts old_ns new_ts) ns_ns;
    ns_tns = Mstr.map (ns_subst_ts old_ns new_ts) ns_tns}
 
-(* let rec ns_subst_ty new_ts new_ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
- *   {ns_ts = Mstr.map (ts_subst_ty new_ts new_ty) ns_ts;
- *    ns_ls = Mstr.map (ls_subst_ty new_ts new_ty) ns_ls;
- *    ns_xs = Mstr.map (xs_subst_ty new_ts new_ty) ns_xs;
- *    ns_ns = Mstr.map (ns_subst_ty new_ts new_ty) ns_ns;
- *    ns_tns = Mstr.map (ns_subst_ty new_ts new_ty) ns_tns
- *   } *)
+let rec ns_subst_ty old_ts new_ts ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
+  {ns_ts = Mstr.map (ts_subst_ty old_ts new_ts ty) ns_ts;
+   ns_ls = Mstr.map (ls_subst_ty old_ts new_ts ty) ns_ls;
+   ns_xs = Mstr.map (xs_subst_ty old_ts new_ts ty) ns_xs;
+   ns_ns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_ns;
+   ns_tns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_tns
+  }
 
 (* let rec ns_subst_ts sl ns ts = match sl with
  *   | [] -> assert false
@@ -146,9 +112,6 @@ type module_uc = {
 
 let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid =
   {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid}
-
-let md_with_primitives s =
-  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns] Mid.empty
 
 let md_add ns_add md s x =
   match md.md_in_ns, md.md_out_ns with
@@ -196,19 +159,19 @@ let md_subst_ts md old_ts new_ts =
        md_out_ns = ns_subst_ts old_ts new_ts o0 :: ons}
   | _ -> assert false
 
-(* let md_subst_ty md ts ty =
- *   match md.md_in_ns, md.md_out_ns with
- *   | i0 :: ins, o0 :: ons ->
- *      {md with md_in_ns  = ns_subst_ty ts ty i0 :: ins;
- *               md_out_ns = ns_subst_ty ts ty o0 :: ons}
- *   | _ -> assert false
- *
- * let md_rm_ts md sl =
- *   match md.md_in_ns, md.md_out_ns with
- *   | i0 :: ins, o0 :: ons ->
- *      {md with md_in_ns  = ns_rm_ts i0 sl :: ins;
- *               md_out_ns = ns_rm_ts o0 sl :: ons}
- *   | _ -> assert false *)
+let md_subst_ty md old_ts new_ts ty =
+  match md.md_in_ns, md.md_out_ns with
+  | i0 :: ins, o0 :: ons ->
+     {md with md_in_ns  = ns_subst_ty old_ts new_ts ty i0 :: ins;
+              md_out_ns = ns_subst_ty old_ts new_ts ty o0 :: ons}
+  | _ -> assert false
+
+let md_rm_ts md sl =
+  match md.md_in_ns, md.md_out_ns with
+  | i0 :: ins, o0 :: ons ->
+     {md with md_in_ns  = ns_rm_ts i0 sl :: ins;
+              md_out_ns = ns_rm_ts o0 sl :: ons}
+  | _ -> assert false
 
 let open_module md s =
   match md.md_in_ns with
@@ -304,6 +267,45 @@ let add_sig_contents md sig_ =
      add_kid md te.exn_constructor.ext_ident sig_
   | _ -> md (* TODO *)
 
+(** Primitives types and functions *)
+
+let ns_with_primitives =
+  (* There is a good reason for these types to be built-in: they are
+     already declared in OCaml, and we want them to represent those
+     same types. *)
+  let primitive_tys =
+    [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
+      ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
+      ("list", ts_list); ("option",ts_option)] in
+  let primitive_ps =
+    [ ps_equ.ls_name.id_str, ps_equ;
+      (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
+      (le.id_str, psymbol le     [ty_integer;ty_integer]);
+      (gt.id_str, psymbol gt     [ty_integer;ty_integer]);
+      (ge.id_str, psymbol ge     [ty_integer;ty_integer]);
+      (impl.id_str, psymbol impl [ty_bool;ty_bool]);
+    ] in
+  let primitive_ls =
+    [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
+      (minus.id_str, fsymbol minus [ty_integer;ty_integer] ty_integer);
+      (mult.id_str, fsymbol mult   [ty_integer;ty_integer] ty_integer);
+      (let tv = fresh_ty_var "a" in
+       none.id_str, fsymbol ~constr:true none [] (ty_option tv));
+      (let tv = fresh_ty_var "a" in
+       some.id_str, fsymbol ~constr:true some [tv] (ty_option tv));
+      (let tv = fresh_ty_var "a" in
+       nil.id_str, fsymbol ~constr:true nil [] (ty_list tv));
+      (let tv = fresh_ty_var "a" in
+       cons.id_str, fsymbol ~constr:true cons [tv; ty_app ts_list [tv]] (ty_list tv));
+    ] in
+  let ns = List.fold_left (fun ns (s,ts) ->
+               ns_add_ts ns s ts) empty_ns primitive_tys in
+  List.fold_left (fun ns (s,ls) ->
+      ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
+
+let md_with_primitives s =
+  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns] Mid.empty
+
 (** Pretty printing *)
 
 open Opprintast
@@ -328,13 +330,13 @@ let rec print_nested_ns fmt ns =
 
 and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
   pp fmt "@[@[<hv2>@[Namespace: %s@]@\n\
-@[<hv2>Type symbols@\n%a@]@\n\
-@[<hv2>Logic Symbols@\n%a@]@\n\
-@[<hv2>Exception Symbols@\n%a@]@\n\
-@[<hv2>Namespaces@\n%a@]@\n\
-@[<hv2>Type Namespaces@\n%a@]\
-@]\
-@]"
+          @[<hv2>Type symbols@\n%a@]@\n\
+          @[<hv2>Logic Symbols@\n%a@]@\n\
+          @[<hv2>Exception Symbols@\n%a@]@\n\
+          @[<hv2>Namespaces@\n%a@]@\n\
+          @[<hv2>Type Namespaces@\n%a@]\
+          @]\
+          @]"
     nm
     (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl) ns_ls

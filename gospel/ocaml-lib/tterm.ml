@@ -58,9 +58,11 @@ let ls_subst_ts old_ts new_ts ({ls_name;ls_args;ls_value;ls_constr} as ls) =
   let ls_value = opmap (ty_subst_ts old_ts new_ts) ls.ls_value in
   lsymbol ls_name ls_args ls_value ~constr:ls_constr
 
-(* let rec ls_subst_ty new_ts new_ty ls =
- *   {ls with ls_args = List.map (ty_subst_ty new_ts new_ty) ls.ls_args;
- *            ls_value = opmap (ty_subst_ty new_ts new_ty) ls.ls_value} *)
+let rec ls_subst_ty old_ts new_ts new_ty ls =
+  let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
+  let ls_args = List.map subst ls.ls_args in
+  let ls_value = opmap subst ls.ls_value in
+  lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr
 
 (** buil-in lsymbols *)
 

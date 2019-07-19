@@ -84,18 +84,6 @@ let ts_match_args ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
   with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
 
-(* let rec ty_subst_ty old_ts new_ts new_ty ty = match ty.ty_node with
- *   | Tyvar _ -> ty
- *   | Tyapp (ts,tyl) ->
- *      if ts_equal old_ts ts
- *      then ty_full_inst (ts_match_args new_ts tyl) new_ty
- *      else let ts = ts_subst_ty new_ts new_ty ts in
- *        ty_app ts (List.map (ty_subst_ty new_ts new_ty) tyl)
- *
- * and ts_subst_ty old_ts new_ts new_ty ({ts_ident;ts_args;ts_alias}) =
- *   let ts_alias = opmap (ty_subst_ty new_ts new_ty) ts_alias in
- *   {ts_ident;ts_args;ts_alias} *)
-
 let ty_app ts tyl = match ts.ts_alias with
   | None -> ty_app ts tyl
   | Some ty -> ty_full_inst (ts_match_args ts tyl) ty
@@ -110,6 +98,20 @@ and ty_subst_ts old_ts new_ts ty = match ty.ty_node with
   | Tyapp (ts,tyl) ->
      let ts = if ts_equal old_ts ts then new_ts else ts in
      ty_app ts (List.map (ty_subst_ts old_ts new_ts) tyl)
+
+let rec ty_subst_ty old_ts new_ts new_ty ty = match ty.ty_node with
+  | Tyvar _ -> ty
+  | Tyapp (ts,tyl) ->
+     if ts_equal old_ts ts
+     then ty_full_inst (ts_match_args new_ts tyl) new_ty
+     else let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
+          let tyl = List.map subst tyl in
+          ty_app ts tyl
+
+and ts_subst_ty old_ts new_ts new_ty ts =
+  let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
+  let ts_alias = opmap subst ts.ts_alias in
+  mk_ts ts.ts_ident ts.ts_args ts_alias
 
 (** type matching *)
 
@@ -213,14 +215,16 @@ let xs_subst_ts old_ts new_ts {xs_ident; xs_type} =
                        (id, ty_subst_ts old_ts new_ts ty)) l) in
   xsymbol xs_ident (subst xs_type)
 
-(* let rec xs_subst_ty new_ts new_ty xs =
- *   let subst = function
- *     | Exn_tuple tyl ->
- *        Exn_tuple (List.map (ty_subst_ty new_ts new_ty) tyl)
- *     | Exn_record l ->
- *        Exn_record (List.map (fun (id,ty) ->
- *                        (id, ty_subst_ty new_ts new_ty ty)) l) in
- *   {xs with xs_type = subst xs.xs_type} *)
+let rec xs_subst_ty old_ts new_ts new_ty xs =
+  let subst = function
+    | Exn_tuple tyl ->
+       let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
+       Exn_tuple (List.map subst tyl)
+    | Exn_record l ->
+       let subst (id,ty) =
+         (id, ty_subst_ty old_ts new_ts new_ty ty) in
+       Exn_record (List.map subst l) in
+  {xs with xs_type = subst xs.xs_type}
 
 (** Pretty printers *)
 
