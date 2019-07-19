@@ -648,15 +648,20 @@ and print_module_type f x =
     | Mod_with (mt, l) ->
         let with_constraint f = function
           | Wty (li, ({td_params= ls ;_} as td)) ->
-              (* let ls = List.map fst ls in *)
+             (* let ls = List.map fst ls in *)
+             (* small hack to print the original id *)
+             let ts = {td.td_ts with ts_ident = li } in
+             let td = {td with td_ts = ts } in
               pp f "type@ %a"
-                (* (list print_tv ~sep:"," ~first:"(" ~last:")")
-                 * ls print_ident li *)
+                (* (list print_tv ~sep:"," ~first:"(" ~last:")") ls
+                 * print_ident li *)
                 print_type_declaration td
           | Wmod (li, li2) ->
               pp f "module %a =@ %a" print_ident li print_ident li2;
           | Wtysubs (li, ({td_params=ls;_} as td)) ->
               let ls = List.map fst ls in
+              let ts = {td.td_ts with ts_ident = li } in
+              let td = {td with td_ts = ts } in
               pp f "type@ %a %a :=@ %a"
                 (list print_tv ~sep:"," ~first:"(" ~last:")")
                 ls print_ident li
@@ -676,7 +681,7 @@ and print_modyle_type1 f x =
         pp f "(module %a)" (list ~sep:"." Format.pp_print_string) li
     | Mod_signature s ->
         pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
-          (list print_signature_item) s (* FIXME wrong indentation*)
+          (list ~sep:"@\n" print_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
         pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
     | Mod_extension e -> extension reset_ctxt f e
