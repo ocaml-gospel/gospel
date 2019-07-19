@@ -648,10 +648,11 @@ and print_module_type f x =
     | Mod_with (mt, l) ->
         let with_constraint f = function
           | Wty (li, ({td_params= ls ;_} as td)) ->
-              let ls = List.map fst ls in
-              pp f "type@ %a %a =@ %a"
-                (list print_tv ~sep:"," ~first:"(" ~last:")")
-                ls print_ident li print_type_declaration td
+              (* let ls = List.map fst ls in *)
+              pp f "type@ %a"
+                (* (list print_tv ~sep:"," ~first:"(" ~last:")")
+                 * ls print_ident li *)
+                print_type_declaration td
           | Wmod (li, li2) ->
               pp f "module %a =@ %a" print_ident li print_ident li2;
           | Wtysubs (li, ({td_params=ls;_} as td)) ->

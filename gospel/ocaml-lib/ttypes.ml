@@ -41,12 +41,13 @@ and ty_node =
 
 and tysymbol = {
   ts_ident : ident;
-  ts_args  : tvsymbol list; (* we need to keep variables to do things like
-                             type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
+  ts_args  : tvsymbol list;
+  (* we need to keep variables to do things like
+     type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
   ts_alias : ty option
 }
 
-let ts_equal : tysymbol -> tysymbol -> bool = (==)
+let ts_equal : tysymbol -> tysymbol -> bool = (=)
 (* TODO use hash consing for the ty_equal *)
 let ty_equal : ty       -> ty       -> bool = (=)
 
@@ -82,6 +83,30 @@ let rec ty_full_inst m ty = match ty.ty_node with
 let ts_match_args ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
   with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
+
+let rec ts_subst_ts new_ts ({ts_ident;ts_args;ts_alias} as ts) =
+  if new_ts.ts_ident = ts_ident then ts else
+    let ts_alias = opmap (ty_subst_ts new_ts) ts_alias in
+    {ts_ident;ts_args;ts_alias}
+
+and ty_subst_ts new_ts ty = match ty.ty_node with
+  | Tyvar _ -> ty
+  | Tyapp (ts,tyl) ->
+     let ts = if ts.ts_ident = new_ts.ts_ident
+              then new_ts else ts in
+     ty_app ts (List.map (ty_subst_ts new_ts) tyl)
+
+let rec ty_subst_ty new_ts new_ty ty = match ty.ty_node with
+  | Tyvar _ -> ty
+  | Tyapp (ts,tyl) ->
+     if ts.ts_ident = new_ts.ts_ident
+     then ty_full_inst (ts_match_args new_ts tyl) new_ty
+     else let ts = ts_subst_ty new_ts new_ty ts in
+       ty_app ts (List.map (ty_subst_ty new_ts new_ty) tyl)
+
+and ts_subst_ty new_ts new_ty ({ts_ident;ts_args;ts_alias}) =
+  let ts_alias = opmap (ty_subst_ty new_ts new_ty) ts_alias in
+  {ts_ident;ts_args;ts_alias}
 
 let ty_app ts tyl = match ts.ts_alias with
   | None -> ty_app ts tyl
@@ -180,6 +205,24 @@ end
 
 module Mxs = Map.Make(Xs)
 
+let xs_subst_ts new_ts xs =
+  let subst = function
+    | Exn_tuple tyl ->
+       Exn_tuple (List.map (ty_subst_ts new_ts) tyl)
+    | Exn_record l ->
+       Exn_record (List.map (fun (id,ty) ->
+                       (id, ty_subst_ts new_ts ty)) l) in
+  {xs with xs_type = subst xs.xs_type}
+
+let rec xs_subst_ty new_ts new_ty xs =
+  let subst = function
+    | Exn_tuple tyl ->
+       Exn_tuple (List.map (ty_subst_ty new_ts new_ty) tyl)
+    | Exn_record l ->
+       Exn_record (List.map (fun (id,ty) ->
+                       (id, ty_subst_ty new_ts new_ty ty)) l) in
+  {xs with xs_type = subst xs.xs_type}
+
 (** Pretty printers *)
 
 open Opprintast
@@ -187,11 +230,6 @@ open Opprintast
 let print_tv fmt tv =
   pp fmt (if tv.tv_name.id_str = "_" then "%a" else "'%a")
     print_ident tv.tv_name
-
-let print_ts fmt ts =
-  pp fmt "@[%a %a@]"
-    (list ~sep:"," ~first:"(" ~last:")" print_tv) ts.ts_args
-    print_ident (ts_ident ts)
 
 let print_ts_name fmt ts =
   pp fmt "@[%a@]"
@@ -213,6 +251,13 @@ and print_ty_node fmt = function
   | Tyapp (ts,tyl) ->
      pp fmt "(%a) %a" (list ~sep:"," print_ty) tyl print_ts_name ts
 
+let print_ts fmt ts =
+  pp fmt "@[%a %a%a@]"
+    (list ~sep:"," ~first:"(" ~last:")" print_tv) ts.ts_args
+    print_ident (ts_ident ts)
+    (fun fmt alias -> match alias with None -> ()
+     | Some ty -> pp fmt " [=%a]" print_ty ty) ts.ts_alias
+
 let print_exn_type f = function
   | Exn_tuple tyl -> list ~sep:"," ~first:"(" ~last:")" print_ty f tyl
   | Exn_record args ->
@@ -223,7 +268,7 @@ let print_xs f x =
   pp f "%a : %a" print_ident x.xs_ident print_exn_type x.xs_type
 
 (* register exceptions *)
-
+ 
 let () =
   Location.register_error_of_exn (function
       | TypeMismatch (ty1,ty2) ->

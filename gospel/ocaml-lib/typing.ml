@@ -39,6 +39,7 @@ let find_q_ns = find_q find_ns
 
 (** Typing types *)
 
+(* specification types *)
 let rec ty_of_pty ns = function
   | PTtyvar {pid_str} ->
      (* CHECK following what's done in why3, attributes are ignored*)
@@ -53,6 +54,27 @@ let rec ty_of_pty ns = function
   | PTarrow (_,pty1,pty2) ->
      let ty1, ty2 = ty_of_pty ns pty1, ty_of_pty ns pty2 in
      ty_app ts_arrow [ty1;ty2]
+
+(* OCaml types *)
+let rec ty_of_core ns cty =
+  let open Oparsetree in
+  match cty.ptyp_desc with
+  | Ptyp_any ->
+     {ty_node = Tyvar (create_tv (fresh_id "_"))}
+  | Ptyp_var s ->
+     {ty_node = Tyvar (tv_of_string s)}
+  | Ptyp_tuple ctl ->
+     let tyl = List.map (ty_of_core ns) ctl in
+     ty_app (ts_tuple (List.length tyl)) tyl
+  | Ptyp_constr (lid,ctl) ->
+     let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
+     let tyl = List.map (ty_of_core ns) ctl in
+     ty_app ts tyl
+  | Ptyp_arrow (lbl,ct1,ct2) ->
+     (* TODO check what to do with the lbl *)
+     let ty1, ty2 = (ty_of_core ns) ct1, (ty_of_core ns) ct2 in
+     ty_app ts_arrow [ty1;ty2]
+  | _ -> assert false
 
 (** Typing terms *)
 
@@ -325,8 +347,7 @@ let fmla kid ns env t =
   let dt = dterm kid ns env t in
   fmla env dt
 
-(** Typing declarations *)
-
+(** Typing type declarations *)
 
 let private_flag = function
   | Oasttypes.Private -> Private
@@ -359,11 +380,8 @@ let process_type_spec kid ns ty (spec:Uast.type_spec) =
 
 exception CyclicTypeDecl of string
 
-(* TODO
-   - I'm still not sure how I should threat Ptyp_any
-   - compare manifest with td_kind
- *)
-let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
+(* TODO compare manifest with td_kind *)
+let type_type_declaration ~loc kid ns tdl =
   let add_new tdm td =
     if Mstr.mem td.tname.txt tdm then raise (NameClash td.tname.txt) else
       Mstr.add td.tname.txt td tdm in
@@ -421,7 +439,7 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
     let td_ts = ts_with_alias (fresh_id s) params manifest in
     Hstr.add hts s td_ts;
 
-    let make_rd ?(constr=false) ty alias ldl =
+    let process_record ?(constr=false) ty alias ldl =
       let cs_id = fresh_id ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
@@ -435,7 +453,7 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
       {rd_cs;rd_ldl = List.map mk_ld ldl}
     in
 
-    let make_cd ty alias cd =
+    let process_variant ty alias cd =
       if cd.pcd_res != None then
         not_supported ~loc:cd.pcd_loc "type in constructors not supported";
       let cs_id = fresh_id cd.pcd_name.txt in
@@ -466,8 +484,9 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
       match td.tkind with
       | Ptype_abstract -> Pty_abstract
       | Ptype_variant cdl ->
-         Pty_variant (List.map (make_cd ty alias) cdl)
-      | Ptype_record ldl -> Pty_record (make_rd ty alias ldl)
+         Pty_variant (List.map (process_variant ty alias) cdl)
+      | Ptype_record ldl ->
+         Pty_record (process_record ty alias ldl)
       | Ptype_open -> assert false
     in
 
@@ -483,33 +502,14 @@ let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
     Hstr.add htd s td in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
-  let tdl = List.map (fun td -> Hstr.find htd td.tname.txt) tdl in
+  List.map (fun td -> Hstr.find htd td.tname.txt) tdl
+
+let process_sig_type ~loc ?(ghost=false) kid ns r tdl =
+  let tdl = type_type_declaration ~loc kid ns tdl in
   let sig_desc = Sig_type (rec_flag r,tdl,ghost) in
   mk_sig_item sig_desc loc
 
-(** process val *)
-
-(* TODO move this to a better place. Maybe it can be replaced with
-   function parse_core function that is inside process_sig_type. *)
-let rec ty_of_core ns cty =
-  let open Oparsetree in
-  match cty.ptyp_desc with
-  | Ptyp_any ->
-     {ty_node = Tyvar (create_tv (fresh_id "_"))}
-  | Ptyp_var s ->
-     {ty_node = Tyvar (tv_of_string s)}
-  | Ptyp_tuple ctl ->
-     let tyl = List.map (ty_of_core ns) ctl in
-     ty_app (ts_tuple (List.length tyl)) tyl
-  | Ptyp_constr (lid,ctl) ->
-     let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
-     let tyl = List.map (ty_of_core ns) ctl in
-     ty_app ts tyl
-  | Ptyp_arrow (lbl,ct1,ct2) ->
-     (* TODO check what to do with the lbl *)
-     let ty1, ty2 = (ty_of_core ns) ct1, (ty_of_core ns) ct2 in
-     ty_app ts_arrow [ty1;ty2]
-  | _ -> assert false
+(** Type val declarations *)
 
 let rec val_parse_core_type ns cty =
   let open Oparsetree in
@@ -624,6 +624,8 @@ let process_val ~loc ?(ghost=false) kid ns vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
   mk_sig_item (Sig_val (vd,ghost)) loc
 
+(** Typing function, axiom, and exception declarations *)
+
 (* Currently checking:
    1 - arguments have different names *)
 let process_function kid ns f =
@@ -695,6 +697,8 @@ let process_exception_sig loc ns te =
              te.Oparsetree.ptyexn_attributes in
   mk_sig_item (Sig_exception te) loc
 
+(** Typing use, and modules *)
+
 let rec process_use loc md q =
   let f = match string_list_of_qualid q with [q] -> q | _ -> assert false in
   try add_ns md f (find_q_ns (get_top_in_ns md) q)
@@ -731,9 +735,36 @@ and process_modtype md umty = match umty.mdesc with
      add_ns_top md ns, tmty
   | Mod_with (umty2,cl) ->
      let md, tmty2 = process_modtype md umty2 in
-     let process_constraint md c = match c with
-       | Wtype (li,tyd) -> assert false
-       | Wtypesubst (li,tyd) -> assert false
+     let process_constraint (md,cl) c = match c with
+       | Wtype (li,tyd) ->
+          (* TODO two options:
+
+             1 - get the id of the ts in "find_ts (get_top_in_ns md )
+             (flatten li)" and use it for the new declaration and keep
+             that id after the substitution -- we are doing this
+
+             2 - use the ts obtained with type_type_declaration for
+             everything -- this one might make more sense *)
+          let ns = get_top_in_ns md in
+          let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
+          let td = match tdl with
+            | [td] -> td | _ -> assert false (* should not happen *) in
+          let ts = find_ts ns (Longident.flatten li.txt) in
+          Format.eprintf "\n\nAQUI $%a$ - $%a$\n\n@."
+            print_ident td.td_ts.ts_ident print_ident ts.ts_ident;
+          let md = md_subst_ts md td.td_ts in
+          md, Wty (td.td_ts.ts_ident, td) :: cl
+       | Wtypesubst (li,tyd) ->
+          let ns = get_top_in_ns md in
+          let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
+          let md = md_rm_ts md (Longident.flatten li.txt) in
+          let td = match tdl with
+            | [td] -> td | _ -> assert false (* should not happen *) in
+          let ty = match td.td_ts.ts_alias with
+            | None -> assert false (* should not happen *)
+            | Some ty -> ty in
+          let md = md_subst_ty md td.td_ts ty in
+          md, Wty (td.td_ts.ts_ident, td) :: cl
        | Wmodule (li1,li2) -> assert false
        | Wmodsubst (li1,li2) -> assert false in
      let md,cl = List.fold_left process_constraint (md,[]) cl in

@@ -53,6 +53,14 @@ let fsymbol ?(constr=false) nm tyl ty =
 let psymbol nm ty =
   lsymbol nm ty None
 
+let ls_subst_ts new_ts ls =
+  {ls with ls_args = List.map (ty_subst_ts new_ts) ls.ls_args;
+           ls_value = opmap (ty_subst_ts new_ts) ls.ls_value}
+
+let rec ls_subst_ty new_ts new_ty ls =
+  {ls with ls_args = List.map (ty_subst_ty new_ts new_ty) ls.ls_args;
+           ls_value = opmap (ty_subst_ty new_ts new_ty) ls.ls_value}
+
 (** buil-in lsymbols *)
 
 let ps_equ =
