@@ -53,7 +53,7 @@ let ty_equal : ty       -> ty       -> bool = (=)
 
 let ts id args =
   { ts_ident = id; ts_args = args; ts_alias = None }
-let ts_with_alias id args alias =
+let mk_ts id args alias =
   { ts_ident = id; ts_args = args; ts_alias = alias }
 let ts_ident ts = ts.ts_ident
 let ts_args  ts = ts.ts_args
@@ -84,33 +84,32 @@ let ts_match_args ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
   with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
 
-let rec ts_subst_ts new_ts ({ts_ident;ts_args;ts_alias} as ts) =
-  if new_ts.ts_ident = ts_ident then ts else
-    let ts_alias = opmap (ty_subst_ts new_ts) ts_alias in
-    {ts_ident;ts_args;ts_alias}
-
-and ty_subst_ts new_ts ty = match ty.ty_node with
-  | Tyvar _ -> ty
-  | Tyapp (ts,tyl) ->
-     let ts = if ts.ts_ident = new_ts.ts_ident
-              then new_ts else ts in
-     ty_app ts (List.map (ty_subst_ts new_ts) tyl)
-
-let rec ty_subst_ty new_ts new_ty ty = match ty.ty_node with
-  | Tyvar _ -> ty
-  | Tyapp (ts,tyl) ->
-     if ts.ts_ident = new_ts.ts_ident
-     then ty_full_inst (ts_match_args new_ts tyl) new_ty
-     else let ts = ts_subst_ty new_ts new_ty ts in
-       ty_app ts (List.map (ty_subst_ty new_ts new_ty) tyl)
-
-and ts_subst_ty new_ts new_ty ({ts_ident;ts_args;ts_alias}) =
-  let ts_alias = opmap (ty_subst_ty new_ts new_ty) ts_alias in
-  {ts_ident;ts_args;ts_alias}
+(* let rec ty_subst_ty old_ts new_ts new_ty ty = match ty.ty_node with
+ *   | Tyvar _ -> ty
+ *   | Tyapp (ts,tyl) ->
+ *      if ts_equal old_ts ts
+ *      then ty_full_inst (ts_match_args new_ts tyl) new_ty
+ *      else let ts = ts_subst_ty new_ts new_ty ts in
+ *        ty_app ts (List.map (ty_subst_ty new_ts new_ty) tyl)
+ *
+ * and ts_subst_ty old_ts new_ts new_ty ({ts_ident;ts_args;ts_alias}) =
+ *   let ts_alias = opmap (ty_subst_ty new_ts new_ty) ts_alias in
+ *   {ts_ident;ts_args;ts_alias} *)
 
 let ty_app ts tyl = match ts.ts_alias with
   | None -> ty_app ts tyl
   | Some ty -> ty_full_inst (ts_match_args ts tyl) ty
+
+let rec ts_subst_ts old_ts new_ts ({ts_ident;ts_args;ts_alias} as ts) =
+  if ts_equal old_ts ts then new_ts else
+    let ts_alias = opmap (ty_subst_ts old_ts new_ts) ts_alias in
+    mk_ts ts_ident ts_args ts_alias
+
+and ty_subst_ts old_ts new_ts ty = match ty.ty_node with
+  | Tyvar _ -> ty
+  | Tyapp (ts,tyl) ->
+     let ts = if ts_equal old_ts ts then new_ts else ts in
+     ty_app ts (List.map (ty_subst_ts old_ts new_ts) tyl)
 
 (** type matching *)
 
@@ -205,23 +204,23 @@ end
 
 module Mxs = Map.Make(Xs)
 
-let xs_subst_ts new_ts xs =
+let xs_subst_ts old_ts new_ts {xs_ident; xs_type} =
   let subst = function
     | Exn_tuple tyl ->
-       Exn_tuple (List.map (ty_subst_ts new_ts) tyl)
+       Exn_tuple (List.map (ty_subst_ts old_ts new_ts) tyl)
     | Exn_record l ->
        Exn_record (List.map (fun (id,ty) ->
-                       (id, ty_subst_ts new_ts ty)) l) in
-  {xs with xs_type = subst xs.xs_type}
+                       (id, ty_subst_ts old_ts new_ts ty)) l) in
+  xsymbol xs_ident (subst xs_type)
 
-let rec xs_subst_ty new_ts new_ty xs =
-  let subst = function
-    | Exn_tuple tyl ->
-       Exn_tuple (List.map (ty_subst_ty new_ts new_ty) tyl)
-    | Exn_record l ->
-       Exn_record (List.map (fun (id,ty) ->
-                       (id, ty_subst_ty new_ts new_ty ty)) l) in
-  {xs with xs_type = subst xs.xs_type}
+(* let rec xs_subst_ty new_ts new_ty xs =
+ *   let subst = function
+ *     | Exn_tuple tyl ->
+ *        Exn_tuple (List.map (ty_subst_ty new_ts new_ty) tyl)
+ *     | Exn_record l ->
+ *        Exn_record (List.map (fun (id,ty) ->
+ *                        (id, ty_subst_ty new_ts new_ty ty)) l) in
+ *   {xs with xs_type = subst xs.xs_type} *)
 
 (** Pretty printers *)
 

@@ -436,7 +436,7 @@ let type_type_declaration ~loc kid ns tdl =
       List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
     let manifest = opmap (parse_core (Sstr.add s alias) tvl) td.tmanifest in
-    let td_ts = ts_with_alias (fresh_id s) params manifest in
+    let td_ts = mk_ts (fresh_id s) params manifest in
     Hstr.add hts s td_ts;
 
     let process_record ?(constr=false) ty alias ldl =
@@ -737,34 +737,37 @@ and process_modtype md umty = match umty.mdesc with
      let md, tmty2 = process_modtype md umty2 in
      let process_constraint (md,cl) c = match c with
        | Wtype (li,tyd) ->
-          (* TODO two options:
-
-             1 - get the id of the ts in "find_ts (get_top_in_ns md )
-             (flatten li)" and use it for the new declaration and keep
-             that id after the substitution -- we are doing this
-
-             2 - use the ts obtained with type_type_declaration for
-             everything -- this one might make more sense *)
+          let q = Longident.flatten li.txt in
           let ns = get_top_in_ns md in
+          let ts = find_ts ~loc:li.loc ns q in
           let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
           let td = match tdl with
             | [td] -> td | _ -> assert false (* should not happen *) in
-          let ts = find_ts ns (Longident.flatten li.txt) in
-          Format.eprintf "\n\nAQUI $%a$ - $%a$\n\n@."
-            print_ident td.td_ts.ts_ident print_ident ts.ts_ident;
-          let md = md_subst_ts md td.td_ts in
-          md, Wty (td.td_ts.ts_ident, td) :: cl
-       | Wtypesubst (li,tyd) ->
-          let ns = get_top_in_ns md in
-          let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
-          let md = md_rm_ts md (Longident.flatten li.txt) in
-          let td = match tdl with
-            | [td] -> td | _ -> assert false (* should not happen *) in
-          let ty = match td.td_ts.ts_alias with
-            | None -> assert false (* should not happen *)
-            | Some ty -> ty in
-          let md = md_subst_ty md td.td_ts ty in
-          md, Wty (td.td_ts.ts_ident, td) :: cl
+
+          (* check that type symbols are compatible
+             TODO there are other checks that need to be performed, for
+             now we assume that the file passes the ocaml compiler type checker *)
+          check ~loc:li.loc (ts_arity ts = ts_arity td.td_ts)
+            (BadTypeArity (ts,ts_arity td.td_ts));
+          begin match ts.ts_alias, td.td_ts.ts_alias with
+          | None, Some ty2 -> ()
+          | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
+          | _ -> assert false end;
+
+          let md = md_replace_ts md td.td_ts q in
+          let md = md_subst_ts md ts td.td_ts in
+          md, Wty (ts.ts_ident, td) :: cl
+       | Wtypesubst (li,tyd) -> assert false
+          (* let ns = get_top_in_ns md in
+           * let tdl = type_type_declaration ~loc:tyd.tloc md.md_kid ns [tyd] in
+           * let md = md_rm_ts md (Longident.flatten li.txt) in
+           * let td = match tdl with
+           *   | [td] -> td | _ -> assert false (\* should not happen *\) in
+           * let ty = match td.td_ts.ts_alias with
+           *   | None -> assert false (\* should not happen *\)
+           *   | Some ty -> ty in
+           * let md = md_subst_ty md td.td_ts ty in
+           * md, Wty (td.td_ts.ts_ident, td) :: cl *)
        | Wmodule (li1,li2) -> assert false
        | Wmodsubst (li1,li2) -> assert false in
      let md,cl = List.fold_left process_constraint (md,[]) cl in

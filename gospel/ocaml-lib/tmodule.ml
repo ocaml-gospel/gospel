@@ -95,21 +95,28 @@ let ns_with_primitives =
   List.fold_left (fun ns (s,ls) ->
       ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
 
-let rec ns_subst_ts new_ts {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
-  {ns_ts = Mstr.map (ts_subst_ts new_ts) ns_ts;
-   ns_ls = Mstr.map (ls_subst_ts new_ts) ns_ls;
-   ns_xs = Mstr.map (xs_subst_ts new_ts) ns_xs;
-   ns_ns = Mstr.map (ns_subst_ts new_ts) ns_ns;
-   ns_tns = Mstr.map (ns_subst_ts new_ts) ns_tns
-  }
+let rec ns_replace_ts new_ts sl ns = match sl with
+  | [] -> assert false
+  | [x] -> {ns with ns_ts = Mstr.add x new_ts ns.ns_ts}
+  | x :: xs ->
+     let ns_ns = Mstr.find x ns.ns_ns in
+     let ns_ns = ns_replace_ts new_ts xs ns_ns in
+     { ns with ns_ns = Mstr.add x ns_ns ns.ns_ns }
 
-let rec ns_subst_ty new_ts new_ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
-  {ns_ts = Mstr.map (ts_subst_ty new_ts new_ty) ns_ts;
-   ns_ls = Mstr.map (ls_subst_ty new_ts new_ty) ns_ls;
-   ns_xs = Mstr.map (xs_subst_ty new_ts new_ty) ns_xs;
-   ns_ns = Mstr.map (ns_subst_ty new_ts new_ty) ns_ns;
-   ns_tns = Mstr.map (ns_subst_ty new_ts new_ty) ns_tns
-  }
+let rec ns_subst_ts old_ns new_ts {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
+  {ns_ts = Mstr.map (ts_subst_ts old_ns new_ts) ns_ts;
+   ns_ls = Mstr.map (ls_subst_ts old_ns new_ts) ns_ls;
+   ns_xs = Mstr.map (xs_subst_ts old_ns new_ts) ns_xs;
+   ns_ns = Mstr.map (ns_subst_ts old_ns new_ts) ns_ns;
+   ns_tns = Mstr.map (ns_subst_ts old_ns new_ts) ns_tns}
+
+(* let rec ns_subst_ty new_ts new_ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
+ *   {ns_ts = Mstr.map (ts_subst_ty new_ts new_ty) ns_ts;
+ *    ns_ls = Mstr.map (ls_subst_ty new_ts new_ty) ns_ls;
+ *    ns_xs = Mstr.map (xs_subst_ty new_ts new_ty) ns_xs;
+ *    ns_ns = Mstr.map (ns_subst_ty new_ts new_ty) ns_ns;
+ *    ns_tns = Mstr.map (ns_subst_ty new_ts new_ty) ns_tns
+ *   } *)
 
 (* let rec ns_subst_ts sl ns ts = match sl with
  *   | [] -> assert false
@@ -174,26 +181,34 @@ let add_ns_top md ns =
   let md = add add_tns md ns.ns_tns in
   md
 
-let md_subst_ts md ts =
+let md_replace_ts md new_ts sl =
   match md.md_in_ns, md.md_out_ns with
   | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_subst_ts ts i0 :: ins;
-              md_out_ns = ns_subst_ts ts o0 :: ons}
+     {md with md_in_ns  = ns_replace_ts new_ts sl i0 :: ins;
+              md_out_ns = ns_replace_ts new_ts sl o0 :: ons}
   | _ -> assert false
 
-let md_subst_ty md ts ty =
+let md_subst_ts md old_ts new_ts =
   match md.md_in_ns, md.md_out_ns with
   | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_subst_ty ts ty i0 :: ins;
-              md_out_ns = ns_subst_ty ts ty o0 :: ons}
+     {md with
+       md_in_ns  = ns_subst_ts old_ts new_ts i0 :: ins;
+       md_out_ns = ns_subst_ts old_ts new_ts o0 :: ons}
   | _ -> assert false
 
-let md_rm_ts md sl =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_rm_ts i0 sl :: ins;
-              md_out_ns = ns_rm_ts o0 sl :: ons}
-  | _ -> assert false
+(* let md_subst_ty md ts ty =
+ *   match md.md_in_ns, md.md_out_ns with
+ *   | i0 :: ins, o0 :: ons ->
+ *      {md with md_in_ns  = ns_subst_ty ts ty i0 :: ins;
+ *               md_out_ns = ns_subst_ty ts ty o0 :: ons}
+ *   | _ -> assert false
+ *
+ * let md_rm_ts md sl =
+ *   match md.md_in_ns, md.md_out_ns with
+ *   | i0 :: ins, o0 :: ons ->
+ *      {md with md_in_ns  = ns_rm_ts i0 sl :: ins;
+ *               md_out_ns = ns_rm_ts o0 sl :: ons}
+ *   | _ -> assert false *)
 
 let open_module md s =
   match md.md_in_ns with
