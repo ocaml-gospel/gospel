@@ -307,22 +307,33 @@ let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
   Mstr.iter (fun _ -> print_elem) m
 
-let rec print_ns fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
-  pp fmt "@[Type symbols@\n%a@\nLogic Symbols@\n%a@\nException \
-          Symbols@\n%a@\nNamespaces@\n  @[%a@]@\nType Namespaces@\n  @[%a@]@.@]"
+let rec print_nested_ns fmt ns =
+  let print_elem nm e = pp fmt "@[%a@]@\n" (print_ns nm) e in
+  Mstr.iter (fun nm ns -> print_elem nm ns) ns
+
+and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
+  pp fmt "@[@[<hv2>@[Namespace: %s@]@\n\
+@[<hv2>Type symbols@\n%a@]@\n\
+@[<hv2>Logic Symbols@\n%a@]@\n\
+@[<hv2>Exception Symbols@\n%a@]@\n\
+@[<hv2>Namespaces@\n%a@]@\n\
+@[<hv2>Type Namespaces@\n%a@]\
+@]\
+@]"
+    nm
     (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl) ns_ls
     (print_mstr_vals print_xs) ns_xs
-    (print_mstr_vals print_ns) ns_ns
-    (print_mstr_vals print_ns) ns_tns
+    print_nested_ns ns_ns
+    print_nested_ns ns_tns
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let rec print_mod fmt {md_nm;md_sigs;md_out_ns} =
   match md_out_ns, md_sigs with
   | o0 :: _, s0 :: _ ->
-     pp fmt "@[module %a\nNamespace@\n@[<h 2>@\n%a@]\nSignatures@\n@[<h 2>@\n%a@]@]"
+     pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
        print_ident md_nm
-       print_ns o0
+       (print_ns md_nm.id_str) o0
        print_signature s0
   | _ -> assert false
