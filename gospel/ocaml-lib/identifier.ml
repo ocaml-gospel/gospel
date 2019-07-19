@@ -16,7 +16,7 @@ type preid = {
 
 module Preid = struct
   type t = preid
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
   let equal = (=)
   let hash = (Hashtbl.hash : preid -> int)
 end
@@ -40,7 +40,7 @@ type ident = {
 
 module Ident = struct
   type t = ident
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
   let equal = (=)
   let hash = (Hashtbl.hash : ident -> int)
 end
@@ -101,29 +101,6 @@ let cons  = fresh_id (infix "::")
 
 (* pretty-printer *)
 
-type context = {
-    current : int Hstr.t;
-    output  : string Hint.t;
-  }
-
-let default_ctx = {
-    current = Hstr.create (1 lsl 8);
-    output  = Hint.create (1 lsl 8)
-}
-
-let current ctx s =
-  try let x = Hstr.find ctx.current s in
-      Hstr.replace ctx.current s (x + 1); x with
-  | Not_found -> Hstr.add ctx.current s 0; 0
-
-let str_of_id ctx id =
-  try Hint.find ctx.output id.id_tag with
-  | Not_found ->
-     let x = current ctx id.id_str in
-     let str = if x = 0 then id.id_str else
-                 id.id_str ^ "#" ^ string_of_int x in
-     Hint.replace ctx.output id.id_tag str; str
-
 open Opprintast
 
 let print_attr fmt a = pp fmt "[@%s]" a
@@ -132,5 +109,39 @@ let print_attrs = list ~sep:" " print_attr
 let print_pid fmt pid = pp fmt "%s@ %a" pid.pid_str
                             print_attrs pid.pid_ats
 
-let print_ident fmt id = pp fmt "%s%a" (str_of_id default_ctx id)
-                           print_attrs (Sattr.elements id.id_ats)
+type context = {
+    current : int Hstr.t;
+    output  : string Hint.t;
+  }
+
+let print_ident =
+  let current = Hstr.create (1 lsl 8) in
+  let output  = Hint.create (1 lsl 8) in
+  let current s =
+    try let x = Hstr.find current s in
+        Hstr.replace current s (x+1); (x+1) with
+    | Not_found -> Hstr.add current s 0; 0 in
+  let str_of_id id =
+    try Hint.find output id.id_tag with
+    | Not_found ->
+       let str = (* if x = 0 then id.id_str else *)
+         id.id_str ^ "#" ^ string_of_int (current id.id_str) in
+       Hint.replace output id.id_tag str; str in
+  fun fmt id -> pp fmt "%s%a$%d" (str_of_id id)
+                  print_attrs (Sattr.elements id.id_ats)
+                  id.id_tag
+
+let print_ident =
+  let current = Hstr.create (1 lsl 8) in
+  let output  = Hint.create (1 lsl 8) in
+  let get_current s =
+    try let x = Hstr.find current s + 1 in
+        Hstr.replace current s x; x with
+    | Not_found -> Hstr.add current s 0; 0 in
+  let str_of_id id =
+    try Hint.find output id.id_tag with
+    | Not_found ->
+       let str = id.id_str ^ "#" ^ string_of_int (get_current id.id_str) in
+       Hint.replace output id.id_tag str; str in
+  fun fmt id -> pp fmt "%s$%d" (str_of_id id)
+                  id.id_tag

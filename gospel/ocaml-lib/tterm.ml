@@ -16,7 +16,7 @@ let create_vsymbol pid ty = {
 
 module Vs = struct
   type t = vsymbol
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
 end
 
 module Svs = Set.Make(Vs)
@@ -35,7 +35,7 @@ let ls_equal : lsymbol -> lsymbol -> bool = (==)
 
 module LS = struct
   type t = lsymbol
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
   let equal = ls_equal
   let hash = (Hashtbl.hash : lsymbol -> int)
 end

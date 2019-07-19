@@ -12,7 +12,7 @@ let tv_equal: tvsymbol -> tvsymbol -> bool = (==)
 module Tvar = struct
   type t = tvsymbol
   let equal = tv_equal
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
   let hash tv = tv.tv_name.id_tag
 end
 
@@ -175,7 +175,7 @@ let xsymbol id ty = {xs_ident = id; xs_type = ty}
 module Xs = struct
   type t = xsymbol
   let equal = (=)
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
 end
 
 module Mxs = Map.Make(Xs)

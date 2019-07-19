@@ -91,7 +91,7 @@ let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
 
 module Int = struct
   type t = int
-  let compare (x: int) y = Pervasives.compare x y
+  let compare (x: int) y = Stdlib.compare x y
   let equal (x: int) y = x = y
   let hash (x: int) = x
 end
