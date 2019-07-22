@@ -332,7 +332,7 @@ term_:
 | l = term ; o = infix_op_234 ; r = term
     { Tidapp (Qpreid o, [l; r]) }
 | l = term ; COLONCOLON ; r = term
-    { Tidapp (Qpreid (mk_pid "::" $startpos $endpos), [l; r]) }
+    { Tidapp (Qpreid (mk_pid (infix "::") $startpos $endpos), [l; r]) }
 | l = term ; o = BACKQUOTE_LIDENT ; r = term
     { let id = mk_pid o $startpos $endpos in
       Tidapp (Qpreid id, [l; r]) }
