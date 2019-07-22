@@ -14,7 +14,7 @@ let rec split_at_f f = function
 
 let rec split_at_i i = function
   | [] -> [],[]
-  | x::xs when i <= 0 -> [],x::xs
+  | l when i <= 0 -> [],l
   | x::xs -> let a,b = split_at_i (i-1) xs in
              x::a, b
 

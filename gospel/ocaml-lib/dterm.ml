@@ -154,7 +154,6 @@ let rec unify dty1 dty2 = match head dty1, head dty2 with
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
   | _ -> raise Exit
 
-exception BadArity of lsymbol * int
 exception PatternBadType of dty * dty
 exception BadType of dty * dty
 exception FmlaExpected
@@ -398,10 +397,6 @@ let () =
   register_error_of_exn (function
       | ConstructorExpected ls ->
          Some (errorf "Symbol %a is not a constructor" print_ls_nm ls)
-      | BadArity (ls,i) ->
-         Some (errorf
-                 "Function %a expects %d arguments as opposed to %d"
-                 print_ls_nm ls (List.length ls.ls_args) i)
       | FmlaExpected ->
          Some (errorf "Formula was expected")
       | TermExpected -> Some (errorf "Term was expected")

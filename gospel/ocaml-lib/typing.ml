@@ -194,7 +194,7 @@ let rec dterm kid ns denv {term_desc;term_loc=loc}: dterm =
     if List.length tl < List.length ls.ls_args
       then raise (PartialApplication ls);
     let args, extra = split_at_i (List.length ls.ls_args) tl in
-    let dtl = List.map (dterm kid ns denv) tl in
+    let dtl = List.map (dterm kid ns denv) args in
     let dt = mk_app ?loc ls dtl in
     if extra = [] then dt else map_apply dt extra in
   let qualid_app q tl = match q with
