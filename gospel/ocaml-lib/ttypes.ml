@@ -151,6 +151,7 @@ let ts_char    = ts (fresh_id "char"   ) []
 let ts_string  = ts (fresh_id "string" ) []
 let ts_option  = ts (fresh_id "option" ) [fresh_tv "a"]
 let ts_list    = ts (fresh_id "list"   ) [fresh_tv "a"]
+let ts_array   = ts (fresh_id "array"  ) [fresh_tv "a"]
 
 let ts_tuple =
   let ts_tuples = Hint.create 17 in

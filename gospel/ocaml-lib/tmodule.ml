@@ -285,7 +285,7 @@ let ns_with_primitives =
   let primitive_tys =
     [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
       ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
-      ("list", ts_list); ("option",ts_option)] in
+      ("list", ts_list); ("option",ts_option); ("array",ts_array)] in
   let primitive_ps =
     [ ps_equ.ls_name.id_str, ps_equ;
       (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
