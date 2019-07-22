@@ -191,6 +191,15 @@ let close_module md =
               md_sigs   = sl;}
   | _ -> assert false
 
+let close_module_functor md =
+  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+     {md with md_prefix = pl;
+              md_in_ns  = ns_add_ns i1 p0 o0 :: ins;
+              md_out_ns = o1 :: ons;
+              md_sigs   = sl;}
+  | _ -> assert false
+
 let close_merge_module md =
   match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
   | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->

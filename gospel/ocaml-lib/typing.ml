@@ -787,13 +787,28 @@ and process_modtype md umty = match umty.mdesc with
 
           let md = md_subst_ty md ts td.td_ts ty in
           md, Wty (ts.ts_ident, td) :: cl
-       | Wmodule (li1,li2) -> assert false
-       | Wmodsubst (li1,li2) -> assert false in
+       | Wmodule (li1,li2) ->
+          not_supported ~loc:li1.loc "with module clause not supported"
+       | Wmodsubst (li1,li2) ->
+          not_supported ~loc:li1.loc "with module clause not supported"
+     in
      let md,cl = List.fold_left process_constraint (md,[]) cl in
      let tmty = {mt_desc = Mod_with (tmty2,List.rev cl); mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      md, tmty
-  | Mod_functor (nm,mto,mt) -> assert false
+  | Mod_functor (nm,mto,mt) ->
+     let mty_arg = match mto with
+       | None -> not_supported ~loc:umty.mloc
+                   "at this stage functor type must be provided"
+       | Some mt -> mt in
+     let md = open_module md nm.txt in
+     let md, tmty_arg = process_modtype md mty_arg in
+     let md = close_module_functor md in
+     let md, tmty = process_modtype md mt in
+     let tmty =
+       {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
+        mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
+     md, tmty
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
 
