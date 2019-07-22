@@ -298,6 +298,8 @@ let ns_with_primitives =
     [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
       (minus.id_str, fsymbol minus [ty_integer;ty_integer] ty_integer);
       (mult.id_str, fsymbol mult   [ty_integer;ty_integer] ty_integer);
+      (div.id_str, fsymbol div   [ty_integer;ty_integer] ty_integer);
+      (umin.id_str, fsymbol umin   [ty_integer] ty_integer);
       (let tv = fresh_ty_var "a" in
        none.id_str, fsymbol ~constr:true none [] (ty_option tv));
       (let tv = fresh_ty_var "a" in

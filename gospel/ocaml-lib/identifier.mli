@@ -49,6 +49,8 @@ val impl : ident
 val plus : ident
 val minus: ident
 val mult : ident
+val div  : ident
+val umin : ident
 val none : ident
 val some : ident
 val nil  : ident
