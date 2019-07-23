@@ -700,14 +700,19 @@ let process_exception_sig loc ns te =
 (** Typing use, and modules *)
 
 let rec process_use loc md q =
-  let f = match string_list_of_qualid q with [q] -> q | _ -> assert false in
-  try add_ns md f (find_q_ns (get_top_in_ns md) q)
+  let s = (Uast_utils.qualid_preid q).pid_str in
+  try
+    let ns = find_q_ns (get_top_in_ns md) q in
+    let md = add_ns md s ns in
+    add_ns_top md ns
   with Located (_,SymbolNotFound _) ->
-    let file = match [f] with
-      | []     -> error_report ~loc "Empty use"
-      | f :: m -> String.uncapitalize_ascii f ^ ".mli" in
+    let file = match string_list_of_qualid q with
+      | []  -> error_report ~loc "Empty use"
+      | [f] -> String.uncapitalize_ascii f ^ ".mli"
+      | _   -> not_supported ~loc:(Uast_utils.loc_of_qualid q)
+                 "with module clause not supported" in
     let sl = Parser_frontend.parse_all file in
-    let md = open_module md f in
+    let md = open_module md s in
     let md = List.fold_left process_signature md sl in
     close_merge_module md
 

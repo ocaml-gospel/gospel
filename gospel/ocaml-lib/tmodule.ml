@@ -25,8 +25,11 @@ let empty_ns = {
 exception NameClash of string
 
 let ns_add_ts ns s ts =
-  if Mstr.mem s ns.ns_ts then raise (NameClash s) else
-  {ns with ns_ts = Mstr.add s ts ns.ns_ts}
+  if Mstr.mem s ns.ns_ts then
+    if ts_equal (Mstr.find s ns.ns_ts) ts
+    then ns else raise (NameClash s)
+  else
+    {ns with ns_ts = Mstr.add s ts ns.ns_ts}
 let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
 let ns_add_xs ns s xs = {ns with ns_xs = Mstr.add s xs ns.ns_xs}
 let ns_add_ns ns s new_ns =
@@ -34,14 +37,14 @@ let ns_add_ns ns s new_ns =
 let ns_add_tns ns s tns =
   {ns with ns_tns = Mstr.add s tns ns.ns_tns}
 
-let merge_ns old_ns new_ns =
+let merge_ns from_ns to_ns =
   let choose_snd _ _ x = Some x in
   let union m1 m2 = Mstr.union choose_snd m1 m2 in
-  { ns_ts = union old_ns.ns_ts new_ns.ns_ts;
-    ns_ls = union old_ns.ns_ls new_ns.ns_ls;
-    ns_xs = union old_ns.ns_xs new_ns.ns_xs;
-    ns_ns = union old_ns.ns_ns new_ns.ns_ns;
-    ns_tns = union old_ns.ns_tns new_ns.ns_tns;}
+  { ns_ts  = union from_ns.ns_ts to_ns.ns_ts;
+    ns_ls  = union from_ns.ns_ls to_ns.ns_ls;
+    ns_xs  = union from_ns.ns_xs to_ns.ns_xs;
+    ns_ns  = union from_ns.ns_ns to_ns.ns_ns;
+    ns_tns = union from_ns.ns_tns to_ns.ns_tns;}
 
 let rec ns_find get_map ns = function
   | [] -> assert false

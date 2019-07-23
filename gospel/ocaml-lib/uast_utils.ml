@@ -24,7 +24,7 @@ let below_op s e = Qpreid (mk_pid (mixfix "[.._]") s e)
 
 let id_anonymous loc = create_pid "_" [] loc
 let array_get s e =
-  Qdot (Qpreid (mk_pid "Array" s e), mk_pid (mixfix "[]") s e)
+  Qdot (Qpreid (mk_pid "Array" s e), mk_pid (mixfix "[_]") s e)
 
 let dummy_position = Location.none
 
