@@ -47,7 +47,7 @@ and tysymbol = {
   ts_alias : ty option
 }
 
-let ts_equal : tysymbol -> tysymbol -> bool = (=)
+let ts_equal : tysymbol -> tysymbol -> bool = (==)
 (* TODO use hash consing for the ty_equal *)
 let ty_equal : ty       -> ty       -> bool = (=)
 
