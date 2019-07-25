@@ -297,6 +297,14 @@ type with_constraint =
   | Wmodsubs of ident * ident
         (* with module X.Y := Z *)
 
+type open_description =
+    {
+     opn_id      : string list;
+     opn_override : Oasttypes.override_flag;
+     opn_loc      : Location.t;
+     opn_attrs    : Oparsetree.attributes;
+    }
+
 type signature = signature_item list
 
 and signature_item = {
@@ -320,7 +328,7 @@ and signature_item_desc =
   (* these were not modified *)
   | Sig_exception of type_exception
         (* exception C of T *)
-  | Sig_open of Oparsetree.open_description
+  | Sig_open of open_description
         (* open X *)
   | Sig_include of Oparsetree.include_description
         (* include MT *)
@@ -583,9 +591,9 @@ let rec print_signature_item f x =
         (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_open od ->
       pp f "@[<hov2>open%s@ %a@]%a"
-        (override od.popen_override)
-        longident_loc od.popen_lid
-        (item_attributes reset_ctxt) od.popen_attributes
+        (override od.opn_override)
+        (list ~sep:"." Format.pp_print_string) od.opn_id
+        (item_attributes reset_ctxt) od.opn_attrs
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a"
         (module_type reset_ctxt) incl.pincl_mod

@@ -383,7 +383,9 @@ exception CyclicTypeDecl of string
 (* TODO compare manifest with td_kind *)
 let type_type_declaration ~loc kid ns tdl =
   let add_new tdm td =
-    if Mstr.mem td.tname.txt tdm then raise (NameClash td.tname.txt) else
+    if Mstr.mem td.tname.txt tdm then
+      error ~loc:td.tname.loc (TypeNameClash td.tname.txt)
+    else
       Mstr.add td.tname.txt td tdm in
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hstr.create 5 in
@@ -436,7 +438,8 @@ let type_type_declaration ~loc kid ns tdl =
       List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
     let manifest = opmap (parse_core (Sstr.add s alias) tvl) td.tmanifest in
-    let td_ts = mk_ts (fresh_id s) params manifest in
+    let td_ts = mk_ts (fresh_id_with_loc s td.tname.loc)
+                  params manifest in
     Hstr.add hts s td_ts;
 
     let process_record ?(constr=false) ty alias ldl =
@@ -698,6 +701,13 @@ let process_exception_sig loc ns te =
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
+let process_open loc md od =
+  let open Oparsetree in
+  let s = Longident.last od.popen_lid.txt in
+  let q = Longident.flatten od.popen_lid.txt in
+  let ns = find_ns (get_top_in_ns md) q in
+  let md = add_ns md s ns in
+  add_ns_top md ns
 
 let rec process_use loc md q =
   let s = (Uast_utils.qualid_preid q).pid_str in
@@ -706,14 +716,15 @@ let rec process_use loc md q =
     let md = add_ns md s ns in
     add_ns_top md ns
   with Located (_,SymbolNotFound _) ->
-    let file = match string_list_of_qualid q with
+    let nm = match string_list_of_qualid q with
       | []  -> error_report ~loc "Empty use"
-      | [f] -> String.uncapitalize_ascii f ^ ".mli"
+      | [f] -> f
       | _   -> not_supported ~loc:(Uast_utils.loc_of_qualid q)
-                 "with module clause not supported" in
-    let sl = Parser_frontend.parse_all file in
-    let md = open_module md s in
-    let md = List.fold_left process_signature md sl in
+                 "only simple names are allowed" in
+    let file = String.uncapitalize_ascii nm ^ ".mli" in
+    let sl   = Parser_frontend.parse_all file in
+    let md   = open_module md nm in
+    let md   = List.fold_left process_signature md sl in
     close_merge_module md
 
 (* assumes that a new namespace has been opened *)
@@ -816,6 +827,7 @@ and process_modtype md umty = match umty.mdesc with
      md, tmty
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
+    (* TODO warning saying that extensions are not supported *)
 
 and process_mod loc m md =
   let nm = m.mdname.txt in
@@ -847,7 +859,13 @@ and process_signature md {sdesc;sloc} =
     (* md, mk_sig_item (Sig_recmodule (List.map (process_mod sloc) ml)) sloc *)
     | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl md
     | Uast.Sig_exception te    -> md, process_exception_sig sloc ns te
-    | Uast.Sig_open od         -> md, mk_sig_item (Sig_open od) sloc
+    | Uast.Sig_open od         ->
+       let md =  process_open sloc md od in
+       let od = let open Oparsetree in
+                {opn_id = Longident.flatten od.popen_lid.txt;
+                 opn_override = od.popen_override; opn_loc = od.popen_loc;
+                 opn_attrs = od.popen_attributes} in
+       md, mk_sig_item (Sig_open od) sloc
     | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
     | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc
     | Uast.Sig_class_type ctdl -> md, mk_sig_item (Sig_class_type ctdl) sloc

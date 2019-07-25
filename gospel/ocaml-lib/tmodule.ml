@@ -22,12 +22,12 @@ let empty_ns = {
     ns_tns = Mstr.empty
   }
 
-exception NameClash of string
+exception TypeNameClash of string
 
 let ns_add_ts ns s ts =
   if Mstr.mem s ns.ns_ts then
     if ts_equal (Mstr.find s ns.ns_ts) ts
-    then ns else raise (NameClash s)
+    then ns else error ~loc:ts.ts_ident.id_loc (TypeNameClash s)
   else
     {ns with ns_ts = Mstr.add s ts ns.ns_ts}
 let ns_add_ls ns s ls = {ns with ns_ls = Mstr.add s ls ns.ns_ls}
@@ -368,3 +368,10 @@ let rec print_mod fmt {md_nm;md_sigs;md_out_ns} =
        (print_ns md_nm.id_str) o0
        print_signature s0
   | _ -> assert false
+
+let () =
+  let open Location in
+  register_error_of_exn (function
+      | TypeNameClash s ->
+         Some (errorf "Multiple definitions of type %s" s)
+      | _ -> None)
