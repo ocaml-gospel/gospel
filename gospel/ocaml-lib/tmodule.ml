@@ -294,8 +294,7 @@ let ns_with_primitives =
       (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
       (le.id_str, psymbol le     [ty_integer;ty_integer]);
       (gt.id_str, psymbol gt     [ty_integer;ty_integer]);
-      (ge.id_str, psymbol ge     [ty_integer;ty_integer]);
-      (impl.id_str, psymbol impl [ty_bool;ty_bool]);
+      (ge.id_str, psymbol ge     [ty_integer;ty_integer])
     ] in
   let primitive_ls =
     [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
