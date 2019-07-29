@@ -38,8 +38,8 @@ let ns_add_tns ns s tns =
   {ns with ns_tns = Mstr.add s tns ns.ns_tns}
 
 let merge_ns from_ns to_ns =
-  let choose_snd _ _ x = Some x in
-  let union m1 m2 = Mstr.union choose_snd m1 m2 in
+  let choose_fst _ x _ = Some x in
+  let union m1 m2 = Mstr.union choose_fst m1 m2 in
   { ns_ts  = union from_ns.ns_ts to_ns.ns_ts;
     ns_ls  = union from_ns.ns_ls to_ns.ns_ls;
     ns_xs  = union from_ns.ns_xs to_ns.ns_xs;
