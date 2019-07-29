@@ -111,10 +111,11 @@ type module_uc = {
     md_in_ns  : namespace list;
     md_out_ns : namespace list;
     md_kid    : known_ids;
+    md_crcm   : Coercion.t
 }
 
-let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid =
-  {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid}
+let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid md_crcm =
+  {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid;md_crcm}
 
 let md_add ns_add md s x =
   match md.md_in_ns, md.md_out_ns with
@@ -137,6 +138,9 @@ let add_sig md sig_ =
   | s0 :: sl ->
      {md with md_sigs = (sig_ :: s0) :: sl}
   | _ -> assert false
+
+let add_coer md ls =
+  {md with md_crcm = Coercion.add md.md_crcm ls}
 
 let add_ns_top md ns =
   let add f md map = Mstr.fold (fun s v md -> f md s v) map md in
@@ -260,6 +264,8 @@ let add_sig_contents md sig_ =
   match sig_.sig_desc with
   | Sig_function f ->
      let md = add_ls md f.fun_ls.ls_name.id_str f.fun_ls in
+     let md =
+       if f.fun_spec.fun_coer then add_coer md f.fun_ls else md in
      add_kid md f.fun_ls.ls_name sig_
   | Sig_type (rf,tdl,g) ->
      let add_td md td =
@@ -317,7 +323,8 @@ let ns_with_primitives =
       ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
 
 let md_with_primitives s =
-  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns] Mid.empty
+  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns]
+    Mid.empty Coercion.empty
 
 (** Pretty printing *)
 
@@ -359,12 +366,13 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
-let rec print_mod fmt {md_nm;md_sigs;md_out_ns} =
+let rec print_mod fmt {md_nm;md_sigs;md_out_ns;md_crcm} =
   match md_out_ns, md_sigs with
   | o0 :: _, s0 :: _ ->
-     pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
+     pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Coercions@\n%a@]@\n@[<hv2>Signatures@\n%a@]@]@]@."
        print_ident md_nm
        (print_ns md_nm.id_str) o0
+       Coercion.print_coercions md_crcm
        print_signature s0
   | _ -> assert false
 

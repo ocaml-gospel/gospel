@@ -73,7 +73,7 @@ let ps_equ =
 let fs_bool_true  = fsymbol ~constr:true (fresh_id "True")  [] ty_bool
 let fs_bool_false = fsymbol ~constr:true (fresh_id "False") [] ty_bool
 
-let fs_fun_apply =
+let fs_apply =
   let ty_a, ty_b = fresh_ty_var "a", fresh_ty_var "b" in
   let ty_a_to_b = ty_app ts_arrow [ty_a;ty_b] in
   fsymbol (fresh_id "apply") [ty_a_to_b; ty_a] ty_b

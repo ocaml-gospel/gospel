@@ -1,7 +1,7 @@
 
-export OCAMLFIND_IGNORE_DUPS_IN=$(HOME)/.opam/4.07.1/lib/ocaml/compiler-libs
+export OCAMLFIND_IGNORE_DUPS_IN=$(HOME)/.opam/4.07.0/lib/ocaml/compiler-libs
 
-OCAMLLIBS=$(HOME)/.opam/4.07.1/lib/ocaml/compiler-libs/
+OCAMLLIBS=$(HOME)/.opam/4.07.0/lib/ocaml/compiler-libs/
 
 OCAMLBUILD=ocamlbuild -cflag -bin-annot -I ocaml-lib -I tools -use-ocamlfind -pkg compiler-libs.common \
 -use-menhir -menhir "menhir -v --explain"

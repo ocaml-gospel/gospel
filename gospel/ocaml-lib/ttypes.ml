@@ -51,6 +51,14 @@ let ts_equal : tysymbol -> tysymbol -> bool = (==)
 (* TODO use hash consing for the ty_equal *)
 let ty_equal : ty       -> ty       -> bool = (=)
 
+module Ts = struct
+  type t = tysymbol
+  let equal = ts_equal
+  let compare = Stdlib.compare
+end
+
+module Mts = Map.Make(Ts)
+
 let ts id args =
   { ts_ident = id; ts_args = args; ts_alias = None }
 let mk_ts id args alias =

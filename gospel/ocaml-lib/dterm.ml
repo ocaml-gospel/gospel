@@ -168,6 +168,10 @@ let app_unify ls unify l dtyl2 =
   try List.iter2 unify l dtyl2 with Invalid_argument _ ->
     raise (BadArity (ls, List.length l))
 
+let app_unify_map ls unify l dtyl =
+  try List.map2 unify l dtyl with Invalid_argument _ ->
+    raise (BadArity (ls, List.length l))
+
 let dpattern_unify dp dty =
   try unify dp.dp_dty dty with Exit ->
     error ?loc:(dp.dp_loc) (PatternBadType (dp.dp_dty, dty))
@@ -217,6 +221,98 @@ let denv_add_var_quant denv vl =
   let vl = List.fold_left add Mstr.empty vl in
   let choose_snd _ _ x = Some x in
   Mstr.union choose_snd denv vl
+
+(** coercions *)
+
+let apply_coercion l ({dt_loc = loc} as dt) =
+  let apply dt ls =
+    let dtyl, dty = specialize_ls ls in
+    dterm_unify dt (List.hd dtyl);
+    { dt_node = DTapp (ls, [dt]); dt_dty = dty; dt_loc = loc } in
+  List.fold_left apply dt l
+
+
+(* coercions using just head tysymbols without type arguments: *)
+(* TODO: this can be improved *)
+let rec ts_of_dty = function
+  | Tvar {dtv_def = Some dty} ->
+      ts_of_dty dty
+  | Tvar {dtv_def = None}
+  | Tty {ty_node = Tyvar _} ->
+      raise Exit
+  | Tty {ty_node = Tyapp (ts,_)}
+  | Tapp (ts,_) ->
+      ts
+
+let ts_of_dty = function
+  | Some dt_dty -> ts_of_dty dt_dty
+  | None        -> ts_bool
+
+(* NB: this function is not a morphism w.r.t.
+   the identity of type variables. *)
+let rec ty_of_dty_raw = function
+  | Tvar { dtv_def = Some (Tty ty) } ->
+     ty
+  | Tvar ({ dtv_def = Some dty }) ->
+     ty_of_dty_raw dty
+  | Tvar _ ->
+     fresh_ty_var "xi"
+  | Tapp (ts,dl) ->
+     ty_app ts (List.map (ty_of_dty_raw) dl)
+  | Tty ty -> ty
+
+let ty_of_dty_raw = function
+  | Some dt_dty -> ty_of_dty_raw dt_dty
+  | None        -> ty_bool
+
+let max_dty crcmap dtl =
+  let rec aux = function
+    | (dty1, ts1, ty1) :: l ->
+        (* find a type that cannot be coerced to another type *)
+        let check (_, ts2, ty2) =
+          try
+            if not (ts_equal ts1 ts2) then
+              ignore (Coercion.find crcmap ty1 ty2);
+            true
+          with Not_found -> false in
+        (* by transitivity, we never have to look back *)
+        if List.exists check l then aux l else dty1
+    | [] -> assert false in
+  let l = List.fold_left (fun acc { dt_dty = dty } ->
+    try (dty, ts_of_dty dty, ty_of_dty_raw dty) :: acc
+    with Exit -> acc) [] dtl in
+  if l == [] then (List.hd dtl).dt_dty
+  else aux l
+
+let max_dty crcmap dtl =
+  match max_dty crcmap dtl with
+  | Some (Tty ty)
+    when ty_equal ty ty_bool
+    && List.exists (fun { dt_dty = dty } -> dty = None) dtl ->
+      (* favor prop over bool *)
+      None
+  | dty -> dty
+
+let dterm_expected crcmap dt dty =
+  try
+    let (ts1, ts2) = ts_of_dty dt.dt_dty, ts_of_dty dty in
+    if (ts_equal ts1 ts2) then dt
+    else
+      let (ty1, ty2) = ty_of_dty_raw dt.dt_dty, ty_of_dty_raw dty in
+      let crc = Coercion.find crcmap ty1 ty2 in
+      apply_coercion crc dt
+  with Not_found | Exit -> dt
+
+let dterm_expected_op crcmap dt dty =
+  let dt = dterm_expected crcmap dt dty in
+  unify dt dty;
+  dt
+
+let dfmla_expected crcmap dt =
+  dterm_expected_op crcmap dt None
+
+let dterm_expected crcmap dt dty =
+  dterm_expected_op crcmap dt (Some dty)
 
 (** dterm to tterm *)
 
