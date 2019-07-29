@@ -6,6 +6,8 @@ type 'a t2 = t1
 
 type 'c t3 = 'c t2
 
+(*@ use Ocamlstdlib *)
+
 (*@ function f (x: int t3) : 'a t2 = x *)
 
 type ('a,'b) t4

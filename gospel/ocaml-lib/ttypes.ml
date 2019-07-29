@@ -150,16 +150,14 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
-let ts_unit = ts (fresh_id "unit") []
+let ts_unit    = ts (fresh_id "unit")    []
 let ts_integer = ts (fresh_id "integer") []
-let ts_int     = ts (fresh_id "int"    ) []
 let ts_bool    = ts (fresh_id "bool"   ) []
 let ts_float   = ts (fresh_id "float"  ) []
 let ts_char    = ts (fresh_id "char"   ) []
 let ts_string  = ts (fresh_id "string" ) []
 let ts_option  = ts (fresh_id "option" ) [fresh_tv "a"]
 let ts_list    = ts (fresh_id "list"   ) [fresh_tv "a"]
-let ts_array   = ts (fresh_id "array"  ) [fresh_tv "a"]
 
 let ts_tuple =
   let ts_tuples = Hint.create 17 in
@@ -184,13 +182,12 @@ let is_ts_arrow ts = ts_arrow == ts
 
 let ty_unit      = ty_app ts_unit    []
 let ty_integer   = ty_app ts_integer []
-let ty_int       = ty_app ts_int     []
 let ty_bool      = ty_app ts_bool    []
 let ty_float     = ty_app ts_float   []
 let ty_char      = ty_app ts_char    []
 let ty_string    = ty_app ts_string  []
 let ty_option ty = ty_app ts_option  [ty]
-let ty_list ty   = ty_app ts_list    [ty]
+let ty_list   ty = ty_app ts_list    [ty]
 
 type exn_type =
   | Exn_tuple of ty list

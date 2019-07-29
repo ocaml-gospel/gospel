@@ -288,13 +288,18 @@ let add_sig_contents md sig_ =
 (** Primitives types and functions *)
 
 let ns_with_primitives =
-  (* There is a good reason for these types to be built-in: they are
-     already declared in OCaml, and we want them to represent those
-     same types. *)
+  (* reason for following types to be built-in:
+      integer, string, float, char, unit - constants;
+      bool   - being able to automatize the conversion between
+      formulas and bool;
+      option - allow for optional parameters;
+      list   - the constructors ([], and ::) cannot be declared in
+      the library with the flag ~constr:true
+   *)
   let primitive_tys =
-    [ ("unit", ts_unit); ("integer", ts_integer); ("int", ts_int);
-      ("string", ts_string); ("float", ts_float); ("bool", ts_bool);
-      ("list", ts_list); ("option",ts_option); ("array",ts_array)] in
+    [ ("integer", ts_integer); ("string", ts_string); ("char", ts_char);
+      ("float", ts_float); ("bool", ts_bool); ("option",ts_option);
+      ("list", ts_list); ("unit", ts_unit)] in
   let primitive_ps =
     [ ps_equ.ls_name.id_str, ps_equ;
       (lt.id_str, psymbol lt     [ty_integer;ty_integer]);

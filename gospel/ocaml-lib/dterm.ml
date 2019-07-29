@@ -45,7 +45,6 @@ let ty_of_dty =
 
 (* predefined types *)
 
-let dty_int     = dty_of_ty ty_int
 let dty_integer = dty_of_ty ty_integer
 let dty_bool    = dty_of_ty ty_bool
 let dty_float   = dty_of_ty ty_float

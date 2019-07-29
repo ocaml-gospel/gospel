@@ -1,4 +1,6 @@
 
+(*@ use Ocamlstdlib *)
+
 exception E
 
 exception E1 of int

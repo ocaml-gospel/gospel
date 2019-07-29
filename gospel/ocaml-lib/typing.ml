@@ -248,6 +248,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
      let dt2 = dterm_expected_op crcm dt2 dty in
      let dt3 = dterm_expected_op crcm dt3 dty in
      mk_dterm (DTif (dt1,dt2,dt3)) dt2.dt_dty
+  | Uast.Ttuple [] -> fun_app fs_unit []
   | Uast.Ttuple tl ->
      fun_app (fs_tuple (List.length tl)) tl
   | Uast.Tlet (pid,t1,t2) ->

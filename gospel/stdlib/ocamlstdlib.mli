@@ -32,6 +32,8 @@
 
 *)
 
+type int
+
 (*@ function integer_of_int (x: int) : integer *)
 (*@ coercion *)
 
@@ -49,6 +51,8 @@
 (*@ function max_int : integer *)
 (*@ function min_int : integer *)
 
+(* tuples *)
+
 (*@ function fst (p: 'a * 'b) : 'a *)
 (*@ function snd (p: 'a * 'b) : 'b *)
 
@@ -58,12 +62,10 @@ type 'a ref
 
 (*@ function (!_) (r: 'a ref) : 'a = r.contents *)
 
-(*
+(*@ use Seq *)
 type 'a array
 (*@ ephemeral *)
 (*@ mutable model contents: 'a seq *)
-(*@ coercion *) (* TODO: coercion for model fields *)
-*)
 
 exception Not_found
 
@@ -88,10 +90,6 @@ module List : sig
   (*@ function seq_of_list (l: 'a list): 'a seq *)
   (*@ coercion *)
 
-(* the following require coercions
-  (*@ function length (l: 'a list) : integer =
-        Seq.length l *)
-
   (*@ function nth (l: 'a list) (i: integer) : 'a =
         l[i] *)
 
@@ -105,7 +103,7 @@ module List : sig
   (* TO BE DISCUSSED *)
   (*@ axiom nil_def: [] == empty *)
   (*@ axiom cons_def: forall x: 'a, l: 'a list. x :: l == Seq.cons x l *)
-*)
+
 
   (* rev, init?, append, *)
 
@@ -117,10 +115,8 @@ module Array : sig
   (*@ function seq_of_array (a: 'a array): 'a seq *)
   (*@ coercion *)
 
-  (* TODO: remove the next two when we have coercions *)
-  (*@ function length (a: 'a array): integer =
-    Seq.length (seq_of_array a) *)
+  (* TODO keep this here? *)
+  (*@ predicate permut_sub (a b: 'a array) (i j: integer) *)
+  (*@ predicate permut_all (a b: 'a array) *)
 
-  (*@ function ([_]) (a: 'a array) (i: integer): 'a =
-    Seq.([_]) (seq_of_array a) i *)
 end

@@ -1,3 +1,4 @@
+(*@ use Ocamlstdlib *)
 
 (*@ axiom a1: true *)
 
@@ -111,5 +112,11 @@ type 'a t6 = {xx: 'a; yy: int}
 (*@ function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y = A} -> {xx=B;yy=x}
+  | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
+ *)
+
+(*@ function g (a: t4) (b: t4 t5) : t4 t6 =
+  match b with
+  | {x; y} -> {xx=y;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
  *)

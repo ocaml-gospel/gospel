@@ -70,6 +70,8 @@ let ps_equ =
   let tv = fresh_ty_var "a" in
   psymbol eq [tv; tv]
 
+let fs_unit = fsymbol ~constr:true (fresh_id "unit") [] ty_unit
+
 let fs_bool_true  = fsymbol ~constr:true (fresh_id "True")  [] ty_bool
 let fs_bool_false = fsymbol ~constr:true (fresh_id "False") [] ty_bool
 
