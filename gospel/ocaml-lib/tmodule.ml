@@ -119,9 +119,9 @@ let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid md_crcm =
 
 let md_add ns_add md s x =
   match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_add i0 s x :: ins;
-              md_out_ns = ns_add o0 s x :: ons}
+  | i0 :: il, o0 :: ol ->
+     {md with md_in_ns  = ns_add i0 s x :: il;
+              md_out_ns = ns_add o0 s x :: ol}
   | _ -> assert false
 
 let add_ts   = md_add ns_add_ts
@@ -153,31 +153,31 @@ let add_ns_top md ns =
 
 let md_replace_ts md new_ts sl =
   match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_replace_ts new_ts sl i0 :: ins;
-              md_out_ns = ns_replace_ts new_ts sl o0 :: ons}
+  | i0 :: il, o0 :: ol ->
+     {md with md_in_ns  = ns_replace_ts new_ts sl i0 :: il;
+              md_out_ns = ns_replace_ts new_ts sl o0 :: ol}
   | _ -> assert false
 
 let md_subst_ts md old_ts new_ts =
   match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
+  | i0 :: il, o0 :: ol ->
      {md with
-       md_in_ns  = ns_subst_ts old_ts new_ts i0 :: ins;
-       md_out_ns = ns_subst_ts old_ts new_ts o0 :: ons}
+       md_in_ns  = ns_subst_ts old_ts new_ts i0 :: il;
+       md_out_ns = ns_subst_ts old_ts new_ts o0 :: ol}
   | _ -> assert false
 
 let md_subst_ty md old_ts new_ts ty =
   match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_subst_ty old_ts new_ts ty i0 :: ins;
-              md_out_ns = ns_subst_ty old_ts new_ts ty o0 :: ons}
+  | i0 :: il, o0 :: ol ->
+     {md with md_in_ns  = ns_subst_ty old_ts new_ts ty i0 :: il;
+              md_out_ns = ns_subst_ty old_ts new_ts ty o0 :: ol}
   | _ -> assert false
 
 let md_rm_ts md sl =
   match md.md_in_ns, md.md_out_ns with
-  | i0 :: ins, o0 :: ons ->
-     {md with md_in_ns  = ns_rm_ts i0 sl :: ins;
-              md_out_ns = ns_rm_ts o0 sl :: ons}
+  | i0 :: il, o0 :: ol ->
+     {md with md_in_ns  = ns_rm_ts i0 sl :: il;
+              md_out_ns = ns_rm_ts o0 sl :: ol}
   | _ -> assert false
 
 let open_module md s =
@@ -191,39 +191,39 @@ let open_module md s =
 
 let close_module md =
   match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_ns i1 p0 o0 :: ins;
-              md_out_ns = ns_add_ns o1 p0 o0 :: ons;
+              md_in_ns  = ns_add_ns i1 p0 o0 :: il;
+              md_out_ns = ns_add_ns o1 p0 o0 :: ol;
               md_sigs   = sl;}
   | _ -> assert false
 
 let close_module_functor md =
   match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_ns i1 p0 o0 :: ins;
-              md_out_ns = o1 :: ons;
+              md_in_ns  = ns_add_ns i1 p0 o0 :: il;
+              md_out_ns = o1 :: ol;
               md_sigs   = sl;}
   | _ -> assert false
 
 let close_merge_module md =
   match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
-     let i1, o1 = merge_ns o0 i1, merge_ns o0 o1 in
-     let i1, o1 = ns_add_ns i1 p0 o0, ns_add_ns o1 p0 o0 in
+  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
+     let i1, o1 = merge_ns o0 i1, merge_ns o0 o1 in (* ERROR we should not merge the o0 and 01 *)
+     let i1, o1 = ns_add_ns i1 p0 o0, ns_add_ns o1 p0 o0 in  (* ERROR we should not merge the o0 and 01 *)
      {md with md_prefix = pl;
-              md_in_ns  = i1 :: ins;
-              md_out_ns = o1 :: ons;
+              md_in_ns  = i1 :: il;
+              md_out_ns = o1 :: ol;
               md_sigs   = sl}
   | _ -> assert false
 
 let close_module_type md =
   match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: ins, o0 :: o1 :: ons, p0 :: pl, _ :: sl ->
+  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_tns i1 p0 o0 :: ins;
-              md_out_ns = ns_add_tns o1 p0 o0 :: ons;
+              md_in_ns  = ns_add_tns i1 p0 o0 :: il;
+              md_out_ns = ns_add_tns o1 p0 o0 :: ol;
               md_sigs   = sl;}
   | _ -> assert false
 
