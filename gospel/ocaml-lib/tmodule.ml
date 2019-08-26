@@ -105,23 +105,23 @@ let rec ns_subst_ty old_ts new_ts ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
 type known_ids = signature_item Mid.t
 
 type module_uc = {
-    md_nm     : ident;
-    md_sigs   : signature list;
-    md_prefix : string    list;
-    md_in_ns  : namespace list;
-    md_out_ns : namespace list;
-    md_kid    : known_ids;
-    md_crcm   : Coercion.t
+    md_nm      : ident;
+    md_sigs    : signature list;
+    md_prefix  : string    list;
+    md_import  : namespace list;
+    md_export  : namespace list;
+    md_kid     : known_ids;
+    md_crcm    : Coercion.t
 }
 
-let module_uc md_nm md_sigs md_prefix md_in_ns md_out_ns md_kid md_crcm =
-  {md_nm;md_sigs;md_prefix;md_in_ns;md_out_ns;md_kid;md_crcm}
+let module_uc md_nm md_sigs md_prefix md_import md_export md_kid md_crcm =
+  {md_nm;md_sigs;md_prefix;md_import;md_export;md_kid;md_crcm}
 
 let md_add ns_add md s x =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: il, o0 :: ol ->
-     {md with md_in_ns  = ns_add i0 s x :: il;
-              md_out_ns = ns_add o0 s x :: ol}
+  match md.md_import, md.md_export with
+  | i0 :: il, e0 :: el ->
+     {md with md_import  = ns_add i0 s x :: il;
+              md_export = ns_add e0 s x :: el}
   | _ -> assert false
 
 let add_ts   = md_add ns_add_ts
@@ -152,78 +152,78 @@ let add_ns_top md ns =
   md
 
 let md_replace_ts md new_ts sl =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: il, o0 :: ol ->
-     {md with md_in_ns  = ns_replace_ts new_ts sl i0 :: il;
-              md_out_ns = ns_replace_ts new_ts sl o0 :: ol}
+  match md.md_import, md.md_export with
+  | i0 :: il, e0 :: el ->
+     {md with md_import  = ns_replace_ts new_ts sl i0 :: il;
+              md_export = ns_replace_ts new_ts sl e0 :: el}
   | _ -> assert false
 
 let md_subst_ts md old_ts new_ts =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: il, o0 :: ol ->
+  match md.md_import, md.md_export with
+  | i0 :: il, e0 :: el ->
      {md with
-       md_in_ns  = ns_subst_ts old_ts new_ts i0 :: il;
-       md_out_ns = ns_subst_ts old_ts new_ts o0 :: ol}
+       md_import  = ns_subst_ts old_ts new_ts i0 :: il;
+       md_export = ns_subst_ts old_ts new_ts e0 :: el}
   | _ -> assert false
 
 let md_subst_ty md old_ts new_ts ty =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: il, o0 :: ol ->
-     {md with md_in_ns  = ns_subst_ty old_ts new_ts ty i0 :: il;
-              md_out_ns = ns_subst_ty old_ts new_ts ty o0 :: ol}
+  match md.md_import, md.md_export with
+  | i0 :: il, e0 :: el ->
+     {md with md_import  = ns_subst_ty old_ts new_ts ty i0 :: il;
+              md_export = ns_subst_ty old_ts new_ts ty e0 :: el}
   | _ -> assert false
 
 let md_rm_ts md sl =
-  match md.md_in_ns, md.md_out_ns with
-  | i0 :: il, o0 :: ol ->
-     {md with md_in_ns  = ns_rm_ts i0 sl :: il;
-              md_out_ns = ns_rm_ts o0 sl :: ol}
+  match md.md_import, md.md_export with
+  | i0 :: il, e0 :: el ->
+     {md with md_import  = ns_rm_ts i0 sl :: il;
+              md_export = ns_rm_ts e0 sl :: el}
   | _ -> assert false
 
 let open_module md s =
-  match md.md_in_ns with
+  match md.md_import with
   | i0 :: _ ->
      {md with md_prefix = s :: md.md_prefix;
               md_sigs   = [] :: md.md_sigs;
-              md_in_ns  = i0 :: md.md_in_ns;
-              md_out_ns = empty_ns :: md.md_out_ns}
+              md_import  = i0 :: md.md_import;
+              md_export = empty_ns :: md.md_export}
   | _ -> assert false
 
 let close_module md =
-  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
+  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_ns i1 p0 o0 :: il;
-              md_out_ns = ns_add_ns o1 p0 o0 :: ol;
+              md_import  = ns_add_ns i1 p0 e0 :: il;
+              md_export = ns_add_ns e1 p0 e0 :: el;
               md_sigs   = sl;}
   | _ -> assert false
 
 let close_module_functor md =
-  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
+  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_ns i1 p0 o0 :: il;
-              md_out_ns = o1 :: ol;
+              md_import  = ns_add_ns i1 p0 e0 :: il;
+              md_export = e1 :: el;
               md_sigs   = sl;}
   | _ -> assert false
 
-let close_merge_module md =
-  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
-     let i1, o1 = merge_ns o0 i1, merge_ns o0 o1 in (* ERROR we should not merge the o0 and 01 *)
-     let i1, o1 = ns_add_ns i1 p0 o0, ns_add_ns o1 p0 o0 in  (* ERROR we should not merge the o0 and 01 *)
+let close_module_use md =
+  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+     let i1, e1 = merge_ns e0 i1, merge_ns e0 e1 in (* ERROR we should not merge the e0 and 01 *)
+     let i1, e1 = ns_add_ns i1 p0 e0, ns_add_ns e1 p0 e0 in  (* ERROR we should not merge the e0 and 01 *)
      {md with md_prefix = pl;
-              md_in_ns  = i1 :: il;
-              md_out_ns = o1 :: ol;
+              md_import  = i1 :: il;
+              md_export = e1 :: el;
               md_sigs   = sl}
   | _ -> assert false
 
 let close_module_type md =
-  match md.md_in_ns, md.md_out_ns, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, o0 :: o1 :: ol, p0 :: pl, _ :: sl ->
+  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
      {md with md_prefix = pl;
-              md_in_ns  = ns_add_tns i1 p0 o0 :: il;
-              md_out_ns = ns_add_tns o1 p0 o0 :: ol;
+              md_import  = ns_add_tns i1 p0 e0 :: il;
+              md_export = ns_add_tns e1 p0 e0 :: el;
               md_sigs   = sl;}
   | _ -> assert false
 
@@ -235,17 +235,17 @@ let get_top_sigs md = match md.md_sigs with
   | s0 :: _ -> List.rev s0
   | _ -> assert false
 
-let get_top_in_ns md = match md.md_in_ns with
+let get_top_import md = match md.md_import with
   | i0 :: _ -> i0
   | _ -> assert false
 
 (* let add_ns_to_md ns md =
- *   let md_in_ns = join_ns md.md_in_ns ns in
- *   { md with md_in_ns } *)
+ *   let md_import = joimport md.md_import ns in
+ *   { md with md_import } *)
 
 (* let add_md f kid ns md =
  *   let md = add_ns_to_md ns md in
- *   let md = {md with md_in_ns = ns_add_ns md.md_in_ns f ns} in
+ *   let md = {md with md_import = ns_add_ns md.md_import f ns} in
  *   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
  *   (\* CHECK we taking all the known ids from source, but in fact we
  *      just need those from ml *\)
@@ -371,12 +371,12 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
-let rec print_mod fmt {md_nm;md_sigs;md_out_ns;md_crcm} =
-  match md_out_ns, md_sigs with
-  | o0 :: _, s0 :: _ ->
+let rec print_mod fmt {md_nm;md_sigs;md_export;md_crcm} =
+  match md_export, md_sigs with
+  | e0 :: _, s0 :: _ ->
      pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Coercions@\n%a@]@\n@[<hv2>Signatures@\n%a@]@]@]@."
        print_ident md_nm
-       (print_ns md_nm.id_str) o0
+       (print_ns md_nm.id_str) e0
        Coercion.print_coercions md_crcm
        print_signature s0
   | _ -> assert false

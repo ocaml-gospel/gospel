@@ -714,14 +714,14 @@ let process_open loc md od =
   let open Oparsetree in
   let s = Longident.last od.popen_lid.txt in
   let q = Longident.flatten od.popen_lid.txt in
-  let ns = find_ns (get_top_in_ns md) q in
+  let ns = find_ns (get_top_import md) q in
   let md = add_ns md s ns in
   add_ns_top md ns
 
 let rec process_use loc md q =
   let s = (Uast_utils.qualid_preid q).pid_str in
   try
-    let ns = find_q_ns (get_top_in_ns md) q in
+    let ns = find_q_ns (get_top_import md) q in
     let md = add_ns md s ns in
     add_ns_top md ns
   with Located (_,SymbolNotFound _) ->
@@ -734,7 +734,7 @@ let rec process_use loc md q =
     let sl   = Parser_frontend.parse_all file in
     let md   = open_module md nm in
     let md   = List.fold_left process_signature md sl in
-    close_merge_module md
+    close_module_use md
 
 (* assumes that a new namespace has been opened *)
 and process_modtype md umty = match umty.mdesc with
@@ -749,18 +749,18 @@ and process_modtype md umty = match umty.mdesc with
      let nm = Longident.flatten li.txt in
      let tmty = {mt_desc = Mod_ident nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     let ns = find_tns ~loc:li.loc (get_top_in_ns md) nm in
+     let ns = find_tns ~loc:li.loc (get_top_import md) nm in
      add_ns_top md ns, tmty
   | Mod_alias li ->
      (* module MB = *MA* *)
      let nm = Longident.flatten li.txt in
      let tmty = {mt_desc = Mod_alias nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     let ns = find_ns ~loc:li.loc (get_top_in_ns md) nm in
+     let ns = find_ns ~loc:li.loc (get_top_import md) nm in
      add_ns_top md ns, tmty
   | Mod_with (umty2,cl) ->
      let ns_init =
-       get_top_in_ns md in (* required to type type decls in constraints *)
+       get_top_import md in (* required to type type decls in constraints *)
      let md, tmty2 = process_modtype md umty2 in
      let process_constraint (md,cl) c = match c with
        | Wtype (li,tyd) ->
@@ -770,7 +770,7 @@ and process_modtype md umty = match umty.mdesc with
             | [td] -> td | _ -> assert false in
 
           let q = Longident.flatten li.txt in
-          let ns = get_top_in_ns md in
+          let ns = get_top_import md in
           let ts = find_ts ~loc:li.loc ns q in
 
           (* check that type symbols are compatible
@@ -796,7 +796,7 @@ and process_modtype md umty = match umty.mdesc with
             | Some ty -> ty in
 
           let q = Longident.flatten li.txt in
-          let ns = get_top_in_ns md in
+          let ns = get_top_import md in
           let ts = find_ts ~loc:li.loc ns q in
           let md = md_rm_ts md q in
 
@@ -858,7 +858,7 @@ and process_modtype_decl loc decl md =
   close_module_type md, mk_sig_item (Sig_modtype decl) loc
 
 and process_signature md {sdesc;sloc} =
-  let kid,ns,crcm = md.md_kid, get_top_in_ns md, md.md_crcm in
+  let kid,ns,crcm = md.md_kid, get_top_import md, md.md_crcm in
   let md, signature = match sdesc with
     | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc kid crcm ns r tdl
     | Uast.Sig_val vd          -> md, process_val ~loc:sloc kid crcm ns vd
