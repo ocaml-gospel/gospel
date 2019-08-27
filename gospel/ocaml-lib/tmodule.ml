@@ -150,11 +150,6 @@ type module_uc = {
     muc_crcm   : Coercion.t
 }
 
-let module_uc muc_nm muc_sigs muc_prefix muc_import muc_export
-      muc_files muc_kid muc_crcm =
-  {muc_nm;muc_sigs;muc_prefix;muc_import;muc_export;muc_files;
-   muc_kid;muc_crcm}
-
 let muc_add ns_add muc s x =
   match muc.muc_import, muc.muc_export with
   | i0 :: il, e0 :: el ->
@@ -249,6 +244,7 @@ let open_module muc s =
                muc_export = empty_ns :: muc.muc_export}
   | _ -> assert false
 
+(* for module declarations *)
 let close_module muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
@@ -258,6 +254,7 @@ let close_module muc =
                muc_sigs   = sl;}
   | _ -> assert false
 
+(* for functor arguments *)
 let close_module_functor muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
@@ -267,6 +264,7 @@ let close_module_functor muc =
                muc_sigs   = sl;}
   | _ -> assert false
 
+(* for module types *)
 let close_module_type muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
@@ -322,9 +320,15 @@ let add_sig_contents muc sig_ =
 
 (** Module under construction with primitive types and functions *)
 
-let init_muc s =
-  module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns]
-    Mstr.empty Mid.empty Coercion.empty
+let init_muc s = {
+    muc_nm      = fresh_id s;
+    muc_sigs    = [[]];
+    muc_prefix  = [s];
+    muc_import  = [ns_with_primitives];
+    muc_export  = [empty_ns];
+    muc_files   = Mstr.empty;
+    muc_kid     = Mid.empty;
+    muc_crcm    = Coercion.empty}
 
 let wrap_up_muc muc =
   match muc.muc_export, muc.muc_sigs with

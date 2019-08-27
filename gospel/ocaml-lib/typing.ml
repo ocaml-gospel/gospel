@@ -821,7 +821,7 @@ and process_modtype muc umty = match umty.mdesc with
   | Mod_functor (nm,mto,mt) ->
      let mty_arg = match mto with
        | None -> not_supported ~loc:umty.mloc
-                   "at this stage functor type must be provided"
+                   "functor type must be provided"
        | Some mt -> mt in
      let muc = open_module muc nm.txt in
      let muc, tmty_arg = process_modtype muc mty_arg in
@@ -831,8 +831,10 @@ and process_modtype muc umty = match umty.mdesc with
        {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
      muc, tmty
-  | Mod_typeof me -> assert false
-  | Mod_extension e -> assert false
+  | Mod_typeof me ->
+     not_supported ~loc:umty.mloc "module type of not supported"
+  | Mod_extension e ->
+     not_supported ~loc:umty.mloc "module extension not supported"
     (* TODO warning saying that extensions are not supported *)
 
 and process_mod loc m muc =
