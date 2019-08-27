@@ -10,9 +10,9 @@ let fmt = Format.std_formatter
 let pp = Format.fprintf
 
 let type_check name sigs =
-  let md = md_with_primitives name in
+  let md = init_muc name in
   let md = List.fold_left process_signature md sigs in
-  wrap_up_module md
+  wrap_up_muc md
 
 let run_bench () =
   let ok,error = ref 0, ref 0 in
@@ -30,7 +30,7 @@ let run_bench () =
     | Exit -> Format.fprintf fmt "%s\n" f
     | _ -> (error := !error + 1; pp fmt " *** ERROR ***  %s\n" f) in
   List.iter parse !files;
-  pp fmt "@[@\n OK: %d    ERROR: %d@\n@]@." !ok !error
+  pp fmt "@[@\n Parsing OK: %d    Typing ERRORs: %d@\n@]@." !ok !error
 
 let run_on_file file =
   try
@@ -50,11 +50,11 @@ let run_on_file file =
       end;
 
     if !parse_only then raise Exit;
-    let md = type_check file sigs in
+    let file = type_check file sigs in
     pp fmt "@[@\n*******************************@]@.";
     pp fmt    "@[********* Typed GOSPEL ********@]@.";
     pp fmt    "@[*******************************@]@.";
-    pp fmt "@[%a@]@." print_mod md;
+    pp fmt "@[%a@]@." print_file file;
     pp fmt "@[@\n*** OK ***@\n@]@."
   with
   | Exit -> ()

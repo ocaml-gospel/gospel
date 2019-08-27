@@ -234,7 +234,7 @@ let close_module_use muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: il, e0 :: el, p0 :: pl, s0 :: sl ->
      let file =
-       { fl_nm = fresh_id p0; fl_sigs   = s0; fl_export = e0 } in
+       { fl_nm = fresh_id p0; fl_sigs   = List.rev s0; fl_export = e0 } in
      {muc with muc_prefix = pl; muc_import = il;
                muc_export = el; muc_sigs   = sl;
                muc_files  = Mstr.add p0 file muc.muc_files}
@@ -276,10 +276,6 @@ let close_module_type muc =
                muc_sigs   = sl;}
   | _ -> assert false
 
-let wrap_up_module muc = match muc.muc_sigs with
-  | [s] -> {muc with muc_sigs = [List.rev s]}
-  | _ -> assert false
-
 let get_top_sigs muc = match muc.muc_sigs with
   | s0 :: _ -> List.rev s0
   | _ -> assert false
@@ -287,19 +283,6 @@ let get_top_sigs muc = match muc.muc_sigs with
 let get_top_import muc = match muc.muc_import with
   | i0 :: _ -> i0
   | _ -> assert false
-
-(* let add_ns_to_muc ns muc =
- *   let muc_import = joimport muc.muc_import ns in
- *   { muc with muc_import } *)
-
-(* let add_muc f kid ns muc =
- *   let muc = add_ns_to_muc ns muc in
- *   let muc = {muc with muc_import = ns_add_ns muc.muc_import f ns} in
- *   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
- *   (\* CHECK we taking all the known ids from source, but in fact we
- *      just need those from ml *\)
- *   let kid = Mid.union combine kid muc.muc_kid in
- *   {muc with muc_kid = kid} *)
 
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in
@@ -339,9 +322,15 @@ let add_sig_contents muc sig_ =
 
 (** Module under construction with primitive types and functions *)
 
-let muc_with_primitives s =
+let init_muc s =
   module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns]
     Mstr.empty Mid.empty Coercion.empty
+
+let wrap_up_muc muc =
+  match muc.muc_export, muc.muc_sigs with
+  | [e], [s] ->
+     { fl_nm = muc.muc_nm; fl_sigs = List.rev s; fl_export = e }
+  | _ -> assert false
 
 (** Pretty printing *)
 
@@ -383,15 +372,11 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
-let rec print_mod fmt {muc_nm;muc_sigs;muc_export;muc_crcm} =
-  match muc_export, muc_sigs with
-  | e0 :: _, s0 :: _ ->
-     pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Coercions@\n%a@]@\n@[<hv2>Signatures@\n%a@]@]@]@."
-       print_ident muc_nm
-       (print_ns muc_nm.id_str) e0
-       Coercion.print_coercions muc_crcm
-       print_signature s0
-  | _ -> assert false
+let rec print_file fmt {fl_nm;fl_sigs;fl_export} =
+  pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
+    print_ident fl_nm
+    (print_ns fl_nm.id_str) fl_export
+    print_signature fl_sigs
 
 let () =
   let open Location in
