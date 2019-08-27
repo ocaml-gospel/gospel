@@ -299,7 +299,7 @@ type with_constraint =
 
 type open_description =
     {
-     opn_id      : string list;
+     opn_id       : string list;
      opn_override : Oasttypes.override_flag;
      opn_loc      : Location.t;
      opn_attrs    : Oparsetree.attributes;
@@ -341,7 +341,7 @@ and signature_item_desc =
   | Sig_extension of Oparsetree.extension * Oparsetree.attributes
         (* [%%id] *)
   (* Specific to specification *)
-  | Sig_use of string list
+  | Sig_use of ident
   | Sig_function of function_
   | Sig_axiom of axiom
 
@@ -632,7 +632,7 @@ let rec print_signature_item f x =
   | Sig_function x -> print_function f x
   | Sig_axiom x -> pp f "(*@@ axiom %a: %a *)"
                      print_ident x.ax_name print_term x.ax_term
-  | Sig_use sl -> pp f "(*@@ use %a *)" (list ~sep:"." Format.pp_print_string) sl
+  | Sig_use id -> pp f "(*@@ use %a *)" print_ident id
   | _ -> assert false
 
 and print_signature f x = list ~sep:"@\n@\n" print_signature_item f x

@@ -137,7 +137,7 @@ let s_type_declaration_rec_flag f (rf,l) =
                  (list ~sep:"@," (type_decl "and" Oasttypes.Recursive)) xs
 
 let use f x =
-  let use f x = pp f "@[use %a@]" qualid x in
+  let use f x = pp f "@[use %a@]" print_pid x in
   spec use f x
 
 let function_ f x =

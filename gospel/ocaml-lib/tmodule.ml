@@ -87,204 +87,6 @@ let rec ns_subst_ty old_ts new_ts ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
    ns_tns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_tns
   }
 
-(* let rec ns_subst_ts sl ns ts = match sl with
- *   | [] -> assert false
- *   | [s] ->
- *      let old_ts = Mstr.find s ns.ns_ts in
- *      check_report ~loc:ts.ts_ident.id_loc
- *        (ts_arity old_ts = ts_arity ts) "type arity do not match";
- *      let ts = {old_ts with ts_args = ts.ts_args;
- *                            ts_alias = ts.ts_alias} in
- *      {ns with ns_ts = Mstr.add s ts ns.ns_ts }
- *   | x :: xs ->
- *      let x_ns = ns_subst_ts xs (Mstr.find x ns.ns_ns) ts in
- *      {ns with ns_ns = Mstr.add x x_ns ns.ns_ns} *)
-
-(** Modules *)
-
-type known_ids = signature_item Mid.t
-
-type module_uc = {
-    md_nm      : ident;
-    md_sigs    : signature list;
-    md_prefix  : string    list;
-    md_import  : namespace list;
-    md_export  : namespace list;
-    md_kid     : known_ids;
-    md_crcm    : Coercion.t
-}
-
-let module_uc md_nm md_sigs md_prefix md_import md_export md_kid md_crcm =
-  {md_nm;md_sigs;md_prefix;md_import;md_export;md_kid;md_crcm}
-
-let md_add ns_add md s x =
-  match md.md_import, md.md_export with
-  | i0 :: il, e0 :: el ->
-     {md with md_import  = ns_add i0 s x :: il;
-              md_export = ns_add e0 s x :: el}
-  | _ -> assert false
-
-let add_ts   = md_add ns_add_ts
-let add_ls   = md_add ns_add_ls
-let add_xs   = md_add ns_add_xs
-let add_ns   = md_add ns_add_ns
-let add_tns  = md_add ns_add_tns
-
-let add_kid md id s =
-  {md with md_kid = Mid.add id s md.md_kid}
-
-let add_sig md sig_ =
-  match md.md_sigs with
-  | s0 :: sl ->
-     {md with md_sigs = (sig_ :: s0) :: sl}
-  | _ -> assert false
-
-let add_coer md ls =
-  {md with md_crcm = Coercion.add md.md_crcm ls}
-
-let add_ns_top md ns =
-  let add f md map = Mstr.fold (fun s v md -> f md s v) map md in
-  let md = add add_ts  md ns.ns_ts in
-  let md = add add_ls  md ns.ns_ls in
-  let md = add add_xs  md ns.ns_xs in
-  let md = add add_ns  md ns.ns_ns in
-  let md = add add_tns md ns.ns_tns in
-  md
-
-let md_replace_ts md new_ts sl =
-  match md.md_import, md.md_export with
-  | i0 :: il, e0 :: el ->
-     {md with md_import  = ns_replace_ts new_ts sl i0 :: il;
-              md_export = ns_replace_ts new_ts sl e0 :: el}
-  | _ -> assert false
-
-let md_subst_ts md old_ts new_ts =
-  match md.md_import, md.md_export with
-  | i0 :: il, e0 :: el ->
-     {md with
-       md_import  = ns_subst_ts old_ts new_ts i0 :: il;
-       md_export = ns_subst_ts old_ts new_ts e0 :: el}
-  | _ -> assert false
-
-let md_subst_ty md old_ts new_ts ty =
-  match md.md_import, md.md_export with
-  | i0 :: il, e0 :: el ->
-     {md with md_import  = ns_subst_ty old_ts new_ts ty i0 :: il;
-              md_export = ns_subst_ty old_ts new_ts ty e0 :: el}
-  | _ -> assert false
-
-let md_rm_ts md sl =
-  match md.md_import, md.md_export with
-  | i0 :: il, e0 :: el ->
-     {md with md_import  = ns_rm_ts i0 sl :: il;
-              md_export = ns_rm_ts e0 sl :: el}
-  | _ -> assert false
-
-let open_module md s =
-  match md.md_import with
-  | i0 :: _ ->
-     {md with md_prefix = s :: md.md_prefix;
-              md_sigs   = [] :: md.md_sigs;
-              md_import  = i0 :: md.md_import;
-              md_export = empty_ns :: md.md_export}
-  | _ -> assert false
-
-let close_module md =
-  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
-     {md with md_prefix = pl;
-              md_import  = ns_add_ns i1 p0 e0 :: il;
-              md_export = ns_add_ns e1 p0 e0 :: el;
-              md_sigs   = sl;}
-  | _ -> assert false
-
-let close_module_functor md =
-  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
-     {md with md_prefix = pl;
-              md_import  = ns_add_ns i1 p0 e0 :: il;
-              md_export = e1 :: el;
-              md_sigs   = sl;}
-  | _ -> assert false
-
-let close_module_use md =
-  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
-     let i1, e1 = merge_ns e0 i1, merge_ns e0 e1 in (* ERROR we should not merge the e0 and 01 *)
-     let i1, e1 = ns_add_ns i1 p0 e0, ns_add_ns e1 p0 e0 in  (* ERROR we should not merge the e0 and 01 *)
-     {md with md_prefix = pl;
-              md_import  = i1 :: il;
-              md_export = e1 :: el;
-              md_sigs   = sl}
-  | _ -> assert false
-
-let close_module_type md =
-  match md.md_import, md.md_export, md.md_prefix, md.md_sigs with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
-     {md with md_prefix = pl;
-              md_import  = ns_add_tns i1 p0 e0 :: il;
-              md_export = ns_add_tns e1 p0 e0 :: el;
-              md_sigs   = sl;}
-  | _ -> assert false
-
-let wrap_up_module md = match md.md_sigs with
-  | [s] -> {md with md_sigs = [List.rev s]}
-  | _ -> assert false
-
-let get_top_sigs md = match md.md_sigs with
-  | s0 :: _ -> List.rev s0
-  | _ -> assert false
-
-let get_top_import md = match md.md_import with
-  | i0 :: _ -> i0
-  | _ -> assert false
-
-(* let add_ns_to_md ns md =
- *   let md_import = joimport md.md_import ns in
- *   { md with md_import } *)
-
-(* let add_md f kid ns md =
- *   let md = add_ns_to_md ns md in
- *   let md = {md with md_import = ns_add_ns md.md_import f ns} in
- *   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
- *   (\* CHECK we taking all the known ids from source, but in fact we
- *      just need those from ml *\)
- *   let kid = Mid.union combine kid md.md_kid in
- *   {md with md_kid = kid} *)
-
-let add_sig_contents md sig_ =
-  let md = add_sig md sig_ in
-  let get_cs_pjs = function
-    | Pty_abstract -> []
-    | Pty_variant cdl ->
-       List.map (fun cd -> cd.cd_cs) cdl
-    | Pty_record rd ->
-       rd.rd_cs :: (List.map (fun ld -> ld.ld_field) rd.rd_ldl)
-    | _ -> assert false in
-  match sig_.sig_desc with
-  | Sig_function f ->
-     let md = add_ls md f.fun_ls.ls_name.id_str f.fun_ls in
-     let md =
-       if f.fun_spec.fun_coer then add_coer md f.fun_ls else md in
-     add_kid md f.fun_ls.ls_name sig_
-  | Sig_type (rf,tdl,g) ->
-     let add_td md td =
-       let s = (ts_ident td.td_ts).id_str in
-       let md = add_ts md s td.td_ts in
-       let csl = get_cs_pjs td.td_kind in
-       let md = List.fold_left (fun md cs ->
-         add_ls md cs.ls_name.id_str cs) md csl in
-       let md = List.fold_left (fun md ls ->
-         add_ls md ls.ls_name.id_str ls) md td.td_spec.ty_field in
-       add_kid md td.td_ts.ts_ident sig_  in
-     List.fold_left add_td md tdl
-  | Sig_exception te ->
-     let s = te.exn_constructor.ext_ident.id_str in
-     let xs = te.exn_constructor.ext_xs in
-     let md = add_xs md s xs in
-     add_kid md te.exn_constructor.ext_ident sig_
-  | _ -> md (* TODO *)
-
 (** Primitives types and functions *)
 
 let ns_with_primitives =
@@ -327,9 +129,219 @@ let ns_with_primitives =
   List.fold_left (fun ns (s,ls) ->
       ns_add_ls ns s ls) ns (primitive_ls @ primitive_ps)
 
-let md_with_primitives s =
+(** Modules *)
+
+type known_ids = signature_item Mid.t
+
+type file = {
+    fl_nm     : ident;
+    fl_sigs   : signature;
+    fl_export : namespace;
+  }
+
+type module_uc = {
+    muc_nm     : ident;
+    muc_sigs   : signature list;
+    muc_prefix : string    list; (* essential when closing namespaces *)
+    muc_import : namespace list;
+    muc_export : namespace list;
+    muc_files  : file Mstr.t;
+    muc_kid    : known_ids;
+    muc_crcm   : Coercion.t
+}
+
+let module_uc muc_nm muc_sigs muc_prefix muc_import muc_export
+      muc_files muc_kid muc_crcm =
+  {muc_nm;muc_sigs;muc_prefix;muc_import;muc_export;muc_files;
+   muc_kid;muc_crcm}
+
+let muc_add ns_add muc s x =
+  match muc.muc_import, muc.muc_export with
+  | i0 :: il, e0 :: el ->
+     {muc with muc_import = ns_add i0 s x :: il;
+               muc_export = ns_add e0 s x :: el}
+  | _ -> assert false
+
+let add_ts   = muc_add ns_add_ts
+let add_ls   = muc_add ns_add_ls
+let add_xs   = muc_add ns_add_xs
+let add_ns   = muc_add ns_add_ns
+let add_tns  = muc_add ns_add_tns
+
+let add_file muc s file =
+  {muc with muc_files = Mstr.add s file muc.muc_files}
+
+let get_file muc s = Mstr.find s muc.muc_files
+
+let add_kid muc id s =
+  {muc with muc_kid = Mid.add id s muc.muc_kid}
+
+let add_sig muc sig_ =
+  match muc.muc_sigs with
+  | s0 :: sl ->
+     {muc with muc_sigs = (sig_ :: s0) :: sl}
+  | _ -> assert false
+
+let add_coer muc ls =
+  {muc with muc_crcm = Coercion.add muc.muc_crcm ls}
+
+let add_ns_top muc ns =
+  let add f muc map = Mstr.fold (fun s v muc -> f muc s v) map muc in
+  let muc = add add_ts  muc ns.ns_ts in
+  let muc = add add_ls  muc ns.ns_ls in
+  let muc = add add_xs  muc ns.ns_xs in
+  let muc = add add_ns  muc ns.ns_ns in
+  let muc = add add_tns muc ns.ns_tns in
+  muc
+
+let muc_replace_ts muc new_ts sl =
+  match muc.muc_import, muc.muc_export with
+  | i0 :: il, e0 :: el ->
+     {muc with muc_import = ns_replace_ts new_ts sl i0 :: il;
+               muc_export = ns_replace_ts new_ts sl e0 :: el}
+  | _ -> assert false
+
+let muc_subst_ts muc old_ts new_ts =
+  match muc.muc_import, muc.muc_export with
+  | i0 :: il, e0 :: el ->
+     {muc with
+       muc_import = ns_subst_ts old_ts new_ts i0 :: il;
+       muc_export = ns_subst_ts old_ts new_ts e0 :: el}
+  | _ -> assert false
+
+let muc_subst_ty muc old_ts new_ts ty =
+  match muc.muc_import, muc.muc_export with
+  | i0 :: il, e0 :: el ->
+     {muc with muc_import = ns_subst_ty old_ts new_ts ty i0 :: il;
+               muc_export = ns_subst_ty old_ts new_ts ty e0 :: el}
+  | _ -> assert false
+
+let muc_rm_ts muc sl =
+  match muc.muc_import, muc.muc_export with
+  | i0 :: il, e0 :: el ->
+     {muc with muc_import = ns_rm_ts i0 sl :: il;
+               muc_export = ns_rm_ts e0 sl :: el}
+  | _ -> assert false
+
+(* only used for the (*@ use M *) where M is a file *)
+let open_module_use muc s =
+  {muc with muc_prefix = s :: muc.muc_prefix;
+            muc_sigs   = [] :: muc.muc_sigs;
+            muc_import = ns_with_primitives :: muc.muc_import;
+            muc_export = empty_ns :: muc.muc_export}
+
+let close_module_use muc =
+  match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
+  | _ :: il, e0 :: el, p0 :: pl, s0 :: sl ->
+     let file =
+       { fl_nm = fresh_id p0; fl_sigs   = s0; fl_export = e0 } in
+     {muc with muc_prefix = pl; muc_import = il;
+               muc_export = el; muc_sigs   = sl;
+               muc_files  = Mstr.add p0 file muc.muc_files}
+  | _ -> assert false
+
+let open_module muc s =
+  match muc.muc_import with
+  | i0 :: _ ->
+     {muc with muc_prefix = s :: muc.muc_prefix;
+               muc_sigs   = [] :: muc.muc_sigs;
+               muc_import = i0 :: muc.muc_import;
+               muc_export = empty_ns :: muc.muc_export}
+  | _ -> assert false
+
+let close_module muc =
+  match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+     {muc with muc_prefix = pl;
+               muc_import = ns_add_ns i1 p0 e0 :: il;
+               muc_export = ns_add_ns e1 p0 e0 :: el;
+               muc_sigs   = sl;}
+  | _ -> assert false
+
+let close_module_functor muc =
+  match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+     {muc with muc_prefix = pl;
+               muc_import = ns_add_ns i1 p0 e0 :: il;
+               muc_export = e1 :: el;
+               muc_sigs   = sl;}
+  | _ -> assert false
+
+let close_module_type muc =
+  match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+     {muc with muc_prefix = pl;
+               muc_import = ns_add_tns i1 p0 e0 :: il;
+               muc_export = ns_add_tns e1 p0 e0 :: el;
+               muc_sigs   = sl;}
+  | _ -> assert false
+
+let wrap_up_module muc = match muc.muc_sigs with
+  | [s] -> {muc with muc_sigs = [List.rev s]}
+  | _ -> assert false
+
+let get_top_sigs muc = match muc.muc_sigs with
+  | s0 :: _ -> List.rev s0
+  | _ -> assert false
+
+let get_top_import muc = match muc.muc_import with
+  | i0 :: _ -> i0
+  | _ -> assert false
+
+(* let add_ns_to_muc ns muc =
+ *   let muc_import = joimport muc.muc_import ns in
+ *   { muc with muc_import } *)
+
+(* let add_muc f kid ns muc =
+ *   let muc = add_ns_to_muc ns muc in
+ *   let muc = {muc with muc_import = ns_add_ns muc.muc_import f ns} in
+ *   let combine id sig1 sig2 = assert (sig1 = sig2); Some sig1 in
+ *   (\* CHECK we taking all the known ids from source, but in fact we
+ *      just need those from ml *\)
+ *   let kid = Mid.union combine kid muc.muc_kid in
+ *   {muc with muc_kid = kid} *)
+
+let add_sig_contents muc sig_ =
+  let muc = add_sig muc sig_ in
+  let get_cs_pjs = function
+    | Pty_abstract -> []
+    | Pty_variant cdl ->
+       List.map (fun cd -> cd.cd_cs) cdl
+    | Pty_record rd ->
+       rd.rd_cs :: (List.map (fun ld -> ld.ld_field) rd.rd_ldl)
+    | _ -> assert false in
+  match sig_.sig_desc with
+  | Sig_function f ->
+     let muc = add_ls muc f.fun_ls.ls_name.id_str f.fun_ls in
+     let muc =
+       if f.fun_spec.fun_coer then add_coer muc f.fun_ls else muc in
+     add_kid muc f.fun_ls.ls_name sig_
+  | Sig_type (rf,tdl,g) ->
+     let add_td muc td =
+       let s = (ts_ident td.td_ts).id_str in
+       let muc = add_ts muc s td.td_ts in
+       let csl = get_cs_pjs td.td_kind in
+       let muc = List.fold_left (fun muc cs ->
+         add_ls muc cs.ls_name.id_str cs) muc csl in
+       let muc = List.fold_left (fun muc ls ->
+         add_ls muc ls.ls_name.id_str ls) muc td.td_spec.ty_field in
+       add_kid muc td.td_ts.ts_ident sig_  in
+     List.fold_left add_td muc tdl
+  | Sig_exception te ->
+     let s = te.exn_constructor.ext_ident.id_str in
+     let xs = te.exn_constructor.ext_xs in
+     let muc = add_xs muc s xs in
+     add_kid muc te.exn_constructor.ext_ident sig_
+  | Sig_use id ->
+     let file = Mstr.find id.id_str muc.muc_files in
+     add_ns muc id.id_str file.fl_export
+  | _ -> muc (* TODO *)
+
+(** Module under construction with primitive types and functions *)
+
+let muc_with_primitives s =
   module_uc (fresh_id s) [[]] [s] [ns_with_primitives] [empty_ns]
-    Mid.empty Coercion.empty
+    Mstr.empty Mid.empty Coercion.empty
 
 (** Pretty printing *)
 
@@ -371,13 +383,13 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
-let rec print_mod fmt {md_nm;md_sigs;md_export;md_crcm} =
-  match md_export, md_sigs with
+let rec print_mod fmt {muc_nm;muc_sigs;muc_export;muc_crcm} =
+  match muc_export, muc_sigs with
   | e0 :: _, s0 :: _ ->
      pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Coercions@\n%a@]@\n@[<hv2>Signatures@\n%a@]@]@]@."
-       print_ident md_nm
-       (print_ns md_nm.id_str) e0
-       Coercion.print_coercions md_crcm
+       print_ident muc_nm
+       (print_ns muc_nm.id_str) e0
+       Coercion.print_coercions muc_crcm
        print_signature s0
   | _ -> assert false
 

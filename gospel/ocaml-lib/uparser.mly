@@ -200,7 +200,7 @@ ensures:
 ;
 
 use:
-| USE uqualid { $2 }
+| USE uident { $2 }
 ;
 
 type_spec:

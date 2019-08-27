@@ -710,67 +710,61 @@ let process_exception_sig loc ns te =
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
-let process_open loc md od =
+let process_open muc od =
   let open Oparsetree in
   let s = Longident.last od.popen_lid.txt in
   let q = Longident.flatten od.popen_lid.txt in
-  let ns = find_ns (get_top_import md) q in
-  let md = add_ns md s ns in
-  add_ns_top md ns
+  let ns = find_ns (get_top_import muc) q in
+  let muc = add_ns muc s ns in
+  add_ns_top muc ns
 
-let rec process_use loc md q =
-  let s = (Uast_utils.qualid_preid q).pid_str in
-  try
-    let ns = find_q_ns (get_top_import md) q in
-    let md = add_ns md s ns in
-    add_ns_top md ns
-  with Located (_,SymbolNotFound _) ->
-    let nm = match string_list_of_qualid q with
-      | []  -> error_report ~loc "Empty use"
-      | [f] -> f
-      | _   -> not_supported ~loc:(Uast_utils.loc_of_qualid q)
-                 "only simple names are allowed" in
-    let file = String.uncapitalize_ascii nm ^ ".mli" in
-    let sl   = Parser_frontend.parse_all file in
-    let md   = open_module md nm in
-    let md   = List.fold_left process_signature md sl in
-    close_module_use md
+let rec process_use muc pid =
+  let s = pid.pid_str in
+  let file, muc =
+    try get_file muc s, muc with Not_found ->
+      let file = String.uncapitalize_ascii s ^ ".mli" in
+      let sl   = Parser_frontend.parse_all file in
+      let muc  = open_module_use muc s in
+      let muc  = List.fold_left process_signature muc sl in
+      let muc = close_module_use muc in
+      get_file muc s, muc
+  in add_ns muc s file.fl_export, file.fl_nm
 
 (* assumes that a new namespace has been opened *)
-and process_modtype md umty = match umty.mdesc with
+and process_modtype muc umty = match umty.mdesc with
   | Mod_signature usig ->
-     let md = List.fold_left process_signature md usig in
-     let tsig = Mod_signature (get_top_sigs md) in
+     let muc = List.fold_left process_signature muc usig in
+     let tsig = Mod_signature (get_top_sigs muc) in
      let tmty = {mt_desc = tsig; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     md, tmty
+     muc, tmty
   | Mod_ident li ->
      (* module type MTB = *MTA*  module MA : *MTA* *)
      let nm = Longident.flatten li.txt in
      let tmty = {mt_desc = Mod_ident nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     let ns = find_tns ~loc:li.loc (get_top_import md) nm in
-     add_ns_top md ns, tmty
+     let ns = find_tns ~loc:li.loc (get_top_import muc) nm in
+     add_ns_top muc ns, tmty
   | Mod_alias li ->
      (* module MB = *MA* *)
      let nm = Longident.flatten li.txt in
      let tmty = {mt_desc = Mod_alias nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     let ns = find_ns ~loc:li.loc (get_top_import md) nm in
-     add_ns_top md ns, tmty
+     let ns = find_ns ~loc:li.loc (get_top_import muc) nm in
+     add_ns_top muc ns, tmty
   | Mod_with (umty2,cl) ->
      let ns_init =
-       get_top_import md in (* required to type type decls in constraints *)
-     let md, tmty2 = process_modtype md umty2 in
-     let process_constraint (md,cl) c = match c with
+       get_top_import muc in (* required to type type decls in constraints *)
+     let muc, tmty2 = process_modtype muc umty2 in
+     let process_constraint (muc,cl) c = match c with
        | Wtype (li,tyd) ->
           let tdl = type_type_declaration ~loc:tyd.tloc
-                      md.md_kid md.md_crcm ns_init [tyd] in
+                      muc.muc_kid muc.muc_crcm ns_init [tyd] in
           let td = match tdl with
             | [td] -> td | _ -> assert false in
 
           let q = Longident.flatten li.txt in
-          let ns = get_top_import md in
+          let ns = get_top_import muc in
           let ts = find_ts ~loc:li.loc ns q in
 
           (* check that type symbols are compatible
@@ -783,12 +777,12 @@ and process_modtype md umty = match umty.mdesc with
           | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
           | _ -> assert false end;
 
-          let md = md_replace_ts md td.td_ts q in
-          let md = md_subst_ts md ts td.td_ts in
-          md, Wty (ts.ts_ident, td) :: cl
+          let muc = muc_replace_ts muc td.td_ts q in
+          let muc = muc_subst_ts muc ts td.td_ts in
+          muc, Wty (ts.ts_ident, td) :: cl
        | Wtypesubst (li,tyd) ->
           let tdl = type_type_declaration ~loc:tyd.tloc
-                      md.md_kid md.md_crcm ns_init [tyd] in
+                      muc.muc_kid muc.muc_crcm ns_init [tyd] in
           let td = match tdl with
             | [td] -> td | _ -> assert false in
           let ty = match td.td_ts.ts_alias with
@@ -796,9 +790,9 @@ and process_modtype md umty = match umty.mdesc with
             | Some ty -> ty in
 
           let q = Longident.flatten li.txt in
-          let ns = get_top_import md in
+          let ns = get_top_import muc in
           let ts = find_ts ~loc:li.loc ns q in
-          let md = md_rm_ts md q in
+          let muc = muc_rm_ts muc q in
 
           (* check that type symbols are compatible
              TODO there are other checks that need to be performed, for
@@ -810,86 +804,85 @@ and process_modtype md umty = match umty.mdesc with
           | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
           | _ -> assert false end;
 
-          let md = md_subst_ty md ts td.td_ts ty in
-          md, Wty (ts.ts_ident, td) :: cl
+          let muc = muc_subst_ty muc ts td.td_ts ty in
+          muc, Wty (ts.ts_ident, td) :: cl
        | Wmodule (li1,li2) ->
           not_supported ~loc:li1.loc "with module clause not supported"
        | Wmodsubst (li1,li2) ->
           not_supported ~loc:li1.loc "with module clause not supported"
      in
-     let md,cl = List.fold_left process_constraint (md,[]) cl in
+     let muc,cl = List.fold_left process_constraint (muc,[]) cl in
      let tmty = {mt_desc = Mod_with (tmty2,List.rev cl); mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
-     md, tmty
+     muc, tmty
   | Mod_functor (nm,mto,mt) ->
      let mty_arg = match mto with
        | None -> not_supported ~loc:umty.mloc
                    "at this stage functor type must be provided"
        | Some mt -> mt in
-     let md = open_module md nm.txt in
-     let md, tmty_arg = process_modtype md mty_arg in
-     let md = close_module_functor md in
-     let md, tmty = process_modtype md mt in
+     let muc = open_module muc nm.txt in
+     let muc, tmty_arg = process_modtype muc mty_arg in
+     let muc = close_module_functor muc in
+     let muc, tmty = process_modtype muc mt in
      let tmty =
        {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
-     md, tmty
+     muc, tmty
   | Mod_typeof me -> assert false
   | Mod_extension e -> assert false
     (* TODO warning saying that extensions are not supported *)
 
-and process_mod loc m md =
+and process_mod loc m muc =
   let nm = m.mdname.txt in
-  let md = open_module md nm in
-  let md, mty = process_modtype md m.mdtype in
+  let muc = open_module muc nm in
+  let muc, mty = process_modtype muc m.mdtype in
   let decl = { md_name = fresh_id nm; md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc } in
-  close_module md, mk_sig_item (Sig_module decl) loc
+  close_module muc, mk_sig_item (Sig_module decl) loc
 
-and process_modtype_decl loc decl md =
+and process_modtype_decl loc decl muc =
   let nm = decl.mtdname.txt in
-  let md = open_module md nm in
-  let md_mty = opmap (process_modtype md) decl.mtdtype in
-  let md, mty = match md_mty with
-    | None -> md, None
-    | Some (md,mty) -> md, Some mty in
+  let muc = open_module muc nm in
+  let md_mty = opmap (process_modtype muc) decl.mtdtype in
+  let muc, mty = match md_mty with
+    | None -> muc, None
+    | Some (muc,mty) -> muc, Some mty in
   let decl = {mtd_name = fresh_id nm; mtd_type = mty;
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
-  close_module_type md, mk_sig_item (Sig_modtype decl) loc
+  close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
-and process_signature md {sdesc;sloc} =
-  let kid,ns,crcm = md.md_kid, get_top_import md, md.md_crcm in
-  let md, signature = match sdesc with
-    | Uast.Sig_type (r,tdl)    -> md, process_sig_type ~loc:sloc kid crcm ns r tdl
-    | Uast.Sig_val vd          -> md, process_val ~loc:sloc kid crcm ns vd
-    | Uast.Sig_typext te       -> md, mk_sig_item (Sig_typext te) sloc
-    | Uast.Sig_module m        -> process_mod sloc m md
+and process_signature muc {sdesc;sloc} =
+  let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
+  let muc, signature = match sdesc with
+    | Uast.Sig_type (r,tdl)    -> muc, process_sig_type ~loc:sloc kid crcm ns r tdl
+    | Uast.Sig_val vd          -> muc, process_val ~loc:sloc kid crcm ns vd
+    | Uast.Sig_typext te       -> muc, mk_sig_item (Sig_typext te) sloc
+    | Uast.Sig_module m        -> process_mod sloc m muc
     | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
-    (* md, mk_sig_item (Sig_recmodule (List.map (process_mod sloc) ml)) sloc *)
-    | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl md
-    | Uast.Sig_exception te    -> md, process_exception_sig sloc ns te
+    | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl muc
+    | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
     | Uast.Sig_open od         ->
-       let md =  process_open sloc md od in
+       let muc = process_open muc od in
        let od = let open Oparsetree in
                 {opn_id = Longident.flatten od.popen_lid.txt;
                  opn_override = od.popen_override; opn_loc = od.popen_loc;
                  opn_attrs = od.popen_attributes} in
-       md, mk_sig_item (Sig_open od) sloc
-    | Uast.Sig_include id      -> md, mk_sig_item (Sig_include id) sloc
-    | Uast.Sig_class cdl       -> md, mk_sig_item (Sig_class cdl) sloc
-    | Uast.Sig_class_type ctdl -> md, mk_sig_item (Sig_class_type ctdl) sloc
-    | Uast.Sig_attribute a     -> md, mk_sig_item (Sig_attribute a) sloc
-    | Uast.Sig_extension (e,a) -> md, mk_sig_item (Sig_extension (e,a)) sloc
-    | Uast.Sig_use q           ->
-       process_use sloc md q,
-       mk_sig_item (Sig_use (string_list_of_qualid q)) sloc
-    | Uast.Sig_function f      -> md, process_function kid crcm ns f
-    | Uast.Sig_axiom a         -> md, process_axiom sloc kid crcm ns a
+       muc, mk_sig_item (Sig_open od) sloc
+    | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
+    | Uast.Sig_class cdl       -> muc, mk_sig_item (Sig_class cdl) sloc
+    | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
+    | Uast.Sig_attribute a     -> muc, mk_sig_item (Sig_attribute a) sloc
+    | Uast.Sig_extension (e,a) -> muc, mk_sig_item (Sig_extension (e,a)) sloc
+    | Uast.Sig_use pid         ->
+       let muc, id = process_use muc pid in
+       muc, mk_sig_item (Sig_use id) sloc
+    | Uast.Sig_function f      -> muc, process_function kid crcm ns f
+    | Uast.Sig_axiom a         -> muc, process_axiom sloc kid crcm ns a
     | Uast.Sig_ghost_type (r,tdl) ->
-       md, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl
+       muc, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl
     | Uast.Sig_ghost_val vd    ->
-       md, process_val ~loc:sloc ~ghost:true kid crcm ns vd
-  in add_sig_contents md signature
+       muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd
+  in add_sig_contents muc signature
 
 let () =
   let open Location in
