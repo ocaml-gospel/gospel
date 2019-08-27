@@ -461,41 +461,43 @@ let print_lb_arg fmt = function
 
 let print_xposts f xposts =
   if Mxs.is_empty xposts then () else
-  let print xs f (p,t) = pp f "%a@ %a -> %a"
+  let print xs f (p,t) = pp f "@[%a@ %a@] -> %a"
                            print_xs xs print_pattern p print_term t in
   let print_xpost xs = function
-    | [] -> pp f "@\n@[<hov 2>@[raises %a@]@]" print_xs xs
-    | tl -> list_with_first_last ~first:"@\n@[<hov 2>@[raises "
-              ~sep:"@\nraises " ~last:"@]@]"
+    | [] -> pp f "@\n@[<hv2>raises %a@]" print_xs xs
+    | tl -> list_with_first_last ~first:"@\n@[<hv2>raises "
+              ~sep:"@\nraises " ~last:"@]"
               (print xs) f tl  in
   Mxs.iter (fun xs tl -> print_xpost xs tl) xposts
 
-let print_vd_spec val_id fmt = function
+let print_vd_spec val_id fmt spec =
+  let print_term f t = pp f "@[%a@]" print_term t in
+  match spec with
   | None -> ()
   | Some {sp_args;sp_ret;sp_pre;sp_post;sp_xpost;sp_wr;sp_diverge;sp_equiv} ->
      let pres,checks =
        List.fold_left (fun (pres,checks) (p,c) ->
         if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
-     pp fmt "(*@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
+     pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
        (list ~sep:", " print_lb_arg) sp_ret
        (if sp_ret = [] then "" else " =")
        print_ident val_id
        (list ~sep:" " print_lb_arg) sp_args
-    (list_with_first_last ~first:"@\n@[<hov 2>@[requires "
-         ~sep:"@\nrequires " ~last:"@]@]"
+    (list_with_first_last ~first:"@\n@[requires "
+         ~sep:"@\nrequires " ~last:"@]"
          print_term) pres
-    (list_with_first_last ~first:"@\n@[<hov 2>@[checks "
-         ~sep:"@\nchecks " ~last:"@]@]"
+    (list_with_first_last ~first:"@\n@[checks "
+         ~sep:"@\nchecks " ~last:"@]"
          print_term) checks
-    (list_with_first_last ~first:"@\n@[<hov 2>@[ensures "
-         ~sep:"@\nensures " ~last:"@]@]"
+    (list_with_first_last ~first:"@\n@[ensures "
+         ~sep:"@\nensures " ~last:"@]"
          print_term) sp_post
     print_xposts sp_xpost
-    (list_with_first_last ~first:"@\n@[<hov 2>@[writes "
-         ~sep:"@\nwrites " ~last:"@]@]"
+    (list_with_first_last ~first:"@\n@[writes "
+         ~sep:"@\nwrites " ~last:"@]"
          print_term) sp_wr
-    (list_with_first_last ~first:"@\n@[<hov 2>@[equivalent "
-         ~sep:"@\nequivalent " ~last:"@]@]"
+    (list_with_first_last ~first:"@\n@[equivalent "
+         ~sep:"@\nequivalent " ~last:"@]"
          constant_string) sp_equiv
 
 let print_param f p =
@@ -503,6 +505,7 @@ let print_param f p =
 
 let print_function f x =
   let func_pred = if x.fun_ls.ls_value = None then "predicate" else "function" in
+  let print_term f t = pp f "@[%a@]" print_term t in
   let func f x =
     pp f "@[%s %s%a %a%a%a%a%a%a%a@]"
       func_pred
@@ -510,16 +513,16 @@ let print_function f x =
       print_ident x.fun_ls.ls_name
       (list ~sep:" " print_param) x.fun_params
       (print_option ~first:": " print_ty) x.fun_ls.ls_value
-      (print_option ~first:" =@\n@[<hov 2>@["
+      (print_option ~first:" =@\n@[<hov2>@["
          ~last:"@]@]" print_term) x.fun_def
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
-      (list_with_first_last ~first:"@\n@[@[<hov 2>variant "
+      (list_with_first_last ~first:"@\n@[@[<hov2>variant "
          ~sep:"@\nvariant " ~last:"@]@]"
          print_term) x.fun_spec.fun_variant
-      (list_with_first_last ~first:"@\n@[<hov 2>@[requires "
+      (list_with_first_last ~first:"@\n@[<hov2>@[requires "
          ~sep:"@\nrequires " ~last:"@]@]"
          print_term) x.fun_spec.fun_req
-      (list_with_first_last ~first:"@\n@[<hov 2>@[ensures "
+      (list_with_first_last ~first:"@\n@[<hov2>@[ensures "
          ~sep:"@\nensures " ~last:"@]@]"
          print_term) x.fun_spec.fun_ens
   in
@@ -541,23 +544,24 @@ let exception_declaration ctxt f x =
     (item_attributes ctxt) x.exn_attributes
 
 let rec print_signature_item f x =
+  let print_val f vd =
+    let intro = if vd.vd_prim = [] then "val" else "external" in
+    pp f "@[%s@ %a@ :@ %a%a%a@]@\n@[<h4>%a@]"
+      intro
+      print_ident vd.vd_name
+      core_type vd.vd_type
+      (fun f x ->
+        if x.vd_prim <> []
+        then pp f "@ =@ %a" (list constant_string) x.vd_prim
+      ) vd
+      (item_attributes reset_ctxt) vd.vd_attrs
+      (print_vd_spec vd.vd_name) vd.vd_spec in
   match x.sig_desc with
   | Sig_type (rf, td,g) ->
      pp f (if g then "@(*@@@\n[type %a@]@\n*)" else "@[type %a@]")
        (list ~sep:"@\nand " print_type_declaration) td
   | Sig_val (vd,g) ->
-      let intro = if vd.vd_prim = [] then "val" else "external" in
-      pp f (if g then "@[(*@@@\n@[<2>%s@ %a@ :@ %a %a@]%a@\n%a@\n*)@]"
-            else "@[<2>%s@ %a@ :@ %a %a@]%a@\n%a")
-        intro
-        print_ident vd.vd_name
-        core_type vd.vd_type
-        (item_attributes reset_ctxt) vd.vd_attrs
-        (fun f x ->
-          if x.vd_prim <> []
-          then pp f "@ =@ %a" (list constant_string) vd.vd_prim
-        ) vd
-        (print_vd_spec vd.vd_name) vd.vd_spec
+     pp f (if g then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
   | Sig_typext te ->
       type_extension reset_ctxt f te
   | Sig_exception ed ->

@@ -274,7 +274,7 @@ let print_exn_type f = function
      list_with_first_last ~sep:";" ~first:"{" ~last:"}" print_arg f args
 
 let print_xs f x =
-  pp f "%a : %a" print_ident x.xs_ident print_exn_type x.xs_type
+  pp f "%a" print_ident x.xs_ident
 
 (* register exceptions *)
  
