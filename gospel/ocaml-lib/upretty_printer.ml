@@ -171,6 +171,11 @@ let rec s_signature_item f x=
         value_description vd
         (item_attributes reset_ctxt) vd.vattributes
         val_spec vd.vspec in
+  let print_open f od =
+      pp f "@[<hov2>open%s@ %a@]%a"
+        (override od.popen_override)
+        longident_loc od.popen_lid
+        (item_attributes reset_ctxt) od.popen_attributes in
   match x.sdesc with
   | Sig_type (rf, l) ->
       s_type_declaration_rec_flag f (rf, l)
@@ -205,11 +210,7 @@ let rec s_signature_item f x=
         pmd.mdname.txt
         s_module_type pmd.mdtype
         (item_attributes reset_ctxt) pmd.mdattributes
-  | Sig_open od ->
-      pp f "@[<hov2>open%s@ %a@]%a"
-        (override od.popen_override)
-        longident_loc od.popen_lid
-        (item_attributes reset_ctxt) od.popen_attributes
+  | Sig_open od -> print_open f od
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a"
         (module_type reset_ctxt) incl.pincl_mod
@@ -252,6 +253,7 @@ let rec s_signature_item f x=
      pp f "@[%a@]"
        (spec s_type_declaration_rec_flag) (rf,l)
   | Sig_ghost_val vd -> pp f "@[%a@]" (spec s_val_description) vd
+  | Sig_ghost_open od -> pp f "@[%a@]" (spec print_open) od
 
 and s_signature f x = list ~sep:"@\n@\n" s_signature_item f x
 

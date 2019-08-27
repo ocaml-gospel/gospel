@@ -716,7 +716,10 @@ let process_open muc od =
   let q = Longident.flatten od.popen_lid.txt in
   let ns = find_ns (get_top_import muc) q in
   let muc = add_ns muc s ns in
-  add_ns_top muc ns
+  let od = {opn_id = Longident.flatten od.popen_lid.txt;
+            opn_override = od.popen_override; opn_loc = od.popen_loc;
+            opn_attrs = od.popen_attributes} in
+  add_ns_top muc ns, od
 
 let rec process_use muc pid =
   let s = pid.pid_str in
@@ -862,12 +865,8 @@ and process_signature muc {sdesc;sloc} =
     | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
     | Uast.Sig_open od         ->
-       let muc = process_open muc od in
-       let od = let open Oparsetree in
-                {opn_id = Longident.flatten od.popen_lid.txt;
-                 opn_override = od.popen_override; opn_loc = od.popen_loc;
-                 opn_attrs = od.popen_attributes} in
-       muc, mk_sig_item (Sig_open od) sloc
+       let muc, od = process_open muc od in
+       muc, mk_sig_item (Sig_open (od,false)) sloc
     | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
     | Uast.Sig_class cdl       -> muc, mk_sig_item (Sig_class cdl) sloc
     | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
@@ -882,6 +881,9 @@ and process_signature muc {sdesc;sloc} =
        muc, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl
     | Uast.Sig_ghost_val vd    ->
        muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd
+    | Uast.Sig_ghost_open od    ->
+       let muc, od = process_open muc od in
+       muc, mk_sig_item (Sig_open (od,true)) sloc
   in add_sig_contents muc signature
 
 let () =

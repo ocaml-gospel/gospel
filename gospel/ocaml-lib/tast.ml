@@ -328,7 +328,7 @@ and signature_item_desc =
   (* these were not modified *)
   | Sig_exception of type_exception
         (* exception C of T *)
-  | Sig_open of open_description
+  | Sig_open of open_description * ghost
         (* open X *)
   | Sig_include of Oparsetree.include_description
         (* include MT *)
@@ -589,8 +589,10 @@ let rec print_signature_item f x =
         print_ident pmd.md_name
         print_module_type pmd.md_type
         (item_attributes reset_ctxt) pmd.md_attrs
-  | Sig_open od ->
-      pp f "@[<hov2>open%s@ %a@]%a"
+  | Sig_open (od,ghost) ->
+      pp f
+      (if ghost then
+         "@[<hov2>(*@@@ open%s@ %a@ *)@]%a" else "@[<hov2>open%s@ %a@]%a")
         (override od.opn_override)
         (list ~sep:"." Format.pp_print_string) od.opn_id
         (item_attributes reset_ctxt) od.opn_attrs

@@ -96,6 +96,8 @@ let ghost_spec attr =
      Stype_ghost (r,td,psig_loc)
   | [{psig_desc = (Psig_value vd);psig_loc}] ->
      Sval_ghost (vd,psig_loc)
+  | [{psig_desc = (Psig_open od);psig_loc}] ->
+     Sopen_ghost (od,psig_loc)
   | _  (* should not happen *)               -> assert false
 
 
@@ -187,6 +189,8 @@ let rec floating_specs = function
   | [] -> []
   | Suse (q,sloc) :: xs ->
      {sdesc=Sig_use q; sloc} :: floating_specs xs
+  | Sopen_ghost (od,sloc) :: xs ->
+     {sdesc=Sig_ghost_open od; sloc} :: floating_specs xs
   | Sfunction (f,sloc) :: xs ->
      (* Look forward and get floating function specification *)
      let (fun_specs,xs) = split_at_f is_func_spec xs in

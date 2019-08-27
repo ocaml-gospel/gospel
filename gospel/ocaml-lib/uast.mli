@@ -154,7 +154,8 @@ type spec =
   | Sfunc_spec  of fun_spec * Location.t
   | Saxiom      of axiom * Location.t
   | Stype_ghost of rec_flag * type_declaration list * Location.t
-  | Sval_ghost  of value_description  * Location.t
+  | Sval_ghost  of value_description * Location.t
+  | Sopen_ghost of open_description  * Location.t
 
 (* Modified OCaml constructs with specification attached *)
 
@@ -234,7 +235,8 @@ type s_signature_item_desc =
   | Sig_function of function_
   | Sig_axiom of axiom
   | Sig_ghost_type  of rec_flag * s_type_declaration list
-  | Sig_ghost_val of s_val_description
+  | Sig_ghost_val   of s_val_description
+  | Sig_ghost_open  of open_description
 
 and s_signature_item =
   {

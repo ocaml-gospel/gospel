@@ -85,7 +85,7 @@
 %token COERCION
 %token IF IN
 %token OLD NOT RAISES (* READS *)
-%token THEN TRUE TYPE VAL MODIFIES EQUIVALENT CHECKS DIVERGES
+%token THEN TRUE TYPE OPEN VAL MODIFIES EQUIVALENT CHECKS DIVERGES
 
 %token AS
 %token USE
@@ -139,6 +139,7 @@ spec_init:
 | axiom EOF          { Saxiom ($1, mk_loc $startpos $endpos)}
 | VAL                { raise Ghost_decl }
 | TYPE               { raise Ghost_decl }
+| OPEN               { raise Ghost_decl }
 ;
 
 axiom:

@@ -47,6 +47,7 @@
         "let", LET;
         "match", MATCH;
         "not", NOT;
+        "open", OPEN;
         "predicate", PREDICATE;
         "then", THEN;
         "true", TRUE;
