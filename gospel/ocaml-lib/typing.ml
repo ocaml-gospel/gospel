@@ -710,28 +710,25 @@ let process_exception_sig loc ns te =
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
-let process_open muc od =
-  let open Oparsetree in
-  let s = Longident.last od.popen_lid.txt in
-  let q = Longident.flatten od.popen_lid.txt in
-  let ns = find_ns (get_top_import muc) q in
-  let muc = add_ns muc s ns in
-  let od = {opn_id = Longident.flatten od.popen_lid.txt;
-            opn_override = od.popen_override; opn_loc = od.popen_loc;
-            opn_attrs = od.popen_attributes} in
-  add_ns_top muc ns, od
+let process_open ~loc ?(ghost=false) muc od =
+  let od =
+    let open Oparsetree in
+    {opn_id = Longident.flatten od.popen_lid.txt;
+     opn_override = od.popen_override;
+     opn_loc = od.popen_loc; opn_attrs = od.popen_attributes} in
+  mk_sig_item (Sig_open (od,ghost)) loc
 
 let rec process_use muc pid =
   let s = pid.pid_str in
   let file, muc =
     try get_file muc s, muc with Not_found ->
-      let file = String.uncapitalize_ascii s ^ ".mli" in
-      let sl   = Parser_frontend.parse_all file in
-      let muc  = open_module_use muc s in
-      let muc  = List.fold_left process_signature muc sl in
+      let nm  = String.uncapitalize_ascii s ^ ".mli" in
+      let sl  = Parser_frontend.parse_all nm in
+      let muc = open_module_use muc s in
+      let muc = List.fold_left process_signature muc sl in
       let muc = close_module_use muc in
       get_file muc s, muc
-  in add_ns muc s file.fl_export, file.fl_nm
+  in muc, file.fl_nm
 
 (* assumes that a new namespace has been opened *)
 and process_modtype muc umty = match umty.mdesc with
@@ -866,9 +863,7 @@ and process_signature muc {sdesc;sloc} =
     | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
     | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
-    | Uast.Sig_open od         ->
-       let muc, od = process_open muc od in
-       muc, mk_sig_item (Sig_open (od,false)) sloc
+    | Uast.Sig_open od         -> muc, process_open ~loc:sloc ~ghost:false muc od
     | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
     | Uast.Sig_class cdl       -> muc, mk_sig_item (Sig_class cdl) sloc
     | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
@@ -883,9 +878,7 @@ and process_signature muc {sdesc;sloc} =
        muc, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl
     | Uast.Sig_ghost_val vd    ->
        muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd
-    | Uast.Sig_ghost_open od    ->
-       let muc, od = process_open muc od in
-       muc, mk_sig_item (Sig_open (od,true)) sloc
+    | Uast.Sig_ghost_open od    -> muc, process_open ~loc:sloc ~ghost:true muc od
   in add_sig_contents muc signature
 
 let () =

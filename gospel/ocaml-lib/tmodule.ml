@@ -228,8 +228,8 @@ let open_module_use muc s =
 let close_module_use muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: il, e0 :: el, p0 :: pl, s0 :: sl ->
-     let file =
-       { fl_nm = fresh_id p0; fl_sigs   = List.rev s0; fl_export = e0 } in
+     let file = { fl_nm = fresh_id p0;
+                  fl_sigs   = List.rev s0; fl_export = e0 } in
      {muc with muc_prefix = pl; muc_import = il;
                muc_export = el; muc_sigs   = sl;
                muc_files  = Mstr.add p0 file muc.muc_files}
@@ -316,6 +316,10 @@ let add_sig_contents muc sig_ =
   | Sig_use id ->
      let file = Mstr.find id.id_str muc.muc_files in
      add_ns muc id.id_str file.fl_export
+  | Sig_open ({opn_id},_) ->
+     let nm = List.hd (List.rev opn_id) in
+     let ns = ns_find_ns (get_top_import muc) opn_id in
+     add_ns_top (add_ns muc nm ns) ns
   | _ -> muc (* TODO *)
 
 (** Module under construction with primitive types and functions *)
