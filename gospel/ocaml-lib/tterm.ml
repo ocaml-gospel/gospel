@@ -400,7 +400,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; t_loc } =
          print_term t
     | Tcase (t, ptl) ->
        let print_branch fmt (p,t) =
-         pp fmt "| %a -> %a" print_pattern p print_term t in
+         pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t in
        pp fmt "match %a with@\n%a@\nend:%a"
          print_term t
          (list ~sep:"@\n" print_branch) ptl

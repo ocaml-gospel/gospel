@@ -23,18 +23,17 @@ let load_path = ref []
 
 let specialist = [
   "--print-intermediate", Unit (fun () -> print_intermediate := true),
-    "print intermediate formso";
+    " Print intermediate form";
   "--parse-ocaml-only", Unit (fun () -> parse_ocaml_only := true),
-    "stop after parsing OCaml signatures";
+    " Stop after parsing OCaml signatures";
   "--parse-only", Unit (fun () -> parse_only := true),
-    "stop after parsing phase";
+    " Stop after parsing phase";
   "--print-parsed", Unit (fun () -> print_parsed := true),
-    "print after parsing";
+    " Print after parsing";
   "--bench-mode", Unit (fun () -> bench_mode := true),
-    "run in bench mode -- parses, type checks, and prints reports for \
-     all files";
+    " Run in bench mode -- parses, type checks, and prints reports for all files";
   "-L", String (fun d -> load_path := (valid_dir d) :: !load_path),
-    "include directory in load pah"
+    "load-path Include directory in load pah";
   ]
 
 let anon_fun s =

@@ -718,22 +718,28 @@ let process_open ~loc ?(ghost=false) muc od =
      opn_loc = od.popen_loc; opn_attrs = od.popen_attributes} in
   mk_sig_item (Sig_open (od,ghost)) loc
 
-let rec process_use muc pid =
+
+(* TODO: I don't particularly like to mix the type checking with
+   parsing. In the future these two steps could be completely
+   separated by parsing all the files in the beginning - requires a
+   iterae over the signatures and parse the content of use and open
+   keywords recursively *)
+let rec process_use load_path muc pid =
   let s = pid.pid_str in
   let file, muc =
     try get_file muc s, muc with Not_found ->
       let nm  = String.uncapitalize_ascii s ^ ".mli" in
-      let sl  = Parser_frontend.parse_all nm in
+      let sl  = Parser_frontend.parse_ocaml_gospel load_path nm in
       let muc = open_module_use muc s in
-      let muc = List.fold_left process_signature muc sl in
+      let muc = List.fold_left (process_signature load_path) muc sl in
       let muc = close_module_use muc in
       get_file muc s, muc
   in muc, file.fl_nm
 
 (* assumes that a new namespace has been opened *)
-and process_modtype muc umty = match umty.mdesc with
+and process_modtype load_path muc umty = match umty.mdesc with
   | Mod_signature usig ->
-     let muc = List.fold_left process_signature muc usig in
+     let muc = List.fold_left (process_signature load_path) muc usig in
      let tsig = Mod_signature (get_top_sigs muc) in
      let tmty = {mt_desc = tsig; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
@@ -755,7 +761,7 @@ and process_modtype muc umty = match umty.mdesc with
   | Mod_with (umty2,cl) ->
      let ns_init =
        get_top_import muc in (* required to type type decls in constraints *)
-     let muc, tmty2 = process_modtype muc umty2 in
+     let muc, tmty2 = process_modtype load_path muc umty2 in
      let process_constraint (muc,cl) c = match c with
        | Wtype (li,tyd) ->
           let tdl = type_type_declaration ~loc:tyd.tloc
@@ -821,9 +827,9 @@ and process_modtype muc umty = match umty.mdesc with
                    "functor type must be provided"
        | Some mt -> mt in
      let muc = open_module muc nm.txt in
-     let muc, tmty_arg = process_modtype muc mty_arg in
+     let muc, tmty_arg = process_modtype load_path muc mty_arg in
      let muc = close_module_functor muc in
-     let muc, tmty = process_modtype muc mt in
+     let muc, tmty = process_modtype load_path muc mt in
      let tmty =
        {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
@@ -834,18 +840,18 @@ and process_modtype muc umty = match umty.mdesc with
      not_supported ~loc:umty.mloc "module extension not supported"
     (* TODO warning saying that extensions are not supported *)
 
-and process_mod loc m muc =
+and process_mod load_path loc m muc =
   let nm = m.mdname.txt in
   let muc = open_module muc nm in
-  let muc, mty = process_modtype muc m.mdtype in
+  let muc, mty = process_modtype load_path muc m.mdtype in
   let decl = { md_name = fresh_id nm; md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc } in
   close_module muc, mk_sig_item (Sig_module decl) loc
 
-and process_modtype_decl loc decl muc =
+and process_modtype_decl load_path loc decl muc =
   let nm = decl.mtdname.txt in
   let muc = open_module muc nm in
-  let md_mty = opmap (process_modtype muc) decl.mtdtype in
+  let md_mty = opmap (process_modtype load_path muc) decl.mtdtype in
   let muc, mty = match md_mty with
     | None -> muc, None
     | Some (muc,mty) -> muc, Some mty in
@@ -853,15 +859,15 @@ and process_modtype_decl loc decl muc =
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
   close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
-and process_signature muc {sdesc;sloc} =
+and process_signature load_path muc {sdesc;sloc} =
   let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
   let muc, signature = match sdesc with
     | Uast.Sig_type (r,tdl)    -> muc, process_sig_type ~loc:sloc kid crcm ns r tdl
     | Uast.Sig_val vd          -> muc, process_val ~loc:sloc kid crcm ns vd
     | Uast.Sig_typext te       -> muc, mk_sig_item (Sig_typext te) sloc
-    | Uast.Sig_module m        -> process_mod sloc m muc
+    | Uast.Sig_module m        -> process_mod load_path sloc m muc
     | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
-    | Uast.Sig_modtype mty_decl-> process_modtype_decl sloc mty_decl muc
+    | Uast.Sig_modtype mty_decl-> process_modtype_decl load_path sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
     | Uast.Sig_open od         -> muc, process_open ~loc:sloc ~ghost:false muc od
     | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
@@ -870,7 +876,7 @@ and process_signature muc {sdesc;sloc} =
     | Uast.Sig_attribute a     -> muc, mk_sig_item (Sig_attribute a) sloc
     | Uast.Sig_extension (e,a) -> muc, mk_sig_item (Sig_extension (e,a)) sloc
     | Uast.Sig_use pid         ->
-       let muc, id = process_use muc pid in
+       let muc, id = process_use load_path muc pid in
        muc, mk_sig_item (Sig_use id) sloc
     | Uast.Sig_function f      -> muc, process_function kid crcm ns f
     | Uast.Sig_axiom a         -> muc, process_axiom sloc kid crcm ns a
