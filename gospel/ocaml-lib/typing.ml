@@ -13,14 +13,17 @@ let rec string_list_of_qualid q =
   fold_q [] q
 
 exception SymbolNotFound of string list
+exception NsNotFound of string
 
 let rec q_loc = function
   | Qpreid pid -> pid.pid_loc
   | Qdot (q,p) -> q_loc q
 
-let ns_find ?loc f ns s =
-  try f ns s with
-    Not_found -> error ?loc (SymbolNotFound s)
+let ns_find ?loc f ns sl = match sl with
+  | s :: _ :: _ when not (ns_exists_ns ns s) ->
+     error ?loc (NsNotFound s) (* try to find file s *)
+  | _ -> try f ns sl with
+           Not_found -> error ?loc (SymbolNotFound sl)
 
 let find_ts ?loc = ns_find ?loc ns_find_ts
 let find_ls ?loc = ns_find ?loc ns_find_ls
@@ -710,31 +713,35 @@ let process_exception_sig loc ns te =
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
-let process_open ~loc ?(ghost=false) muc od =
-  let od =
-    let open Oparsetree in
-    {opn_id = Longident.flatten od.popen_lid.txt;
-     opn_override = od.popen_override;
-     opn_loc = od.popen_loc; opn_attrs = od.popen_attributes} in
-  mk_sig_item (Sig_open (od,ghost)) loc
 
-
-(* TODO: I don't particularly like to mix the type checking with
-   parsing. In the future these two steps could be completely
-   separated by parsing all the files in the beginning - requires a
-   iterae over the signatures and parse the content of use and open
-   keywords recursively *)
-let rec process_use load_path muc pid =
-  let s = pid.pid_str in
+(* TODO replace name process_use by process_file *)
+let rec process_use ~loc load_path muc nm =
   let file, muc =
-    try get_file muc s, muc with Not_found ->
-      let nm  = String.uncapitalize_ascii s ^ ".mli" in
-      let sl  = Parser_frontend.parse_ocaml_gospel load_path nm in
-      let muc = open_module_use muc s in
+    try get_file muc nm, muc with Not_found ->
+      let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
+      let sl  = Parser_frontend.parse_ocaml_gospel load_path file_nm in
+      let muc = open_module_use muc nm in
       let muc = List.fold_left (process_signature load_path) muc sl in
       let muc = close_module_use muc in
-      get_file muc s, muc
-  in muc, file.fl_nm
+      get_file muc nm, muc
+  in muc
+
+and module_as_file ~loc load_path muc nm =
+  try process_use ~loc load_path muc nm with
+  | Parser_frontend.FileNotFound s ->
+     error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
+
+and process_open ~loc ?(ghost=false) load_path muc od =
+  let qd     = Longident.flatten od.Oparsetree.popen_lid.txt in
+  let qd_loc = od.Oparsetree.popen_lid.loc in
+  let hd     = List.hd qd in
+  let muc    = if ns_exists_ns (get_top_import muc) hd then muc else
+                 module_as_file ~loc:qd_loc load_path muc hd in
+  let od =
+    let open Oparsetree in
+    {opn_id = qd; opn_override = od.popen_override;
+     opn_loc = od.popen_loc; opn_attrs = od.popen_attributes} in
+  muc, mk_sig_item (Sig_open (od,ghost)) loc
 
 (* assumes that a new namespace has been opened *)
 and process_modtype load_path muc umty = match umty.mdesc with
@@ -860,8 +867,9 @@ and process_modtype_decl load_path loc decl muc =
   close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
 and process_signature load_path muc {sdesc;sloc} =
-  let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
-  let muc, signature = match sdesc with
+  let process_sig_item si muc =
+    let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
+    match si with
     | Uast.Sig_type (r,tdl)    -> muc, process_sig_type ~loc:sloc kid crcm ns r tdl
     | Uast.Sig_val vd          -> muc, process_val ~loc:sloc kid crcm ns vd
     | Uast.Sig_typext te       -> muc, mk_sig_item (Sig_typext te) sloc
@@ -869,23 +877,36 @@ and process_signature load_path muc {sdesc;sloc} =
     | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
     | Uast.Sig_modtype mty_decl-> process_modtype_decl load_path sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
-    | Uast.Sig_open od         -> muc, process_open ~loc:sloc ~ghost:false muc od
+    | Uast.Sig_open od         -> process_open ~loc:sloc ~ghost:false load_path muc od
     | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
     | Uast.Sig_class cdl       -> muc, mk_sig_item (Sig_class cdl) sloc
     | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
     | Uast.Sig_attribute a     -> muc, mk_sig_item (Sig_attribute a) sloc
     | Uast.Sig_extension (e,a) -> muc, mk_sig_item (Sig_extension (e,a)) sloc
     | Uast.Sig_use pid         ->
-       let muc, id = process_use load_path muc pid in
-       muc, mk_sig_item (Sig_use id) sloc
+       process_use ~loc:sloc load_path muc pid.pid_str,
+       mk_sig_item (Sig_use pid.pid_str) sloc
     | Uast.Sig_function f      -> muc, process_function kid crcm ns f
     | Uast.Sig_axiom a         -> muc, process_axiom sloc kid crcm ns a
     | Uast.Sig_ghost_type (r,tdl) ->
        muc, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl
     | Uast.Sig_ghost_val vd    ->
        muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd
-    | Uast.Sig_ghost_open od    -> muc, process_open ~loc:sloc ~ghost:true muc od
-  in add_sig_contents muc signature
+    | Uast.Sig_ghost_open od    ->
+       process_open ~loc:sloc ~ghost:true load_path muc od in
+  let rec process_and_import si muc =
+    try process_sig_item si muc with
+    | Located (loc,NsNotFound s) ->
+       (* if a namespace does not exist we try to load
+          a file with the same name *)
+       let muc  = module_as_file ~loc:loc load_path muc s in
+       let sig_ = mk_sig_item (Sig_use s) sloc in
+       let muc  = add_sig_contents muc sig_ in
+       process_and_import si muc
+  in
+  let muc, signature = process_and_import sdesc muc in
+  let muc = add_sig_contents muc signature in
+  muc
 
 let () =
   let open Location in

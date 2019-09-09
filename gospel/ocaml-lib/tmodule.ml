@@ -57,6 +57,8 @@ let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs)   ns s
 let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns)   ns s
 let ns_find_tns ns s = ns_find (fun ns -> ns.ns_tns) ns s
 
+let ns_exists_ns ns s = Mstr.mem s ns.ns_ns
+
 let rec ns_rm_ts ns = function
   | [] -> assert false
   | [x] -> {ns with ns_ts = Mstr.remove x ns.ns_ts}
@@ -227,11 +229,11 @@ let open_module_use muc s =
 
 let close_module_use muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
-  | _ :: il, e0 :: el, p0 :: pl, s0 :: sl ->
+  | _ :: i1 :: il, e0 :: el, p0 :: pl, s0 :: sl ->
      let file = { fl_nm = fresh_id p0;
                   fl_sigs   = List.rev s0; fl_export = e0 } in
-     {muc with muc_prefix = pl; muc_import = il;
-               muc_export = el; muc_sigs   = sl;
+     {muc with muc_import = ns_add_ns i1 p0 e0 :: il;
+               muc_export = el; muc_sigs = sl; muc_prefix = pl;
                muc_files  = Mstr.add p0 file muc.muc_files}
   | _ -> assert false
 
@@ -282,6 +284,10 @@ let get_top_import muc = match muc.muc_import with
   | i0 :: _ -> i0
   | _ -> assert false
 
+let get_top_export muc = match muc.muc_export with
+  | e0 :: _ -> e0
+  | _ -> assert false
+
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in
   let get_cs_pjs = function
@@ -313,9 +319,6 @@ let add_sig_contents muc sig_ =
      let xs = te.exn_constructor.ext_xs in
      let muc = add_xs muc s xs in
      add_kid muc te.exn_constructor.ext_ident sig_
-  | Sig_use id ->
-     let file = Mstr.find id.id_str muc.muc_files in
-     add_ns muc id.id_str file.fl_export
   | Sig_open ({opn_id},_) ->
      let nm = List.hd (List.rev opn_id) in
      let ns = ns_find_ns (get_top_import muc) opn_id in

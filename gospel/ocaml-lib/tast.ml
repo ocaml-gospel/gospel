@@ -341,7 +341,7 @@ and signature_item_desc =
   | Sig_extension of Oparsetree.extension * Oparsetree.attributes
         (* [%%id] *)
   (* Specific to specification *)
-  | Sig_use of ident
+  | Sig_use of string
   | Sig_function of function_
   | Sig_axiom of axiom
 
@@ -638,7 +638,7 @@ let rec print_signature_item f x =
   | Sig_function x -> print_function f x
   | Sig_axiom x -> pp f "(*@@ axiom %a: %a *)"
                      print_ident x.ax_name print_term x.ax_term
-  | Sig_use id -> pp f "(*@@ use %a *)" print_ident id
+  | Sig_use s -> pp f "(*@@ use %s *)" s
   | _ -> assert false
 
 and print_signature f x = list ~sep:"@\n@\n" print_signature_item f x
