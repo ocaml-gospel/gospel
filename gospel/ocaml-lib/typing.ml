@@ -716,15 +716,13 @@ let process_exception_sig loc ns te =
 
 (* TODO replace name process_use by process_file *)
 let rec process_use ~loc load_path muc nm =
-  let file, muc =
-    try get_file muc nm, muc with Not_found ->
-      let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
-      let sl  = Parser_frontend.parse_ocaml_gospel load_path file_nm in
-      let muc = open_module_use muc nm in
-      let muc = List.fold_left (process_signature load_path) muc sl in
-      let muc = close_module_use muc in
-      get_file muc nm, muc
-  in muc
+  try add_ns muc nm (get_file muc nm).fl_export with Not_found ->
+    let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
+    let sl  = Parser_frontend.parse_ocaml_gospel load_path file_nm in
+    let muc = open_module_use muc nm in
+    let muc = List.fold_left (process_signature load_path) muc sl in
+    let muc = close_module_use muc in
+    muc
 
 and module_as_file ~loc load_path muc nm =
   try process_use ~loc load_path muc nm with

@@ -1,36 +1,4 @@
-
-(* built-in
-
-   type unit
-   type int
-   type string
-   type float
-   type bool
-   type 'a array
-
-   type integer
-   function (+)   (x y: integer) : integer
-   function (-)   (x y: integer) : integer
-   function ( * ) (x y: integer) : integer
-   function (/)   (x y: integer) : integer
-   function (mod) (x y: integer) : integer (* TODO *)
-   function (-_)  (x: integer) : integer (* unary minus *)
-   predicate (>)  (x y: integer)
-   predicate (>=) (x y: integer)
-   predicate (<)  (x y: integer)
-   predicate (<=) (x y: integer)
-
-   type 'a option
-   function None: 'a option
-   function Some (x: 'a) : 'a option
-
-   type 'a list
-   function ([]): 'a list
-   function (::) (x: 'a) (l: 'a list) : 'a list
-
-   predicate (=) (x y: 'a)
-
-*)
+(*@ open Gospelstdlib *)
 
 type int
 
@@ -51,6 +19,7 @@ type int
 (*@ function max_int : integer *)
 (*@ function min_int : integer *)
 
+
 (* tuples *)
 
 (*@ function fst (p: 'a * 'b) : 'a *)
@@ -62,10 +31,9 @@ type 'a ref
 
 (*@ function (!_) (r: 'a ref) : 'a = r.contents *)
 
-(*@ use Seq *)
 type 'a array
 (*@ ephemeral *)
-(*@ mutable model contents: 'a seq *)
+(*@ mutable model contents: 'a Seq.seq *)
 
 exception Not_found
 
@@ -85,7 +53,7 @@ end
 
 module List : sig
 
-  (*@ use Seq *)
+  (*@ open Seq *)
 
   (*@ function seq_of_list (l: 'a list): 'a seq *)
   (*@ coercion *)
@@ -110,7 +78,7 @@ module List : sig
 end
 
 module Array : sig
-  (*@ use Seq *)
+  (*@ open Seq *)
 
   (*@ function seq_of_array (a: 'a array): 'a seq *)
   (*@ coercion *)

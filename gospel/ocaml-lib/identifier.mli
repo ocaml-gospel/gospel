@@ -41,16 +41,6 @@ val id_add_lab : ident -> Sattr.elt -> ident
 
 val eq   : ident
 val neq  : ident
-val lt   : ident
-val le   : ident
-val gt   : ident
-val ge   : ident
-val impl : ident
-val plus : ident
-val minus: ident
-val mult : ident
-val div  : ident
-val umin : ident
 val none : ident
 val some : ident
 val nil  : ident

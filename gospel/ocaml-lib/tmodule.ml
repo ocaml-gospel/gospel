@@ -105,19 +105,9 @@ let ns_with_primitives =
       ("float", ts_float); ("bool", ts_bool); ("option",ts_option);
       ("list", ts_list); ("unit", ts_unit)] in
   let primitive_ps =
-    [ ps_equ.ls_name.id_str, ps_equ;
-      (lt.id_str, psymbol lt     [ty_integer;ty_integer]);
-      (le.id_str, psymbol le     [ty_integer;ty_integer]);
-      (gt.id_str, psymbol gt     [ty_integer;ty_integer]);
-      (ge.id_str, psymbol ge     [ty_integer;ty_integer])
-    ] in
+    [ ps_equ.ls_name.id_str, ps_equ ] in
   let primitive_ls =
-    [ (plus.id_str, fsymbol plus   [ty_integer;ty_integer] ty_integer);
-      (minus.id_str, fsymbol minus [ty_integer;ty_integer] ty_integer);
-      (mult.id_str, fsymbol mult   [ty_integer;ty_integer] ty_integer);
-      (div.id_str, fsymbol div   [ty_integer;ty_integer] ty_integer);
-      (umin.id_str, fsymbol umin   [ty_integer] ty_integer);
-      (let tv = fresh_ty_var "a" in
+    [ (let tv = fresh_ty_var "a" in
        none.id_str, fsymbol ~constr:true none [] (ty_option tv));
       (let tv = fresh_ty_var "a" in
        some.id_str, fsymbol ~constr:true some [tv] (ty_option tv));
@@ -152,6 +142,11 @@ type module_uc = {
     muc_crcm   : Coercion.t
 }
 
+
+(* TODO check if it really makes sense to add to the muc_import and
+   muc_export. In some cases it only makes sense to add to the
+   muc_import, e.g. process_use in typing.ml. In other cases it might
+   make sense to add to both. *)
 let muc_add ns_add muc s x =
   match muc.muc_import, muc.muc_export with
   | i0 :: il, e0 :: el ->
