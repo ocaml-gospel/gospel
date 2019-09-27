@@ -6,7 +6,7 @@ type ('a,'b) t3
 
 type test = T1 | T2 | T3 | T4
 
-(*@ use Ocamlstdlib *)
+open Ocamlstdlib
 
 type test2 = T5 of int
 

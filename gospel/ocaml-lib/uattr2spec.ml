@@ -187,8 +187,6 @@ let val_description v =
    specification is a type declaration or val description*)
 let rec floating_specs = function
   | [] -> []
-  | Suse (q,sloc) :: xs ->
-     {sdesc=Sig_use q; sloc} :: floating_specs xs
   | Sopen_ghost (od,sloc) :: xs ->
      {sdesc=Sig_ghost_open od; sloc} :: floating_specs xs
   | Sfunction (f,sloc) :: xs ->

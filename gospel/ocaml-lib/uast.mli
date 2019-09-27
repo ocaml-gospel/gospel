@@ -149,7 +149,6 @@ type axiom = {
 type spec =
   | Stype       of type_spec * Location.t
   | Sval        of val_spec * Location.t
-  | Suse        of preid * Location.t
   | Sfunction   of function_ * Location.t
   | Sfunc_spec  of fun_spec * Location.t
   | Saxiom      of axiom * Location.t
@@ -231,7 +230,6 @@ type s_signature_item_desc =
   | Sig_extension of extension * attributes
         (* [%%id] *)
   (* Specific to specification *)
-  | Sig_use of preid
   | Sig_function of function_
   | Sig_axiom of axiom
   | Sig_ghost_type  of rec_flag * s_type_declaration list

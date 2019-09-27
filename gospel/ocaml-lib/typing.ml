@@ -714,18 +714,17 @@ let process_exception_sig loc ns te =
 
 (** Typing use, and modules *)
 
-(* TODO replace name process_use by process_file *)
-let rec process_use ~loc load_path muc nm =
-  try add_ns muc nm (get_file muc nm).fl_export with Not_found ->
+let rec open_file ~loc load_path muc nm =
+  try add_ns ~export:true muc nm (get_file muc nm).fl_export with Not_found ->
     let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
     let sl  = Parser_frontend.parse_ocaml_gospel load_path file_nm in
-    let muc = open_module_use muc nm in
+    let muc = open_empty_module muc nm in
     let muc = List.fold_left (process_signature load_path) muc sl in
-    let muc = close_module_use muc in
+    let muc = close_module_file muc in
     muc
 
 and module_as_file ~loc load_path muc nm =
-  try process_use ~loc load_path muc nm with
+  try open_file ~loc load_path muc nm with
   | Parser_frontend.FileNotFound s ->
      error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
 
@@ -755,14 +754,14 @@ and process_modtype load_path muc umty = match umty.mdesc with
      let tmty = {mt_desc = Mod_ident nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      let ns = find_tns ~loc:li.loc (get_top_import muc) nm in
-     add_ns_top muc ns, tmty
+     add_ns_top ~export:true muc ns, tmty
   | Mod_alias li ->
      (* module MB = *MA* *)
      let nm = Longident.flatten li.txt in
      let tmty = {mt_desc = Mod_alias nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      let ns = find_ns ~loc:li.loc (get_top_import muc) nm in
-     add_ns_top muc ns, tmty
+     add_ns_top ~export:true muc ns, tmty
   | Mod_with (umty2,cl) ->
      let ns_init =
        get_top_import muc in (* required to type type decls in constraints *)
@@ -881,9 +880,6 @@ and process_signature load_path muc {sdesc;sloc} =
     | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
     | Uast.Sig_attribute a     -> muc, mk_sig_item (Sig_attribute a) sloc
     | Uast.Sig_extension (e,a) -> muc, mk_sig_item (Sig_extension (e,a)) sloc
-    | Uast.Sig_use pid         ->
-       process_use ~loc:sloc load_path muc pid.pid_str,
-       mk_sig_item (Sig_use pid.pid_str) sloc
     | Uast.Sig_function f      -> muc, process_function kid crcm ns f
     | Uast.Sig_axiom a         -> muc, process_axiom sloc kid crcm ns a
     | Uast.Sig_ghost_type (r,tdl) ->

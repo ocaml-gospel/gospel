@@ -558,7 +558,7 @@ let rec print_signature_item f x =
       (print_vd_spec vd.vd_name) vd.vd_spec in
   match x.sig_desc with
   | Sig_type (rf, td,g) ->
-     pp f (if g then "@(*@@@\n[type %a@]@\n*)" else "@[type %a@]")
+     pp f (if g then "@[(*@@ type %a *)@]" else "@[type %a@]")
        (list ~sep:"@\nand " print_type_declaration) td
   | Sig_val (vd,g) ->
      pp f (if g then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd

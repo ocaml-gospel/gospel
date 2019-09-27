@@ -71,7 +71,6 @@
         (* vocal *)
         "ephemeral", EPHEMERAL;
         "model", MODEL;
-        "use", USE;
       ]
 
   let char_for_backslash = function

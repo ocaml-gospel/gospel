@@ -142,23 +142,19 @@ type module_uc = {
     muc_crcm   : Coercion.t
 }
 
-
-(* TODO check if it really makes sense to add to the muc_import and
-   muc_export. In some cases it only makes sense to add to the
-   muc_import, e.g. process_use in typing.ml. In other cases it might
-   make sense to add to both. *)
-let muc_add ns_add muc s x =
+let muc_add ?(export=false) add muc s x =
   match muc.muc_import, muc.muc_export with
   | i0 :: il, e0 :: el ->
-     {muc with muc_import = ns_add i0 s x :: il;
-               muc_export = ns_add e0 s x :: el}
+     let e = if export then add e0 s x else e0 in
+     {muc with muc_import = add i0 s x :: il;
+               muc_export = e :: el}
   | _ -> assert false
 
-let add_ts   = muc_add ns_add_ts
-let add_ls   = muc_add ns_add_ls
-let add_xs   = muc_add ns_add_xs
-let add_ns   = muc_add ns_add_ns
-let add_tns  = muc_add ns_add_tns
+let add_ts  ?(export=false) = muc_add ~export ns_add_ts
+let add_ls  ?(export=false) = muc_add ~export ns_add_ls
+let add_xs  ?(export=false) = muc_add ~export ns_add_xs
+let add_ns  ?(export=false) = muc_add ~export ns_add_ns
+let add_tns ?(export=false) = muc_add ~export ns_add_tns
 
 let add_file muc s file =
   {muc with muc_files = Mstr.add s file muc.muc_files}
@@ -177,13 +173,13 @@ let add_sig muc sig_ =
 let add_coer muc ls =
   {muc with muc_crcm = Coercion.add muc.muc_crcm ls}
 
-let add_ns_top muc ns =
+let add_ns_top ?(export=false) muc ns =
   let add f muc map = Mstr.fold (fun s v muc -> f muc s v) map muc in
-  let muc = add add_ts  muc ns.ns_ts in
-  let muc = add add_ls  muc ns.ns_ls in
-  let muc = add add_xs  muc ns.ns_xs in
-  let muc = add add_ns  muc ns.ns_ns in
-  let muc = add add_tns muc ns.ns_tns in
+  let muc = add (add_ts ~export)  muc ns.ns_ts in
+  let muc = add (add_ls ~export)  muc ns.ns_ls in
+  let muc = add (add_xs ~export)  muc ns.ns_xs in
+  let muc = add (add_ns ~export)  muc ns.ns_ns in
+  let muc = add (add_tns ~export) muc ns.ns_tns in
   muc
 
 let muc_replace_ts muc new_ts sl =
@@ -215,21 +211,22 @@ let muc_rm_ts muc sl =
                muc_export = ns_rm_ts e0 sl :: el}
   | _ -> assert false
 
-(* only used for the (*@ use M *) where M is a file *)
-let open_module_use muc s =
+let open_empty_module muc s =
   {muc with muc_prefix = s :: muc.muc_prefix;
             muc_sigs   = [] :: muc.muc_sigs;
             muc_import = ns_with_primitives :: muc.muc_import;
             muc_export = empty_ns :: muc.muc_export}
 
-let close_module_use muc =
+let close_module_file muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
-  | _ :: i1 :: il, e0 :: el, p0 :: pl, s0 :: sl ->
+  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, s0 :: sl ->
      let file = { fl_nm = fresh_id p0;
                   fl_sigs   = List.rev s0; fl_export = e0 } in
-     {muc with muc_import = ns_add_ns i1 p0 e0 :: il;
-               muc_export = el; muc_sigs = sl; muc_prefix = pl;
-               muc_files  = Mstr.add p0 file muc.muc_files}
+     {muc with  muc_prefix = pl;
+                muc_import = ns_add_ns i1 p0 e0 :: il;
+                muc_export = e1 :: el;
+                muc_sigs   = sl;
+                muc_files  = Mstr.add p0 file muc.muc_files}
   | _ -> assert false
 
 let open_module muc s =
@@ -294,30 +291,30 @@ let add_sig_contents muc sig_ =
     | _ -> assert false in
   match sig_.sig_desc with
   | Sig_function f ->
-     let muc = add_ls muc f.fun_ls.ls_name.id_str f.fun_ls in
+     let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
      let muc =
        if f.fun_spec.fun_coer then add_coer muc f.fun_ls else muc in
      add_kid muc f.fun_ls.ls_name sig_
   | Sig_type (rf,tdl,g) ->
      let add_td muc td =
        let s = (ts_ident td.td_ts).id_str in
-       let muc = add_ts muc s td.td_ts in
+       let muc = add_ts ~export:true muc s td.td_ts in
        let csl = get_cs_pjs td.td_kind in
        let muc = List.fold_left (fun muc cs ->
-         add_ls muc cs.ls_name.id_str cs) muc csl in
+         add_ls ~export:true muc cs.ls_name.id_str cs) muc csl in
        let muc = List.fold_left (fun muc ls ->
-         add_ls muc ls.ls_name.id_str ls) muc td.td_spec.ty_field in
+         add_ls ~export:true muc ls.ls_name.id_str ls) muc td.td_spec.ty_field in
        add_kid muc td.td_ts.ts_ident sig_  in
      List.fold_left add_td muc tdl
   | Sig_exception te ->
      let s = te.exn_constructor.ext_ident.id_str in
      let xs = te.exn_constructor.ext_xs in
-     let muc = add_xs muc s xs in
+     let muc = add_xs ~export:true muc s xs in
      add_kid muc te.exn_constructor.ext_ident sig_
   | Sig_open ({opn_id},_) ->
      let nm = List.hd (List.rev opn_id) in
      let ns = ns_find_ns (get_top_import muc) opn_id in
-     add_ns_top (add_ns muc nm ns) ns
+     add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
   | _ -> muc (* TODO *)
 
 (** Module under construction with primitive types and functions *)

@@ -1,5 +1,5 @@
-
-(*@ use Ocamlstdlib *)
+(*@ open Gospelstdlib *)
+(*@ open Ocamlstdlib *)
 
 exception E
 

@@ -1,4 +1,5 @@
-(*@ use Ocamlstdlib *)
+(*@ open Ocamlstdlib *)
+(*@ open Gospelstdlib *)
 
 (*@ axiom a1: true *)
 
@@ -84,7 +85,7 @@ type 'a t2 = C2 of 'a
 (*@ axiom ax1: forall x y. y = f x *)
 
 val f : int -> int -> int
-(* @ r = f x y
+(*@ r = f x y
     requires x > 0
     requires y + 2 < 0
     ensures r = x + y *)

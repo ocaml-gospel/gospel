@@ -1,4 +1,4 @@
-(*@ use Ocamlstdlib *)
+open Ocamlstdlib
 
 val f : int -> int -> int
 (*@ r = f y x *)

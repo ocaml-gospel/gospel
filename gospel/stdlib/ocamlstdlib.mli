@@ -58,6 +58,8 @@ module List : sig
   (*@ function seq_of_list (l: 'a list): 'a seq *)
   (*@ coercion *)
 
+  (*@ function length (l: 'a list) : integer = Seq.length l *)
+
   (*@ function nth (l: 'a list) (i: integer) : 'a =
         l[i] *)
 
@@ -82,6 +84,9 @@ module Array : sig
 
   (*@ function seq_of_array (a: 'a array): 'a seq *)
   (*@ coercion *)
+
+  (*@ function length (a: 'a array) : integer = Seq.length a *)
+  (*@ function ([_]) (a: 'a array) (i: integer) : 'a = Seq.([_]) a i *)
 
   (* TODO keep this here? *)
   (*@ predicate permut_sub (a b: 'a array) (i j: integer) *)

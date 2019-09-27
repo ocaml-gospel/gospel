@@ -1,4 +1,5 @@
-(*@ use Ocamlstdlib *)
+(*@ open Gospelstdlib *)
+open Ocamlstdlib
 
 module MA : sig
   type ta = C of int

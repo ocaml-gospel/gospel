@@ -1,5 +1,5 @@
 
-(*@ use Type_decl *)
+(*@ open Type_decl *)
 
 (* Parameteless functions *)
 

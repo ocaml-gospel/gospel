@@ -136,10 +136,6 @@ let s_type_declaration_rec_flag f (rf,l) =
                  (type_decl "type" rf) x
                  (list ~sep:"@," (type_decl "and" Oasttypes.Recursive)) xs
 
-let use f x =
-  let use f x = pp f "@[use %a@]" print_pid x in
-  spec use f x
-
 let function_ f x =
   let keyword = match x.fun_type with
     | None -> "predicate"
@@ -246,7 +242,6 @@ let rec s_signature_item f x=
   | Sig_extension(e, a) ->
       item_extension reset_ctxt f e;
       item_attributes reset_ctxt f a
-  | Sig_use x -> use f x
   | Sig_function x -> function_ f x
   | Sig_axiom x -> axiom f x
   | Sig_ghost_type  (rf,l) ->

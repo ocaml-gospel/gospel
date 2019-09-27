@@ -88,7 +88,6 @@
 %token THEN TRUE TYPE OPEN VAL MODIFIES EQUIVALENT CHECKS DIVERGES
 
 %token AS
-%token USE
 %token LET MATCH PREDICATE
 %token WITH
 
@@ -133,7 +132,6 @@
 spec_init:
 | type_spec EOF      { Stype (rev_tspec $1, mk_loc $startpos $endpos) }
 | val_spec EOF       { Sval ($1, mk_loc $startpos $endpos) }
-| use EOF            { Suse ($1, mk_loc $startpos $endpos)}
 | func EOF           { Sfunction ($1, mk_loc $startpos $endpos)}
 | func_spec EOF      { Sfunc_spec (rev_fspec $1, mk_loc $startpos $endpos)}
 | axiom EOF          { Saxiom ($1, mk_loc $startpos $endpos)}
@@ -198,10 +196,6 @@ requires:
 
 ensures:
 | ENSURES t=term {t}
-;
-
-use:
-| USE uident { $2 }
 ;
 
 type_spec:
