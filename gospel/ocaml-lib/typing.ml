@@ -714,26 +714,37 @@ let process_exception_sig loc ns te =
 
 (** Typing use, and modules *)
 
-let rec open_file ~loc load_path muc nm =
+type parse_env = {
+    lpaths  : string list;  (* loading paths *)
+    parsing : Utils.Sstr.t; (* files being parsed *)
+}
+
+let penv lpaths parsing = {lpaths; parsing}
+
+exception Circular of string
+
+let rec open_file ~loc penv muc nm =
+  if Sstr.mem nm penv.parsing then error ~loc (Circular nm);
   try add_ns ~export:true muc nm (get_file muc nm).fl_export with Not_found ->
     let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
-    let sl  = Parser_frontend.parse_ocaml_gospel load_path file_nm in
+    let sl  = Parser_frontend.parse_ocaml_gospel penv.lpaths file_nm in
     let muc = open_empty_module muc nm in
-    let muc = List.fold_left (process_signature load_path) muc sl in
+    let penv = {penv with parsing = Sstr.add nm penv.parsing} in
+    let muc = List.fold_left (process_signature penv) muc sl in
     let muc = close_module_file muc in
     muc
 
-and module_as_file ~loc load_path muc nm =
-  try open_file ~loc load_path muc nm with
+and module_as_file ~loc penv muc nm =
+  try open_file ~loc penv muc nm with
   | Parser_frontend.FileNotFound s ->
      error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
 
-and process_open ~loc ?(ghost=false) load_path muc od =
+and process_open ~loc ?(ghost=false) penv muc od =
   let qd     = Longident.flatten od.Oparsetree.popen_lid.txt in
   let qd_loc = od.Oparsetree.popen_lid.loc in
   let hd     = List.hd qd in
   let muc    = if ns_exists_ns (get_top_import muc) hd then muc else
-                 module_as_file ~loc:qd_loc load_path muc hd in
+                 module_as_file ~loc:qd_loc penv muc hd in
   let od =
     let open Oparsetree in
     {opn_id = qd; opn_override = od.popen_override;
@@ -741,9 +752,9 @@ and process_open ~loc ?(ghost=false) load_path muc od =
   muc, mk_sig_item (Sig_open (od,ghost)) loc
 
 (* assumes that a new namespace has been opened *)
-and process_modtype load_path muc umty = match umty.mdesc with
+and process_modtype penv muc umty = match umty.mdesc with
   | Mod_signature usig ->
-     let muc = List.fold_left (process_signature load_path) muc usig in
+     let muc = List.fold_left (process_signature penv) muc usig in
      let tsig = Mod_signature (get_top_sigs muc) in
      let tmty = {mt_desc = tsig; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
@@ -765,7 +776,7 @@ and process_modtype load_path muc umty = match umty.mdesc with
   | Mod_with (umty2,cl) ->
      let ns_init =
        get_top_import muc in (* required to type type decls in constraints *)
-     let muc, tmty2 = process_modtype load_path muc umty2 in
+     let muc, tmty2 = process_modtype penv muc umty2 in
      let process_constraint (muc,cl) c = match c with
        | Wtype (li,tyd) ->
           let tdl = type_type_declaration ~loc:tyd.tloc
@@ -831,9 +842,9 @@ and process_modtype load_path muc umty = match umty.mdesc with
                    "functor type must be provided"
        | Some mt -> mt in
      let muc = open_module muc nm.txt in
-     let muc, tmty_arg = process_modtype load_path muc mty_arg in
+     let muc, tmty_arg = process_modtype penv muc mty_arg in
      let muc = close_module_functor muc in
-     let muc, tmty = process_modtype load_path muc mt in
+     let muc, tmty = process_modtype penv muc mt in
      let tmty =
        {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
@@ -844,18 +855,18 @@ and process_modtype load_path muc umty = match umty.mdesc with
      not_supported ~loc:umty.mloc "module extension not supported"
     (* TODO warning saying that extensions are not supported *)
 
-and process_mod load_path loc m muc =
+and process_mod penv loc m muc =
   let nm = m.mdname.txt in
   let muc = open_module muc nm in
-  let muc, mty = process_modtype load_path muc m.mdtype in
+  let muc, mty = process_modtype penv muc m.mdtype in
   let decl = { md_name = fresh_id nm; md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc } in
   close_module muc, mk_sig_item (Sig_module decl) loc
 
-and process_modtype_decl load_path loc decl muc =
+and process_modtype_decl penv loc decl muc =
   let nm = decl.mtdname.txt in
   let muc = open_module muc nm in
-  let md_mty = opmap (process_modtype load_path muc) decl.mtdtype in
+  let md_mty = opmap (process_modtype penv muc) decl.mtdtype in
   let muc, mty = match md_mty with
     | None -> muc, None
     | Some (muc,mty) -> muc, Some mty in
@@ -863,18 +874,18 @@ and process_modtype_decl load_path loc decl muc =
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
   close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
-and process_signature load_path muc {sdesc;sloc} =
+and process_signature penv muc {sdesc;sloc} =
   let process_sig_item si muc =
     let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
     match si with
     | Uast.Sig_type (r,tdl)    -> muc, process_sig_type ~loc:sloc kid crcm ns r tdl
     | Uast.Sig_val vd          -> muc, process_val ~loc:sloc kid crcm ns vd
     | Uast.Sig_typext te       -> muc, mk_sig_item (Sig_typext te) sloc
-    | Uast.Sig_module m        -> process_mod load_path sloc m muc
+    | Uast.Sig_module m        -> process_mod penv sloc m muc
     | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
-    | Uast.Sig_modtype mty_decl-> process_modtype_decl load_path sloc mty_decl muc
+    | Uast.Sig_modtype mty_decl-> process_modtype_decl penv sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
-    | Uast.Sig_open od         -> process_open ~loc:sloc ~ghost:false load_path muc od
+    | Uast.Sig_open od         -> process_open ~loc:sloc ~ghost:false penv muc od
     | Uast.Sig_include id      -> muc, mk_sig_item (Sig_include id) sloc
     | Uast.Sig_class cdl       -> muc, mk_sig_item (Sig_class cdl) sloc
     | Uast.Sig_class_type ctdl -> muc, mk_sig_item (Sig_class_type ctdl) sloc
@@ -887,13 +898,13 @@ and process_signature load_path muc {sdesc;sloc} =
     | Uast.Sig_ghost_val vd    ->
        muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd
     | Uast.Sig_ghost_open od    ->
-       process_open ~loc:sloc ~ghost:true load_path muc od in
+       process_open ~loc:sloc ~ghost:true penv muc od in
   let rec process_and_import si muc =
     try process_sig_item si muc with
     | Located (loc,NsNotFound s) ->
        (* if a namespace does not exist we try to load
           a file with the same name *)
-       let muc  = module_as_file ~loc:loc load_path muc s in
+       let muc  = module_as_file ~loc:loc penv muc s in
        let sig_ = mk_sig_item (Sig_use s) sloc in
        let muc  = add_sig_contents muc sig_ in
        process_and_import si muc
@@ -915,4 +926,6 @@ let () =
          Some (errorf "The record field %a does not exist" print_ls_nm ls)
       | DuplicateRecordField ls ->
          Some (errorf "Duplicated record field %a" print_ls_nm ls)
+      | Circular m ->
+         Some (errorf "Circular open: %s" m)
       | _ -> None)

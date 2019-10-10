@@ -472,33 +472,35 @@ let print_xposts f xposts =
 
 let print_vd_spec val_id fmt spec =
   let print_term f t = pp f "@[%a@]" print_term t in
+  let print_diverges f d = if not d then () else pp f "@\n@[diverges@]" in
   match spec with
   | None -> ()
   | Some {sp_args;sp_ret;sp_pre;sp_post;sp_xpost;sp_wr;sp_diverge;sp_equiv} ->
      let pres,checks =
        List.fold_left (fun (pres,checks) (p,c) ->
         if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
-     pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
+     pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a*)"
        (list ~sep:", " print_lb_arg) sp_ret
        (if sp_ret = [] then "" else " =")
        print_ident val_id
        (list ~sep:" " print_lb_arg) sp_args
-    (list_with_first_last ~first:"@\n@[requires "
-         ~sep:"@\nrequires " ~last:"@]"
-         print_term) pres
-    (list_with_first_last ~first:"@\n@[checks "
-         ~sep:"@\nchecks " ~last:"@]"
-         print_term) checks
-    (list_with_first_last ~first:"@\n@[ensures "
-         ~sep:"@\nensures " ~last:"@]"
-         print_term) sp_post
-    print_xposts sp_xpost
-    (list_with_first_last ~first:"@\n@[writes "
-         ~sep:"@\nwrites " ~last:"@]"
-         print_term) sp_wr
-    (list_with_first_last ~first:"@\n@[equivalent "
-         ~sep:"@\nequivalent " ~last:"@]"
-         constant_string) sp_equiv
+       print_diverges sp_diverge
+       (list_with_first_last ~first:"@\n@[requires "
+          ~sep:"@\nrequires " ~last:"@]"
+          print_term) pres
+       (list_with_first_last ~first:"@\n@[checks "
+          ~sep:"@\nchecks " ~last:"@]"
+          print_term) checks
+       (list_with_first_last ~first:"@\n@[ensures "
+          ~sep:"@\nensures " ~last:"@]"
+          print_term) sp_post
+       print_xposts sp_xpost
+       (list_with_first_last ~first:"@\n@[writes "
+          ~sep:"@\nwrites " ~last:"@]"
+          print_term) sp_wr
+       (list_with_first_last ~first:"@\n@[equivalent "
+          ~sep:"@\nequivalent " ~last:"@]"
+          constant_string) sp_equiv
 
 let print_param f p =
   pp f "(%a:%a)" print_ident p.vs_name print_ty p.vs_ty
