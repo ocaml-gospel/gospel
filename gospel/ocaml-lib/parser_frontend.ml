@@ -33,9 +33,30 @@ let parse_ocaml load_path file =
       let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
       raise (Ocaml_syntax_error loc) end
 
+let gospelstdlib = "Gospelstdlib"
+let ocamlstdlib  = "Ocamlstdlib"
+let seqlib       = "Seq"
+
+let libs nm =
+  if nm = gospelstdlib then [] else
+    if nm = ocamlstdlib || nm = seqlib then [gospelstdlib] else
+      [gospelstdlib;ocamlstdlib]
+
+let default_opens nm =
+  let open Uast in
+  let open Oparsetree in
+  let od nm =
+    let id = Location.{txt = Longident.Lident nm; loc = none} in
+    let od = {popen_lid = id; popen_override = Fresh;
+              popen_loc = Location.none; popen_attributes = []} in
+    Sig_ghost_open od in
+  let sig_item nm = {sdesc = od nm; sloc = Location.none} in
+  List.map sig_item (libs nm)
+
 (** Parse the attributes as GOSPEL specification. Raises FileNotFound
    if file does not exist. *)
-let parse_gospel sign = signature sign
+let parse_gospel sign nm =
+  default_opens nm @ signature sign
 
 (** Raises FileNotFound if file does not exist. *)
 let parse_ocaml_gospel load_path file =

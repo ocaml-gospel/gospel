@@ -1,8 +1,6 @@
 
 (* FIXME add axioms *)
 
-(*@ open Gospelstdlib *)
-
 (*@ type 'a seq *)
 
 (*@ function length (s: 'a seq): integer *)

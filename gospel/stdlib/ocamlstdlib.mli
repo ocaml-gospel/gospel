@@ -1,5 +1,3 @@
-(*@ open Gospelstdlib *)
-
 type int
 
 (*@ function integer_of_int (x: int) : integer *)

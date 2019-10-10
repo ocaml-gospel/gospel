@@ -25,7 +25,8 @@ let run_bench () =
   let parse f =
     try
       let ocaml = parse_ocaml !load_path f in
-      let sigs  =  parse_gospel ocaml in
+      let module_nm = path2module f in
+      let sigs  =  parse_gospel ocaml module_nm in
       ok := !ok + 1;
       pp fmt "parse OK - ";
       if !parse_only then raise Exit;
@@ -47,7 +48,8 @@ let run_on_file file =
       end;
 
     if !parse_ocaml_only then raise Exit;
-    let sigs = parse_gospel ocaml in
+    let module_nm = path2module file in
+    let sigs = parse_gospel ocaml module_nm in
     if !print_intermediate || !print_parsed then begin
         pp fmt "@[@\n*******************************@]@.";
         pp fmt    "@[****** GOSPEL translation *****@]@.";

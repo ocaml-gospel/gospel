@@ -1,6 +1,3 @@
-(*@ open Gospelstdlib *)
-(*@ open Ocamlstdlib *)
-
 type 'a bag
 
 (*@ function nb_occ (x: 'a) (b: 'a bag): integer *)

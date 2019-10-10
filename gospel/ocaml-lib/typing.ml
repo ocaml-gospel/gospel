@@ -727,7 +727,7 @@ let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then error ~loc (Circular nm);
   try add_ns ~export:true muc nm (get_file muc nm).fl_export with Not_found ->
     let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
-    let sl  = Parser_frontend.parse_ocaml_gospel penv.lpaths file_nm in
+    let sl  = Parser_frontend.parse_ocaml_gospel penv.lpaths file_nm nm in
     let muc = open_empty_module muc nm in
     let penv = {penv with parsing = Sstr.add nm penv.parsing} in
     let muc = List.fold_left (process_signature penv) muc sl in
