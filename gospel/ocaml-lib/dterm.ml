@@ -341,7 +341,9 @@ let pattern dp =
 let rec term env prop dt =
   let t = term_node ?loc:dt.dt_loc env prop dt.dt_dty dt.dt_node in
   match t.t_ty with
-  | Some _ when prop -> t_equ t t_bool_true
+  | Some _ when prop -> begin try t_equ t t_bool_true with
+      TypeMismatch (ty1,ty2) ->
+        error ?loc:dt.dt_loc (BadType (dty_of_ty ty1, dty_of_ty ty2)) end
   | None when not prop -> t_if t t_bool_true t_bool_false
   | _ -> t
 
