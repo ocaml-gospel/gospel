@@ -254,7 +254,7 @@ and print_ty_node fmt = function
   | Tyapp (ts,tys) when is_ts_arrow ts ->
      print_arrow_ty fmt tys
   | Tyapp (ts,tyl) when is_ts_tuple ts ->
-     pp fmt "(%a)" (list ~sep:"," print_ty) tyl
+     pp fmt "%a" (list ~sep:" * " print_ty) tyl
   | Tyapp (ts,[ty]) ->
      pp fmt "%a %a" print_ty ty print_ts_name ts
   | Tyapp (ts,tyl) ->
@@ -268,7 +268,7 @@ let print_ts fmt ts =
      | Some ty -> pp fmt " [=%a]" print_ty ty) ts.ts_alias
 
 let print_exn_type f = function
-  | Exn_tuple tyl -> list ~sep:"," ~first:"(" ~last:")" print_ty f tyl
+  | Exn_tuple tyl -> list ~sep:" * " print_ty f tyl
   | Exn_record args ->
      let print_arg f (id,ty) = pp f "%a:%a" print_ident id print_ty ty in
      list_with_first_last ~sep:";" ~first:"{" ~last:"}" print_arg f args
