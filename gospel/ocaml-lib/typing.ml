@@ -450,8 +450,7 @@ let type_type_declaration ~loc kid crcm ns tdl =
       List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
     let manifest = opmap (parse_core (Sstr.add s alias) tvl) td.tmanifest in
-    let td_ts = mk_ts (fresh_id_with_loc s td.tname.loc)
-                  params manifest in
+    let td_ts = mk_ts (fresh_id ~loc:td.tname.loc s) params manifest in
     Hstr.add hts s td_ts;
 
     let process_record ?(constr=false) ty alias ldl =
@@ -699,7 +698,7 @@ let process_exception_sig loc ns te =
             Exn_tuple (List.map (ty_of_core ns) ctyl)
          | Pcstr_record ldl ->
             let get Oparsetree.{pld_name;pld_type} =
-              fresh_id_with_loc pld_name.txt pld_name.loc,
+              fresh_id ~loc:pld_name.loc pld_name.txt,
               ty_of_core ns pld_type in
             Exn_record (List.map get ldl) in
        xsymbol id args

@@ -60,9 +60,10 @@ let create_id =
 let id_register pid =
   create_id pid.pid_str (Sattr.of_list pid.pid_ats) pid.pid_loc
 
-let fresh_id s = create_id s Sattr.empty Location.none
-
-let fresh_id_with_loc s l = create_id s Sattr.empty l
+let fresh_id ?loc ?ats s =
+  let loc = opget_def Location.none loc in
+  let ats = opget_def Sattr.empty ats in
+  create_id s ats loc
 
 let id_add_loc l id = {id with id_loc = l}
 
