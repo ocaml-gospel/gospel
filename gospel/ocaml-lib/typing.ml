@@ -274,7 +274,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
          mk_dterm  (DTnot (mk_dterm (DTapp (ls,dtl)) dty)) None
        else
          mk_dterm (DTapp (ls,dtl)) dty in
-     let rec chain loc de1 op1 de2 = match de2 with
+     let rec chain loc de1 op1 t23 = match t23 with
        | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
           let de2 = dterm kid crcm ns denv t2 in
           (* TODO: improve locations of subterms. See loc_cutoff function in why3 typing.ml *)
@@ -283,8 +283,8 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
           let de23 = chain loc23 de2 op2 t3 in
           dfmla_unify de12; dfmla_unify de23;
           mk_dterm (DTbinop (Tand, de12, de23)) None
-       | e23 ->
-          apply de1 op1 (dterm kid crcm ns denv e23) in
+       | _ ->
+          apply de1 op1 (dterm kid crcm ns denv t23) in
      chain loc (dterm kid crcm ns denv t1) op1 t23
   | Uast.Tbinop (t1,op,t2) ->
      let dt1 = dterm kid crcm ns denv t1 in

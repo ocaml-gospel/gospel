@@ -139,8 +139,6 @@ rule token = parse
       { INTEGER s }
   | (float_literal | hex_float_literal) as s
       { FLOAT s }
-  | "(" space* "*" space* ")"
-      { LEFTPAR_STAR_RIGHTPAR }
   | "(*"
       { comment lexbuf; token lexbuf }
   | ","

@@ -96,7 +96,7 @@
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
 %token MUTABLE MODEL
-%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTPAR_STAR_RIGHTPAR
+%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDA UNDERSCORE
@@ -574,10 +574,11 @@ pattern_rec_field(X):
 (* Symbolic operation names *)
 
 op_symbol:
-| OP1 { $1 }
-| OP2 { $1 }
-| OP3 { $1 }
-| OP4 { $1 }
+| OP1  { $1 }
+| OP2  { $1 }
+| OP3  { $1 }
+| OP4  { $1 }
+| STAR { "*" }
 ;
 
 %inline oppref:
@@ -592,10 +593,10 @@ prefix_op:
 | o = OP1   { mk_pid (infix o)    $startpos $endpos }
 | EQUAL     { mk_pid (infix "=")  $startpos $endpos }
 | LTGT      { mk_pid (infix "<>") $startpos $endpos }
-| STAR      { mk_pid (infix "*")  $startpos $endpos }
 %inline infix_op_234:
 | o = OP2   { mk_pid (infix o)    $startpos $endpos }
 | o = OP3   { mk_pid (infix o)    $startpos $endpos }
+| STAR      { mk_pid (infix "*")   $startpos $endpos }
 | o = OP4   { mk_pid (infix o)    $startpos $endpos }
 ;
 
@@ -630,7 +631,6 @@ lident_rich:
 
 lident_op_id:
 | LEFTPAR lident_op RIGHTPAR  { mk_pid $2 $startpos $endpos }
-| LEFTPAR_STAR_RIGHTPAR       { mk_pid (infix "*") $startpos $endpos }
 ;
 
 lident_op:
