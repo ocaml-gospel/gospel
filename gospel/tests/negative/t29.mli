@@ -1,4 +1,4 @@
-exception E of int list
+exception E of float list
 
 
 val f : 'a -> 'a
@@ -9,5 +9,5 @@ val f : 'a -> 'a
 
 (* ERROR:
    Line 6
-   y is of type int and 8 of type integer
-   use integer_of_int y *)
+   y is of type float and 8 of type integer
+   replace "2" by "2." in line 8 *)

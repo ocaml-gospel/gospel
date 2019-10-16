@@ -1,8 +1,8 @@
 
 (*@ function rec f (x: bool) (y: int): bool = f x y *)
 
-(*@ function g (a: int): integer =
-      if (f true a) then 1 else 2 *)
+(*@ function g (a: int): float =
+      if (f true a) then 1. else 2. *)
 
 (*@ function int_of_integer (x:integer): int *)
 
@@ -14,5 +14,5 @@
 
 (* ERROR:
    Line 12
-   type mysmatch int and integer
-   replace "int_of_integer 5" by 5 in line 12 *)
+   type mysmatch float and int
+   replace "int_of_integer 5" by "5." in line 12 *)

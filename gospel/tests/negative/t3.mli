@@ -1,4 +1,4 @@
 
-(*@ function f (x:int): bool = x = 2 *)
+(*@ function f (x:float): bool = x = 2 *)
 
-(* ERROR if coercion is not used. Type mismatch int and integer *)
+(* ERROR Type mismatch float and integer *)
