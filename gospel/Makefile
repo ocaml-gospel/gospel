@@ -10,7 +10,7 @@ gospel: ocaml-lib/*.ml ocaml-lib/*.mli ocaml-lib/*.mly ocaml-lib/*.mll tools/*.m
 	$(OCAMLBUILD) gospel.native
 
 dependency_graph: gospel
-	depgraph _build/src/ > dependencies.dot
+	depgraph _build/ > dependencies.dot
 #	use xdot for instance to see dependencies.dot
 
 clean:
