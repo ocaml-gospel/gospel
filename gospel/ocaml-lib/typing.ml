@@ -739,7 +739,12 @@ let rec open_file ~loc penv muc nm =
 and module_as_file ~loc penv muc nm =
   try open_file ~loc penv muc nm with
   | Parser_frontend.FileNotFound s ->
-     error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
+     if loc.Warnings.loc_ghost &&
+          Parser_frontend.(nm = gospelstdlib || nm = ocamlstdlib || nm = seqlib) then
+       error_report ?loc:None "Standard libraries not found. Use -L to \
+                               include the GOSPEL standard library path."
+     else
+       error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
 
 and process_open ~loc ?(ghost=false) penv muc od =
   let qd     = Longident.flatten od.Oparsetree.popen_lid.txt in
