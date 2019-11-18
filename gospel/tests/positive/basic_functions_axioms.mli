@@ -1,6 +1,3 @@
-(*@ open Ocamlstdlib *)
-(*@ open Gospelstdlib *)
-
 (*@ axiom a1: true *)
 
 (*@ axiom a2: 1 = 0 *)

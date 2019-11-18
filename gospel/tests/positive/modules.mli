@@ -1,6 +1,3 @@
-(*@ open Gospelstdlib *)
-open Ocamlstdlib
-
 module MA : sig
   type ta = C of int
   (*@ function int_of_integer (x:integer): int *)
