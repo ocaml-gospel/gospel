@@ -28,6 +28,7 @@
     sp_xpost   = List.rev s.sp_xpost;
     sp_reads   = List.rev s.sp_reads;
     sp_writes  = List.rev s.sp_writes;
+    sp_consumes= List.rev s.sp_consumes;
     sp_alias   = List.rev s.sp_alias;
     sp_diverge = s.sp_diverge;
     sp_equiv   = List.rev s.sp_equiv;
@@ -42,6 +43,7 @@
     sp_xpost   = [];
     sp_reads   = [];
     sp_writes  = [];
+    sp_consumes= [];
     sp_alias   = [];
     sp_diverge = false;
     sp_equiv   = [];
@@ -74,7 +76,7 @@
 
 (* Spec Tokens *)
 
-%token REQUIRES ENSURES VARIANT
+%token REQUIRES ENSURES CONSUMES VARIANT
 
 (* keywords *)
 
@@ -96,7 +98,7 @@
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
 %token MUTABLE MODEL
-%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR
+%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDA UNDERSCORE
@@ -166,7 +168,7 @@ func:
 
 func_name:
 | lident_rich {$1}
-| LEFTPAR LEFTBRC RIGHTBRC RIGHTPAR
+| LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
     { mk_pid (mixfix "{}") $startpos $endpos }
 | LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
     { mk_pid (mixfix "{:_:}") $startpos $endpos }
@@ -245,6 +247,8 @@ val_spec_body:
   { {bd with sp_diverge = true} }
 | bd=val_spec_body MODIFIES wr=separated_list(COMMA, term)
     { { bd with sp_writes = wr @ bd.sp_writes } }
+| bd=val_spec_body CONSUMES cs=separated_list(COMMA, term)
+    { { bd with sp_consumes = cs @ bd.sp_consumes } }
 | bd=val_spec_body t=requires
     { { bd with sp_pre = (t,false) :: bd.sp_pre } }
 | bd=val_spec_body CHECKS t = term
@@ -360,11 +364,6 @@ term_:
     { Tattr ($1, $2) }
 | term cast
     { Tcast ($1, $2) }
-| LEFTBRC RIGHTBRC
-    { Tpreid (Qpreid (mk_pid (mixfix "{}") $startpos $endpos)) }
-| LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = Qpreid (mk_pid (mixfix "{:_:}") $startpos $endpos) in
-      Tidapp (id, [t]) }
 ;
 
 field_list1(X):
@@ -425,6 +424,11 @@ term_block_:
     { Tpreid (Qpreid (mk_pid "[]"  $startpos $endpos)) }
 | LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
 | LEFTBRC term_arg WITH field_list1(term) RIGHTBRC  { Tupdate ($2,$4) }
+| LEFTBRCRIGHTBRC
+    { Tpreid (Qpreid (mk_pid (mixfix "{}") $startpos $endpos)) }
+| LEFTBRCCOLON t=term COLONRIGHTBRC
+    { let id = Qpreid (mk_pid (mixfix "{:_:}") $startpos $endpos) in
+      Tidapp (id, [t]) }
 ;
 
 term_sub_:

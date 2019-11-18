@@ -44,7 +44,7 @@ let val_spec fmt vspec =
   | Some vspec ->
      let diverge fmt x = if x then pp fmt "diverges@\n" else () in
      let print_content fmt s =
-       pp fmt "@[@[<h>%a%s %a %a@]@\n%a%a%a%a%a%a%a%a@]"
+       pp fmt "@[@[<h>%a%s %a %a@]@\n%a%a%a%a%a%a%a%a%a@]"
          (list ~sep:"," labelled_arg) s.sp_hd_ret
          (if s.sp_hd_ret = [] then "" else " =")
          print_pid s.sp_hd_nm
@@ -54,6 +54,7 @@ let val_spec fmt vspec =
          (list_keyword "with ...") s.sp_xpost
          (list_keyword "reads ...") s.sp_reads
          (list_keyword "modifies ...") s.sp_writes
+         (list_keyword "consumes ...") s.sp_consumes
          (list_keyword "alias ...") s.sp_alias
          diverge s.sp_diverge
          (list_keyword "equivalent ...") s.sp_equiv in

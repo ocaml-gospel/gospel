@@ -56,6 +56,7 @@
         "mutable", MUTABLE;
         (* programs *)
         "ensures", ENSURES;
+        "consumes", CONSUMES;
         "fun", FUN;
         "old", OLD;
         "raises", RAISES;
@@ -197,6 +198,8 @@ rule token = parse
       { LEFTSQ }
   | "]"
       { RIGHTSQ }
+  | "{}"
+      { LEFTBRCRIGHTBRC }
   | "{"
       { LEFTBRC }
   | "}"

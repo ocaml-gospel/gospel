@@ -591,6 +591,9 @@ let rec process_val_spec kid crcm ns id cty vs =
   let wr = List.map (fun t -> let dt = dterm kid crcm ns env t in
                               term env dt) vs.sp_writes in
 
+  let cs = List.map (fun t -> let dt = dterm kid crcm ns env t in
+                              term env dt) vs.sp_consumes in
+
   let process_xpost mxs (loc,exn) =
     let merge_xpost t tl = match t, tl with
       | None, None -> Some []
@@ -629,7 +632,7 @@ let rec process_val_spec kid crcm ns id cty vs =
        process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
-  mk_val_spec args ret pre post xpost wr vs.sp_diverge vs.sp_equiv
+  mk_val_spec args ret pre post xpost wr cs vs.sp_diverge vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in

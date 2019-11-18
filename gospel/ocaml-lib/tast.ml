@@ -28,7 +28,8 @@ type val_spec = {
     sp_post    : post list;
     sp_xpost   : (pattern * post) list Mxs.t;
     (* sp_reads   : qualid list;TODO *)
-    sp_wr  : term list;
+    sp_wr      : term list;
+    sp_cs      : term list; (* consumes *)
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge : bool;
     sp_equiv   : string list;
@@ -36,14 +37,15 @@ type val_spec = {
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre post xpost wr dv equiv = {
+let val_spec args ret pre post xpost wr cs dv equiv = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
     sp_post    = post;
     sp_xpost   = xpost;
     (* sp_reads   : qualid list;TODO *)
-    sp_wr  = wr;
+    sp_wr      = wr;
+    sp_cs      = cs;
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge = dv;
     sp_equiv   = equiv;
@@ -56,7 +58,7 @@ let val_spec args ret pre post xpost wr dv equiv = {
    TODO:
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
-let mk_val_spec args ret pre post wr dv equiv =
+let mk_val_spec args ret pre post wr cs dv equiv =
   let add args a =
     let vs = vs_of_lb_arg a in
     check (not(Svs.mem vs args)) (DuplicatedArg vs);
@@ -65,7 +67,7 @@ let mk_val_spec args ret pre post wr dv equiv =
   let ty_check ty t = t_ty_check t ty in
   List.iter (fun (t,_) -> ty_check None t) pre;
   List.iter (ty_check None) post;
-  val_spec args ret pre post wr dv equiv
+  val_spec args ret pre post wr cs dv equiv
 
 type val_description = {
     vd_name  : ident;
@@ -475,16 +477,16 @@ let print_vd_spec val_id fmt spec =
   let print_diverges f d = if not d then () else pp f "@\n@[diverges@]" in
   match spec with
   | None -> ()
-  | Some {sp_args;sp_ret;sp_pre;sp_post;sp_xpost;sp_wr;sp_diverge;sp_equiv} ->
+  | Some vs ->
      let pres,checks =
        List.fold_left (fun (pres,checks) (p,c) ->
-        if c then pres,p::checks else p::pres,checks) ([],[]) sp_pre in
-     pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a*)"
-       (list ~sep:", " print_lb_arg) sp_ret
-       (if sp_ret = [] then "" else " =")
+        if c then pres,p::checks else p::pres,checks) ([],[]) vs.sp_pre in
+     pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
+       (list ~sep:", " print_lb_arg) vs.sp_ret
+       (if vs.sp_ret = [] then "" else " =")
        print_ident val_id
-       (list ~sep:" " print_lb_arg) sp_args
-       print_diverges sp_diverge
+       (list ~sep:" " print_lb_arg) vs.sp_args
+       print_diverges vs.sp_diverge
        (list_with_first_last ~first:"@\n@[requires "
           ~sep:"@\nrequires " ~last:"@]"
           print_term) pres
@@ -493,14 +495,17 @@ let print_vd_spec val_id fmt spec =
           print_term) checks
        (list_with_first_last ~first:"@\n@[ensures "
           ~sep:"@\nensures " ~last:"@]"
-          print_term) sp_post
-       print_xposts sp_xpost
+          print_term) vs.sp_post
+       print_xposts vs.sp_xpost
        (list_with_first_last ~first:"@\n@[writes "
           ~sep:"@\nwrites " ~last:"@]"
-          print_term) sp_wr
+          print_term) vs.sp_wr
+       (list_with_first_last ~first:"@\n@[consumes "
+          ~sep:"@\nconsumes " ~last:"@]"
+          print_term) vs.sp_cs
        (list_with_first_last ~first:"@\n@[equivalent "
           ~sep:"@\nequivalent " ~last:"@]"
-          constant_string) sp_equiv
+          constant_string) vs.sp_equiv
 
 let print_param f p =
   pp f "(%a:%a)" print_ident p.vs_name print_ty p.vs_ty

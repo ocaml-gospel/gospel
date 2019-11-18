@@ -31,7 +31,7 @@ let specialist = [
   "--print-parsed", Unit (fun () -> print_parsed := true),
     " Print after parsing";
   "--bench-mode", Unit (fun () -> bench_mode := true),
-    " Run in bench mode -- parses, type checks, and prints reports for all files";
+    " Run in bench mode: parses, type checks, and prints status for files in given directory";
   "-L", String (fun d -> load_path := (valid_dir d) :: !load_path),
     "load-path Include directory in load pah";
   ]
