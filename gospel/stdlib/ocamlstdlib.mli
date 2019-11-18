@@ -1,3 +1,5 @@
+(* This file is intended to be used with GOSPEL-framework only *)
+
 type int
 
 (*@ function integer_of_int (x: int) : integer *)
@@ -49,6 +51,8 @@ module Sys : sig
 
 end
 
+(* Type 'a list, [] and (::) constructors are built-in *)
+
 module List : sig
 
   (*@ open Seq *)
@@ -56,6 +60,8 @@ module List : sig
   (*@ function seq_of_list (l: 'a list): 'a seq *)
   (*@ coercion *)
 
+  (* TO BE DISCUSSED - if we want to remove this function length we
+   need Seq to be open before *)
   (*@ function length (l: 'a list) : integer = Seq.length l *)
 
   (*@ function nth (l: 'a list) (i: integer) : 'a =

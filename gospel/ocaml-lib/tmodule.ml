@@ -92,14 +92,21 @@ let rec ns_subst_ty old_ts new_ts ty {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
 (** Primitives types and functions *)
 
 let ns_with_primitives =
-  (* reason for following types to be built-in:
+  (* reason for the following types to be built-in:
       integer, string, float, char, unit - constants;
       bool   - being able to automatize the conversion between
       formulas and bool;
       option - allow for optional parameters;
-      list   - the constructors ([], and ::) cannot be declared in
-      the library with the flag ~constr:true
-   *)
+      list - we cannot declare it in the list library for the following
+      reasons:
+        (1) if we try to declare "type 'a list = [] | (::) of 'a * 'a
+        list" in the "list.mli" library file, the declaration will be
+        parsed by the OCaml parser, which names the second constructor as
+        "::". The GOSPEL parser names it "infix ::";
+        (2) as alternative, we could leave the type abstract and create
+        function ([]) and (::). However, in this case these functions
+        could not be used in pattern matching because they are not
+        constructors.  *)
   let primitive_tys =
     [ ("integer", ts_integer); ("string", ts_string); ("char", ts_char);
       ("float", ts_float); ("bool", ts_bool); ("option",ts_option);
