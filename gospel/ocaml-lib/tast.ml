@@ -429,6 +429,25 @@ let print_type_kind fmt = function
        (list ~sep:"@\n" print_ls_decl) (rd.rd_cs::pjs)
   | Pty_open -> assert false
 
+open Opprintast
+open Oparsetree
+open Upretty_printer
+
+let print_type_spec fmt {ty_ephemeral;ty_field;ty_invariant} =
+  if not ty_ephemeral && ty_field = [] && ty_invariant = [] then () else
+    let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
+    let print_term f t = pp f "@[%a@]" print_term t in
+    let print_field f field = pp f "@[%a : %a@]" print_ls_nm field
+                                print_ty (opget field.ls_value) in
+    pp fmt "(*@@ @[%a%a%a@] *)"
+      print_ephemeral ty_ephemeral
+      (list_with_first_last ~first:"@\n@[mutable model "
+         ~sep:"@\nmutable model " ~last:"@]"
+         print_field) ty_field
+      (list_with_first_last ~first:"@\n@[invariant "
+         ~sep:"@\ninvariant " ~last:"@]"
+         print_term) ty_invariant
+
 let print_type_declaration fmt td =
   let print_param fmt (tv,var) =
     let var = match var with
@@ -443,17 +462,14 @@ let print_type_declaration fmt td =
     | Some ty -> pp fmt " = %a" print_ty ty in
   let print_constraint fmt (ty1,ty2,_) =
     pp fmt "%a = %a" print_ty ty1 print_ty ty2 in
-  pp fmt "@[%a%a%a%a%s%a@]"
+  pp fmt "@[%a%a%a%a%s%a@]@\n@[%a@]"
     print_params td.td_params
     print_ident (ts_ident td.td_ts)
     print_manifest td.td_manifest
     print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
     (list ~sep:" constraint " print_constraint) td.td_cstrs
-
-open Opprintast
-open Oparsetree
-open Upretty_printer
+    print_type_spec td.td_spec
 
 let print_lb_arg fmt = function
   | Lnone vs -> print_vs fmt vs
