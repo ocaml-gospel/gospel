@@ -1,11 +1,59 @@
 
-- dune (instead of ocamlbuild)
+* dune (instead of ocamlbuild)
 
   - compilation as a library as well
 
+  - a better name for the executable, e.g. gospel-tc?
+
   - installation, together with the GOSPEL standard library
 
-- standard library
+  - opam package
 
-- documentation
+* GOSPEL language
+
+  - consumes/modifies currently accept terms as arguments -> limit
+    them to paths x.y.z?
+
+  - reads?
+
+  - alias?
+
+  - infix identifier operators, for instance with a syntax such as x
+    `union` y
+
+    a particular case for mod without back ticks?
+    (i.e. 42 mod 7 like in OCaml and not 42  `mod` 7)
+
+* GOSPEL implementation
+
+  - pattern matching on values of type 'integer'?
+
+  - fail/warn on 'old' being used on terms which are not listed in the
+    'writes' clause?
+
+  - fail/warn on terms being consumed and referred to in
+    postconditions (without 'old')?
+
+* standard library
+
+  - needs a full review
+
+  - only contains what is necessary to typecheck the vocal library
+
+* documentation
+
+  - some minimal LaTeX doc exists in doc-plain/ (the grammar), and is
+    not up to date
+
+  - replace it with some HTML documentation, along the lines of
+    https://golang.org/ref/spec
+
+  - some gospeldoc tool to translate GOSPEL files to HTML, to be used
+    to documentation the GOSPEL library in particular
+
+    several possibilities:
+    - pre-process GOSPEL files and then use ocamldoc
+    - patch ocamldoc
+    - parse the GOSPEL files with the GOSPEL library and then output HTML
+
 
