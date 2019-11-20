@@ -1,0 +1,12 @@
+
+(ocamllex
+ (modules olexer ulexer))
+(menhir
+ (modules oparser uparser))
+
+(library
+  (name gospel)
+  (wrapped false)
+  (flags ())
+  (modules_without_implementation oasttypes oparsetree uast)
+  (libraries compiler-libs))

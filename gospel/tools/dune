@@ -1,0 +1,4 @@
+
+(executable
+  (name gospel_tc)
+  (libraries compiler-libs.common gospel))
