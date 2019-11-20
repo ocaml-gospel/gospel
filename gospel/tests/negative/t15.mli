@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
 
 type 'a t2 = C2 of 'a
            | C3 of bool
@@ -14,6 +23,6 @@ type 'a t2 = C2 of 'a
     | C4 (i,x) -> g x x i *)
 
 (* ERROR:
-   Line 12
+   Line 21
    type mysmatch bool with 'a
-   replace true by x in line 12 *)
+   replace true by x in line 21 *)

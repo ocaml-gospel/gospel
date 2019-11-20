@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
 
 (*@ function int_of_float (x:float): int *)
 (*@ function to_float (i: integer): float *)
@@ -9,7 +18,7 @@
             a = old_a + 1*)
 
 (* ERROR:
-   Line 9
+   Line 18
    type mysmatch float with integer
    replace in line 9 "a" by "int_of_float a"
  *)

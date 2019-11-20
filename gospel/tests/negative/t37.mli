@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
 type 'a t = {x:int; y:'a}
 
 (*@ function f (x: 'a t): int =
@@ -5,6 +15,6 @@ type 'a t = {x:int; y:'a}
     | {x=x;y=x} -> x *)
 
 (* ERROR:
-   Line 3
-   variable x is duplicated in pattern of line 5
-   replace one of the variables in line 5 by other name *)
+   Line 13
+   variable x is duplicated in pattern of line 15
+   replace one of the variables in line 15 by other name *)

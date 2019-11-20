@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
 exception E of int * int
 
 (*@ function integer_of_int (x:int): integer *)
@@ -8,6 +18,6 @@ val f : 'a -> 'a
     raises E x -> integer_of_int (fst x) = 1 *)
 
 (* ERROR:
-   Line 8
+   Line 18
    exception E has two arguments
-   change pattern in line 8, or define E, as exception E of (int * int) *)
+   change pattern in line 18, or define E, as exception E of (int * int) *)

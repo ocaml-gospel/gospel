@@ -1,4 +1,19 @@
-(* This file is intended to be used with GOSPEL-framework only *)
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
+(* This file is intended to be used with GOSPEL-framework only.
+   It is automatically opened (after gospelstdlib.mli).
+
+   This file provides some types and functions from the OCaml
+   standard library, to be used in GOSPEL specifications.
+*)
 
 type int
 

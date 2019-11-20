@@ -1,0 +1,11 @@
+
+- dune (instead of ocamlbuild)
+
+  - compilation as a library as well
+
+  - installation, together with the GOSPEL standard library
+
+- standard library
+
+- documentation
+

@@ -1,3 +1,12 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
 
 (*@ function rec f (x: bool) (y: int): bool = f x y *)
 
@@ -13,6 +22,6 @@
  *)
 
 (* ERROR:
-   Line 12
+   Line 21
    type mysmatch float and int
-   replace "int_of_integer 5" by "5." in line 12 *)
+   replace "int_of_integer 5" by "5." in line 21 *)

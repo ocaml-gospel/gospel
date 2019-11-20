@@ -1,4 +1,17 @@
-(* built-in
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
+(* This file is intended to be used with GOSPEL-framework only.
+   It is automatically opened (and then ocamlstdlib.mli as well).
+
+   The following are built-in in GOSPEL:
 
    type unit
    type string
