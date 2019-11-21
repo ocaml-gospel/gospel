@@ -7,22 +7,30 @@
 
   - installation, together with the GOSPEL standard library
 
-  - opam package
+  - opam package ARMAËL
 
 * GOSPEL language
 
   - consumes/modifies currently accept terms as arguments -> limit
-    them to paths x.y.z?
+    them to paths x.y.z
 
-  - reads?
+    YES
+
+  - reads x, x.y for global state only
+    (reads is implicit for arguments)?
+
+    NO
 
   - alias?
 
-  - infix identifier operators, for instance with a syntax such as x
-    `union` y
+    NO (if read-only, no problem; if modified, two different specs anyway)
 
-    a particular case for mod without back ticks?
-    (i.e. 42 mod 7 like in OCaml and not 42  `mod` 7)
+  - infix identifier operators, for instance with a syntax such as
+    x `union` y
+
+    YES
+
+    a particular case for mod (i.e. 42 mod 7 like in OCaml and not 42 `mod` 7)
 
 * GOSPEL implementation
 
@@ -36,11 +44,23 @@
 
 * standard library
 
+  - Seq is a bad name (conflicts with OCaml standard library)?
+    Same for Map and Set.
+
+    types live in a single namespace
+
+    qualify (with Caml.M.t or Gospel.M.t) if needed
+
+      function (x: t) ...
+      forall x: t. ...
+
   - needs a full review
 
   - only contains what is necessary to typecheck the vocal library
 
 * documentation
+
+  - sphinx
 
   - some minimal LaTeX doc exists in doc-plain/ (the grammar), and is
     not up to date
@@ -55,5 +75,3 @@
     - pre-process GOSPEL files and then use ocamldoc
     - patch ocamldoc
     - parse the GOSPEL files with the GOSPEL library and then output HTML
-
-

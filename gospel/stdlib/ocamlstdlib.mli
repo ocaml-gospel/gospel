@@ -46,9 +46,16 @@ type 'a ref
 
 (*@ function (!_) (r: 'a ref) : 'a = r.contents *)
 
+(*@ open Seq *)
+
 type 'a array
 (*@ ephemeral *)
 (*@ mutable model contents: 'a Seq.seq *)
+(*@ model length: integer *)
+(*@ invariant length = Seq.length contents *)
+
+(*@ function seq_of_array (a: 'a array): 'a seq = a.contents *)
+(*@ coercion *)
 
 exception Not_found
 
@@ -68,15 +75,12 @@ end
 
 (* Type 'a list, [] and (::) constructors are built-in *)
 
+(*@ function seq_of_list (l: 'a list): 'a seq *)
+(*@ coercion *)
+
+(*
 module List : sig
 
-  (*@ open Seq *)
-
-  (*@ function seq_of_list (l: 'a list): 'a seq *)
-  (*@ coercion *)
-
-  (* TO BE DISCUSSED - if we want to remove this function length we
-   need Seq to be open before *)
   (*@ function length (l: 'a list) : integer = Seq.length l *)
 
   (*@ function nth (l: 'a list) (i: integer) : 'a =
@@ -101,8 +105,6 @@ end
 module Array : sig
   (*@ open Seq *)
 
-  (*@ function seq_of_array (a: 'a array): 'a seq *)
-  (*@ coercion *)
 
   (*@ function length (a: 'a array) : integer = Seq.length a *)
   (*@ function ([_]) (a: 'a array) (i: integer) : 'a = Seq.([_]) a i *)
@@ -112,3 +114,4 @@ module Array : sig
   (*@ predicate permut_all (a b: 'a array) *)
 
 end
+*)
