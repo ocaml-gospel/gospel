@@ -30,7 +30,7 @@ let dty_fresh =
   fun () -> incr i;
             Tvar {dtv_id = !i; dtv_def = None}
 
-let rec dty_of_ty ty = Tty ty
+let dty_of_ty ty = Tty ty
 
 (* Maybe this does not neet to be global. It can be declared inside
    the function term

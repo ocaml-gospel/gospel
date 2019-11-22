@@ -8,7 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Utils
 open Identifier
 open Uast
 
@@ -71,7 +70,7 @@ let str_of_label l = (pid_of_label l).pid_str
 let loc_of_qualid = function
   | Qpreid pid | Qdot (_,pid) -> pid.pid_loc
 
-let rec qualid_preid = function
+let qualid_preid = function
   | Qpreid p | Qdot (_, p) -> p
 
 let field f_loc f_preid f_pty f_mutable =

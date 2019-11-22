@@ -9,8 +9,6 @@
 (**************************************************************************)
 
 %{
-  open Utils
-  open Location
   open Identifier
   open Uast
   open Uast_utils

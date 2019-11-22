@@ -6,8 +6,8 @@
 
 (library
   (name gospel)
-  (wrapped false)
-  (flags ())
+  (public_name gospel)
+  (flags :standard -w -9-32-27)
   (modules_without_implementation oasttypes oparsetree uast)
   (libraries compiler-libs))
 

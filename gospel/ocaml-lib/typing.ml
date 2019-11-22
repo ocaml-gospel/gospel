@@ -16,7 +16,7 @@ open Tmodule
 
 (** Utils *)
 
-let rec string_list_of_qualid q =
+let string_list_of_qualid q =
   let rec fold_q acc = function
     | Qpreid pid -> pid.pid_str :: acc
     | Qdot (q,pid) -> fold_q (pid.pid_str :: acc) q in
@@ -549,7 +549,7 @@ let rec val_parse_core_type ns cty =
    match core type
    3 -
 *)
-let rec process_val_spec kid crcm ns id cty vs =
+let process_val_spec kid crcm ns id cty vs =
   check_report ~loc:vs.sp_hd_nm.pid_loc
     (id.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";

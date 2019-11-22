@@ -1,4 +1,6 @@
 
 (executable
   (name gospel_tc)
+  (public_name gospel_tc)
+  (package gospel)
   (libraries compiler-libs.common gospel))

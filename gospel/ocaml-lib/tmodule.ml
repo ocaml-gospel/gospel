@@ -363,7 +363,7 @@ let rec tree_ns f fmt ns =
       else
         pp fmt "@[%s:@\n@ @[%a@]@\n@]" s (tree_ns f) (f ns)) ns
 
-let rec ns_names nsm =
+let ns_names nsm =
   List.map fst (Mstr.bindings nsm)
 
 let print_mstr_vals printer fmt m =
@@ -392,7 +392,7 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
     (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
      * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
-let rec print_file fmt {fl_nm;fl_sigs;fl_export} =
+let print_file fmt {fl_nm;fl_sigs;fl_export} =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
     print_ident fl_nm
     (print_ns fl_nm.id_str) fl_export

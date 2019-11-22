@@ -231,7 +231,7 @@ let xs_subst_ts old_ts new_ts {xs_ident; xs_type} =
                        (id, ty_subst_ts old_ts new_ts ty)) l) in
   xsymbol xs_ident (subst xs_type)
 
-let rec xs_subst_ty old_ts new_ts new_ty xs =
+let xs_subst_ty old_ts new_ts new_ty xs =
   let subst = function
     | Exn_tuple tyl ->
        let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
@@ -287,7 +287,7 @@ let print_xs f x =
   pp f "%a" print_ident x.xs_ident
 
 (* register exceptions *)
- 
+
 let () =
   Location.register_error_of_exn (function
       | TypeMismatch (ty1,ty2) ->
