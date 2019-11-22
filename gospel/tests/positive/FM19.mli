@@ -8,21 +8,19 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Seq *)
-
 type 'a t
 (*@ mutable model view: 'a seq *)
 
 val push: 'a -> 'a t -> unit
 (*@ push v q
     modifies q
-    ensures  q.view = cons v (old q.view) *)
+    ensures  q.view = Seq.cons v (old q.view) *)
 
 val pop: 'a t -> 'a
 (*@ v = pop q
     requires q.view <> empty
     modifies q
-    ensures  old q.view = q.view ++ (cons v empty) *)
+    ensures  old q.view = q.view ++ (Seq.cons v empty) *)
 
 val is_empty: 'a t -> bool
 (*@ b = is_empty q

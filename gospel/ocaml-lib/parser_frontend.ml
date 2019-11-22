@@ -44,13 +44,9 @@ let parse_ocaml load_path file =
       raise (Ocaml_syntax_error loc) end
 
 let gospelstdlib = "Gospelstdlib"
-let ocamlstdlib  = "Ocamlstdlib"
-let seqlib       = "Seq"
 
 let libs nm =
-  if nm = gospelstdlib then [] else
-    if nm = ocamlstdlib || nm = seqlib then [gospelstdlib] else
-      [gospelstdlib;ocamlstdlib]
+  if nm = gospelstdlib then [] else [gospelstdlib]
 
 let default_opens nm =
   let open Uast in
