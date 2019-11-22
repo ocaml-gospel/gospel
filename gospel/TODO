@@ -1,7 +1,7 @@
 
 * dune (instead of ocamlbuild)
 
-  - compilation as a library as well
+  - compilation as a library as well DONE
 
   - a better name for the executable, e.g. gospel-tc?
 
@@ -28,7 +28,7 @@
   - infix identifier operators, for instance with a syntax such as
     x `union` y
 
-    YES
+    DONE
 
     a particular case for mod (i.e. 42 mod 7 like in OCaml and not 42 `mod` 7)
 
