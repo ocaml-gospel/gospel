@@ -10,3 +10,8 @@
   (flags ())
   (modules_without_implementation oasttypes oparsetree uast)
   (libraries compiler-libs))
+
+(rule
+ (targets gospelstdlib.ml)
+ (deps    (:file ../stdlib/gospelstdlib.mli))
+ (action  (bash "ocaml ../misc/file_to_string.ml ../stdlib/gospelstdlib.mli > %{targets}")))
