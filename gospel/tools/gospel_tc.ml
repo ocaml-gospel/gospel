@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 open Options
+open Gospel
 open Tmodule
 open Typing
 open Parser_frontend

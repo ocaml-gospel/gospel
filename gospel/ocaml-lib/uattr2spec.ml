@@ -19,7 +19,7 @@ let has_prefix ~prefix:p s =
   let l = String.length p in
   String.length s >= l && String.sub s 0 l = p
 
-let is_spec attr = has_prefix gospel attr.attr_name.txt
+let is_spec attr = has_prefix ~prefix:gospel attr.attr_name.txt
 let is_type_spec = function | Stype _ -> true | _ -> false
 let is_val_spec  = function | Sval _  -> true | _ -> false
 let is_func_spec = function | Sfunc_spec _ -> true | _ -> false
