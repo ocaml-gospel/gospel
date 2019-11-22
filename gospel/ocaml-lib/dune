@@ -14,4 +14,6 @@
 (rule
  (targets gospelstdlib.ml)
  (deps    (:file ../stdlib/gospelstdlib.mli))
- (action  (bash "ocaml ../misc/file_to_string.ml ../stdlib/gospelstdlib.mli > %{targets}")))
+ (action  (run ../misc/file_to_string.exe ../stdlib/gospelstdlib.mli %{targets})))
+
+
