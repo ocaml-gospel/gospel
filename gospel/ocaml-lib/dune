@@ -16,4 +16,8 @@
  (deps    (:file ../stdlib/gospelstdlib.mli))
  (action  (run ../misc/file_to_string.exe ../stdlib/gospelstdlib.mli %{targets})))
 
-
+;; (install
+;;   (section lib_root)
+;;   (files
+;;    (gospel.cmxs as why3/plugins/gospel.cmxs))
+;;   (package gospel))

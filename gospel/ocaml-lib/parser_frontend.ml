@@ -34,6 +34,13 @@ let open_file load_path file =
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
 
+let parse_ocaml_lb lb =
+  try interface Olexer.token lb with
+    Error -> begin
+      let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
+      let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
+      raise (Ocaml_syntax_error loc) end
+
 (** Parse the given *.mli file -- it must be an interface.
  Raises FileNotFound if file does not exist. *)
 let parse_ocaml load_path file =
@@ -44,11 +51,7 @@ let parse_ocaml load_path file =
       let ch = open_file load_path file in
       Lexing.from_channel ch in
   Location.init lb file;
-  try interface Olexer.token lb with
-    Error -> begin
-      let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
-      let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
-      raise (Ocaml_syntax_error loc) end
+  parse_ocaml_lb lb
 
 let libs nm =
   if nm = gospelstdlib then [] else [gospelstdlib]
