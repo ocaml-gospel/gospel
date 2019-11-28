@@ -289,7 +289,7 @@ let bigarray_set ~loc arr arg newval =
                         Nolabel, newval]))
 
 let lapply ~loc p1 p2 =
-  if !Clflags.applicative_functors
+  if true(*!Clflags.applicative_functors*)
   then Lapply(p1, p2)
   else raise (Syntaxerr.Error(
                   Syntaxerr.Applicative_path (make_loc loc)))

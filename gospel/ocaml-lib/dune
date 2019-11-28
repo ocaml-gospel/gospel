@@ -7,17 +7,18 @@
 (library
   (name gospel)
   (public_name gospel)
-  (flags :standard -w -9-32-27)
+  (flags :standard -w -9-32-27 -linkall)
   (modules_without_implementation oasttypes oparsetree uast)
-  (libraries compiler-libs))
+  ;(libraries ocaml-compiler-libs.common)
+  )
 
 (rule
  (targets gospelstdlib.ml)
  (deps    (:file ../stdlib/gospelstdlib.mli))
  (action  (run ../misc/file_to_string.exe ../stdlib/gospelstdlib.mli %{targets})))
 
-;; (install
-;;   (section lib_root)
-;;   (files
-;;    (gospel.cmxs as why3/plugins/gospel.cmxs))
-;;   (package gospel))
+(install
+  (section lib_root)
+  (files
+   (gospel.cmxs as why3/plugins/gospel.cmxs))
+  (package gospel))
