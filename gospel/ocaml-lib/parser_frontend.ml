@@ -53,10 +53,7 @@ let parse_ocaml load_path file =
   Location.init lb file;
   parse_ocaml_lb lb
 
-let libs nm =
-  if nm = gospelstdlib then [] else [gospelstdlib]
-
-let default_opens nm =
+let default_open =
   let open Uast in
   let open Oparsetree in
   let od nm =
@@ -64,14 +61,12 @@ let default_opens nm =
     let od = {popen_lid = id; popen_override = Fresh;
               popen_loc = Location.none; popen_attributes = []} in
     Sig_ghost_open od in
-  let sig_item nm = {sdesc = od nm; sloc = Location.none} in
-  List.map sig_item (libs nm)
+  {sdesc = od gospelstdlib; sloc = Location.none}
 
-(** Parse the attributes as GOSPEL specification. Raises FileNotFound
-   if file does not exist. *)
+(** Parse the attributes as GOSPEL specification. *)
 let parse_gospel sign nm =
-  default_opens nm @ signature sign
+  if nm = gospelstdlib then signature sign else
+    default_open :: signature sign
 
-(** Raises FileNotFound if file does not exist. *)
 let parse_ocaml_gospel load_path file =
   parse_gospel (parse_ocaml load_path file)
