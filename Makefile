@@ -9,13 +9,19 @@
 ##########################################################################
 
 all:
-	dune build @install
+	cd gospel && dune build @install
+	cd why3gospel && dune build @install
+	cd src && dune build @install
 
 clean:
-	dune clean
+	cd gospel && dune clean
+	cd why3gospel && dune clean
+	cd src && dune clean
 
 install:
-	dune install
+	cd gospel && dune install
+	cd why3gospel && dune install
+	cd src && dune install
 
 # update file headers (using headache)
 .PHONY: headers
