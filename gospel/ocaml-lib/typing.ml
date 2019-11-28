@@ -27,7 +27,7 @@ exception NsNotFound of string
 
 let rec q_loc = function
   | Qpreid pid -> pid.pid_loc
-  | Qdot (q,p) -> q_loc q
+  | Qdot (q,_) -> q_loc q
 
 let ns_find ?loc f ns sl = match sl with
   | s :: _ :: _ when not (ns_exists_ns ns s) ->
@@ -54,7 +54,7 @@ let find_q_ns = find_q find_ns
 
 (* specification types *)
 let rec ty_of_pty ns = function
-  | PTtyvar {pid_str} ->
+  | PTtyvar {pid_str;_} ->
      (* CHECK following what's done in why3, attributes are ignored*)
      {ty_node = Tyvar (tv_of_string pid_str)}
   | PTtyapp (q,ptyl) ->
@@ -83,8 +83,8 @@ let rec ty_of_core ns cty =
      let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
      let tyl = List.map (ty_of_core ns) ctl in
      ty_app ts tyl
-  | Ptyp_arrow (lbl,ct1,ct2) ->
-     (* TODO check what to do with the lbl *)
+  | Ptyp_arrow (_,ct1,ct2) ->
+     (* TODO check what to do with the arg_label *)
      let ty1, ty2 = (ty_of_core ns) ct1, (ty_of_core ns) ct2 in
      ty_app ts_arrow [ty1;ty2]
   | _ -> assert false
@@ -211,7 +211,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
     let dt = mk_app ?loc ls dtl in
     if extra = [] then dt else map_apply dt extra in
   let qualid_app q tl = match q with
-    | Qpreid ({pid_loc = loc; pid_str = s} as pid) ->
+    | Qpreid ({pid_loc = loc; pid_str = s; _} as pid) ->
         (match denv_get_opt denv s with
         | Some dty ->
            let dtv =
@@ -284,7 +284,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
          mk_dterm  (DTnot (mk_dterm (DTapp (ls,dtl)) dty)) None
        else
          mk_dterm (DTapp (ls,dtl)) dty in
-     let rec chain loc de1 op1 t23 = match t23 with
+     let rec chain _ de1 op1 t23 = match t23 with
        | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
           let de2 = dterm kid crcm ns denv t2 in
           (* TODO: improve locations of subterms. See loc_cutoff function in why3 typing.ml *)
@@ -403,7 +403,7 @@ let process_type_spec kid crcm ns ty (spec:Uast.type_spec) =
 exception CyclicTypeDecl of string
 
 (* TODO compare manifest with td_kind *)
-let type_type_declaration ~loc kid crcm ns tdl =
+let type_type_declaration kid crcm ns tdl =
   let add_new tdm td =
     if Mstr.mem td.tname.txt tdm then
       error ~loc:td.tname.loc (TypeNameClash td.tname.txt)
@@ -463,7 +463,7 @@ let type_type_declaration ~loc kid crcm ns tdl =
     let td_ts = mk_ts (fresh_id ~loc:td.tname.loc s) params manifest in
     Hstr.add hts s td_ts;
 
-    let process_record ?(constr=false) ty alias ldl =
+    let process_record ty alias ldl =
       let cs_id = fresh_id ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
@@ -529,7 +529,7 @@ let type_type_declaration ~loc kid crcm ns tdl =
   List.map (fun td -> Hstr.find htd td.tname.txt) tdl
 
 let process_sig_type ~loc ?(ghost=false) kid crcm ns r tdl =
-  let tdl = type_type_declaration ~loc kid crcm ns tdl in
+  let tdl = type_type_declaration kid crcm ns tdl in
   let sig_desc = Sig_type (rec_flag r,tdl,ghost) in
   mk_sig_item sig_desc loc
 
@@ -561,7 +561,7 @@ let process_val_spec kid crcm ns id cty vs =
     let vs_str = vs.vs_name.id_str in
     let add = function
       | None -> Some vs
-      | Some s -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str) in
+      | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str) in
     Mstr.update vs_str add env, la :: lal in
 
   let rec process_args args tyl env lal = match args, tyl with
@@ -617,8 +617,8 @@ let process_val_spec kid crcm ns id cty vs =
       | Some (p,t) ->
          let dp = dpattern kid ns p in
          let ty = match p.pat_desc, xs.xs_type with
-           | Pvar vs, Exn_tuple [ty] -> ty
-           | Ptuple pl, Exn_tuple tyl ->
+           | Pvar _, Exn_tuple [ty] -> ty
+           | Ptuple _, Exn_tuple tyl ->
               ty_app (ts_tuple (List.length tyl)) tyl
            | Prec _, Exn_record _ -> (* TODO unify types and field names *)
               error_report ~loc "exception pattern doesn't match its type"
@@ -669,7 +669,7 @@ let process_function kid crcm ns f =
      here, before creating identifiers *)
   let add_var nm vs = function
     | None -> Some vs
-    | Some s -> error ~loc:vs.vs_name.id_loc (DuplicatedVar nm) in
+    | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar nm) in
   let env = List.fold_left (fun env vs ->
     let nm = vs.vs_name.id_str in
     Mstr.update nm (add_var nm vs) env) Mstr.empty params in
@@ -710,7 +710,7 @@ let process_exception_sig loc ns te =
          | Pcstr_tuple ctyl ->
             Exn_tuple (List.map (ty_of_core ns) ctyl)
          | Pcstr_record ldl ->
-            let get Oparsetree.{pld_name;pld_type} =
+            let get Oparsetree.{pld_name;pld_type; _} =
               fresh_id ~loc:pld_name.loc pld_name.txt,
               ty_of_core ns pld_type in
             Exn_record (List.map get ldl) in
@@ -728,7 +728,7 @@ let process_exception_sig loc ns te =
 
 type parse_env = {
     lpaths  : string list;  (* loading paths *)
-    parsing : Utils.Sstr.t; (* files being parsed *)
+    parsing : Utils.Sstr.t; (* files being parsed; used to avoid circular dependencies *)
 }
 
 let penv lpaths parsing = {lpaths; parsing}
@@ -742,7 +742,7 @@ let rec open_file ~loc penv muc nm =
     let sl  = Parser_frontend.parse_ocaml_gospel penv.lpaths file_nm nm in
     let muc = open_empty_module muc nm in
     let penv = {penv with parsing = Sstr.add nm penv.parsing} in
-    let muc = List.fold_left (process_signature penv) muc sl in
+    let muc = List.fold_left (type_sig_item penv) muc sl in
     let muc = close_module_file muc in
     muc
 
@@ -766,7 +766,7 @@ and process_open ~loc ?(ghost=false) penv muc od =
 (* assumes that a new namespace has been opened *)
 and process_modtype penv muc umty = match umty.mdesc with
   | Mod_signature usig ->
-     let muc = List.fold_left (process_signature penv) muc usig in
+     let muc = List.fold_left (type_sig_item penv) muc usig in
      let tsig = Mod_signature (get_top_sigs muc) in
      let tmty = {mt_desc = tsig; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
@@ -791,7 +791,7 @@ and process_modtype penv muc umty = match umty.mdesc with
      let muc, tmty2 = process_modtype penv muc umty2 in
      let process_constraint (muc,cl) c = match c with
        | Wtype (li,tyd) ->
-          let tdl = type_type_declaration ~loc:tyd.tloc
+          let tdl = type_type_declaration
                       muc.muc_kid muc.muc_crcm ns_init [tyd] in
           let td = match tdl with
             | [td] -> td | _ -> assert false in
@@ -806,7 +806,7 @@ and process_modtype penv muc umty = match umty.mdesc with
           check ~loc:li.loc (ts_arity ts = ts_arity td.td_ts)
             (BadTypeArity (ts,ts_arity td.td_ts));
           begin match ts.ts_alias, td.td_ts.ts_alias with
-          | None, Some ty2 -> ()
+          | None, Some _ -> ()
           | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
           | _ -> assert false end;
 
@@ -814,7 +814,7 @@ and process_modtype penv muc umty = match umty.mdesc with
           let muc = muc_subst_ts muc ts td.td_ts in
           muc, Wty (ts.ts_ident, td) :: cl
        | Wtypesubst (li,tyd) ->
-          let tdl = type_type_declaration ~loc:tyd.tloc
+          let tdl = type_type_declaration
                       muc.muc_kid muc.muc_crcm ns_init [tyd] in
           let td = match tdl with
             | [td] -> td | _ -> assert false in
@@ -833,16 +833,16 @@ and process_modtype penv muc umty = match umty.mdesc with
           check ~loc:li.loc (ts_arity ts = ts_arity td.td_ts)
             (BadTypeArity (ts,ts_arity td.td_ts));
           begin match ts.ts_alias, td.td_ts.ts_alias with
-          | None, Some ty2 -> ()
+          | None, Some _ -> ()
           | Some ty1, Some ty2 -> ignore(ty_match Mtv.empty ty1 ty2)
           | _ -> assert false end;
 
           let muc = muc_subst_ty muc ts td.td_ts ty in
           muc, Wty (ts.ts_ident, td) :: cl
-       | Wmodule (li1,li2) ->
-          not_supported ~loc:li1.loc "with module clause not supported"
-       | Wmodsubst (li1,li2) ->
-          not_supported ~loc:li1.loc "with module clause not supported"
+       | Wmodule (_,_) ->
+          not_supported ~loc:umty.mloc "with module clause not supported"
+       | Wmodsubst (_,_) ->
+          not_supported ~loc:umty.mloc "with module clause not supported"
      in
      let muc,cl = List.fold_left process_constraint (muc,[]) cl in
      let tmty = {mt_desc = Mod_with (tmty2,List.rev cl); mt_loc = umty.mloc;
@@ -861,9 +861,9 @@ and process_modtype penv muc umty = match umty.mdesc with
        {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
      muc, tmty
-  | Mod_typeof me ->
+  | Mod_typeof _ ->
      not_supported ~loc:umty.mloc "module type of not supported"
-  | Mod_extension e ->
+  | Mod_extension _ ->
      not_supported ~loc:umty.mloc "module extension not supported"
     (* TODO warning saying that extensions are not supported *)
 
@@ -886,7 +886,7 @@ and process_modtype_decl penv loc decl muc =
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
   close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
-and process_signature penv muc {sdesc;sloc} =
+and process_sig_item penv muc {sdesc;sloc} =
   let process_sig_item si muc =
     let kid,ns,crcm = muc.muc_kid, get_top_import muc, muc.muc_crcm in
     match si with
@@ -894,7 +894,7 @@ and process_signature penv muc {sdesc;sloc} =
     | Uast.Sig_val vd          -> muc, process_val ~loc:sloc kid crcm ns vd
     | Uast.Sig_typext te       -> muc, mk_sig_item (Sig_typext te) sloc
     | Uast.Sig_module m        -> process_mod penv sloc m muc
-    | Uast.Sig_recmodule ml    -> not_supported ~loc:sloc "module rec not supported"
+    | Uast.Sig_recmodule _    -> not_supported ~loc:sloc "module rec not supported"
     | Uast.Sig_modtype mty_decl-> process_modtype_decl penv sloc mty_decl muc
     | Uast.Sig_exception te    -> muc, process_exception_sig sloc ns te
     | Uast.Sig_open od         -> process_open ~loc:sloc ~ghost:false penv muc od
@@ -923,7 +923,10 @@ and process_signature penv muc {sdesc;sloc} =
   in
   let muc, signature = process_and_import sdesc muc in
   let muc = add_sig_contents muc signature in
-  muc
+  muc, signature
+
+and type_sig_item penv muc sig_item =
+  let muc, _ = process_sig_item penv muc sig_item in muc
 
 let () =
   let open Location in

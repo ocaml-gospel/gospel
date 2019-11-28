@@ -11,7 +11,6 @@
 open Options
 open Gospel
 open Tmodule
-open Typing
 open Parser_frontend
 
 let () = Printexc.record_backtrace true
@@ -27,8 +26,8 @@ let path2module p =
 let type_check name sigs =
   let md = init_muc name in
   let module_nm = path2module name in
-  let penv = penv !load_path (Utils.Sstr.singleton module_nm) in
-  let md = List.fold_left (process_signature penv) md sigs in
+  let penv = Typing.penv !load_path (Utils.Sstr.singleton module_nm) in
+  let md = List.fold_left (Typing.type_sig_item penv) md sigs in
   wrap_up_muc md
 
 let run_bench () =
