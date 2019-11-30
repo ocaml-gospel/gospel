@@ -178,7 +178,7 @@ type 'a array
 (*@ model array_length: integer *)
 (*@ invariant array_length = length contents *)
 
-(*@ function seq_of_array (a: 'a array): 'a seq = a.contents *)
+(*@ function elts (a: 'a array): 'a seq = a.contents *)
 (*@ coercion *)
 
 module Array : sig
