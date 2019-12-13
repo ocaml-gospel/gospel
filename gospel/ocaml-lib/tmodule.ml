@@ -319,8 +319,9 @@ let add_sig_contents muc sig_ =
        let csl = get_cs_pjs td.td_kind in
        let muc = List.fold_left (fun muc cs ->
          add_ls ~export:true muc cs.ls_name.id_str cs) muc csl in
+       let fields = List.map fst td.td_spec.ty_fields in
        let muc = List.fold_left (fun muc ls ->
-         add_ls ~export:true muc ls.ls_name.id_str ls) muc td.td_spec.ty_field in
+         add_ls ~export:true muc ls.ls_name.id_str ls) muc fields in
        add_kid muc td.td_ts.ts_ident sig_  in
      List.fold_left add_td muc tdl
   | Sig_exception te ->

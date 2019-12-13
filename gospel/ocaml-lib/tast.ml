@@ -105,13 +105,13 @@ let mk_val_description id cty prim attrs spec loc =
   val_description id cty prim attrs spec loc
 
 type type_spec = {
-  ty_ephemeral : bool;
-  ty_field     : lsymbol list;
-  ty_invariant : invariant;
+  ty_ephemeral  : bool;
+  ty_fields     : (lsymbol * bool) list;  (* field access * mutability *)
+  ty_invariants : invariant;
 }
 
-let type_spec ty_ephemeral ty_field ty_invariant =
-  {ty_ephemeral; ty_field; ty_invariant }
+let type_spec ty_ephemeral ty_fields ty_invariants =
+  {ty_ephemeral; ty_fields; ty_invariants }
 
 type mutable_flag = Immutable | Mutable
 
@@ -443,20 +443,20 @@ open Opprintast
 open Oparsetree
 open Upretty_printer
 
-let print_type_spec fmt {ty_ephemeral;ty_field;ty_invariant} =
-  if not ty_ephemeral && ty_field = [] && ty_invariant = [] then () else
+let print_type_spec fmt {ty_ephemeral;ty_fields;ty_invariants} =
+  if not ty_ephemeral && ty_fields = [] && ty_invariants = [] then () else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
     let print_term f t = pp f "@[%a@]" print_term t in
-    let print_field f field = pp f "@[%a : %a@]" print_ls_nm field
-                                print_ty (opget field.ls_value) in
+    let print_field f (ls, mut) =
+      pp f "@[%s%a : %a@]" (if mut then "mutable model " else "model ")
+        print_ls_nm ls
+        print_ty (opget ls.ls_value) in
     pp fmt "(*@@ @[%a%a%a@] *)"
       print_ephemeral ty_ephemeral
-      (list_with_first_last ~first:"@\n@[mutable model "
-         ~sep:"@\nmutable model " ~last:"@]"
-         print_field) ty_field
+      (list_with_first_last ~first:"@\n@["
+         ~sep:"@\n" ~last:"@]" print_field) ty_fields
       (list_with_first_last ~first:"@\n@[invariant "
-         ~sep:"@\ninvariant " ~last:"@]"
-         print_term) ty_invariant
+         ~sep:"@\ninvariant " ~last:"@]" print_term) ty_invariants
 
 let print_type_declaration fmt td =
   let print_param fmt (tv,var) =
