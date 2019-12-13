@@ -393,7 +393,7 @@ let process_type_spec kid crcm ns ty (spec:Uast.type_spec) =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol (id_register f.f_preid) [ty] f_ty in
     let ls_inv = fsymbol (id_register f.f_preid) [] f_ty in
-    (ns_add_ls ns f.f_preid.pid_str ls_inv, ls::fields) in
+    (ns_add_ls ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
   let env = Mstr.empty in
