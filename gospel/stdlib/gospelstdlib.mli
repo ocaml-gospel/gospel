@@ -158,6 +158,12 @@ module Seq : sig
   (*@ function hd (s: 'a seq) : 'a = s[0] *)
   (*@ function tl (s: 'a seq) : 'a seq = s[1 ..] *)
 
+  (* Sorted sequences of int values *)
+  (*@ predicate sorted_sub (s: int seq) (l u: integer) =
+        forall i1 i2. l <= i1 <= i2 < u -> s[i1] <= s[i2] *)
+  (*@ predicate sorted (s: int seq) =
+        sorted_sub s 0 (length s) *)
+
   (* hd, tl, rev, mem *)
   (* higher-order: map, fold, exists, forall, find, partition *)
   (* assoc, mem_assoc? split, combine? *)
