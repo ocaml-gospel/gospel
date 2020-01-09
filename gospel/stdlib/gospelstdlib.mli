@@ -169,6 +169,25 @@ module Seq : sig
   (* assoc, mem_assoc? split, combine? *)
 end
 
+module SeqPerm : sig
+
+  (*@ function occ (s1: 'a seq) (v: 'a) (l u: integer) : integer *)
+
+  (*@ axiom occ_base: forall s1 v l u.
+        u <= l -> occ s1 v l u = 0 *)
+
+  (*@ axiom occ_ind: forall s1 v l u. 0 <= l <= v < u <= length s1 ->
+        occ s1 v l u = (if v = s1[l] then 1 else 0) + occ s1 v (l+1) u *)
+
+  (*@ predicate permut (s1 s2: 'a seq) (l u: integer) =
+        length s1 = length s2 &&
+        forall x. occ x s1 l u = occ x s2 l u *)
+
+  (*@ predicate permut_all (s1 s2: 'a seq) =
+        permut s1 s2 0 (length s1) *)
+
+end
+
 (** Lists
 
      Type 'a list, [] and (::) constructors are built-in *)
