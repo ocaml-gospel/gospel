@@ -325,3 +325,11 @@ module Map : sig
   (*@ function ( [_] ) (m: 'a -> 'b) (x: 'a) : 'b *)
 
 end
+
+module Peano : sig
+  type t
+  (*@ model v: integer *)
+
+  (*@ function int_of_peano (t: t) : integer = t.v *)
+  (*@ coercion *)
+end
