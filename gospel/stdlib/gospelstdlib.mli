@@ -200,6 +200,7 @@ end
 (** Other OCaml built-in stuff *)
 
 exception Not_found
+exception Invalid_argument of string
 
 module Sys : sig
 
