@@ -111,7 +111,6 @@ module Seq : sig
 
   (* re-export type t and functions length and [_], so that we can refer to them
      using qualified identifiers (Seq.t, Seq.len, and Seq.get, respectively). *)
-  (*@ type 'a t = 'a seq *)
   (*@ function len (s: 'a seq): integer = length s *)
   (*@ function get (s: 'a seq) (i: integer) : 'a = s[i] *)
 
