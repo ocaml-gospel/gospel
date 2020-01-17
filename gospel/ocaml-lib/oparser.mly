@@ -764,10 +764,10 @@ The precedences must be listed from low to high.
 
 /* Generic definitions */
 
-(* [rev(XS)] recognizes the same language as [XS], and reverses the resulting
+(* [list_rev(XS)] recognizes the same language as [XS], and reverses the resulting
    OCaml list. *)
 
-%inline rev(XS):
+%inline list_rev(XS):
   xs = XS
     { List.rev xs }
 
@@ -786,7 +786,7 @@ reversed_nonempty_llist(X):
    first in this list. *)
 
 %inline nonempty_llist(X):
-  xs = rev(reversed_nonempty_llist(X))
+  xs = list_rev(reversed_nonempty_llist(X))
     { xs }
 
 (* [reversed_separated_nonempty_llist(separator, X)] recognizes a nonempty list
@@ -818,7 +818,7 @@ reversed_separated_nonempty_llist(separator, X):
    that is, the first element in the input text appears first in this list. *)
 
 %inline separated_nonempty_llist(separator, X):
-  xs = rev(reversed_separated_nonempty_llist(separator, X))
+  xs = list_rev(reversed_separated_nonempty_llist(separator, X))
     { xs }
 
 (* [reversed_separated_nontrivial_llist(separator, X)] recognizes a list of at
@@ -842,7 +842,7 @@ reversed_separated_nontrivial_llist(separator, X):
    list. *)
 
 %inline separated_nontrivial_llist(separator, X):
-  xs = rev(reversed_separated_nontrivial_llist(separator, X))
+  xs = list_rev(reversed_separated_nontrivial_llist(separator, X))
     { xs }
 
 (* [separated_or_terminated_nonempty_list(delimiter, X)] recognizes a nonempty
@@ -875,7 +875,7 @@ reversed_preceded_or_separated_nonempty_llist(delimiter, X):
    leading [delimiter]. It produces an OCaml list in direct order. *)
 
 %inline preceded_or_separated_nonempty_llist(delimiter, X):
-  xs = rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
+  xs = list_rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
     { xs }
 
 /* Entry points */
