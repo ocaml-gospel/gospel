@@ -9,19 +9,25 @@
 ##########################################################################
 
 all:
-	cd gospel && dune build @install
-	cd why3gospel && dune build @install
-	cd src && dune build @install
+	$(MAKE) gospel
+	$(MAKE) why3gospel
+	$(MAKE) vocal
+
+.PHONY: gospel why3gospel vocal
+
+gospel:
+	cd gospel && dune build @install && dune install
+
+why3gospel:
+	cd why3gospel && dune build @install && dune install
+
+vocal:
+	cd src && dune build @install && dune install
 
 clean:
 	cd gospel && dune clean
 	cd why3gospel && dune clean
 	cd src && dune clean
-
-install:
-	cd gospel && dune install
-	cd why3gospel && dune install
-	cd src && dune install
 
 # update file headers (using headache)
 .PHONY: headers
