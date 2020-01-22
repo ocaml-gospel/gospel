@@ -127,7 +127,7 @@ let label_declaration ld_field ld_mut ld_loc ld_attrs =
   {ld_field;ld_mut;ld_loc;ld_attrs}
 
 let get_pjl_of_ld ldl =
-  let get acc ld = ld.ld_field in
+  let get _ ld = ld.ld_field in
   List.fold_left get [] ldl
 
 type rec_declaration = {
@@ -592,7 +592,7 @@ let rec print_signature_item f x =
       (item_attributes reset_ctxt) vd.vd_attrs
       (print_vd_spec vd.vd_name) vd.vd_spec in
   match x.sig_desc with
-  | Sig_type (rf, td,g) ->
+  | Sig_type (_, td,g) ->
      pp f (if g then "@[(*@@ type %a *)@]" else "@[type %a@]")
        (list ~sep:"@\nand " print_type_declaration) td
   | Sig_val (vd,g) ->
@@ -696,8 +696,8 @@ and print_module_type f x =
     | Mod_with (mt, []) -> print_module_type f mt
     | Mod_with (mt, l) ->
         let with_constraint f = function
-          | Wty (li, ({td_params= ls ;_} as td)) ->
-             (* let ls = List.map fst ls in *)
+          | Wty (li, td) ->
+             (* let ls = List.map fst td.td_params in *)
              (* small hack to print the original id *)
              let ts = {td.td_ts with ts_ident = li } in
              let td = {td with td_ts = ts } in

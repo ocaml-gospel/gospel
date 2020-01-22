@@ -149,7 +149,7 @@ let already_a_coercion fmt crc =
     print_kind crc.crc_kind
 
 let print_coercions fmt crcmap =
-  let print_mts fmt mts = Mts.iter (fun ts crc ->
+  let print_mts fmt mts = Mts.iter (fun _ crc ->
                           print_kind fmt crc.crc_kind;
                           Format.fprintf fmt "@\n") mts in
   let print_crcmap fmt crcmap =

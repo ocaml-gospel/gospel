@@ -133,16 +133,16 @@ let dty_of_dterm dt = match dt.dt_dty with
 (* type unification *)
 
 let rec head = function
-  | Tvar {dtv_id;dtv_def=None} as t -> t
-  | Tvar {dtv_id;dtv_def=Some t} -> head t
+  | Tvar {dtv_def=None; _} as t -> t
+  | Tvar {dtv_def=Some t; _} -> head t
   | dty -> dty
 
 (* TODO review the use of this function. Not sure if it is a good idea
    to receive an index *)
 let rec occur i dty = match head dty with
-  | Tty ty -> false
-  | Tvar {dtv_id;dtv_def} -> i = dtv_id
-  | Tapp (ts,dtys) ->
+  | Tty _ -> false
+  | Tvar {dtv_id; _} -> i = dtv_id
+  | Tapp (_,dtys) ->
      try List.iter (fun x -> if occur i x then raise Exit) dtys; false
      with Exit -> true
 
@@ -345,7 +345,7 @@ let pattern dp =
        let dp2 = pattern_node dp2 in
        p_or dp1 dp2
     | DPas (dp,pid) -> p_as (pattern_node dp) (get_var pid ty)
-    | DPcast (dp,dty) -> assert false
+    | DPcast _ -> assert false
   in
   let p = pattern_node dp in
   p, !vars
@@ -428,14 +428,14 @@ open Opprintast
 (* TODO not sure if we need this. Maybe we just need this for pretty
    print dterm. The flatten part is already done in ty_of_dty. *)
 let rec flatten = function
-  | Tvar {dtv_id;dtv_def=Some dty} -> flatten dty
+  | Tvar {dtv_def=Some dty; _} -> flatten dty
   | Tapp (ts,dtys) -> Tapp (ts, List.map flatten dtys)
   | dty -> dty
 
 let rec print_dty fmt dty = match flatten dty with
   | Tty ty -> print_ty fmt ty
   | Tvar {dtv_id;dtv_def=None} -> pp fmt "@%d@" dtv_id
-  | Tvar {dtv_id;dtv_def=Some dty} -> assert false (* it is flattened *)
+  | Tvar {dtv_def=Some _; _} -> assert false (* it is flattened *)
   | Tapp (ts,dtyl) -> match dtyl with
      | [] -> print_ts_name fmt ts
      | dtyl when is_ts_arrow ts ->
@@ -464,7 +464,7 @@ let rec print_dpattern fmt {dp_node;dp_dty} = match dp_node with
      pp fmt "(%a:%a):%a" print_dpattern dp print_dty dty
        print_dty dp_dty
 
-let rec print_dterm fmt {dt_node; dt_dty; dt_loc } =
+let rec print_dterm fmt {dt_node; dt_dty; _} =
   let print_dty fmt dty = match dty with
       None -> ()
     | Some dty -> pp fmt ":%a" print_dty dty in

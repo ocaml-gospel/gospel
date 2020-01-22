@@ -10,7 +10,7 @@
 (library
  (name gospel)
  (public_name gospel)
- (flags :standard -w -9-32-27 -linkall)
+ (flags :standard -w -9-32 -linkall)
  (modules_without_implementation oasttypes oparsetree uast)
  ;(libraries ocaml-compiler-libs.common)
  )

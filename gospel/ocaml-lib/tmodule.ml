@@ -314,7 +314,7 @@ let add_sig_contents muc sig_ =
      let muc =
        if f.fun_spec.fun_coer then add_coer muc f.fun_ls else muc in
      add_kid muc f.fun_ls.ls_name sig_
-  | Sig_type (rf,tdl,g) ->
+  | Sig_type (_,tdl,_) ->
      let add_td muc td =
        let s = (ts_ident td.td_ts).id_str in
        let muc = add_ts ~export:true muc s td.td_ts in

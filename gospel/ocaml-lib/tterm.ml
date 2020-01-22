@@ -63,7 +63,7 @@ let fsymbol ?(constr=false) nm tyl ty =
 let psymbol nm ty =
   lsymbol nm ty None
 
-let ls_subst_ts old_ts new_ts ({ls_name;ls_args;ls_value;ls_constr} as ls) =
+let ls_subst_ts old_ts new_ts ({ls_name;ls_constr;_} as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
   let ls_value = Option.map (ty_subst_ts old_ts new_ts) ls.ls_value in
   lsymbol ls_name ls_args ls_value ~constr:ls_constr
@@ -155,7 +155,7 @@ and trigger = term list list
 let rec p_vars p = match p.p_node with
   | Pwild -> Svs.empty
   | Pvar vs -> Svs.singleton vs
-  | Papp (ls,pl) -> List.fold_left (fun vsl p ->
+  | Papp (_,pl) -> List.fold_left (fun vsl p ->
       Svs.union (p_vars p) vsl) Svs.empty pl
   | Por (p1,p2) -> Svs.union (p_vars p1) (p_vars p2)
   | Pas (p,vs) -> Svs.add vs (p_vars p)
@@ -163,7 +163,7 @@ let rec p_vars p = match p.p_node with
 let rec t_free_vars t = match t.t_node with
   | Tvar vs -> Svs.singleton vs
   | Tconst _ -> Svs.empty
-  | Tapp (ls,tl) -> List.fold_left (fun fvs t ->
+  | Tapp (_,tl) -> List.fold_left (fun fvs t ->
       Svs.union (t_free_vars t) fvs) Svs.empty tl
   | Tif (t1,t2,t3) -> Svs.union (t_free_vars t1)
       (Svs.union (t_free_vars t2) (t_free_vars t3))
@@ -172,15 +172,15 @@ let rec t_free_vars t = match t.t_node with
      Svs.union t1_fvs (Svs.remove vs t2_fvs)
   | Tcase (t,pl) ->
      let t_fvs = t_free_vars t in
-     let pl_fvs = List.fold_left (fun fvs (p,t) ->
+     let pl_fvs = List.fold_left (fun _ (p,t) ->
        Svs.diff (t_free_vars t) (p_vars p)) Svs.empty pl in
      Svs.union t_fvs pl_fvs
-  | Tquant (q,vl,tr,t) ->
+  | Tquant (_,vl,tr,t) ->
      let vars acc t = Svs.union (t_free_vars t) acc in
      let vars = List.fold_left (fun acc tl ->
        List.fold_left vars acc tl) (t_free_vars t) tr in
      Svs.diff vars (Svs.of_list vl)
-  | Tbinop (b,t1,t2) -> Svs.union (t_free_vars t1) (t_free_vars t2)
+  | Tbinop (_,t1,t2) -> Svs.union (t_free_vars t1) (t_free_vars t2)
   | Tnot t -> t_free_vars t
   | Told t -> t_free_vars t
   | Ttrue -> Svs.empty
@@ -373,7 +373,7 @@ let print_quantifier fmt = function
   | Tlambda -> pp fmt "fun"
 
 (* TODO use pretty printer from why3 *)
-let rec print_term fmt {t_node; t_ty; t_attrs; t_loc } =
+let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
   let print_ty fmt ty = match ty with
       None -> pp fmt ":prop"
     | Some ty -> pp fmt ":%a" print_ty ty in

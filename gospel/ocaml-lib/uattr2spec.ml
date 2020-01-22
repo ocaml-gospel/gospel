@@ -41,7 +41,7 @@ let split_attr attrs = List.partition is_spec attrs
 (** An iterator to check if there are attributes that are GOSPEL
    specification. A warning is printed for each one that is found. *)
 let unsupported_gospel =
-  let gospel_attribute it at = if is_spec at then
+  let gospel_attribute _ at = if is_spec at then
     let loc = at.attr_loc in
     let msg = "Specification not supported" in
     let fmt = !Location.formatter_for_warnings in
@@ -265,8 +265,7 @@ let get_spec_attrs attrs =
    prev_floats must be reverted before used *)
 let rec signature_ sigs acc prev_floats = match sigs with
   | [] -> acc @ floating_specs (List.rev prev_floats)
-  | {psig_desc=Psig_attribute a;
-     psig_loc=sloc} :: xs  when (is_spec a) ->
+  | {psig_desc=Psig_attribute a; _} :: xs  when (is_spec a) ->
      (* in this special case, we put together all the floating specs
         and only when seing another signature convert them into
         specification *)
@@ -299,7 +298,7 @@ let rec signature_ sigs acc prev_floats = match sigs with
           let m, spec = module_type_declaration d in
           {sdesc=Sig_modtype m;sloc} :: spec
        | Psig_typext t ->
-          let attrs,specs = get_spec_attrs t.ptyext_attributes in
+          let attrs, _ = get_spec_attrs t.ptyext_attributes in
           let t = {t with ptyext_attributes = attrs} in
           uns_gospel.type_extension uns_gospel t;
           [{sdesc=Sig_typext t;sloc}]
@@ -315,7 +314,7 @@ let rec signature_ sigs acc prev_floats = match sigs with
           uns_gospel.open_description uns_gospel o;
           {sdesc=Sig_open o;sloc} :: specs
        | Psig_include i ->
-          let attrs,specs = get_spec_attrs i.pincl_attributes in
+          let attrs, _ = get_spec_attrs i.pincl_attributes in
           let i = {i with pincl_attributes = attrs} in
           uns_gospel.include_description uns_gospel i;
           [{sdesc=Sig_include i;sloc}]
@@ -329,7 +328,7 @@ let rec signature_ sigs acc prev_floats = match sigs with
               ) c ([],[]) in
           {sdesc=Sig_class c;sloc} :: specs
        | Psig_class_type c ->
-          let c,specs =
+          let c, _ =
             List.fold_right (fun cd (cl,specl) ->
                 let attrs,specs = get_spec_attrs cd.pci_attributes in
                 let c = {cd with pci_attributes = attrs} in
