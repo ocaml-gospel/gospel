@@ -26,7 +26,6 @@ type preid = {
 
 module Preid = struct
   type t = preid
-  let compare = Stdlib.compare
   let equal = (=)
   let hash = (Hashtbl.hash : preid -> int)
 end

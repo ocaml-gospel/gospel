@@ -32,17 +32,15 @@ val list :  ?sep:space_formatter -> ?first:space_formatter ->
   Format.formatter -> 'a list -> unit
 
 val reset_ctxt : ctxt
-val core_type : Format.formatter -> Oparsetree.core_type -> unit
 val constant_string : Format.formatter -> string -> unit
 
 val nonrec_flag : Format.formatter -> Oasttypes.rec_flag -> unit
 val type_params : ctxt -> Format.formatter -> 
                   (Oparsetree.core_type * Oasttypes.variance) list -> unit
-val item_attributes : ctxt -> Format.formatter -> Oparsetree.attributes -> unit
-val constructor_declaration : ctxt -> Format.formatter -> 
-                              string * Oparsetree.constructor_arguments 
-                                     * Oparsetree.core_type option 
-                                     * Oparsetree.attributes 
+val constructor_declaration : ctxt -> Format.formatter ->
+                              string * Oparsetree.constructor_arguments
+                                     * Oparsetree.core_type option
+                                     * Oparsetree.attributes
                               -> unit
 val record_declaration : ctxt -> Format.formatter 
                          -> Oparsetree.label_declaration list -> unit
