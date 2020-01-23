@@ -13,24 +13,21 @@ all:
 	$(MAKE) why3gospel
 	$(MAKE) vocal
 
-.PHONY: gospel why3gospel vocal
-
 gospel:
-	cd gospel && dune build @install && dune install
+	dune build @install -p gospel && dune install gospel
 
 why3gospel:
-	cd why3gospel && dune build @install && dune install
+	dune build @install -p why3gospel && dune install why3gospel
 
 vocal:
-	cd src && dune build @install && dune install
+	dune build @install -p vocal && dune install vocal
 
 clean:
-	cd gospel && dune clean
-	cd why3gospel && dune clean
-	cd src && dune clean
+	dune clean
 
 # update file headers (using headache)
-.PHONY: headers
 headers:
 	headache -c misc/headache_config.txt -h misc/header.txt \
 		Makefile src/*.mli src/*.ml
+
+.PHONY: all gospel why3gospel vocal clean headers

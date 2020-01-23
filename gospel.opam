@@ -18,9 +18,11 @@ dev-repo: "git://github.com/vocal-project/vocal"
 bug-reports: "https://github.com/vocal-project/vocal/issues"
 doc: "https://github.com/vocal-project/vocal/blob/master/README.md"
 build: [
-  [ "dune" "build" "-p" name ]
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name] {with-test}
 ]
 depends: [
-  "dune"
+  "dune" {>= "1.2.0"}
+  "menhir"
   "ocaml" {>= "4.07"}
 ]
