@@ -27,7 +27,7 @@ clean:
 
 # update file headers (using headache)
 headers:
-	headache -c misc/headache_config.txt -h misc/header.txt \
+	headache -c .headache/headache_config.txt -h .headache/header.txt \
 		Makefile src/*.mli src/*.ml
 
 .PHONY: all gospel why3gospel vocal clean headers
