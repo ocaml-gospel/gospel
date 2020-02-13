@@ -25,9 +25,12 @@ vocal:
 clean:
 	dune clean
 
+format:
+	dune build @fmt --auto-promote
+
 # update file headers (using headache)
 headers:
 	headache -c .headache/headache_config.txt -h .headache/header.txt \
 		Makefile src/*.mli src/*.ml
 
-.PHONY: all gospel why3gospel vocal clean headers
+.PHONY: all gospel why3gospel vocal clean format headers
