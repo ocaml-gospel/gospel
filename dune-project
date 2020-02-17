@@ -1,3 +1,4 @@
-(lang dune 1.11)
+(lang dune 2.0)
+(name vocal)
 (using menhir 2.0)
-(using fmt 1.2 (enabled_for dune))
+(formatting (enabled_for dune))
