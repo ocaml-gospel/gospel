@@ -606,6 +606,14 @@ module Color = struct
   (* add color handling to formatter [ppf] *)
   let set_color_tag_handling ppf =
     let open Format in
+    (* XXX These functions are depreciated since 4.08. This should be removed
+       when support for 4.07 is dropped. *)
+    let[@warning "-3"] pp_get_formatter_tag_functions =
+      pp_get_formatter_tag_functions
+    in
+    let[@warning "-3"] pp_set_formatter_tag_functions =
+      pp_set_formatter_tag_functions
+    in
     let functions = pp_get_formatter_tag_functions ppf () in
     let functions' = {functions with
       mark_open_tag=(mark_open_tag ~or_else:functions.mark_open_tag);
