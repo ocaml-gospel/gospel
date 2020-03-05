@@ -12,11 +12,11 @@ open Arg
 
 (** Get *.mli files in directory *)
 let mli_in_dir dir =
-  let files = Sys.readdir dir in
-  let files = Array.to_list files in
   let is_mli f = Filename.extension f = ".mli" in
-  let mli = List.filter is_mli files in
-  List.map ((^) dir) mli
+  Sys.readdir dir
+  |> Array.to_list
+  |> List.filter is_mli
+  |> List.rev_map (Filename.concat dir)
 
 let valid_dir d =
   try if Sys.is_directory d then d else raise Exit with
@@ -49,14 +49,12 @@ let specialist = [
 let anon_fun s =
   let open Filename in
   let open Sys in
-  let absolute s =
-    if is_relative s then concat (getcwd ()) s else s in
   if file_exists s && is_directory s then begin
-    files := List.rev (mli_in_dir (absolute s)) @ !files;
-    load_path := (absolute s) :: !load_path
+    files := mli_in_dir s @ !files;
+    load_path := s :: !load_path
   end else begin
-      files := absolute s :: !files;
-      load_path := absolute (dirname s) :: !load_path
+      files := s :: !files;
+      load_path := dirname s :: !load_path
     end
 
 let usage_msg = "Usage: gospel <options> file.mli [file.mli]"

@@ -10,30 +10,30 @@
 (********************************************************************)
 
 exception Ocaml_syntax_error of Location.t
-exception FileNotFound of string
 
-(** `parse_ocaml load_path file` parses the OCaml content of the
-   `file` if it is a valid interface. If `file` is relative, it
-   searches for `file` in the `load_path`.
+(** [with_loadpath loadpath filename] finds the first directory [d] in
+   [loadpath] such that [d/filename] is a valid file path, and returns it. If
+   [filename] is an absolute valid path or is ["gospelstdlib.mli"], it returns
+   it unchanged. Raises Not_found if no such path exists. *)
+val with_loadpath : string list -> string -> string
 
-   Raise FileNotFound if file does not exist.
+(** `parse_ocaml file` parses the OCaml content of the `file` if it is a valid
+   interface.
 
+   Raise Not_found if file does not exist.
    Raise Ocaml_syntax_error if there is an OCaml syntax error. *)
-val parse_ocaml : string list -> string -> Oparsetree.signature
+val parse_ocaml : string -> Oparsetree.signature
 
 val parse_ocaml_lb : Lexing.lexbuf -> Oparsetree.signature
 
-(** `parse_gospel sig_list name` parses the GOSPEL attributes and
+(** [parse_gospel sig_list name] parses the GOSPEL attributes and
    integrates them in the corresponding OCaml signatures. *)
 val parse_gospel :
   Oparsetree.signature_item list -> string -> Uast.s_signature_item list
 
-(** `parse_ocaml_gospel load_path file` parses the OCaml interface and
-   the GOSPEL specification of `file`. If `file` is relative, it
-   searches for `file` in the `load_path`.
+(** [parse_ocaml_gospel file] parses the OCaml interface and
+   the GOSPEL specification of `file`.
 
-   Raise FileNotFound if file does not exist.
-
+   Raise Not_found if file does not exist.
    Raise Ocaml_syntax_error if there is an OCaml syntax error. *)
-val parse_ocaml_gospel :
-  string list -> string -> string -> Uast.s_signature_item list
+val parse_ocaml_gospel :  string -> string -> Uast.s_signature_item list
