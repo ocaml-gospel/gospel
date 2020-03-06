@@ -9,9 +9,13 @@
 ##########################################################################
 
 all:
-	$(MAKE) gospel
-	$(MAKE) why3gospel
-	$(MAKE) vocal
+	dune build
+
+install:
+	dune build @install && dune install
+
+test:
+	dune build @runtest
 
 gospel:
 	dune build @install -p gospel && dune install gospel

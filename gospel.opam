@@ -22,7 +22,7 @@ build: [
   ["dune" "runtest" "-p" name] {with-test}
 ]
 depends: [
-  "dune" {>= "2.0.1"}
+  "dune" {>= "2.4.0"}
   "menhir"
   "ocaml" {>= "4.07"}
 ]
