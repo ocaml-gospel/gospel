@@ -739,7 +739,10 @@ let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then error ~loc (Circular nm);
   try add_ns ~export:true muc nm (get_file muc nm).fl_export with Not_found ->
     let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
-    let sl  = Parser_frontend.parse_ocaml_gospel penv.lpaths file_nm nm in
+    let sl =
+      let file = Parser_frontend.with_loadpath penv.lpaths file_nm in
+      Parser_frontend.parse_ocaml_gospel file nm
+    in
     let muc = open_empty_module muc nm in
     let penv = {penv with parsing = Sstr.add nm penv.parsing} in
     let muc = List.fold_left (type_sig_item penv) muc sl in
@@ -748,8 +751,9 @@ let rec open_file ~loc penv muc nm =
 
 and module_as_file ~loc penv muc nm =
   try open_file ~loc penv muc nm with
-  | Parser_frontend.FileNotFound s ->
-     error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ s)
+  | Not_found ->
+      let file_nm  = String.uncapitalize_ascii nm ^ ".mli" in
+      error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ file_nm)
 
 and process_open ~loc ?(ghost=false) penv muc od =
   let qd     = Longident.flatten od.Oparsetree.popen_lid.txt in

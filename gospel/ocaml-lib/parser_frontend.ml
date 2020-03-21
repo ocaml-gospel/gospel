@@ -18,21 +18,22 @@ let () = Location.register_error_of_exn (function
                 Some (Location.errorf ~loc "OCaml syntax error")
              | _ -> None )
 
-exception FileNotFound of string
-
-let open_file load_path file =
-  let exception Break of in_channel in
-  let try_open d = try
-      let f = Filename.concat d file in
-      let c = open_in f in raise (Break c)
-    with Sys_error _ -> () in
-  if not (Filename.is_relative file) then open_in file
-  else try List.iter try_open load_path;
-           raise (FileNotFound file)
-       with Break c -> c
-
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
+
+let with_loadpath load_path file =
+  let exception Break of string in
+  let try_open d =
+    try
+      let f = Filename.concat d file in
+      if Sys.file_exists f then raise (Break f)
+    with Sys_error _ -> () in
+  if file = gospelstdlib_file then file
+  else if Filename.is_relative file then
+    try List.iter try_open load_path; raise Not_found
+    with Break c -> c
+  else if Sys.file_exists file then file
+  else raise Not_found
 
 let parse_ocaml_lb lb =
   try interface Olexer.token lb with
@@ -41,15 +42,13 @@ let parse_ocaml_lb lb =
       let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
       raise (Ocaml_syntax_error loc) end
 
-(** Parse the given *.mli file -- it must be an interface.
- Raises FileNotFound if file does not exist. *)
-let parse_ocaml load_path file =
+let parse_ocaml file =
   let lb =
     if file = gospelstdlib_file then
       Lexing.from_string Gospelstdlib.contents
     else
-      let ch = open_file load_path file in
-      Lexing.from_channel ch in
+      open_in file |> Lexing.from_channel
+  in
   Location.init lb file;
   parse_ocaml_lb lb
 
@@ -68,5 +67,5 @@ let parse_gospel sign nm =
   if nm = gospelstdlib then signature sign else
     default_open :: signature sign
 
-let parse_ocaml_gospel load_path file =
-  parse_gospel (parse_ocaml load_path file)
+let parse_ocaml_gospel file =
+  parse_ocaml file |> parse_gospel

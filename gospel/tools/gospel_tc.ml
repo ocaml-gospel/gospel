@@ -34,7 +34,7 @@ let run_bench () =
   let ok,error = ref 0, ref 0 in
   let parse f =
     try
-      let ocaml = parse_ocaml !load_path f in
+      let ocaml = parse_ocaml f in
       let module_nm = path2module f in
       let sigs  =  parse_gospel ocaml module_nm in
       ok := !ok + 1;
@@ -51,7 +51,7 @@ let run_bench () =
 
 let run_on_file file =
   try
-    let ocaml = parse_ocaml !load_path file in
+    let ocaml = parse_ocaml file in
     if !print_intermediate then begin
         pp fmt "@[@\n ********* Parsed file - %s *********@\n@]@." file;
         pp fmt "@[%a@]@." Opprintast.signature ocaml
@@ -76,10 +76,10 @@ let run_on_file file =
     pp fmt "@[@\n*** OK ***@\n@]@."
   with
   | Exit -> ()
-  | FileNotFound f ->
+  | Not_found ->
      let open Format in
      eprintf  "File %s not found.@\nLoad path: @\n%a@\n@."
-       f (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
+       file (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
        !Options.load_path
   | e -> Location.report_exception Format.err_formatter e
 
