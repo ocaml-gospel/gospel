@@ -1,16 +1,8 @@
-(executable
- (name gospel_tc)
- (public_name gospel_tc)
- (modules options gospel_tc)
- (package gospel)
- (libraries compiler-libs.common gospel))
-
 (ocamllex
- (modules gospelwc))
+ (modules wc))
 
 (executable
- (name gospelwc)
- (public_name gospel_wc)
- (modules gospelwc)
+ (name cli)
+ (public_name gospel)
  (package gospel)
- (libraries gospel))
+ (libraries cmdliner gospel))

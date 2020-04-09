@@ -25,4 +25,5 @@ depends: [
   "dune" {>= "2.4.0"}
   "menhir"
   "ocaml" {>= "4.07"}
+  "cmdliner"
 ]

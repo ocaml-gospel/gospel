@@ -1,7 +1,15 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
 {
   open Format
-
-  let files = Queue.create ()
 
   type counter =
     { mutable spec: int; mutable code: int; mutable comment: int }
@@ -82,7 +90,7 @@ and comment = parse
   let print_total () =
     print_file "total" grand_total
 
-  let process_file f =
+  let run_file f =
     let ch = open_in f in
     let lb = Lexing.from_channel ch in
     reset current_file; (* a new file begins *)
@@ -91,23 +99,7 @@ and comment = parse
     print_file f current_file;
     update_total ()
 
-  (* Command line parsing and entry point for the program *)
-  let spec = Arg.align [
-    "-l", Arg.Unit (fun () -> ()), "count lines (default)"
-  ]
-
-  let add_file file =
-    if not (Sys.file_exists file) then begin
-      eprintf "%s: no such file@." file; exit 1
-    end;
-    Queue.add file files
-
-  let usage = Format.sprintf "Usage: %s [options] files \n\n\
-    Count lines in VOCAL source files.\n" (Filename.basename Sys.argv.(0))
-
-  let () = Arg.parse spec add_file usage
-
-  let () =
-    Queue.iter process_file files;
-    if Queue.length files <> 1 then print_total ()
+  let run files =
+    List.iter run_file files;
+    if List.length files <> 1 then print_total ()
 }
