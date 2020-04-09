@@ -1,0 +1,55 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " This file tests the generation of paragraph within module comments.\n\n\n    At least three points should be exercised in this tests\n\n    - First, all text should be tagged\n    - Second, no paragraph should contain only spaces characters\n    - Third, the mixing of different text style should not create\n    invalid p tags\n\n\n    See also {{: http://caml.inria.fr/mantis/view.php?id=7352} MPR:7352},\n    {{: http://caml.inria.fr/mantis/view.php?id=7353} MPR:7353}\n\n    {2:here Testing non-text elements }\n\n    [code x ] {i should } be inside a p.\n\n\n    {e But} {b not}\n    {[\n      let complex_code = ()\n    ]}\n    here.\n\n    + An enumerated list first element\n    + second element\n\n    {L Alignement test: left}\n    {R Right}\n    {C Center}\n\n\n    Other complex text{_ in subscript }{^ and superscript}\n    {V Verbatim V}\n\n    There is also {%html: html specific %} elements.\n\n    @author: Florian Angeletti\n    @version: 1\n"]
+[@@@ocaml.text " "]
+type t[@@ocaml.doc
+        "\n    And cross-reference {! t}.\n   {!modules: Paragraph}\n   {!indexlist}\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " This file tests the generation of paragraph within module comments.\n\n\n    At least three points should be exercised in this tests\n\n    - First, all text should be tagged\n    - Second, no paragraph should contain only spaces characters\n    - Third, the mixing of different text style should not create\n    invalid p tags\n\n\n    See also {{: http://caml.inria.fr/mantis/view.php?id=7352} MPR:7352},\n    {{: http://caml.inria.fr/mantis/view.php?id=7353} MPR:7353}\n\n    {2:here Testing non-text elements }\n\n    [code x ] {i should } be inside a p.\n\n\n    {e But} {b not}\n    {[\n      let complex_code = ()\n    ]}\n    here.\n\n    + An enumerated list first element\n    + second element\n\n    {L Alignement test: left}\n    {R Right}\n    {C Center}\n\n\n    Other complex text{_ in subscript }{^ and superscript}\n    {V Verbatim V}\n\n    There is also {%html: html specific %} elements.\n\n    @author: Florian Angeletti\n    @version: 1\n"]
+
+[@@@ocaml.text " "]
+
+type t[@@ocaml.doc
+        "\n    And cross-reference {! t}.\n   {!modules: Paragraph}\n   {!indexlist}\n"]
+  
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Paragraph.mli
+
+  Namespace: Paragraph.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " This file tests the generation of paragraph within module comments.\n\n\n    At least three points should be exercised in this tests\n\n    - First, all text should be tagged\n    - Second, no paragraph should contain only spaces characters\n    - Third, the mixing of different text style should not create\n    invalid p tags\n\n\n    See also {{: http://caml.inria.fr/mantis/view.php?id=7352} MPR:7352},\n    {{: http://caml.inria.fr/mantis/view.php?id=7353} MPR:7353}\n\n    {2:here Testing non-text elements }\n\n    [code x ] {i should } be inside a p.\n\n\n    {e But} {b not}\n    {[\n      let complex_code = ()\n    ]}\n    here.\n\n    + An enumerated list first element\n    + second element\n\n    {L Alignement test: left}\n    {R Right}\n    {C Center}\n\n\n    Other complex text{_ in subscript }{^ and superscript}\n    {V Verbatim V}\n\n    There is also {%html: html specific %} elements.\n\n    @author: Florian Angeletti\n    @version: 1\n"]
+    
+    [@@@ocaml.text " "]
+    
+    type t
+    
+
+
+*** OK ***
+

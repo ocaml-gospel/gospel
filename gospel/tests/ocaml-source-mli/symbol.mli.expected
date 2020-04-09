@@ -1,0 +1,99 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " A symbol identifies a constant provided by either:\n    - another compilation unit; or\n    - a top-level module.\n\n    * [sym_unit] is the compilation unit containing the value.\n    * [sym_label] is the linkage name of the variable.\n\n    The label must be globally unique: two compilation units linked in the\n    same program must not share labels. "]
+include Identifiable.S
+val of_variable : Variable.t -> t
+val of_global_linkage : Compilation_unit.t -> Linkage_name.t -> t
+val import_for_pack : pack:Compilation_unit.t -> t -> t
+val compilation_unit : t -> Compilation_unit.t
+val label : t -> Linkage_name.t
+val print_opt : Format.formatter -> t option -> unit
+val compare_lists : t list -> t list -> int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " A symbol identifies a constant provided by either:\n    - another compilation unit; or\n    - a top-level module.\n\n    * [sym_unit] is the compilation unit containing the value.\n    * [sym_label] is the linkage name of the variable.\n\n    The label must be globally unique: two compilation units linked in the\n    same program must not share labels. "]
+
+include Identifiable.S
+
+val of_variable : Variable.t -> t
+
+
+val of_global_linkage : Compilation_unit.t -> Linkage_name.t -> t
+
+
+val import_for_pack : pack:Compilation_unit.t -> t -> t
+
+
+val compilation_unit : t -> Compilation_unit.t
+
+
+val label : t -> Linkage_name.t
+
+
+val print_opt : Format.formatter -> t option -> unit
+
+
+val compare_lists : t list -> t list -> int
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module symbol.mli
+
+  Namespace: symbol.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " A symbol identifies a constant provided by either:\n    - another compilation unit; or\n    - a top-level module.\n\n    * [sym_unit] is the compilation unit containing the value.\n    * [sym_label] is the linkage name of the variable.\n\n    The label must be globally unique: two compilation units linked in the\n    same program must not share labels. "]
+    
+    include Identifiable.S
+    
+    val of_variable : Variable.t -> t
+    
+    
+    val of_global_linkage : Compilation_unit.t -> Linkage_name.t -> t
+    
+    
+    val import_for_pack : pack:Compilation_unit.t -> t -> t
+    
+    
+    val compilation_unit : t -> Compilation_unit.t
+    
+    
+    val label : t -> Linkage_name.t
+    
+    
+    val print_opt : Format.formatter -> t option -> unit
+    
+    
+    val compare_lists : t list -> t list -> int
+    
+
+
+*** OK ***
+

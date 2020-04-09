@@ -1,0 +1,161 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Character operations. "]
+external code : char -> int = "%identity"[@@ocaml.doc
+                                           " Return the ASCII code of the argument. "]
+val chr : int -> char[@@ocaml.doc
+                       " Return the character with the given ASCII code.\n   Raise [Invalid_argument \"Char.chr\"] if the argument is\n   outside the range 0--255. "]
+val escaped : char -> string[@@ocaml.doc
+                              " Return a string representing the given character,\n    with special characters escaped following the lexical conventions\n    of OCaml.\n    All characters outside the ASCII printable range (32..126) are\n    escaped, as well as backslash, double-quote, and single-quote. "]
+val lowercase : char -> char[@@ocaml.deprecated
+                              "Use Char.lowercase_ascii instead."][@@ocaml.doc
+                                                                    " Convert the given character to its equivalent lowercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+val uppercase : char -> char[@@ocaml.deprecated
+                              "Use Char.uppercase_ascii instead."][@@ocaml.doc
+                                                                    " Convert the given character to its equivalent uppercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+val lowercase_ascii : char -> char[@@ocaml.doc
+                                    " Convert the given character to its equivalent lowercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+val uppercase_ascii : char -> char[@@ocaml.doc
+                                    " Convert the given character to its equivalent uppercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+type t = char[@@ocaml.doc " An alias for the type of characters. "]
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for characters, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Char] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for chars.\n    @since 4.03.0 "]
+[@@@ocaml.text "/*"]
+external unsafe_chr : int -> char = "%identity"
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Character operations. "]
+
+external code : char -> int = "%identity"[@@ocaml.doc
+                                           " Return the ASCII code of the argument. "]
+
+
+val chr : int -> char[@@ocaml.doc
+                       " Return the character with the given ASCII code.\n   Raise [Invalid_argument \"Char.chr\"] if the argument is\n   outside the range 0--255. "]
+
+
+val escaped : char -> string[@@ocaml.doc
+                              " Return a string representing the given character,\n    with special characters escaped following the lexical conventions\n    of OCaml.\n    All characters outside the ASCII printable range (32..126) are\n    escaped, as well as backslash, double-quote, and single-quote. "]
+
+
+val lowercase : char -> char[@@ocaml.deprecated
+                              "Use Char.lowercase_ascii instead."][@@ocaml.doc
+                                                                    " Convert the given character to its equivalent lowercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+
+
+val uppercase : char -> char[@@ocaml.deprecated
+                              "Use Char.uppercase_ascii instead."][@@ocaml.doc
+                                                                    " Convert the given character to its equivalent uppercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+
+
+val lowercase_ascii : char -> char[@@ocaml.doc
+                                    " Convert the given character to its equivalent lowercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+
+
+val uppercase_ascii : char -> char[@@ocaml.doc
+                                    " Convert the given character to its equivalent uppercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+
+
+type t = char[@@ocaml.doc " An alias for the type of characters. "]
+  
+
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for characters, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Char] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+
+
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for chars.\n    @since 4.03.0 "]
+
+
+[@@@ocaml.text "/*"]
+
+external unsafe_chr : int -> char = "%identity"
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module char.mli
+
+  Namespace: char.mli
+    Type symbols
+       t [=char]
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Character operations. "]
+    
+    external code : char -> int =
+    "%identity"[@@ocaml.doc " Return the ASCII code of the argument. "]
+    
+    
+    val chr :
+    int -> char[@@ocaml.doc
+                 " Return the character with the given ASCII code.\n   Raise [Invalid_argument \"Char.chr\"] if the argument is\n   outside the range 0--255. "]
+    
+    
+    val escaped :
+    char -> string[@@ocaml.doc
+                    " Return a string representing the given character,\n    with special characters escaped following the lexical conventions\n    of OCaml.\n    All characters outside the ASCII printable range (32..126) are\n    escaped, as well as backslash, double-quote, and single-quote. "]
+    
+    
+    val lowercase :
+    char -> char[@@ocaml.deprecated "Use Char.lowercase_ascii instead."]
+    [@@ocaml.doc
+      " Convert the given character to its equivalent lowercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+    
+    
+    val uppercase :
+    char -> char[@@ocaml.deprecated "Use Char.uppercase_ascii instead."]
+    [@@ocaml.doc
+      " Convert the given character to its equivalent uppercase character,\n   using the ISO Latin-1 (8859-1) character set.\n   @deprecated Functions operating on Latin-1 character set are deprecated. "]
+    
+    
+    val lowercase_ascii :
+    char -> char[@@ocaml.doc
+                  " Convert the given character to its equivalent lowercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+    
+    
+    val uppercase_ascii :
+    char -> char[@@ocaml.doc
+                  " Convert the given character to its equivalent uppercase character,\n   using the US-ASCII character set.\n   @since 4.03.0 "]
+    
+    
+    type t = char
+    
+    
+    val compare :
+    t -> t -> int[@@ocaml.doc
+                   " The comparison function for characters, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Char] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+    
+    
+    val equal :
+    t -> t -> bool[@@ocaml.doc
+                    " The equal function for chars.\n    @since 4.03.0 "]
+    
+    
+    [@@@ocaml.text "/*"]
+    
+    external unsafe_chr : int -> char = "%identity"
+    
+
+
+*** OK ***
+

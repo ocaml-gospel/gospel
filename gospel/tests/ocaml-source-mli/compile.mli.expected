@@ -1,0 +1,89 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Bytecode compilation for .ml and .mli files. "]
+val interface : sourcefile:string -> outputprefix:string -> unit
+val implementation : sourcefile:string -> outputprefix:string -> unit
+[@@@ocaml.text " {2 Internal functions} *"]
+val to_bytecode :
+  Compile_common.info ->
+    (Typedtree.structure * Typedtree.module_coercion) ->
+      (Instruct.instruction list * Ident.Set.t)[@@ocaml.doc
+                                                 " [to_bytecode info typed] takes a typechecked implementation\n    and returns its bytecode.\n"]
+val emit_bytecode :
+  Compile_common.info -> (Instruct.instruction list * Ident.Set.t) -> unit
+[@@ocaml.doc " [emit_bytecode bytecode] output the bytecode executable. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Bytecode compilation for .ml and .mli files. "]
+
+val interface : sourcefile:string -> outputprefix:string -> unit
+
+
+val implementation : sourcefile:string -> outputprefix:string -> unit
+
+
+[@@@ocaml.text " {2 Internal functions} *"]
+
+val to_bytecode :
+  Compile_common.info ->
+    (Typedtree.structure * Typedtree.module_coercion) ->
+      (Instruct.instruction list * Ident.Set.t)[@@ocaml.doc
+                                                 " [to_bytecode info typed] takes a typechecked implementation\n    and returns its bytecode.\n"]
+
+
+val emit_bytecode :
+  Compile_common.info -> (Instruct.instruction list * Ident.Set.t) -> unit
+[@@ocaml.doc " [emit_bytecode bytecode] output the bytecode executable. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module compile.mli
+
+  Namespace: compile.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Bytecode compilation for .ml and .mli files. "]
+    
+    val interface : sourcefile:string -> outputprefix:string -> unit
+    
+    
+    val implementation : sourcefile:string -> outputprefix:string -> unit
+    
+    
+    [@@@ocaml.text " {2 Internal functions} *"]
+    
+    val to_bytecode :
+    Compile_common.info ->
+      (Typedtree.structure * Typedtree.module_coercion) ->
+        (Instruct.instruction list * Ident.Set.t)[@@ocaml.doc
+                                                   " [to_bytecode info typed] takes a typechecked implementation\n    and returns its bytecode.\n"]
+    
+    
+    val emit_bytecode :
+    Compile_common.info -> (Instruct.instruction list * Ident.Set.t) -> unit
+    [@@ocaml.doc
+      " [emit_bytecode bytecode] output the bytecode executable. "]
+    
+
+
+*** OK ***
+

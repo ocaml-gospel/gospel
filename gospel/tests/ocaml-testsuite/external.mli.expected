@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+external frexp : float -> (float * int) = "caml_frexp_float"
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+external frexp : float -> (float * int) = "caml_frexp_float"
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module external.mli
+
+  Namespace: external.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    external frexp : float -> (float * int) = "caml_frexp_float"
+    
+
+
+*** OK ***
+

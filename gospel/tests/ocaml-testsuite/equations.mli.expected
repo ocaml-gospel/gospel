@@ -1,0 +1,133 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Terms
+type rule = {
+  number: int ;
+  numvars: int ;
+  lhs: term ;
+  rhs: term }
+val mk_rule : int -> term -> term -> rule
+val check_rules : rule list -> int
+val pretty_rule : rule -> unit
+val pretty_rules : rule list -> unit
+val reduce : term -> term -> term -> term
+val reducible : term -> term -> bool
+val mreduce : rule list -> term -> term
+val mrewrite1 : rule list -> term -> term
+val mrewrite1_sons : rule list -> term list -> term list
+val mrewrite_all : rule list -> term -> term
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Terms
+
+type rule = {
+number: int ;
+numvars: int ;
+lhs: term ;
+rhs: term }
+  
+
+val mk_rule : int -> term -> term -> rule
+
+
+val check_rules : rule list -> int
+
+
+val pretty_rule : rule -> unit
+
+
+val pretty_rules : rule list -> unit
+
+
+val reduce : term -> term -> term -> term
+
+
+val reducible : term -> term -> bool
+
+
+val mreduce : rule list -> term -> term
+
+
+val mrewrite1 : rule list -> term -> term
+
+
+val mrewrite1_sons : rule list -> term list -> term list
+
+
+val mrewrite_all : rule list -> term -> term
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module equations.mli
+
+  Namespace: equations.mli
+    Type symbols
+       rule
+      
+    Logic Symbols
+      function constr#rule (_:int) (_:int) (_:term) (_:term) : rule
+      function lhs (_:rule) : term
+      function number (_:rule) : int
+      function numvars (_:rule) : int
+      function rhs (_:rule) : term
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    open Terms
+    
+    type rule = {number:int; numvars:int; lhs:term; rhs:term}
+             function constr#rule (_:int) (_:int) (_:term) (_:term) : rule
+               function number (_:rule) : int
+               function numvars (_:rule) : int
+               function lhs (_:rule) : term
+               function rhs (_:rule) : term
+    
+    
+    val mk_rule : int -> term -> term -> rule
+    
+    
+    val check_rules : rule list -> int
+    
+    
+    val pretty_rule : rule -> unit
+    
+    
+    val pretty_rules : rule list -> unit
+    
+    
+    val reduce : term -> term -> term -> term
+    
+    
+    val reducible : term -> term -> bool
+    
+    
+    val mreduce : rule list -> term -> term
+    
+    
+    val mrewrite1 : rule list -> term -> term
+    
+    
+    val mrewrite1_sons : rule list -> term list -> term list
+    
+    
+    val mrewrite_all : rule list -> term -> term
+    
+
+
+*** OK ***
+

@@ -1,0 +1,166 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Arrays of weak pointers and hash sets of weak pointers. "]
+[@@@ocaml.text " {1 Low-level functions} "]
+type 'a t[@@ocaml.doc
+           " The type of arrays of weak pointers (weak arrays).  A weak\n   pointer is a value that the garbage collector may erase whenever\n   the value is not used any more (through normal pointers) by the\n   program.  Note that finalisation functions are run after the\n   weak pointers are erased.\n\n   A weak pointer is said to be full if it points to a value,\n   empty if the value was erased by the GC.\n\n   Notes:\n   - Integers are not allocated and cannot be stored in weak arrays.\n   - Weak arrays cannot be marshaled using {!Stdlib.output_value}\n     nor the functions of the {!Marshal} module.\n"]
+val create : int -> 'a t[@@ocaml.doc
+                          " [Weak.create n] returns a new weak array of length [n].\n   All the pointers are initially empty.  Raise [Invalid_argument]\n   if [n] is negative or greater than {!Sys.max_array_length}[-1]."]
+val length : 'a t -> int[@@ocaml.doc
+                          " [Weak.length ar] returns the length (number of elements) of\n   [ar]."]
+val set : 'a t -> int -> 'a option -> unit[@@ocaml.doc
+                                            " [Weak.set ar n (Some el)] sets the [n]th cell of [ar] to be a\n   (full) pointer to [el]; [Weak.set ar n None] sets the [n]th\n   cell of [ar] to empty.\n   Raise [Invalid_argument \"Weak.set\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1]."]
+val get : 'a t -> int -> 'a option[@@ocaml.doc
+                                    " [Weak.get ar n] returns None if the [n]th cell of [ar] is\n   empty, [Some x] (where [x] is the value) if it is full.\n   Raise [Invalid_argument \"Weak.get\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1]."]
+val get_copy : 'a t -> int -> 'a option[@@ocaml.doc
+                                         " [Weak.get_copy ar n] returns None if the [n]th cell of [ar] is\n   empty, [Some x] (where [x] is a (shallow) copy of the value) if\n   it is full.\n   In addition to pitfalls with mutable values, the interesting\n   difference with [get] is that [get_copy] does not prevent\n   the incremental GC from erasing the value in its current cycle\n   ([get] may delay the erasure to the next GC cycle).\n   Raise [Invalid_argument \"Weak.get\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1].\n\n   If the element is a custom block it is not copied.\n\n"]
+val check : 'a t -> int -> bool[@@ocaml.doc
+                                 " [Weak.check ar n] returns [true] if the [n]th cell of [ar] is\n   full, [false] if it is empty.  Note that even if [Weak.check ar n]\n   returns [true], a subsequent {!Weak.get}[ ar n] can return [None]."]
+val fill : 'a t -> int -> int -> 'a option -> unit[@@ocaml.doc
+                                                    " [Weak.fill ar ofs len el] sets to [el] all pointers of [ar] from\n   [ofs] to [ofs + len - 1].  Raise [Invalid_argument \"Weak.fill\"]\n   if [ofs] and [len] do not designate a valid subarray of [a]."]
+val blit : 'a t -> int -> 'a t -> int -> int -> unit[@@ocaml.doc
+                                                      " [Weak.blit ar1 off1 ar2 off2 len] copies [len] weak pointers\n   from [ar1] (starting at [off1]) to [ar2] (starting at [off2]).\n   It works correctly even if [ar1] and [ar2] are the same.\n   Raise [Invalid_argument \"Weak.blit\"] if [off1] and [len] do\n   not designate a valid subarray of [ar1], or if [off2] and [len]\n   do not designate a valid subarray of [ar2]."]
+[@@@ocaml.text " {1 Weak hash sets} "]
+[@@@ocaml.text
+  " A weak hash set is a hashed set of values.  Each value may\n    magically disappear from the set when it is not used by the\n    rest of the program any more.  This is normally used to share\n    data structures without inducing memory leaks.\n    Weak hash sets are defined on values from a {!Hashtbl.HashedType}\n    module; the [equal] relation and [hash] function are taken from that\n    module.  We will say that [v] is an instance of [x] if [equal x v]\n    is [true].\n\n    The [equal] relation must be able to work on a shallow copy of\n    the values and give the same result as with the values themselves.\n    "]
+module type S  =
+  sig
+    type data[@@ocaml.doc " The type of the elements stored in the table. "]
+    type t[@@ocaml.doc
+            " The type of tables that contain elements of type [data].\n        Note that weak hash sets cannot be marshaled using\n        {!Stdlib.output_value} or the functions of the {!Marshal}\n        module. "]
+    val create : int -> t[@@ocaml.doc
+                           " [create n] creates a new empty weak hash set, of initial\n        size [n].  The table will grow as needed. "]
+    val clear : t -> unit[@@ocaml.doc
+                           " Remove all elements from the table. "]
+    val merge : t -> data -> data[@@ocaml.doc
+                                   " [merge t x] returns an instance of [x] found in [t] if any,\n        or else adds [x] to [t] and return [x]. "]
+    val add : t -> data -> unit[@@ocaml.doc
+                                 " [add t x] adds [x] to [t].  If there is already an instance\n        of [x] in [t], it is unspecified which one will be\n        returned by subsequent calls to [find] and [merge]. "]
+    val remove : t -> data -> unit[@@ocaml.doc
+                                    " [remove t x] removes from [t] one instance of [x].  Does\n        nothing if there is no instance of [x] in [t]. "]
+    val find : t -> data -> data[@@ocaml.doc
+                                  " [find t x] returns an instance of [x] found in [t].\n        Raise [Not_found] if there is no such element. "]
+    val find_opt : t -> data -> data option[@@ocaml.doc
+                                             " [find_opt t x] returns an instance of [x] found in [t]\n        or [None] if there is no such element.\n        @since 4.05\n    "]
+    val find_all : t -> data -> data list[@@ocaml.doc
+                                           " [find_all t x] returns a list of all the instances of [x]\n        found in [t]. "]
+    val mem : t -> data -> bool[@@ocaml.doc
+                                 " [mem t x] returns [true] if there is at least one instance\n        of [x] in [t], false otherwise. "]
+    val iter : (data -> unit) -> t -> unit[@@ocaml.doc
+                                            " [iter f t] calls [f] on each element of [t], in some unspecified\n        order.  It is not specified what happens if [f] tries to change\n        [t] itself. "]
+    val fold : (data -> 'a -> 'a) -> t -> 'a -> 'a[@@ocaml.doc
+                                                    " [fold f t init] computes [(f d1 (... (f dN init)))] where\n        [d1 ... dN] are the elements of [t] in some unspecified order.\n        It is not specified what happens if [f] tries to change [t]\n        itself. "]
+    val count : t -> int[@@ocaml.doc
+                          " Count the number of elements in the table.  [count t] gives the\n        same result as [fold (fun _ n -> n+1) t 0] but does not delay the\n        deallocation of the dead elements. "]
+    val stats : t -> (int * int * int * int * int * int)[@@ocaml.doc
+                                                          " Return statistics on the table.  The numbers are, in order:\n        table length, number of entries, sum of bucket lengths,\n        smallest bucket length, median bucket length, biggest bucket length. "]
+  end[@@ocaml.doc " The output signature of the functor {!Weak.Make}. "]
+module Make : functor (H : Hashtbl.HashedType) -> S with type  data =  H.t
+[@@ocaml.doc
+  " Functor building an implementation of the weak hash set structure.\n    [H.equal] can't be the physical equality, since only shallow\n    copies of the elements in the set are given to it.\n "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Arrays of weak pointers and hash sets of weak pointers. "]
+
+[@@@ocaml.text " {1 Low-level functions} "]
+
+type 'a t[@@ocaml.doc
+           " The type of arrays of weak pointers (weak arrays).  A weak\n   pointer is a value that the garbage collector may erase whenever\n   the value is not used any more (through normal pointers) by the\n   program.  Note that finalisation functions are run after the\n   weak pointers are erased.\n\n   A weak pointer is said to be full if it points to a value,\n   empty if the value was erased by the GC.\n\n   Notes:\n   - Integers are not allocated and cannot be stored in weak arrays.\n   - Weak arrays cannot be marshaled using {!Stdlib.output_value}\n     nor the functions of the {!Marshal} module.\n"]
+  
+
+val create : int -> 'a t[@@ocaml.doc
+                          " [Weak.create n] returns a new weak array of length [n].\n   All the pointers are initially empty.  Raise [Invalid_argument]\n   if [n] is negative or greater than {!Sys.max_array_length}[-1]."]
+
+
+val length : 'a t -> int[@@ocaml.doc
+                          " [Weak.length ar] returns the length (number of elements) of\n   [ar]."]
+
+
+val set : 'a t -> int -> 'a option -> unit[@@ocaml.doc
+                                            " [Weak.set ar n (Some el)] sets the [n]th cell of [ar] to be a\n   (full) pointer to [el]; [Weak.set ar n None] sets the [n]th\n   cell of [ar] to empty.\n   Raise [Invalid_argument \"Weak.set\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1]."]
+
+
+val get : 'a t -> int -> 'a option[@@ocaml.doc
+                                    " [Weak.get ar n] returns None if the [n]th cell of [ar] is\n   empty, [Some x] (where [x] is the value) if it is full.\n   Raise [Invalid_argument \"Weak.get\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1]."]
+
+
+val get_copy : 'a t -> int -> 'a option[@@ocaml.doc
+                                         " [Weak.get_copy ar n] returns None if the [n]th cell of [ar] is\n   empty, [Some x] (where [x] is a (shallow) copy of the value) if\n   it is full.\n   In addition to pitfalls with mutable values, the interesting\n   difference with [get] is that [get_copy] does not prevent\n   the incremental GC from erasing the value in its current cycle\n   ([get] may delay the erasure to the next GC cycle).\n   Raise [Invalid_argument \"Weak.get\"] if [n] is not in the range\n   0 to {!Weak.length}[ a - 1].\n\n   If the element is a custom block it is not copied.\n\n"]
+
+
+val check : 'a t -> int -> bool[@@ocaml.doc
+                                 " [Weak.check ar n] returns [true] if the [n]th cell of [ar] is\n   full, [false] if it is empty.  Note that even if [Weak.check ar n]\n   returns [true], a subsequent {!Weak.get}[ ar n] can return [None]."]
+
+
+val fill : 'a t -> int -> int -> 'a option -> unit[@@ocaml.doc
+                                                    " [Weak.fill ar ofs len el] sets to [el] all pointers of [ar] from\n   [ofs] to [ofs + len - 1].  Raise [Invalid_argument \"Weak.fill\"]\n   if [ofs] and [len] do not designate a valid subarray of [a]."]
+
+
+val blit : 'a t -> int -> 'a t -> int -> int -> unit[@@ocaml.doc
+                                                      " [Weak.blit ar1 off1 ar2 off2 len] copies [len] weak pointers\n   from [ar1] (starting at [off1]) to [ar2] (starting at [off2]).\n   It works correctly even if [ar1] and [ar2] are the same.\n   Raise [Invalid_argument \"Weak.blit\"] if [off1] and [len] do\n   not designate a valid subarray of [ar1], or if [off2] and [len]\n   do not designate a valid subarray of [ar2]."]
+
+
+[@@@ocaml.text " {1 Weak hash sets} "]
+
+[@@@ocaml.text
+  " A weak hash set is a hashed set of values.  Each value may\n    magically disappear from the set when it is not used by the\n    rest of the program any more.  This is normally used to share\n    data structures without inducing memory leaks.\n    Weak hash sets are defined on values from a {!Hashtbl.HashedType}\n    module; the [equal] relation and [hash] function are taken from that\n    module.  We will say that [v] is an instance of [x] if [equal x v]\n    is [true].\n\n    The [equal] relation must be able to work on a shallow copy of\n    the values and give the same result as with the values themselves.\n    "]
+
+module type S  =
+  sig
+    type data[@@ocaml.doc " The type of the elements stored in the table. "]
+      
+    type t[@@ocaml.doc
+            " The type of tables that contain elements of type [data].\n        Note that weak hash sets cannot be marshaled using\n        {!Stdlib.output_value} or the functions of the {!Marshal}\n        module. "]
+      
+    val create : int -> t[@@ocaml.doc
+                           " [create n] creates a new empty weak hash set, of initial\n        size [n].  The table will grow as needed. "]
+    
+    val clear : t -> unit[@@ocaml.doc
+                           " Remove all elements from the table. "]
+    
+    val merge : t -> data -> data[@@ocaml.doc
+                                   " [merge t x] returns an instance of [x] found in [t] if any,\n        or else adds [x] to [t] and return [x]. "]
+    
+    val add : t -> data -> unit[@@ocaml.doc
+                                 " [add t x] adds [x] to [t].  If there is already an instance\n        of [x] in [t], it is unspecified which one will be\n        returned by subsequent calls to [find] and [merge]. "]
+    
+    val remove : t -> data -> unit[@@ocaml.doc
+                                    " [remove t x] removes from [t] one instance of [x].  Does\n        nothing if there is no instance of [x] in [t]. "]
+    
+    val find : t -> data -> data[@@ocaml.doc
+                                  " [find t x] returns an instance of [x] found in [t].\n        Raise [Not_found] if there is no such element. "]
+    
+    val find_opt : t -> data -> data option[@@ocaml.doc
+                                             " [find_opt t x] returns an instance of [x] found in [t]\n        or [None] if there is no such element.\n        @since 4.05\n    "]
+    
+    val find_all : t -> data -> data list[@@ocaml.doc
+                                           " [find_all t x] returns a list of all the instances of [x]\n        found in [t]. "]
+    
+    val mem : t -> data -> bool[@@ocaml.doc
+                                 " [mem t x] returns [true] if there is at least one instance\n        of [x] in [t], false otherwise. "]
+    
+    val iter : (data -> unit) -> t -> unit[@@ocaml.doc
+                                            " [iter f t] calls [f] on each element of [t], in some unspecified\n        order.  It is not specified what happens if [f] tries to change\n        [t] itself. "]
+    
+    val fold : (data -> 'a -> 'a) -> t -> 'a -> 'a[@@ocaml.doc
+                                                    " [fold f t init] computes [(f d1 (... (f dN init)))] where\n        [d1 ... dN] are the elements of [t] in some unspecified order.\n        It is not specified what happens if [f] tries to change [t]\n        itself. "]
+    
+    val count : t -> int[@@ocaml.doc
+                          " Count the number of elements in the table.  [count t] gives the\n        same result as [fold (fun _ n -> n+1) t 0] but does not delay the\n        deallocation of the dead elements. "]
+    
+    val stats : t -> (int * int * int * int * int * int)[@@ocaml.doc
+                                                          " Return statistics on the table.  The numbers are, in order:\n        table length, number of entries, sum of bucket lengths,\n        smallest bucket length, median bucket length, biggest bucket length. "]
+    
+  end[@@ocaml.doc " The output signature of the functor {!Weak.Make}. "]
+
+module Make : functor (H : Hashtbl.HashedType) -> S with type  data =  H.t
+[@@ocaml.doc
+  " Functor building an implementation of the weak hash set structure.\n    [H.equal] can't be the physical equality, since only shallow\n    copies of the elements in the set are given to it.\n "]
+File "weak.mli", line 114, characters 7-8:
+Error: Multiple definitions of type t

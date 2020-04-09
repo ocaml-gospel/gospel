@@ -1,0 +1,70 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val nothing : 'a -> unit
+exception Out_of_range 
+val except : 'a -> 'a list -> 'a list
+val index : 'a -> 'a list -> int
+val list_truncate : int -> 'a list -> 'a list
+val list_truncate2 : int -> 'a list -> ('a list * 'a list)
+val list_replace : 'a -> 'a -> 'a list -> 'a list
+val string_trim : string -> string
+val isprefix : string -> string -> bool
+type io_channel =
+  {
+  io_in: in_channel ;
+  io_out: out_channel ;
+  io_fd: Unix.file_descr }
+val io_channel_of_descr : Unix.file_descr -> io_channel
+val close_io : io_channel -> unit
+val std_io : io_channel
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val nothing : 'a -> unit
+
+
+exception Out_of_range 
+
+val except : 'a -> 'a list -> 'a list
+
+
+val index : 'a -> 'a list -> int
+
+
+val list_truncate : int -> 'a list -> 'a list
+
+
+val list_truncate2 : int -> 'a list -> ('a list * 'a list)
+
+
+val list_replace : 'a -> 'a -> 'a list -> 'a list
+
+
+val string_trim : string -> string
+
+
+val isprefix : string -> string -> bool
+
+
+type io_channel =
+{
+io_in: in_channel ;
+io_out: out_channel ;
+io_fd: Unix.file_descr }
+  
+
+val io_channel_of_descr : Unix.file_descr -> io_channel
+
+
+val close_io : io_channel -> unit
+
+
+val std_io : io_channel
+
+File "primitives.mli", line 56, characters 10-20:
+Error: Symbol in_channel not found

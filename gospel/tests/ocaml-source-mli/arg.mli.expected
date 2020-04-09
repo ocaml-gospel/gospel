@@ -1,0 +1,220 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Parsing of command line arguments.\n\n   This module provides a general mechanism for extracting options and\n   arguments from the command line to the program.\n\n   Syntax of command lines:\n    A keyword is a character string starting with a [-].\n    An option is a keyword alone or followed by an argument.\n    The types of keywords are: [Unit], [Bool], [Set], [Clear],\n    [String], [Set_string], [Int], [Set_int], [Float], [Set_float],\n    [Tuple], [Symbol], and [Rest].\n    [Unit], [Set] and [Clear] keywords take no argument. A [Rest]\n    keyword takes the remaining of the command line as arguments.\n    Every other keyword takes the following word on the command line\n    as argument.  For compatibility with GNU getopt_long, [keyword=arg]\n    is also allowed.\n    Arguments not preceded by a keyword are called anonymous arguments.\n\n   Examples ([cmd] is assumed to be the command name):\n-   [cmd -flag           ](a unit option)\n-   [cmd -int 1          ](an int option with argument [1])\n-   [cmd -string foobar  ](a string option with argument [\"foobar\"])\n-   [cmd -float 12.34    ](a float option with argument [12.34])\n-   [cmd a b c           ](three anonymous arguments: [\"a\"], [\"b\"], and [\"c\"])\n-   [cmd a b -- c d      ](two anonymous arguments and a rest option with\n                           two arguments)\n"]
+type spec =
+  | Unit of (unit -> unit)
+  [@ocaml.doc " Call the function with unit argument "]
+  | Bool of (bool -> unit)
+  [@ocaml.doc " Call the function with a bool argument "]
+  | Set of bool ref [@ocaml.doc " Set the reference to true "]
+  | Clear of bool ref [@ocaml.doc " Set the reference to false "]
+  | String of (string -> unit)
+  [@ocaml.doc " Call the function with a string argument "]
+  | Set_string of string ref
+  [@ocaml.doc " Set the reference to the string argument "]
+  | Int of (int -> unit)
+  [@ocaml.doc " Call the function with an int argument "]
+  | Set_int of int ref
+  [@ocaml.doc " Set the reference to the int argument "]
+  | Float of (float -> unit)
+  [@ocaml.doc " Call the function with a float argument "]
+  | Set_float of float ref
+  [@ocaml.doc " Set the reference to the float argument "]
+  | Tuple of spec list
+  [@ocaml.doc
+    " Take several arguments according to the\n                                   spec list "]
+  | Symbol of string list * (string -> unit)
+  [@ocaml.doc
+    " Take one of the symbols as argument and\n                                   call the function with the symbol "]
+  | Rest of (string -> unit)
+  [@ocaml.doc
+    " Stop interpreting keywords and call the\n                                   function with each remaining argument "]
+  | Expand of (string -> string array)
+  [@ocaml.doc
+    " If the remaining arguments to process\n                                           are of the form\n                                           [[\"-foo\"; \"arg\"] @ rest] where \"foo\"\n                                           is registered as [Expand f], then the\n                                           arguments [f \"arg\" @ rest] are\n                                           processed. Only allowed in\n                                           [parse_and_expand_argv_dynamic]. "]
+[@@ocaml.doc
+  " The concrete type describing the behavior associated\n   with a keyword. "]
+type key = string
+type doc = string
+type usage_msg = string
+type anon_fun = string -> unit
+val parse : (key * spec * doc) list -> anon_fun -> usage_msg -> unit[@@ocaml.doc
+                                                                    " [Arg.parse speclist anon_fun usage_msg] parses the command line.\n    [speclist] is a list of triples [(key, spec, doc)].\n    [key] is the option keyword, it must start with a ['-'] character.\n    [spec] gives the option type and the function to call when this option\n    is found on the command line.\n    [doc] is a one-line description of this option.\n    [anon_fun] is called on anonymous arguments.\n    The functions in [spec] and [anon_fun] are called in the same order\n    as their arguments appear on the command line.\n\n    If an error occurs, [Arg.parse] exits the program, after printing\n    to standard error an error message as follows:\n-   The reason for the error: unknown option, invalid or missing argument, etc.\n-   [usage_msg]\n-   The list of options, each followed by the corresponding [doc] string.\n    Beware: options that have an empty [doc] string will not be included in the\n    list.\n\n    For the user to be able to specify anonymous arguments starting with a\n    [-], include for example [(\"-\", String anon_fun, doc)] in [speclist].\n\n    By default, [parse] recognizes two unit options, [-help] and [--help],\n    which will print to standard output [usage_msg] and the list of\n    options, and exit the program.  You can override this behaviour\n    by specifying your own [-help] and [--help] options in [speclist].\n"]
+val parse_dynamic :
+  (key * spec * doc) list ref -> anon_fun -> usage_msg -> unit[@@ocaml.doc
+                                                                " Same as {!Arg.parse}, except that the [speclist] argument is a reference\n    and may be updated during the parsing. A typical use for this feature\n    is to parse command lines of the form:\n-     command subcommand [options]\n    where the list of options depends on the value of the subcommand argument.\n    @since 4.01.0\n"]
+val parse_argv :
+  ?current:int ref ->
+    string array -> (key * spec * doc) list -> anon_fun -> usage_msg -> unit
+[@@ocaml.doc
+  " [Arg.parse_argv ~current args speclist anon_fun usage_msg] parses\n  the array [args] as if it were the command line.  It uses and updates\n  the value of [~current] (if given), or {!Arg.current}.  You must set\n  it before calling [parse_argv].  The initial value of [current]\n  is the index of the program name (argument 0) in the array.\n  If an error occurs, [Arg.parse_argv] raises {!Arg.Bad} with\n  the error message as argument.  If option [-help] or [--help] is\n  given, [Arg.parse_argv] raises {!Arg.Help} with the help message\n  as argument.\n"]
+val parse_argv_dynamic :
+  ?current:int ref ->
+    string array -> (key * spec * doc) list ref -> anon_fun -> string -> unit
+[@@ocaml.doc
+  " Same as {!Arg.parse_argv}, except that the [speclist] argument is a\n    reference and may be updated during the parsing.\n    See {!Arg.parse_dynamic}.\n    @since 4.01.0\n"]
+val parse_and_expand_argv_dynamic :
+  int ref ->
+    string array ref ->
+      (key * spec * doc) list ref -> anon_fun -> string -> unit[@@ocaml.doc
+                                                                 " Same as {!Arg.parse_argv_dynamic}, except that the [argv] argument is a\n    reference and may be updated during the parsing of [Expand] arguments.\n    See {!Arg.parse_argv_dynamic}.\n    @since 4.05.0\n"]
+val parse_expand : (key * spec * doc) list -> anon_fun -> usage_msg -> unit
+[@@ocaml.doc
+  " Same as {!Arg.parse}, except that the [Expand] arguments are allowed and\n    the {!current} reference is not updated.\n    @since 4.05.0\n"]
+exception Help of string
+  [@ocaml.doc " Raised by [Arg.parse_argv] when the user asks for help. "]
+exception Bad of string
+  [@ocaml.doc
+    " Functions in [spec] or [anon_fun] can raise [Arg.Bad] with an error\n    message to reject invalid arguments.\n    [Arg.Bad] is also raised by {!Arg.parse_argv} in case of an error. "]
+val usage : (key * spec * doc) list -> usage_msg -> unit[@@ocaml.doc
+                                                          " [Arg.usage speclist usage_msg] prints to standard error\n    an error message that includes the list of valid options.  This is\n    the same message that {!Arg.parse} prints in case of error.\n    [speclist] and [usage_msg] are the same as for {!Arg.parse}. "]
+val usage_string : (key * spec * doc) list -> usage_msg -> string[@@ocaml.doc
+                                                                   " Returns the message that would have been printed by {!Arg.usage},\n    if provided with the same parameters. "]
+val align : ?limit:int -> (key * spec * doc) list -> (key * spec * doc) list
+[@@ocaml.doc
+  " Align the documentation strings by inserting spaces at the first alignment\n    separator (tab or, if tab is not found, space), according to the length of\n    the keyword.  Use a alignment separator as the first character in a doc\n    string if you want to align the whole string.  The doc strings corresponding\n    to [Symbol] arguments are aligned on the next line.\n    @param limit options with keyword and message longer than [limit] will not\n    be used to compute the alignment. "]
+val current : int ref[@@ocaml.doc
+                       " Position (in {!Sys.argv}) of the argument being processed.  You can\n    change this value, e.g. to force {!Arg.parse} to skip some arguments.\n    {!Arg.parse} uses the initial value of {!Arg.current} as the index of\n    argument 0 (the program name) and starts parsing arguments\n    at the next element. "]
+val read_arg : string -> string array[@@ocaml.doc
+                                       " [Arg.read_arg file] reads newline-terminated command line arguments from\n    file [file].\n    @since 4.05.0 "]
+val read_arg0 : string -> string array[@@ocaml.doc
+                                        " Identical to {!Arg.read_arg} but assumes null character terminated command\n    line arguments.\n    @since 4.05.0 "]
+val write_arg : string -> string array -> unit[@@ocaml.doc
+                                                " [Arg.write_arg file args] writes the arguments [args] newline-terminated\n    into the file [file]. If the any of the arguments in [args] contains a\n    newline, use {!Arg.write_arg0} instead.\n    @since 4.05.0 "]
+val write_arg0 : string -> string array -> unit[@@ocaml.doc
+                                                 " Identical to {!Arg.write_arg} but uses the null character for terminator\n    instead of newline.\n    @since 4.05.0 "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Parsing of command line arguments.\n\n   This module provides a general mechanism for extracting options and\n   arguments from the command line to the program.\n\n   Syntax of command lines:\n    A keyword is a character string starting with a [-].\n    An option is a keyword alone or followed by an argument.\n    The types of keywords are: [Unit], [Bool], [Set], [Clear],\n    [String], [Set_string], [Int], [Set_int], [Float], [Set_float],\n    [Tuple], [Symbol], and [Rest].\n    [Unit], [Set] and [Clear] keywords take no argument. A [Rest]\n    keyword takes the remaining of the command line as arguments.\n    Every other keyword takes the following word on the command line\n    as argument.  For compatibility with GNU getopt_long, [keyword=arg]\n    is also allowed.\n    Arguments not preceded by a keyword are called anonymous arguments.\n\n   Examples ([cmd] is assumed to be the command name):\n-   [cmd -flag           ](a unit option)\n-   [cmd -int 1          ](an int option with argument [1])\n-   [cmd -string foobar  ](a string option with argument [\"foobar\"])\n-   [cmd -float 12.34    ](a float option with argument [12.34])\n-   [cmd a b c           ](three anonymous arguments: [\"a\"], [\"b\"], and [\"c\"])\n-   [cmd a b -- c d      ](two anonymous arguments and a rest option with\n                           two arguments)\n"]
+
+type spec =
+| Unit of (unit -> unit)
+[@ocaml.doc " Call the function with unit argument "]
+| Bool of (bool -> unit)
+[@ocaml.doc " Call the function with a bool argument "]
+| Set of bool ref [@ocaml.doc " Set the reference to true "]
+| Clear of bool ref [@ocaml.doc " Set the reference to false "]
+| String of (string -> unit)
+[@ocaml.doc " Call the function with a string argument "]
+| Set_string of string ref
+[@ocaml.doc " Set the reference to the string argument "]
+| Int of (int -> unit)
+[@ocaml.doc " Call the function with an int argument "]
+| Set_int of int ref [@ocaml.doc " Set the reference to the int argument "]
+| Float of (float -> unit)
+[@ocaml.doc " Call the function with a float argument "]
+| Set_float of float ref
+[@ocaml.doc " Set the reference to the float argument "]
+| Tuple of spec list
+[@ocaml.doc
+  " Take several arguments according to the\n                                   spec list "]
+| Symbol of string list * (string -> unit)
+[@ocaml.doc
+  " Take one of the symbols as argument and\n                                   call the function with the symbol "]
+| Rest of (string -> unit)
+[@ocaml.doc
+  " Stop interpreting keywords and call the\n                                   function with each remaining argument "]
+| Expand of (string -> string array)
+[@ocaml.doc
+  " If the remaining arguments to process\n                                           are of the form\n                                           [[\"-foo\"; \"arg\"] @ rest] where \"foo\"\n                                           is registered as [Expand f], then the\n                                           arguments [f \"arg\" @ rest] are\n                                           processed. Only allowed in\n                                           [parse_and_expand_argv_dynamic]. "]
+[@@ocaml.doc
+  " The concrete type describing the behavior associated\n   with a keyword. "]
+  
+
+type key = string
+  
+
+type doc = string
+  
+
+type usage_msg = string
+  
+
+type anon_fun = string -> unit
+  
+
+val parse : (key * spec * doc) list -> anon_fun -> usage_msg -> unit[@@ocaml.doc
+                                                                    " [Arg.parse speclist anon_fun usage_msg] parses the command line.\n    [speclist] is a list of triples [(key, spec, doc)].\n    [key] is the option keyword, it must start with a ['-'] character.\n    [spec] gives the option type and the function to call when this option\n    is found on the command line.\n    [doc] is a one-line description of this option.\n    [anon_fun] is called on anonymous arguments.\n    The functions in [spec] and [anon_fun] are called in the same order\n    as their arguments appear on the command line.\n\n    If an error occurs, [Arg.parse] exits the program, after printing\n    to standard error an error message as follows:\n-   The reason for the error: unknown option, invalid or missing argument, etc.\n-   [usage_msg]\n-   The list of options, each followed by the corresponding [doc] string.\n    Beware: options that have an empty [doc] string will not be included in the\n    list.\n\n    For the user to be able to specify anonymous arguments starting with a\n    [-], include for example [(\"-\", String anon_fun, doc)] in [speclist].\n\n    By default, [parse] recognizes two unit options, [-help] and [--help],\n    which will print to standard output [usage_msg] and the list of\n    options, and exit the program.  You can override this behaviour\n    by specifying your own [-help] and [--help] options in [speclist].\n"]
+
+
+val parse_dynamic :
+  (key * spec * doc) list ref -> anon_fun -> usage_msg -> unit[@@ocaml.doc
+                                                                " Same as {!Arg.parse}, except that the [speclist] argument is a reference\n    and may be updated during the parsing. A typical use for this feature\n    is to parse command lines of the form:\n-     command subcommand [options]\n    where the list of options depends on the value of the subcommand argument.\n    @since 4.01.0\n"]
+
+
+val parse_argv :
+  ?current:int ref ->
+    string array -> (key * spec * doc) list -> anon_fun -> usage_msg -> unit
+[@@ocaml.doc
+  " [Arg.parse_argv ~current args speclist anon_fun usage_msg] parses\n  the array [args] as if it were the command line.  It uses and updates\n  the value of [~current] (if given), or {!Arg.current}.  You must set\n  it before calling [parse_argv].  The initial value of [current]\n  is the index of the program name (argument 0) in the array.\n  If an error occurs, [Arg.parse_argv] raises {!Arg.Bad} with\n  the error message as argument.  If option [-help] or [--help] is\n  given, [Arg.parse_argv] raises {!Arg.Help} with the help message\n  as argument.\n"]
+
+
+val parse_argv_dynamic :
+  ?current:int ref ->
+    string array -> (key * spec * doc) list ref -> anon_fun -> string -> unit
+[@@ocaml.doc
+  " Same as {!Arg.parse_argv}, except that the [speclist] argument is a\n    reference and may be updated during the parsing.\n    See {!Arg.parse_dynamic}.\n    @since 4.01.0\n"]
+
+
+val parse_and_expand_argv_dynamic :
+  int ref ->
+    string array ref ->
+      (key * spec * doc) list ref -> anon_fun -> string -> unit[@@ocaml.doc
+                                                                 " Same as {!Arg.parse_argv_dynamic}, except that the [argv] argument is a\n    reference and may be updated during the parsing of [Expand] arguments.\n    See {!Arg.parse_argv_dynamic}.\n    @since 4.05.0\n"]
+
+
+val parse_expand : (key * spec * doc) list -> anon_fun -> usage_msg -> unit
+[@@ocaml.doc
+  " Same as {!Arg.parse}, except that the [Expand] arguments are allowed and\n    the {!current} reference is not updated.\n    @since 4.05.0\n"]
+
+
+exception Help of string
+  [@ocaml.doc " Raised by [Arg.parse_argv] when the user asks for help. "]
+
+exception Bad of string
+  [@ocaml.doc
+    " Functions in [spec] or [anon_fun] can raise [Arg.Bad] with an error\n    message to reject invalid arguments.\n    [Arg.Bad] is also raised by {!Arg.parse_argv} in case of an error. "]
+
+val usage : (key * spec * doc) list -> usage_msg -> unit[@@ocaml.doc
+                                                          " [Arg.usage speclist usage_msg] prints to standard error\n    an error message that includes the list of valid options.  This is\n    the same message that {!Arg.parse} prints in case of error.\n    [speclist] and [usage_msg] are the same as for {!Arg.parse}. "]
+
+
+val usage_string : (key * spec * doc) list -> usage_msg -> string[@@ocaml.doc
+                                                                   " Returns the message that would have been printed by {!Arg.usage},\n    if provided with the same parameters. "]
+
+
+val align : ?limit:int -> (key * spec * doc) list -> (key * spec * doc) list
+[@@ocaml.doc
+  " Align the documentation strings by inserting spaces at the first alignment\n    separator (tab or, if tab is not found, space), according to the length of\n    the keyword.  Use a alignment separator as the first character in a doc\n    string if you want to align the whole string.  The doc strings corresponding\n    to [Symbol] arguments are aligned on the next line.\n    @param limit options with keyword and message longer than [limit] will not\n    be used to compute the alignment. "]
+
+
+val current : int ref[@@ocaml.doc
+                       " Position (in {!Sys.argv}) of the argument being processed.  You can\n    change this value, e.g. to force {!Arg.parse} to skip some arguments.\n    {!Arg.parse} uses the initial value of {!Arg.current} as the index of\n    argument 0 (the program name) and starts parsing arguments\n    at the next element. "]
+
+
+val read_arg : string -> string array[@@ocaml.doc
+                                       " [Arg.read_arg file] reads newline-terminated command line arguments from\n    file [file].\n    @since 4.05.0 "]
+
+
+val read_arg0 : string -> string array[@@ocaml.doc
+                                        " Identical to {!Arg.read_arg} but assumes null character terminated command\n    line arguments.\n    @since 4.05.0 "]
+
+
+val write_arg : string -> string array -> unit[@@ocaml.doc
+                                                " [Arg.write_arg file args] writes the arguments [args] newline-terminated\n    into the file [file]. If the any of the arguments in [args] contains a\n    newline, use {!Arg.write_arg0} instead.\n    @since 4.05.0 "]
+
+
+val write_arg0 : string -> string array -> unit[@@ocaml.doc
+                                                 " Identical to {!Arg.write_arg} but uses the null character for terminator\n    instead of newline.\n    @since 4.05.0 "]
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        

@@ -1,0 +1,191 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Cmx_format
+val imported_sets_of_closures_table :
+  Simple_value_approx.function_declarations option Set_of_closures_id.Tbl.t
+val reset : ?packname:string -> string -> unit
+val unit_id_from_name : string -> Ident.t
+val current_unit_infos : unit -> unit_infos
+val current_unit_name : unit -> string
+val current_unit_linkage_name : unit -> Linkage_name.t
+val current_unit : unit -> Compilation_unit.t
+val current_unit_symbol : unit -> Symbol.t
+val make_symbol : ?unitname:string -> string option -> string
+val symbol_in_current_unit : string -> bool
+val is_predefined_exception : Symbol.t -> bool
+val unit_for_global : Ident.t -> Compilation_unit.t
+val symbol_for_global : Ident.t -> string
+val symbol_for_global' : Ident.t -> Symbol.t
+val global_approx : Ident.t -> Clambda.value_approximation
+val set_global_approx : Clambda.value_approximation -> unit
+val record_global_approx_toplevel : unit -> unit
+val set_export_info : Export_info.t -> unit
+val approx_env : unit -> Export_info.t
+val approx_for_global : Compilation_unit.t -> Export_info.t option
+val need_curry_fun : int -> unit
+val need_apply_fun : int -> unit
+val need_send_fun : int -> unit
+val new_const_symbol : unit -> string
+val closure_symbol : Closure_id.t -> Symbol.t
+val function_label : Closure_id.t -> string
+val new_structured_constant :
+  Clambda.ustructured_constant -> shared:bool -> string
+val structured_constants : unit -> Clambda.preallocated_constant list
+val clear_structured_constants : unit -> unit
+val add_exported_constant : string -> unit
+type structured_constants
+val snapshot : unit -> structured_constants
+val backtrack : structured_constants -> unit
+val read_unit_info : string -> (unit_infos * Digest.t)
+val write_unit_info : unit_infos -> string -> unit
+val save_unit_info : string -> unit
+val cache_unit_info : unit_infos -> unit
+val require_global : Ident.t -> unit
+val read_library_info : string -> library_infos
+type error =
+  | Not_a_unit_info of string 
+  | Corrupted_unit_info of string 
+  | Illegal_renaming of string * string * string 
+exception Error of error 
+val report_error : Format.formatter -> error -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Cmx_format
+
+val imported_sets_of_closures_table :
+  Simple_value_approx.function_declarations option Set_of_closures_id.Tbl.t
+
+
+val reset : ?packname:string -> string -> unit
+
+
+val unit_id_from_name : string -> Ident.t
+
+
+val current_unit_infos : unit -> unit_infos
+
+
+val current_unit_name : unit -> string
+
+
+val current_unit_linkage_name : unit -> Linkage_name.t
+
+
+val current_unit : unit -> Compilation_unit.t
+
+
+val current_unit_symbol : unit -> Symbol.t
+
+
+val make_symbol : ?unitname:string -> string option -> string
+
+
+val symbol_in_current_unit : string -> bool
+
+
+val is_predefined_exception : Symbol.t -> bool
+
+
+val unit_for_global : Ident.t -> Compilation_unit.t
+
+
+val symbol_for_global : Ident.t -> string
+
+
+val symbol_for_global' : Ident.t -> Symbol.t
+
+
+val global_approx : Ident.t -> Clambda.value_approximation
+
+
+val set_global_approx : Clambda.value_approximation -> unit
+
+
+val record_global_approx_toplevel : unit -> unit
+
+
+val set_export_info : Export_info.t -> unit
+
+
+val approx_env : unit -> Export_info.t
+
+
+val approx_for_global : Compilation_unit.t -> Export_info.t option
+
+
+val need_curry_fun : int -> unit
+
+
+val need_apply_fun : int -> unit
+
+
+val need_send_fun : int -> unit
+
+
+val new_const_symbol : unit -> string
+
+
+val closure_symbol : Closure_id.t -> Symbol.t
+
+
+val function_label : Closure_id.t -> string
+
+
+val new_structured_constant :
+  Clambda.ustructured_constant -> shared:bool -> string
+
+
+val structured_constants : unit -> Clambda.preallocated_constant list
+
+
+val clear_structured_constants : unit -> unit
+
+
+val add_exported_constant : string -> unit
+
+
+type structured_constants
+  
+
+val snapshot : unit -> structured_constants
+
+
+val backtrack : structured_constants -> unit
+
+
+val read_unit_info : string -> (unit_infos * Digest.t)
+
+
+val write_unit_info : unit_infos -> string -> unit
+
+
+val save_unit_info : string -> unit
+
+
+val cache_unit_info : unit_infos -> unit
+
+
+val require_global : Ident.t -> unit
+
+
+val read_library_info : string -> library_infos
+
+
+type error =
+| Not_a_unit_info of string 
+| Corrupted_unit_info of string 
+| Illegal_renaming of string * string * string 
+  
+
+exception Error of error 
+
+val report_error : Format.formatter -> error -> unit
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

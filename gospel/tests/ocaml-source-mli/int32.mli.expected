@@ -1,0 +1,230 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " 32-bit integers.\n\n   This module provides operations on the type [int32]\n   of signed 32-bit integers.  Unlike the built-in [int] type,\n   the type [int32] is guaranteed to be exactly 32-bit wide on all\n   platforms.  All arithmetic operations over [int32] are taken\n   modulo 2{^32}.\n\n   Performance notice: values of type [int32] occupy more memory\n   space than values of type [int], and arithmetic operations on\n   [int32] are generally slower than those on [int].  Use [int32]\n   only when the application requires exact 32-bit arithmetic.\n\n    Literals for 32-bit integers are suffixed by l:\n    {[\n      let zero: int32 = 0l\n      let one: int32 = 1l\n      let m_one: int32 = -1l\n    ]}\n"]
+val zero : int32[@@ocaml.doc " The 32-bit integer 0. "]
+val one : int32[@@ocaml.doc " The 32-bit integer 1. "]
+val minus_one : int32[@@ocaml.doc " The 32-bit integer -1. "]
+external neg : int32 -> int32 = "%int32_neg"[@@ocaml.doc " Unary negation. "]
+external add : int32 -> int32 -> int32 = "%int32_add"[@@ocaml.doc
+                                                       " Addition. "]
+external sub : int32 -> int32 -> int32 = "%int32_sub"[@@ocaml.doc
+                                                       " Subtraction. "]
+external mul : int32 -> int32 -> int32 = "%int32_mul"[@@ocaml.doc
+                                                       " Multiplication. "]
+external div : int32 -> int32 -> int32 = "%int32_div"[@@ocaml.doc
+                                                       " Integer division.  Raise [Division_by_zero] if the second\n   argument is zero.  This division rounds the real quotient of\n   its arguments towards zero, as specified for {!Stdlib.(/)}. "]
+external rem : int32 -> int32 -> int32 = "%int32_mod"[@@ocaml.doc
+                                                       " Integer remainder.  If [y] is not zero, the result\n   of [Int32.rem x y] satisfies the following property:\n   [x = Int32.add (Int32.mul (Int32.div x y) y) (Int32.rem x y)].\n   If [y = 0], [Int32.rem x y] raises [Division_by_zero]. "]
+val succ : int32 -> int32[@@ocaml.doc
+                           " Successor.  [Int32.succ x] is [Int32.add x Int32.one]. "]
+val pred : int32 -> int32[@@ocaml.doc
+                           " Predecessor.  [Int32.pred x] is [Int32.sub x Int32.one]. "]
+val abs : int32 -> int32[@@ocaml.doc
+                          " Return the absolute value of its argument. "]
+val max_int : int32[@@ocaml.doc
+                     " The greatest representable 32-bit integer, 2{^31} - 1. "]
+val min_int : int32[@@ocaml.doc
+                     " The smallest representable 32-bit integer, -2{^31}. "]
+external logand : int32 -> int32 -> int32 = "%int32_and"[@@ocaml.doc
+                                                          " Bitwise logical and. "]
+external logor : int32 -> int32 -> int32 = "%int32_or"[@@ocaml.doc
+                                                        " Bitwise logical or. "]
+external logxor : int32 -> int32 -> int32 = "%int32_xor"[@@ocaml.doc
+                                                          " Bitwise logical exclusive or. "]
+val lognot : int32 -> int32[@@ocaml.doc " Bitwise logical negation. "]
+external shift_left : int32 -> int -> int32 = "%int32_lsl"[@@ocaml.doc
+                                                            " [Int32.shift_left x y] shifts [x] to the left by [y] bits.\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+external shift_right : int32 -> int -> int32 = "%int32_asr"[@@ocaml.doc
+                                                             " [Int32.shift_right x y] shifts [x] to the right by [y] bits.\n   This is an arithmetic shift: the sign bit of [x] is replicated\n   and inserted in the vacated bits.\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+external shift_right_logical : int32 -> int -> int32 = "%int32_lsr"[@@ocaml.doc
+                                                                    " [Int32.shift_right_logical x y] shifts [x] to the right by [y] bits.\n   This is a logical shift: zeroes are inserted in the vacated bits\n   regardless of the sign of [x].\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+external of_int : int -> int32 = "%int32_of_int"[@@ocaml.doc
+                                                  " Convert the given integer (type [int]) to a 32-bit integer\n    (type [int32]). "]
+external to_int : int32 -> int = "%int32_to_int"[@@ocaml.doc
+                                                  " Convert the given 32-bit integer (type [int32]) to an\n   integer (type [int]).  On 32-bit platforms, the 32-bit integer\n   is taken modulo 2{^31}, i.e. the high-order bit is lost\n   during the conversion.  On 64-bit platforms, the conversion\n   is exact. "]
+external of_float :
+  float -> int32 = "caml_int32_of_float" "caml_int32_of_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given floating-point number to a 32-bit integer,\n   discarding the fractional part (truncate towards 0).\n   The result of the conversion is undefined if, after truncation,\n   the number is outside the range \\[{!Int32.min_int}, {!Int32.max_int}\\]. "]
+external to_float :
+  int32 -> float = "caml_int32_to_float" "caml_int32_to_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given 32-bit integer to a floating-point number. "]
+external of_string : string -> int32 = "caml_int32_of_string"[@@ocaml.doc
+                                                               " Convert the given string to a 32-bit integer.\n   The string is read in decimal (by default, or if the string\n   begins with [0u]) or in hexadecimal, octal or binary if the\n   string begins with [0x], [0o] or [0b] respectively.\n\n   The [0u] prefix reads the input as an unsigned integer in the range\n   [[0, 2*Int32.max_int+1]].  If the input exceeds {!Int32.max_int}\n   it is converted to the signed integer\n   [Int32.min_int + input - Int32.max_int - 1].\n\n   The [_] (underscore) character can appear anywhere in the string\n   and is ignored.\n   Raise [Failure \"Int32.of_string\"] if the given string is not\n   a valid representation of an integer, or if the integer represented\n   exceeds the range of integers representable in type [int32]. "]
+val of_string_opt : string -> int32 option[@@ocaml.doc
+                                            " Same as [of_string], but return [None] instead of raising.\n    @since 4.05 "]
+val to_string : int32 -> string[@@ocaml.doc
+                                 " Return the string representation of its argument, in signed decimal. "]
+external bits_of_float :
+  float -> int32 = "caml_int32_bits_of_float"
+    "caml_int32_bits_of_float_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                                " Return the internal representation of the given float according\n   to the IEEE 754 floating-point 'single format' bit layout.\n   Bit 31 of the result represents the sign of the float;\n   bits 30 to 23 represent the (biased) exponent; bits 22 to 0\n   represent the mantissa. "]
+external float_of_bits :
+  int32 -> float = "caml_int32_float_of_bits"
+    "caml_int32_float_of_bits_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                                " Return the floating-point number whose internal representation,\n   according to the IEEE 754 floating-point 'single format' bit layout,\n   is the given [int32]. "]
+type t = int32[@@ocaml.doc " An alias for the type of 32-bit integers. "]
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for 32-bit integers, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Int32] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for int32s.\n    @since 4.03.0 "]
+[@@@ocaml.text "/*"]
+[@@@ocaml.text " {1 Deprecated functions} "]
+external format : string -> int32 -> string = "caml_int32_format"[@@ocaml.doc
+                                                                   " Do not use this deprecated function.  Instead,\n   used {!Printf.sprintf} with a [%l...] format. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " 32-bit integers.\n\n   This module provides operations on the type [int32]\n   of signed 32-bit integers.  Unlike the built-in [int] type,\n   the type [int32] is guaranteed to be exactly 32-bit wide on all\n   platforms.  All arithmetic operations over [int32] are taken\n   modulo 2{^32}.\n\n   Performance notice: values of type [int32] occupy more memory\n   space than values of type [int], and arithmetic operations on\n   [int32] are generally slower than those on [int].  Use [int32]\n   only when the application requires exact 32-bit arithmetic.\n\n    Literals for 32-bit integers are suffixed by l:\n    {[\n      let zero: int32 = 0l\n      let one: int32 = 1l\n      let m_one: int32 = -1l\n    ]}\n"]
+
+val zero : int32[@@ocaml.doc " The 32-bit integer 0. "]
+
+
+val one : int32[@@ocaml.doc " The 32-bit integer 1. "]
+
+
+val minus_one : int32[@@ocaml.doc " The 32-bit integer -1. "]
+
+
+external neg : int32 -> int32 = "%int32_neg"[@@ocaml.doc " Unary negation. "]
+
+
+external add : int32 -> int32 -> int32 = "%int32_add"[@@ocaml.doc
+                                                       " Addition. "]
+
+
+external sub : int32 -> int32 -> int32 = "%int32_sub"[@@ocaml.doc
+                                                       " Subtraction. "]
+
+
+external mul : int32 -> int32 -> int32 = "%int32_mul"[@@ocaml.doc
+                                                       " Multiplication. "]
+
+
+external div : int32 -> int32 -> int32 = "%int32_div"[@@ocaml.doc
+                                                       " Integer division.  Raise [Division_by_zero] if the second\n   argument is zero.  This division rounds the real quotient of\n   its arguments towards zero, as specified for {!Stdlib.(/)}. "]
+
+
+external rem : int32 -> int32 -> int32 = "%int32_mod"[@@ocaml.doc
+                                                       " Integer remainder.  If [y] is not zero, the result\n   of [Int32.rem x y] satisfies the following property:\n   [x = Int32.add (Int32.mul (Int32.div x y) y) (Int32.rem x y)].\n   If [y = 0], [Int32.rem x y] raises [Division_by_zero]. "]
+
+
+val succ : int32 -> int32[@@ocaml.doc
+                           " Successor.  [Int32.succ x] is [Int32.add x Int32.one]. "]
+
+
+val pred : int32 -> int32[@@ocaml.doc
+                           " Predecessor.  [Int32.pred x] is [Int32.sub x Int32.one]. "]
+
+
+val abs : int32 -> int32[@@ocaml.doc
+                          " Return the absolute value of its argument. "]
+
+
+val max_int : int32[@@ocaml.doc
+                     " The greatest representable 32-bit integer, 2{^31} - 1. "]
+
+
+val min_int : int32[@@ocaml.doc
+                     " The smallest representable 32-bit integer, -2{^31}. "]
+
+
+external logand : int32 -> int32 -> int32 = "%int32_and"[@@ocaml.doc
+                                                          " Bitwise logical and. "]
+
+
+external logor : int32 -> int32 -> int32 = "%int32_or"[@@ocaml.doc
+                                                        " Bitwise logical or. "]
+
+
+external logxor : int32 -> int32 -> int32 = "%int32_xor"[@@ocaml.doc
+                                                          " Bitwise logical exclusive or. "]
+
+
+val lognot : int32 -> int32[@@ocaml.doc " Bitwise logical negation. "]
+
+
+external shift_left : int32 -> int -> int32 = "%int32_lsl"[@@ocaml.doc
+                                                            " [Int32.shift_left x y] shifts [x] to the left by [y] bits.\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+
+
+external shift_right : int32 -> int -> int32 = "%int32_asr"[@@ocaml.doc
+                                                             " [Int32.shift_right x y] shifts [x] to the right by [y] bits.\n   This is an arithmetic shift: the sign bit of [x] is replicated\n   and inserted in the vacated bits.\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+
+
+external shift_right_logical : int32 -> int -> int32 = "%int32_lsr"[@@ocaml.doc
+                                                                    " [Int32.shift_right_logical x y] shifts [x] to the right by [y] bits.\n   This is a logical shift: zeroes are inserted in the vacated bits\n   regardless of the sign of [x].\n   The result is unspecified if [y < 0] or [y >= 32]. "]
+
+
+external of_int : int -> int32 = "%int32_of_int"[@@ocaml.doc
+                                                  " Convert the given integer (type [int]) to a 32-bit integer\n    (type [int32]). "]
+
+
+external to_int : int32 -> int = "%int32_to_int"[@@ocaml.doc
+                                                  " Convert the given 32-bit integer (type [int32]) to an\n   integer (type [int]).  On 32-bit platforms, the 32-bit integer\n   is taken modulo 2{^31}, i.e. the high-order bit is lost\n   during the conversion.  On 64-bit platforms, the conversion\n   is exact. "]
+
+
+external of_float :
+  float -> int32 = "caml_int32_of_float" "caml_int32_of_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given floating-point number to a 32-bit integer,\n   discarding the fractional part (truncate towards 0).\n   The result of the conversion is undefined if, after truncation,\n   the number is outside the range \\[{!Int32.min_int}, {!Int32.max_int}\\]. "]
+
+
+external to_float :
+  int32 -> float = "caml_int32_to_float" "caml_int32_to_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given 32-bit integer to a floating-point number. "]
+
+
+external of_string : string -> int32 = "caml_int32_of_string"[@@ocaml.doc
+                                                               " Convert the given string to a 32-bit integer.\n   The string is read in decimal (by default, or if the string\n   begins with [0u]) or in hexadecimal, octal or binary if the\n   string begins with [0x], [0o] or [0b] respectively.\n\n   The [0u] prefix reads the input as an unsigned integer in the range\n   [[0, 2*Int32.max_int+1]].  If the input exceeds {!Int32.max_int}\n   it is converted to the signed integer\n   [Int32.min_int + input - Int32.max_int - 1].\n\n   The [_] (underscore) character can appear anywhere in the string\n   and is ignored.\n   Raise [Failure \"Int32.of_string\"] if the given string is not\n   a valid representation of an integer, or if the integer represented\n   exceeds the range of integers representable in type [int32]. "]
+
+
+val of_string_opt : string -> int32 option[@@ocaml.doc
+                                            " Same as [of_string], but return [None] instead of raising.\n    @since 4.05 "]
+
+
+val to_string : int32 -> string[@@ocaml.doc
+                                 " Return the string representation of its argument, in signed decimal. "]
+
+
+external bits_of_float :
+  float -> int32 = "caml_int32_bits_of_float"
+  "caml_int32_bits_of_float_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                              " Return the internal representation of the given float according\n   to the IEEE 754 floating-point 'single format' bit layout.\n   Bit 31 of the result represents the sign of the float;\n   bits 30 to 23 represent the (biased) exponent; bits 22 to 0\n   represent the mantissa. "]
+
+
+external float_of_bits :
+  int32 -> float = "caml_int32_float_of_bits"
+  "caml_int32_float_of_bits_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                              " Return the floating-point number whose internal representation,\n   according to the IEEE 754 floating-point 'single format' bit layout,\n   is the given [int32]. "]
+
+
+type t = int32[@@ocaml.doc " An alias for the type of 32-bit integers. "]
+  
+
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for 32-bit integers, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Int32] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+
+
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for int32s.\n    @since 4.03.0 "]
+
+
+[@@@ocaml.text "/*"]
+
+[@@@ocaml.text " {1 Deprecated functions} "]
+
+external format : string -> int32 -> string = "caml_int32_format"[@@ocaml.doc
+                                                                   " Do not use this deprecated function.  Instead,\n   used {!Printf.sprintf} with a [%l...] format. "]
+
+File "int32.mli", line 178, characters 9-14:
+Error: Symbol int32 not found

@@ -1,0 +1,62 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Registering OCaml values with the C runtime.\n\n   This module allows OCaml values to be registered with the C runtime\n   under a symbolic name, so that C code can later call back registered\n   OCaml functions, or raise registered OCaml exceptions.\n"]
+val register : string -> 'a -> unit[@@ocaml.doc
+                                     " [Callback.register n v] registers the value [v] under\n   the name [n]. C code can later retrieve a handle to [v]\n   by calling [caml_named_value(n)]. "]
+val register_exception : string -> exn -> unit[@@ocaml.doc
+                                                " [Callback.register_exception n exn] registers the\n   exception contained in the exception value [exn]\n   under the name [n]. C code can later retrieve a handle to\n   the exception by calling [caml_named_value(n)]. The exception\n   value thus obtained is suitable for passing as first argument\n   to [raise_constant] or [raise_with_arg]. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Registering OCaml values with the C runtime.\n\n   This module allows OCaml values to be registered with the C runtime\n   under a symbolic name, so that C code can later call back registered\n   OCaml functions, or raise registered OCaml exceptions.\n"]
+
+val register : string -> 'a -> unit[@@ocaml.doc
+                                     " [Callback.register n v] registers the value [v] under\n   the name [n]. C code can later retrieve a handle to [v]\n   by calling [caml_named_value(n)]. "]
+
+
+val register_exception : string -> exn -> unit[@@ocaml.doc
+                                                " [Callback.register_exception n exn] registers the\n   exception contained in the exception value [exn]\n   under the name [n]. C code can later retrieve a handle to\n   the exception by calling [caml_named_value(n)]. The exception\n   value thus obtained is suitable for passing as first argument\n   to [raise_constant] or [raise_with_arg]. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module callback.mli
+
+  Namespace: callback.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Registering OCaml values with the C runtime.\n\n   This module allows OCaml values to be registered with the C runtime\n   under a symbolic name, so that C code can later call back registered\n   OCaml functions, or raise registered OCaml exceptions.\n"]
+    
+    val register :
+    string -> 'a -> unit[@@ocaml.doc
+                          " [Callback.register n v] registers the value [v] under\n   the name [n]. C code can later retrieve a handle to [v]\n   by calling [caml_named_value(n)]. "]
+    
+    
+    val register_exception :
+    string -> exn -> unit[@@ocaml.doc
+                           " [Callback.register_exception n exn] registers the\n   exception contained in the exception value [exn]\n   under the name [n]. C code can later retrieve a handle to\n   the exception by calling [caml_named_value(n)]. The exception\n   value thus obtained is suitable for passing as first argument\n   to [raise_constant] or [raise_with_arg]. "]
+    
+
+
+*** OK ***
+

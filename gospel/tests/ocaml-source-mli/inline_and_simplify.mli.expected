@@ -1,0 +1,90 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+val run :
+  never_inline:bool ->
+    backend:(module Backend_intf.S) ->
+      prefixname:string ->
+        round:int ->
+          ppf_dump:Format.formatter -> Flambda.program -> Flambda.program
+[@@ocaml.doc
+  " Simplification of Flambda programs combined with function inlining:\n    for the most part a beta-reduction pass.\n\n    Readers interested in the inlining strategy should read the\n    [Inlining_decision] module first.\n"]
+val duplicate_function :
+  env:Inline_and_simplify_aux.Env.t ->
+    set_of_closures:Flambda.set_of_closures ->
+      fun_var:Variable.t ->
+        new_fun_var:Variable.t ->
+          (Flambda.function_declaration * Flambda.specialised_to
+            Variable.Map.t)
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+val run :
+  never_inline:bool ->
+    backend:(module Backend_intf.S) ->
+      prefixname:string ->
+        round:int ->
+          ppf_dump:Format.formatter -> Flambda.program -> Flambda.program
+[@@ocaml.doc
+  " Simplification of Flambda programs combined with function inlining:\n    for the most part a beta-reduction pass.\n\n    Readers interested in the inlining strategy should read the\n    [Inlining_decision] module first.\n"]
+
+
+val duplicate_function :
+  env:Inline_and_simplify_aux.Env.t ->
+    set_of_closures:Flambda.set_of_closures ->
+      fun_var:Variable.t ->
+        new_fun_var:Variable.t ->
+          (Flambda.function_declaration * Flambda.specialised_to
+            Variable.Map.t)
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module inline_and_simplify.mli
+
+  Namespace: inline_and_simplify.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    val run :
+    never_inline:bool ->
+      backend:(module Backend_intf.S) ->
+        prefixname:string ->
+          round:int ->
+            ppf_dump:Format.formatter -> Flambda.program -> Flambda.program
+    [@@ocaml.doc
+      " Simplification of Flambda programs combined with function inlining:\n    for the most part a beta-reduction pass.\n\n    Readers interested in the inlining strategy should read the\n    [Inlining_decision] module first.\n"]
+    
+    
+    val duplicate_function :
+    env:Inline_and_simplify_aux.Env.t ->
+      set_of_closures:Flambda.set_of_closures ->
+        fun_var:Variable.t ->
+          new_fun_var:Variable.t ->
+            (Flambda.function_declaration * Flambda.specialised_to
+              Variable.Map.t)
+    
+
+
+*** OK ***
+

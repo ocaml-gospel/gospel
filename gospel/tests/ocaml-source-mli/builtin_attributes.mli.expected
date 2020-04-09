@@ -1,0 +1,192 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Support for some of the builtin attributes\n\n    - ocaml.deprecated\n    - ocaml.error\n    - ocaml.ppwarning\n    - ocaml.warning\n    - ocaml.warnerror\n    - ocaml.explicit_arity (for camlp4/camlp5)\n    - ocaml.warn_on_literal_pattern\n    - ocaml.deprecated_mutable\n    - ocaml.immediate\n    - ocaml.boxed / ocaml.unboxed\n\n    {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+val check_deprecated : Location.t -> Parsetree.attributes -> string -> unit
+val check_deprecated_inclusion :
+  def:Location.t ->
+    use:Location.t ->
+      Location.t ->
+        Parsetree.attributes -> Parsetree.attributes -> string -> unit
+val deprecated_of_attrs : Parsetree.attributes -> string option
+val deprecated_of_sig : Parsetree.signature -> string option
+val deprecated_of_str : Parsetree.structure -> string option
+val check_deprecated_mutable :
+  Location.t -> Parsetree.attributes -> string -> unit
+val check_deprecated_mutable_inclusion :
+  def:Location.t ->
+    use:Location.t ->
+      Location.t ->
+        Parsetree.attributes -> Parsetree.attributes -> string -> unit
+val check_no_deprecated : Parsetree.attributes -> unit
+val error_of_extension : Parsetree.extension -> Location.error
+val warning_attribute : ?ppwarning:bool -> Parsetree.attribute -> unit
+[@@ocaml.doc
+  " Apply warning settings from the specified attribute.\n      \"ocaml.warning\"/\"ocaml.warnerror\" (and variants without the prefix)\n      are processed and other attributes are ignored.\n\n      Also implement ocaml.ppwarning (unless ~ppwarning:false is\n      passed).\n  "]
+val warning_scope :
+  ?ppwarning:bool -> Parsetree.attributes -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                                 " Execute a function in a new scope for warning settings.  This\n      means that the effect of any call to [warning_attribute] during\n      the execution of this function will be discarded after\n      execution.\n\n      The function also takes a list of attributes which are processed\n      with [warning_attribute] in the fresh scope before the function\n      is executed.\n  "]
+val warn_on_literal_pattern : Parsetree.attributes -> bool
+val explicit_arity : Parsetree.attributes -> bool
+val immediate : Parsetree.attributes -> bool
+val has_unboxed : Parsetree.attributes -> bool
+val has_boxed : Parsetree.attributes -> bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Support for some of the builtin attributes\n\n    - ocaml.deprecated\n    - ocaml.error\n    - ocaml.ppwarning\n    - ocaml.warning\n    - ocaml.warnerror\n    - ocaml.explicit_arity (for camlp4/camlp5)\n    - ocaml.warn_on_literal_pattern\n    - ocaml.deprecated_mutable\n    - ocaml.immediate\n    - ocaml.boxed / ocaml.unboxed\n\n    {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+val check_deprecated : Location.t -> Parsetree.attributes -> string -> unit
+
+
+val check_deprecated_inclusion :
+  def:Location.t ->
+    use:Location.t ->
+      Location.t ->
+        Parsetree.attributes -> Parsetree.attributes -> string -> unit
+
+
+val deprecated_of_attrs : Parsetree.attributes -> string option
+
+
+val deprecated_of_sig : Parsetree.signature -> string option
+
+
+val deprecated_of_str : Parsetree.structure -> string option
+
+
+val check_deprecated_mutable :
+  Location.t -> Parsetree.attributes -> string -> unit
+
+
+val check_deprecated_mutable_inclusion :
+  def:Location.t ->
+    use:Location.t ->
+      Location.t ->
+        Parsetree.attributes -> Parsetree.attributes -> string -> unit
+
+
+val check_no_deprecated : Parsetree.attributes -> unit
+
+
+val error_of_extension : Parsetree.extension -> Location.error
+
+
+val warning_attribute : ?ppwarning:bool -> Parsetree.attribute -> unit
+[@@ocaml.doc
+  " Apply warning settings from the specified attribute.\n      \"ocaml.warning\"/\"ocaml.warnerror\" (and variants without the prefix)\n      are processed and other attributes are ignored.\n\n      Also implement ocaml.ppwarning (unless ~ppwarning:false is\n      passed).\n  "]
+
+
+val warning_scope :
+  ?ppwarning:bool -> Parsetree.attributes -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                                 " Execute a function in a new scope for warning settings.  This\n      means that the effect of any call to [warning_attribute] during\n      the execution of this function will be discarded after\n      execution.\n\n      The function also takes a list of attributes which are processed\n      with [warning_attribute] in the fresh scope before the function\n      is executed.\n  "]
+
+
+val warn_on_literal_pattern : Parsetree.attributes -> bool
+
+
+val explicit_arity : Parsetree.attributes -> bool
+
+
+val immediate : Parsetree.attributes -> bool
+
+
+val has_unboxed : Parsetree.attributes -> bool
+
+
+val has_boxed : Parsetree.attributes -> bool
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module builtin_attributes.mli
+
+  Namespace: builtin_attributes.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Support for some of the builtin attributes\n\n    - ocaml.deprecated\n    - ocaml.error\n    - ocaml.ppwarning\n    - ocaml.warning\n    - ocaml.warnerror\n    - ocaml.explicit_arity (for camlp4/camlp5)\n    - ocaml.warn_on_literal_pattern\n    - ocaml.deprecated_mutable\n    - ocaml.immediate\n    - ocaml.boxed / ocaml.unboxed\n\n    {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+    
+    val check_deprecated :
+    Location.t -> Parsetree.attributes -> string -> unit
+    
+    
+    val check_deprecated_inclusion :
+    def:Location.t ->
+      use:Location.t ->
+        Location.t ->
+          Parsetree.attributes -> Parsetree.attributes -> string -> unit
+    
+    
+    val deprecated_of_attrs : Parsetree.attributes -> string option
+    
+    
+    val deprecated_of_sig : Parsetree.signature -> string option
+    
+    
+    val deprecated_of_str : Parsetree.structure -> string option
+    
+    
+    val check_deprecated_mutable :
+    Location.t -> Parsetree.attributes -> string -> unit
+    
+    
+    val check_deprecated_mutable_inclusion :
+    def:Location.t ->
+      use:Location.t ->
+        Location.t ->
+          Parsetree.attributes -> Parsetree.attributes -> string -> unit
+    
+    
+    val check_no_deprecated : Parsetree.attributes -> unit
+    
+    
+    val error_of_extension : Parsetree.extension -> Location.error
+    
+    
+    val warning_attribute :
+    ?ppwarning:bool -> Parsetree.attribute -> unit[@@ocaml.doc
+                                                    " Apply warning settings from the specified attribute.\n      \"ocaml.warning\"/\"ocaml.warnerror\" (and variants without the prefix)\n      are processed and other attributes are ignored.\n\n      Also implement ocaml.ppwarning (unless ~ppwarning:false is\n      passed).\n  "]
+    
+    
+    val warning_scope :
+    ?ppwarning:bool -> Parsetree.attributes -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                                   " Execute a function in a new scope for warning settings.  This\n      means that the effect of any call to [warning_attribute] during\n      the execution of this function will be discarded after\n      execution.\n\n      The function also takes a list of attributes which are processed\n      with [warning_attribute] in the fresh scope before the function\n      is executed.\n  "]
+    
+    
+    val warn_on_literal_pattern : Parsetree.attributes -> bool
+    
+    
+    val explicit_arity : Parsetree.attributes -> bool
+    
+    
+    val immediate : Parsetree.attributes -> bool
+    
+    
+    val has_unboxed : Parsetree.attributes -> bool
+    
+    
+    val has_boxed : Parsetree.attributes -> bool
+    
+
+
+*** OK ***
+

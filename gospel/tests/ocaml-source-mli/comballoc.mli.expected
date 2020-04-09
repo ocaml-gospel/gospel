@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val fundecl : Mach.fundecl -> Mach.fundecl
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val fundecl : Mach.fundecl -> Mach.fundecl
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module comballoc.mli
+
+  Namespace: comballoc.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val fundecl : Mach.fundecl -> Mach.fundecl
+    
+
+
+*** OK ***
+

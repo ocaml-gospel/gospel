@@ -1,0 +1,34 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Unix
+val convert_address : string -> (socket_domain * sockaddr)
+val report_error : exn -> unit
+val search_in_path : string -> string
+val expand_path : string -> string
+val make_absolute : string -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Unix
+
+val convert_address : string -> (socket_domain * sockaddr)
+
+
+val report_error : exn -> unit
+
+
+val search_in_path : string -> string
+
+
+val expand_path : string -> string
+
+
+val make_absolute : string -> string
+
+File "./unix.mli", line 477, characters 18-23:
+Error: Symbol int64 not found

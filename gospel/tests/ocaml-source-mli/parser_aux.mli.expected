@@ -1,0 +1,98 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type expression =
+  | E_ident of Longident.t 
+  | E_name of int 
+  | E_item of expression * int 
+  | E_field of expression * string 
+  | E_result 
+type break_arg =
+  | BA_none 
+  | BA_pc of int 
+  | BA_function of expression 
+  | BA_pos1 of Longident.t option * int * int option 
+  | BA_pos2 of Longident.t option * int 
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type expression =
+| E_ident of Longident.t 
+| E_name of int 
+| E_item of expression * int 
+| E_field of expression * string 
+| E_result 
+  
+
+type break_arg =
+| BA_none 
+| BA_pc of int 
+| BA_function of expression 
+| BA_pos1 of Longident.t option * int * int option 
+| BA_pos2 of Longident.t option * int 
+  
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module parser_aux.mli
+
+  Namespace: parser_aux.mli
+    Type symbols
+       break_arg
+       expression
+      
+    Logic Symbols
+      function BA_function (_:expression) : break_arg
+      function BA_none  : break_arg
+      function BA_pc (_:int) : break_arg
+      function BA_pos1 (_:t option * int * int option) : break_arg
+      function BA_pos2 (_:t option * int) : break_arg
+      function E_field (_:expression * string) : expression
+      function E_ident (_:t) : expression
+      function E_item (_:expression * int) : expression
+      function E_name (_:int) : expression
+      function E_result  : expression
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ use Longident *)
+    
+    type expression = E_ident of t
+                      function E_ident (_:t) : expression
+                   | E_name of int
+                     function E_name (_:int) : expression
+                   | E_item of expression * int
+                     function E_item (_:expression * int) : expression
+                   | E_field of expression * string
+                     function E_field (_:expression * string) : expression
+                   | E_result of 
+                     function E_result  : expression
+    
+    
+    type break_arg = BA_none of 
+                     function BA_none  : break_arg
+                  | BA_pc of int
+                    function BA_pc (_:int) : break_arg
+                  | BA_function of expression
+                    function BA_function (_:expression) : break_arg
+                  | BA_pos1 of t option * int * int option
+                    function BA_pos1 (_:t option * int * int option) : break_arg
+                  | BA_pos2 of t option * int
+                    function BA_pos2 (_:t option * int) : break_arg
+    
+
+
+*** OK ***
+

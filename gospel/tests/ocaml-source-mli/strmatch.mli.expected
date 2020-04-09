@@ -1,0 +1,122 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+module type I  =
+  sig
+    val string_block_length : Cmm.expression -> Cmm.expression
+    val transl_switch :
+      Location.t ->
+        Cmm.expression ->
+          int ->
+            int ->
+              (int * Cmm.expression) list -> Cmm.expression -> Cmm.expression
+  end
+module Make :
+functor (I : I) ->
+  sig
+    val compile :
+      Debuginfo.t ->
+        Cmm.expression ->
+          Cmm.expression option ->
+            (string * Cmm.expression) list -> Cmm.expression
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+module type I  =
+  sig
+    val string_block_length : Cmm.expression -> Cmm.expression
+    
+    val transl_switch :
+      Location.t ->
+        Cmm.expression ->
+          int ->
+            int ->
+              (int * Cmm.expression) list -> Cmm.expression -> Cmm.expression
+    
+  end
+
+module Make :
+functor (I : I) ->
+  sig
+    val compile :
+      Debuginfo.t ->
+        Cmm.expression ->
+          Cmm.expression option ->
+            (string * Cmm.expression) list -> Cmm.expression
+    
+  end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module strmatch.mli
+
+  Namespace: strmatch.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Make
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      Namespace: I
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    module type I  =
+      sig
+        val string_block_length : Cmm.expression -> Cmm.expression
+        
+        val transl_switch :
+        Location.t ->
+          Cmm.expression ->
+            int ->
+              int ->
+                (int * Cmm.expression) list ->
+                  Cmm.expression -> Cmm.expression
+        
+      end
+    
+    module Make :
+    functor (I#1 : I) ->
+      sig
+        val compile :
+        Debuginfo.t ->
+          Cmm.expression ->
+            Cmm.expression option ->
+              (string * Cmm.expression) list -> Cmm.expression
+        
+      end
+
+
+*** OK ***
+

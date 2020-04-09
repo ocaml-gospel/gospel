@@ -1,0 +1,439 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Facilities for printing exceptions and inspecting current call stack. "]
+val to_string : exn -> string[@@ocaml.doc
+                               " [Printexc.to_string e] returns a string representation of\n   the exception [e]. "]
+val print : ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                    " [Printexc.print fn x] applies [fn] to [x] and returns the result.\n   If the evaluation of [fn x] raises any exception, the\n   name of the exception is printed on standard error output,\n   and the exception is raised again.\n   The typical use is to catch and report exceptions that\n   escape a function application. "]
+val catch : ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                    " [Printexc.catch fn x] is similar to {!Printexc.print}, but\n   aborts the program with exit code 2 after printing the\n   uncaught exception.  This function is deprecated: the runtime\n   system is now able to print uncaught exceptions as precisely\n   as [Printexc.catch] does.  Moreover, calling [Printexc.catch]\n   makes it harder to track the location of the exception\n   using the debugger or the stack backtrace facility.\n   So, do not use [Printexc.catch] in new code.  "]
+val print_backtrace : out_channel -> unit[@@ocaml.doc
+                                           " [Printexc.print_backtrace oc] prints an exception backtrace\n    on the output channel [oc].  The backtrace lists the program\n    locations where the most-recently raised exception was raised\n    and where it was propagated through function calls.\n\n    If the call is not inside an exception handler, the returned\n    backtrace is unspecified. If the call is after some\n    exception-catching code (before in the handler, or in a when-guard\n    during the matching of the exception handler), the backtrace may\n    correspond to a later exception than the handled one.\n\n    @since 3.11.0\n"]
+val get_backtrace : unit -> string[@@ocaml.doc
+                                    " [Printexc.get_backtrace ()] returns a string containing the\n    same exception backtrace that [Printexc.print_backtrace] would\n    print. Same restriction usage than {!print_backtrace}.\n    @since 3.11.0\n"]
+val record_backtrace : bool -> unit[@@ocaml.doc
+                                     " [Printexc.record_backtrace b] turns recording of exception backtraces\n    on (if [b = true]) or off (if [b = false]).  Initially, backtraces\n    are not recorded, unless the [b] flag is given to the program\n    through the [OCAMLRUNPARAM] variable.\n    @since 3.11.0\n"]
+val backtrace_status : unit -> bool[@@ocaml.doc
+                                     " [Printexc.backtrace_status()] returns [true] if exception\n    backtraces are currently recorded, [false] if not.\n    @since 3.11.0\n"]
+val register_printer : (exn -> string option) -> unit[@@ocaml.doc
+                                                       " [Printexc.register_printer fn] registers [fn] as an exception\n    printer.  The printer should return [None] or raise an exception\n    if it does not know how to convert the passed exception, and [Some\n    s] with [s] the resulting string if it can convert the passed\n    exception. Exceptions raised by the printer are ignored.\n\n    When converting an exception into a string, the printers will be invoked\n    in the reverse order of their registrations, until a printer returns\n    a [Some s] value (if no such printer exists, the runtime will use a\n    generic printer).\n\n    When using this mechanism, one should be aware that an exception backtrace\n    is attached to the thread that saw it raised, rather than to the exception\n    itself. Practically, it means that the code related to [fn] should not use\n    the backtrace if it has itself raised an exception before.\n    @since 3.11.2\n"]
+[@@@ocaml.text " {1 Raw backtraces} "]
+type raw_backtrace[@@ocaml.doc
+                    " The abstract type [raw_backtrace] stores a backtrace in\n    a low-level format, instead of directly exposing them as string as\n    the [get_backtrace()] function does.\n\n    This allows delaying the formatting of backtraces to when they are\n    actually printed, which may be useful if you record more\n    backtraces than you print.\n\n    Raw backtraces cannot be marshalled. If you need marshalling, you\n    should use the array returned by the [backtrace_slots] function of\n    the next section.\n\n    @since 4.01.0\n"]
+val get_raw_backtrace : unit -> raw_backtrace[@@ocaml.doc
+                                               " [Printexc.get_raw_backtrace ()] returns the same exception\n    backtrace that [Printexc.print_backtrace] would print, but in\n    a raw format. Same restriction usage than {!print_backtrace}.\n\n    @since 4.01.0\n"]
+val print_raw_backtrace : out_channel -> raw_backtrace -> unit[@@ocaml.doc
+                                                                " Print a raw backtrace in the same format\n    [Printexc.print_backtrace] uses.\n\n    @since 4.01.0\n"]
+val raw_backtrace_to_string : raw_backtrace -> string[@@ocaml.doc
+                                                       " Return a string from a raw backtrace, in the same format\n    [Printexc.get_backtrace] uses.\n\n    @since 4.01.0\n"]
+external raise_with_backtrace :
+  exn -> raw_backtrace -> 'a = "%raise_with_backtrace"[@@ocaml.doc
+                                                        " Reraise the exception using the given raw_backtrace for the\n    origin of the exception\n\n    @since 4.05.0\n"]
+[@@@ocaml.text " {1 Current call stack} "]
+val get_callstack : int -> raw_backtrace[@@ocaml.doc
+                                          " [Printexc.get_callstack n] returns a description of the top of the\n    call stack on the current program point (for the current thread),\n    with at most [n] entries.  (Note: this function is not related to\n    exceptions at all, despite being part of the [Printexc] module.)\n\n    @since 4.01.0\n"]
+[@@@ocaml.text " {1 Uncaught exceptions} "]
+val set_uncaught_exception_handler : (exn -> raw_backtrace -> unit) -> unit
+[@@ocaml.doc
+  " [Printexc.set_uncaught_exception_handler fn] registers [fn] as the handler\n    for uncaught exceptions. The default handler prints the exception and\n    backtrace on standard error output.\n\n    Note that when [fn] is called all the functions registered with\n    {!Stdlib.at_exit} have already been called. Because of this you must\n    make sure any output channel [fn] writes on is flushed.\n\n    Also note that exceptions raised by user code in the interactive toplevel\n    are not passed to this function as they are caught by the toplevel itself.\n\n    If [fn] raises an exception, both the exceptions passed to [fn] and raised\n    by [fn] will be printed with their respective backtrace.\n\n    @since 4.02.0\n"]
+[@@@ocaml.text
+  " {1 Manipulation of backtrace information}\n\n    These functions are used to traverse the slots of a raw backtrace\n    and extract information from them in a programmer-friendly format.\n"]
+type backtrace_slot[@@ocaml.doc
+                     " The abstract type [backtrace_slot] represents a single slot of\n    a backtrace.\n\n    @since 4.02\n"]
+val backtrace_slots : raw_backtrace -> backtrace_slot array option[@@ocaml.doc
+                                                                    " Returns the slots of a raw backtrace, or [None] if none of them\n    contain useful information.\n\n    In the return array, the slot at index [0] corresponds to the most\n    recent function call, raise, or primitive [get_backtrace] call in\n    the trace.\n\n    Some possible reasons for returning [None] are as follow:\n    - none of the slots in the trace come from modules compiled with\n    debug information ([-g])\n    - the program is a bytecode program that has not been linked with\n    debug information enabled ([ocamlc -g])\n\n    @since 4.02.0\n"]
+type location =
+  {
+  filename: string ;
+  line_number: int ;
+  start_char: int ;
+  end_char: int }[@@ocaml.doc
+                   " The type of location information found in backtraces. [start_char]\n    and [end_char] are positions relative to the beginning of the\n    line.\n\n    @since 4.02\n"]
+module Slot :
+sig
+  type t = backtrace_slot
+  val is_raise : t -> bool[@@ocaml.doc
+                            " [is_raise slot] is [true] when [slot] refers to a raising\n      point in the code, and [false] when it comes from a simple\n      function call.\n\n      @since 4.02\n  "]
+  val is_inline : t -> bool[@@ocaml.doc
+                             " [is_inline slot] is [true] when [slot] refers to a call\n      that got inlined by the compiler, and [false] when it comes from\n      any other context.\n\n      @since 4.04.0\n  "]
+  val location : t -> location option[@@ocaml.doc
+                                       " [location slot] returns the location information of the slot,\n      if available, and [None] otherwise.\n\n      Some possible reasons for failing to return a location are as follow:\n      - the slot corresponds to a compiler-inserted raise\n      - the slot corresponds to a part of the program that has not been\n      compiled with debug information ([-g])\n\n      @since 4.02\n  "]
+  val format : int -> t -> string option[@@ocaml.doc
+                                          " [format pos slot] returns the string representation of [slot] as\n      [raw_backtrace_to_string] would format it, assuming it is the\n      [pos]-th element of the backtrace: the [0]-th element is\n      pretty-printed differently than the others.\n\n      Whole-backtrace printing functions also skip some uninformative\n      slots; in that case, [format pos slot] returns [None].\n\n      @since 4.02\n  "]
+end[@@ocaml.doc " @since 4.02.0 "]
+[@@@ocaml.text " {1 Raw backtrace slots} "]
+type raw_backtrace_slot[@@ocaml.doc
+                         " This type allows direct access to raw backtrace slots, without any\n    conversion in an OCaml-usable data-structure. Being\n    process-specific, they must absolutely not be marshalled, and are\n    unsafe to use for this reason (marshalling them may not fail, but\n    un-marshalling and using the result will result in\n    undefined behavior).\n\n    Elements of this type can still be compared and hashed: when two\n    elements are equal, then they represent the same source location\n    (the converse is not necessarily true in presence of inlining,\n    for example).\n\n    @since 4.02.0\n"]
+val raw_backtrace_length : raw_backtrace -> int[@@ocaml.doc
+                                                 " [raw_backtrace_length bckt] returns the number of slots in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+val get_raw_backtrace_slot : raw_backtrace -> int -> raw_backtrace_slot
+[@@ocaml.doc
+  " [get_raw_backtrace_slot bckt pos] returns the slot in position [pos] in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+val convert_raw_backtrace_slot : raw_backtrace_slot -> backtrace_slot
+[@@ocaml.doc
+  " Extracts the user-friendly [backtrace_slot] from a low-level\n    [raw_backtrace_slot].\n\n    @since 4.02\n"]
+val get_raw_backtrace_next_slot :
+  raw_backtrace_slot -> raw_backtrace_slot option[@@ocaml.doc
+                                                   " [get_raw_backtrace_next_slot slot] returns the next slot inlined, if any.\n\n    Sample code to iterate over all frames (inlined and non-inlined):\n    {[\n      (* Iterate over inlined frames *)\n      let rec iter_raw_backtrace_slot f slot =\n        f slot;\n        match get_raw_backtrace_next_slot slot with\n        | None -> ()\n        | Some slot' -> iter_raw_backtrace_slot f slot'\n\n      (* Iterate over stack frames *)\n      let iter_raw_backtrace f bt =\n        for i = 0 to raw_backtrace_length bt - 1 do\n          iter_raw_backtrace_slot f (get_raw_backtrace_slot bt i)\n        done\n    ]}\n\n    @since 4.04.0\n"]
+[@@@ocaml.text " {1 Exception slots} "]
+val exn_slot_id : exn -> int[@@ocaml.doc
+                              " [Printexc.exn_slot_id] returns an integer which uniquely identifies\n    the constructor used to create the exception value [exn]\n    (in the current runtime).\n\n    @since 4.02.0\n"]
+val exn_slot_name : exn -> string[@@ocaml.doc
+                                   " [Printexc.exn_slot_name exn] returns the internal name of the constructor\n    used to create the exception value [exn].\n\n    @since 4.02.0\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Facilities for printing exceptions and inspecting current call stack. "]
+
+val to_string : exn -> string[@@ocaml.doc
+                               " [Printexc.to_string e] returns a string representation of\n   the exception [e]. "]
+
+
+val print : ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                    " [Printexc.print fn x] applies [fn] to [x] and returns the result.\n   If the evaluation of [fn x] raises any exception, the\n   name of the exception is printed on standard error output,\n   and the exception is raised again.\n   The typical use is to catch and report exceptions that\n   escape a function application. "]
+
+
+val catch : ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                    " [Printexc.catch fn x] is similar to {!Printexc.print}, but\n   aborts the program with exit code 2 after printing the\n   uncaught exception.  This function is deprecated: the runtime\n   system is now able to print uncaught exceptions as precisely\n   as [Printexc.catch] does.  Moreover, calling [Printexc.catch]\n   makes it harder to track the location of the exception\n   using the debugger or the stack backtrace facility.\n   So, do not use [Printexc.catch] in new code.  "]
+
+
+val print_backtrace : out_channel -> unit[@@ocaml.doc
+                                           " [Printexc.print_backtrace oc] prints an exception backtrace\n    on the output channel [oc].  The backtrace lists the program\n    locations where the most-recently raised exception was raised\n    and where it was propagated through function calls.\n\n    If the call is not inside an exception handler, the returned\n    backtrace is unspecified. If the call is after some\n    exception-catching code (before in the handler, or in a when-guard\n    during the matching of the exception handler), the backtrace may\n    correspond to a later exception than the handled one.\n\n    @since 3.11.0\n"]
+
+
+val get_backtrace : unit -> string[@@ocaml.doc
+                                    " [Printexc.get_backtrace ()] returns a string containing the\n    same exception backtrace that [Printexc.print_backtrace] would\n    print. Same restriction usage than {!print_backtrace}.\n    @since 3.11.0\n"]
+
+
+val record_backtrace : bool -> unit[@@ocaml.doc
+                                     " [Printexc.record_backtrace b] turns recording of exception backtraces\n    on (if [b = true]) or off (if [b = false]).  Initially, backtraces\n    are not recorded, unless the [b] flag is given to the program\n    through the [OCAMLRUNPARAM] variable.\n    @since 3.11.0\n"]
+
+
+val backtrace_status : unit -> bool[@@ocaml.doc
+                                     " [Printexc.backtrace_status()] returns [true] if exception\n    backtraces are currently recorded, [false] if not.\n    @since 3.11.0\n"]
+
+
+val register_printer : (exn -> string option) -> unit[@@ocaml.doc
+                                                       " [Printexc.register_printer fn] registers [fn] as an exception\n    printer.  The printer should return [None] or raise an exception\n    if it does not know how to convert the passed exception, and [Some\n    s] with [s] the resulting string if it can convert the passed\n    exception. Exceptions raised by the printer are ignored.\n\n    When converting an exception into a string, the printers will be invoked\n    in the reverse order of their registrations, until a printer returns\n    a [Some s] value (if no such printer exists, the runtime will use a\n    generic printer).\n\n    When using this mechanism, one should be aware that an exception backtrace\n    is attached to the thread that saw it raised, rather than to the exception\n    itself. Practically, it means that the code related to [fn] should not use\n    the backtrace if it has itself raised an exception before.\n    @since 3.11.2\n"]
+
+
+[@@@ocaml.text " {1 Raw backtraces} "]
+
+type raw_backtrace[@@ocaml.doc
+                    " The abstract type [raw_backtrace] stores a backtrace in\n    a low-level format, instead of directly exposing them as string as\n    the [get_backtrace()] function does.\n\n    This allows delaying the formatting of backtraces to when they are\n    actually printed, which may be useful if you record more\n    backtraces than you print.\n\n    Raw backtraces cannot be marshalled. If you need marshalling, you\n    should use the array returned by the [backtrace_slots] function of\n    the next section.\n\n    @since 4.01.0\n"]
+  
+
+val get_raw_backtrace : unit -> raw_backtrace[@@ocaml.doc
+                                               " [Printexc.get_raw_backtrace ()] returns the same exception\n    backtrace that [Printexc.print_backtrace] would print, but in\n    a raw format. Same restriction usage than {!print_backtrace}.\n\n    @since 4.01.0\n"]
+
+
+val print_raw_backtrace : out_channel -> raw_backtrace -> unit[@@ocaml.doc
+                                                                " Print a raw backtrace in the same format\n    [Printexc.print_backtrace] uses.\n\n    @since 4.01.0\n"]
+
+
+val raw_backtrace_to_string : raw_backtrace -> string[@@ocaml.doc
+                                                       " Return a string from a raw backtrace, in the same format\n    [Printexc.get_backtrace] uses.\n\n    @since 4.01.0\n"]
+
+
+external raise_with_backtrace :
+  exn -> raw_backtrace -> 'a = "%raise_with_backtrace"[@@ocaml.doc
+                                                        " Reraise the exception using the given raw_backtrace for the\n    origin of the exception\n\n    @since 4.05.0\n"]
+
+
+[@@@ocaml.text " {1 Current call stack} "]
+
+val get_callstack : int -> raw_backtrace[@@ocaml.doc
+                                          " [Printexc.get_callstack n] returns a description of the top of the\n    call stack on the current program point (for the current thread),\n    with at most [n] entries.  (Note: this function is not related to\n    exceptions at all, despite being part of the [Printexc] module.)\n\n    @since 4.01.0\n"]
+
+
+[@@@ocaml.text " {1 Uncaught exceptions} "]
+
+val set_uncaught_exception_handler : (exn -> raw_backtrace -> unit) -> unit
+[@@ocaml.doc
+  " [Printexc.set_uncaught_exception_handler fn] registers [fn] as the handler\n    for uncaught exceptions. The default handler prints the exception and\n    backtrace on standard error output.\n\n    Note that when [fn] is called all the functions registered with\n    {!Stdlib.at_exit} have already been called. Because of this you must\n    make sure any output channel [fn] writes on is flushed.\n\n    Also note that exceptions raised by user code in the interactive toplevel\n    are not passed to this function as they are caught by the toplevel itself.\n\n    If [fn] raises an exception, both the exceptions passed to [fn] and raised\n    by [fn] will be printed with their respective backtrace.\n\n    @since 4.02.0\n"]
+
+
+[@@@ocaml.text
+  " {1 Manipulation of backtrace information}\n\n    These functions are used to traverse the slots of a raw backtrace\n    and extract information from them in a programmer-friendly format.\n"]
+
+type backtrace_slot[@@ocaml.doc
+                     " The abstract type [backtrace_slot] represents a single slot of\n    a backtrace.\n\n    @since 4.02\n"]
+  
+
+val backtrace_slots : raw_backtrace -> backtrace_slot array option[@@ocaml.doc
+                                                                    " Returns the slots of a raw backtrace, or [None] if none of them\n    contain useful information.\n\n    In the return array, the slot at index [0] corresponds to the most\n    recent function call, raise, or primitive [get_backtrace] call in\n    the trace.\n\n    Some possible reasons for returning [None] are as follow:\n    - none of the slots in the trace come from modules compiled with\n    debug information ([-g])\n    - the program is a bytecode program that has not been linked with\n    debug information enabled ([ocamlc -g])\n\n    @since 4.02.0\n"]
+
+
+type location =
+{
+filename: string ;
+line_number: int ;
+start_char: int ;
+end_char: int }[@@ocaml.doc
+                 " The type of location information found in backtraces. [start_char]\n    and [end_char] are positions relative to the beginning of the\n    line.\n\n    @since 4.02\n"]
+  
+
+module Slot :
+sig
+  type t = backtrace_slot
+    
+  val is_raise : t -> bool[@@ocaml.doc
+                            " [is_raise slot] is [true] when [slot] refers to a raising\n      point in the code, and [false] when it comes from a simple\n      function call.\n\n      @since 4.02\n  "]
+  
+  val is_inline : t -> bool[@@ocaml.doc
+                             " [is_inline slot] is [true] when [slot] refers to a call\n      that got inlined by the compiler, and [false] when it comes from\n      any other context.\n\n      @since 4.04.0\n  "]
+  
+  val location : t -> location option[@@ocaml.doc
+                                       " [location slot] returns the location information of the slot,\n      if available, and [None] otherwise.\n\n      Some possible reasons for failing to return a location are as follow:\n      - the slot corresponds to a compiler-inserted raise\n      - the slot corresponds to a part of the program that has not been\n      compiled with debug information ([-g])\n\n      @since 4.02\n  "]
+  
+  val format : int -> t -> string option[@@ocaml.doc
+                                          " [format pos slot] returns the string representation of [slot] as\n      [raw_backtrace_to_string] would format it, assuming it is the\n      [pos]-th element of the backtrace: the [0]-th element is\n      pretty-printed differently than the others.\n\n      Whole-backtrace printing functions also skip some uninformative\n      slots; in that case, [format pos slot] returns [None].\n\n      @since 4.02\n  "]
+  
+end[@@ocaml.doc " @since 4.02.0 "]
+
+[@@@ocaml.text " {1 Raw backtrace slots} "]
+
+type raw_backtrace_slot[@@ocaml.doc
+                         " This type allows direct access to raw backtrace slots, without any\n    conversion in an OCaml-usable data-structure. Being\n    process-specific, they must absolutely not be marshalled, and are\n    unsafe to use for this reason (marshalling them may not fail, but\n    un-marshalling and using the result will result in\n    undefined behavior).\n\n    Elements of this type can still be compared and hashed: when two\n    elements are equal, then they represent the same source location\n    (the converse is not necessarily true in presence of inlining,\n    for example).\n\n    @since 4.02.0\n"]
+  
+
+val raw_backtrace_length : raw_backtrace -> int[@@ocaml.doc
+                                                 " [raw_backtrace_length bckt] returns the number of slots in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+
+
+val get_raw_backtrace_slot : raw_backtrace -> int -> raw_backtrace_slot
+[@@ocaml.doc
+  " [get_raw_backtrace_slot bckt pos] returns the slot in position [pos] in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+
+
+val convert_raw_backtrace_slot : raw_backtrace_slot -> backtrace_slot
+[@@ocaml.doc
+  " Extracts the user-friendly [backtrace_slot] from a low-level\n    [raw_backtrace_slot].\n\n    @since 4.02\n"]
+
+
+val get_raw_backtrace_next_slot :
+  raw_backtrace_slot -> raw_backtrace_slot option[@@ocaml.doc
+                                                   " [get_raw_backtrace_next_slot slot] returns the next slot inlined, if any.\n\n    Sample code to iterate over all frames (inlined and non-inlined):\n    {[\n      (* Iterate over inlined frames *)\n      let rec iter_raw_backtrace_slot f slot =\n        f slot;\n        match get_raw_backtrace_next_slot slot with\n        | None -> ()\n        | Some slot' -> iter_raw_backtrace_slot f slot'\n\n      (* Iterate over stack frames *)\n      let iter_raw_backtrace f bt =\n        for i = 0 to raw_backtrace_length bt - 1 do\n          iter_raw_backtrace_slot f (get_raw_backtrace_slot bt i)\n        done\n    ]}\n\n    @since 4.04.0\n"]
+
+
+[@@@ocaml.text " {1 Exception slots} "]
+
+val exn_slot_id : exn -> int[@@ocaml.doc
+                              " [Printexc.exn_slot_id] returns an integer which uniquely identifies\n    the constructor used to create the exception value [exn]\n    (in the current runtime).\n\n    @since 4.02.0\n"]
+
+
+val exn_slot_name : exn -> string[@@ocaml.doc
+                                   " [Printexc.exn_slot_name exn] returns the internal name of the constructor\n    used to create the exception value [exn].\n\n    @since 4.02.0\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module printexc.mli
+
+  Namespace: printexc.mli
+    Type symbols
+       backtrace_slot
+       location
+       raw_backtrace
+       raw_backtrace_slot
+      
+    Logic Symbols
+      function constr#location (_:string) (_:int) (_:int) (_:int) : location
+      function end_char (_:location) : int
+      function filename (_:location) : string
+      function line_number (_:location) : int
+      function start_char (_:location) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Slot
+        Type symbols
+           t [=backtrace_slot]
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Facilities for printing exceptions and inspecting current call stack. "]
+    
+    val to_string :
+    exn -> string[@@ocaml.doc
+                   " [Printexc.to_string e] returns a string representation of\n   the exception [e]. "]
+    
+    
+    val print :
+    ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                            " [Printexc.print fn x] applies [fn] to [x] and returns the result.\n   If the evaluation of [fn x] raises any exception, the\n   name of the exception is printed on standard error output,\n   and the exception is raised again.\n   The typical use is to catch and report exceptions that\n   escape a function application. "]
+    
+    
+    val catch :
+    ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                            " [Printexc.catch fn x] is similar to {!Printexc.print}, but\n   aborts the program with exit code 2 after printing the\n   uncaught exception.  This function is deprecated: the runtime\n   system is now able to print uncaught exceptions as precisely\n   as [Printexc.catch] does.  Moreover, calling [Printexc.catch]\n   makes it harder to track the location of the exception\n   using the debugger or the stack backtrace facility.\n   So, do not use [Printexc.catch] in new code.  "]
+    
+    
+    val print_backtrace :
+    out_channel -> unit[@@ocaml.doc
+                         " [Printexc.print_backtrace oc] prints an exception backtrace\n    on the output channel [oc].  The backtrace lists the program\n    locations where the most-recently raised exception was raised\n    and where it was propagated through function calls.\n\n    If the call is not inside an exception handler, the returned\n    backtrace is unspecified. If the call is after some\n    exception-catching code (before in the handler, or in a when-guard\n    during the matching of the exception handler), the backtrace may\n    correspond to a later exception than the handled one.\n\n    @since 3.11.0\n"]
+    
+    
+    val get_backtrace :
+    unit -> string[@@ocaml.doc
+                    " [Printexc.get_backtrace ()] returns a string containing the\n    same exception backtrace that [Printexc.print_backtrace] would\n    print. Same restriction usage than {!print_backtrace}.\n    @since 3.11.0\n"]
+    
+    
+    val record_backtrace :
+    bool -> unit[@@ocaml.doc
+                  " [Printexc.record_backtrace b] turns recording of exception backtraces\n    on (if [b = true]) or off (if [b = false]).  Initially, backtraces\n    are not recorded, unless the [b] flag is given to the program\n    through the [OCAMLRUNPARAM] variable.\n    @since 3.11.0\n"]
+    
+    
+    val backtrace_status :
+    unit -> bool[@@ocaml.doc
+                  " [Printexc.backtrace_status()] returns [true] if exception\n    backtraces are currently recorded, [false] if not.\n    @since 3.11.0\n"]
+    
+    
+    val register_printer :
+    (exn -> string option) -> unit[@@ocaml.doc
+                                    " [Printexc.register_printer fn] registers [fn] as an exception\n    printer.  The printer should return [None] or raise an exception\n    if it does not know how to convert the passed exception, and [Some\n    s] with [s] the resulting string if it can convert the passed\n    exception. Exceptions raised by the printer are ignored.\n\n    When converting an exception into a string, the printers will be invoked\n    in the reverse order of their registrations, until a printer returns\n    a [Some s] value (if no such printer exists, the runtime will use a\n    generic printer).\n\n    When using this mechanism, one should be aware that an exception backtrace\n    is attached to the thread that saw it raised, rather than to the exception\n    itself. Practically, it means that the code related to [fn] should not use\n    the backtrace if it has itself raised an exception before.\n    @since 3.11.2\n"]
+    
+    
+    [@@@ocaml.text " {1 Raw backtraces} "]
+    
+    type raw_backtrace
+    
+    
+    val get_raw_backtrace :
+    unit -> raw_backtrace[@@ocaml.doc
+                           " [Printexc.get_raw_backtrace ()] returns the same exception\n    backtrace that [Printexc.print_backtrace] would print, but in\n    a raw format. Same restriction usage than {!print_backtrace}.\n\n    @since 4.01.0\n"]
+    
+    
+    val print_raw_backtrace :
+    out_channel -> raw_backtrace -> unit[@@ocaml.doc
+                                          " Print a raw backtrace in the same format\n    [Printexc.print_backtrace] uses.\n\n    @since 4.01.0\n"]
+    
+    
+    val raw_backtrace_to_string :
+    raw_backtrace -> string[@@ocaml.doc
+                             " Return a string from a raw backtrace, in the same format\n    [Printexc.get_backtrace] uses.\n\n    @since 4.01.0\n"]
+    
+    
+    external raise_with_backtrace : exn -> raw_backtrace -> 'a =
+    "%raise_with_backtrace"[@@ocaml.doc
+                             " Reraise the exception using the given raw_backtrace for the\n    origin of the exception\n\n    @since 4.05.0\n"]
+    
+    
+    [@@@ocaml.text " {1 Current call stack} "]
+    
+    val get_callstack :
+    int -> raw_backtrace[@@ocaml.doc
+                          " [Printexc.get_callstack n] returns a description of the top of the\n    call stack on the current program point (for the current thread),\n    with at most [n] entries.  (Note: this function is not related to\n    exceptions at all, despite being part of the [Printexc] module.)\n\n    @since 4.01.0\n"]
+    
+    
+    [@@@ocaml.text " {1 Uncaught exceptions} "]
+    
+    val set_uncaught_exception_handler :
+    (exn -> raw_backtrace -> unit) -> unit[@@ocaml.doc
+                                            " [Printexc.set_uncaught_exception_handler fn] registers [fn] as the handler\n    for uncaught exceptions. The default handler prints the exception and\n    backtrace on standard error output.\n\n    Note that when [fn] is called all the functions registered with\n    {!Stdlib.at_exit} have already been called. Because of this you must\n    make sure any output channel [fn] writes on is flushed.\n\n    Also note that exceptions raised by user code in the interactive toplevel\n    are not passed to this function as they are caught by the toplevel itself.\n\n    If [fn] raises an exception, both the exceptions passed to [fn] and raised\n    by [fn] will be printed with their respective backtrace.\n\n    @since 4.02.0\n"]
+    
+    
+    [@@@ocaml.text
+      " {1 Manipulation of backtrace information}\n\n    These functions are used to traverse the slots of a raw backtrace\n    and extract information from them in a programmer-friendly format.\n"]
+    
+    type backtrace_slot
+    
+    
+    val backtrace_slots :
+    raw_backtrace -> backtrace_slot array option[@@ocaml.doc
+                                                  " Returns the slots of a raw backtrace, or [None] if none of them\n    contain useful information.\n\n    In the return array, the slot at index [0] corresponds to the most\n    recent function call, raise, or primitive [get_backtrace] call in\n    the trace.\n\n    Some possible reasons for returning [None] are as follow:\n    - none of the slots in the trace come from modules compiled with\n    debug information ([-g])\n    - the program is a bytecode program that has not been linked with\n    debug information enabled ([ocamlc -g])\n\n    @since 4.02.0\n"]
+    
+    
+    type location = {filename:string; line_number:int; start_char:int; end_char:
+                 int}
+                 function constr#location (_:string) (_:int) (_:int) (_:int) : location
+                   function filename (_:location) : string
+                   function line_number (_:location) : int
+                   function start_char (_:location) : int
+                   function end_char (_:location) : int
+    
+    
+    module Slot :
+    sig
+      type t = backtrace_slot
+      
+      val is_raise :
+      t -> bool[@@ocaml.doc
+                 " [is_raise slot] is [true] when [slot] refers to a raising\n      point in the code, and [false] when it comes from a simple\n      function call.\n\n      @since 4.02\n  "]
+      
+      val is_inline :
+      t -> bool[@@ocaml.doc
+                 " [is_inline slot] is [true] when [slot] refers to a call\n      that got inlined by the compiler, and [false] when it comes from\n      any other context.\n\n      @since 4.04.0\n  "]
+      
+      val location#1 :
+      t -> location option[@@ocaml.doc
+                            " [location slot] returns the location information of the slot,\n      if available, and [None] otherwise.\n\n      Some possible reasons for failing to return a location are as follow:\n      - the slot corresponds to a compiler-inserted raise\n      - the slot corresponds to a part of the program that has not been\n      compiled with debug information ([-g])\n\n      @since 4.02\n  "]
+      
+      val format :
+      int -> t -> string option[@@ocaml.doc
+                                 " [format pos slot] returns the string representation of [slot] as\n      [raw_backtrace_to_string] would format it, assuming it is the\n      [pos]-th element of the backtrace: the [0]-th element is\n      pretty-printed differently than the others.\n\n      Whole-backtrace printing functions also skip some uninformative\n      slots; in that case, [format pos slot] returns [None].\n\n      @since 4.02\n  "]
+      
+    end[@@ocaml.doc " @since 4.02.0 "]
+    
+    [@@@ocaml.text " {1 Raw backtrace slots} "]
+    
+    type raw_backtrace_slot
+    
+    
+    val raw_backtrace_length :
+    raw_backtrace -> int[@@ocaml.doc
+                          " [raw_backtrace_length bckt] returns the number of slots in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+    
+    
+    val get_raw_backtrace_slot :
+    raw_backtrace -> int -> raw_backtrace_slot[@@ocaml.doc
+                                                " [get_raw_backtrace_slot bckt pos] returns the slot in position [pos] in the\n    backtrace [bckt].\n\n    @since 4.02\n"]
+    
+    
+    val convert_raw_backtrace_slot :
+    raw_backtrace_slot -> backtrace_slot[@@ocaml.doc
+                                          " Extracts the user-friendly [backtrace_slot] from a low-level\n    [raw_backtrace_slot].\n\n    @since 4.02\n"]
+    
+    
+    val get_raw_backtrace_next_slot :
+    raw_backtrace_slot -> raw_backtrace_slot option[@@ocaml.doc
+                                                     " [get_raw_backtrace_next_slot slot] returns the next slot inlined, if any.\n\n    Sample code to iterate over all frames (inlined and non-inlined):\n    {[\n      (* Iterate over inlined frames *)\n      let rec iter_raw_backtrace_slot f slot =\n        f slot;\n        match get_raw_backtrace_next_slot slot with\n        | None -> ()\n        | Some slot' -> iter_raw_backtrace_slot f slot'\n\n      (* Iterate over stack frames *)\n      let iter_raw_backtrace f bt =\n        for i = 0 to raw_backtrace_length bt - 1 do\n          iter_raw_backtrace_slot f (get_raw_backtrace_slot bt i)\n        done\n    ]}\n\n    @since 4.04.0\n"]
+    
+    
+    [@@@ocaml.text " {1 Exception slots} "]
+    
+    val exn_slot_id :
+    exn -> int[@@ocaml.doc
+                " [Printexc.exn_slot_id] returns an integer which uniquely identifies\n    the constructor used to create the exception value [exn]\n    (in the current runtime).\n\n    @since 4.02.0\n"]
+    
+    
+    val exn_slot_name :
+    exn -> string[@@ocaml.doc
+                   " [Printexc.exn_slot_name exn] returns the internal name of the constructor\n    used to create the exception value [exn].\n\n    @since 4.02.0\n"]
+    
+
+
+*** OK ***
+

@@ -1,0 +1,56 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val show_point : Instruct.debug_event -> bool -> unit
+val show_no_point : unit -> unit
+val show_listing :
+  Lexing.position -> string -> int -> int -> int -> bool -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val show_point : Instruct.debug_event -> bool -> unit
+
+
+val show_no_point : unit -> unit
+
+
+val show_listing :
+  Lexing.position -> string -> int -> int -> int -> bool -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module show_source.mli
+
+  Namespace: show_source.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val show_point : Instruct.debug_event -> bool -> unit
+    
+    
+    val show_no_point : unit -> unit
+    
+    
+    val show_listing :
+    Lexing.position -> string -> int -> int -> int -> bool -> unit
+    
+
+
+*** OK ***
+

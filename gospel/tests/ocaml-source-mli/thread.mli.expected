@@ -1,0 +1,279 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Lightweight threads. "]
+type t[@@ocaml.doc " The type of thread handles. "]
+[@@@ocaml.text " {1 Thread creation and termination} "]
+val create : ('a -> 'b) -> 'a -> t[@@ocaml.doc
+                                    " [Thread.create funct arg] creates a new thread of control,\n   in which the function application [funct arg]\n   is executed concurrently with the other threads of the program.\n   The application of [Thread.create]\n   returns the handle of the newly created thread.\n   The new thread terminates when the application [funct arg]\n   returns, either normally or by raising an uncaught exception.\n   In the latter case, the exception is printed on standard error,\n   but not propagated back to the parent thread. Similarly, the\n   result of the application [funct arg] is discarded and not\n   directly accessible to the parent thread. "]
+val self : unit -> t[@@ocaml.doc " Return the thread currently executing. "]
+val id : t -> int[@@ocaml.doc
+                   " Return the identifier of the given thread. A thread identifier\n   is an integer that identifies uniquely the thread.\n   It can be used to build data structures indexed by threads. "]
+val exit : unit -> unit[@@ocaml.doc
+                         " Terminate prematurely the currently executing thread. "]
+val kill : t -> unit[@@ocaml.doc
+                      " Terminate prematurely the thread whose handle is given.\n   This functionality is available only with bytecode-level threads. "]
+[@@@ocaml.text " {1 Suspending threads} "]
+val delay : float -> unit[@@ocaml.doc
+                           " [delay d] suspends the execution of the calling thread for\n   [d] seconds. The other program threads continue to run during\n   this time. "]
+val join : t -> unit[@@ocaml.doc
+                      " [join th] suspends the execution of the calling thread\n   until the thread [th] has terminated. "]
+val wait_read : Unix.file_descr -> unit[@@ocaml.doc
+                                         " See {!Thread.wait_write}."]
+val wait_write : Unix.file_descr -> unit[@@ocaml.doc
+                                          " Suspend the execution of the calling thread until at least\n   one character or EOF is available for reading ({!Thread.wait_read}) or\n   one character can be written without blocking ([wait_write])\n   on the given Unix file descriptor. "]
+val wait_timed_read : Unix.file_descr -> float -> bool[@@ocaml.doc
+                                                        " See {!Thread.wait_timed_write}."]
+val wait_timed_write : Unix.file_descr -> float -> bool[@@ocaml.doc
+                                                         " Same as {!Thread.wait_read} and {!Thread.wait_write}, but wait for at most\n   the amount of time given as second argument (in seconds).\n   Return [true] if the file descriptor is ready for input/output\n   and [false] if the timeout expired. "]
+val select :
+  Unix.file_descr list ->
+    Unix.file_descr list ->
+      Unix.file_descr list ->
+        float ->
+          (Unix.file_descr list * Unix.file_descr list * Unix.file_descr
+            list)[@@ocaml.doc
+                   " Suspend the execution of the calling thread until input/output\n   becomes possible on the given Unix file descriptors.\n   The arguments and results have the same meaning as for\n   {!Unix.select}. "]
+val wait_pid : int -> (int * Unix.process_status)[@@ocaml.doc
+                                                   " [wait_pid p] suspends the execution of the calling thread\n   until the Unix process specified by the process identifier [p]\n   terminates. A pid [p] of [-1] means wait for any child.\n   A pid of [0] means wait for any child in the same process group\n   as the current process. Negative pid arguments represent\n   process groups. Returns the pid of the child caught and\n   its termination status, as per {!Unix.wait}. "]
+val wait_signal : int list -> int[@@ocaml.doc
+                                   " [wait_signal sigs] suspends the execution of the calling thread\n   until the process receives one of the signals specified in the\n   list [sigs].  It then returns the number of the signal received.\n   Signal handlers attached to the signals in [sigs] will not\n   be invoked.  Do not call [wait_signal] concurrently\n   from several threads on the same signals. "]
+val yield : unit -> unit[@@ocaml.doc
+                          " Re-schedule the calling thread without suspending it.\n   This function can be used to give scheduling hints,\n   telling the scheduler that now is a good time to\n   switch to other threads. "]
+[@@@ocaml.text "/*"]
+[@@@ocaml.text
+  " {1 Synchronization primitives}\n\n   The following primitives provide the basis for implementing\n   synchronization functions between threads. Their direct use is\n   discouraged, as they are very low-level and prone to race conditions\n   and deadlocks. The modules {!Mutex}, {!Condition} and {!Event}\n   provide higher-level synchronization primitives. "]
+val critical_section : bool ref[@@ocaml.doc
+                                 " Setting this reference to [true] deactivate thread preemption\n   (the timer interrupt that transfers control from thread to thread),\n   causing the current thread to run uninterrupted until\n   [critical_section] is reset to [false] or the current thread\n   explicitly relinquishes control using [sleep], [delay],\n   [wait_inchan] or [wait_descr]. "]
+val sleep : unit -> unit[@@ocaml.doc
+                          " Suspend the calling thread until another thread reactivates it\n   using {!Thread.wakeup}. Just before suspending the thread,\n   {!Thread.critical_section} is reset to [false]. Resetting\n   {!Thread.critical_section} and suspending the calling thread is an\n   atomic operation. "]
+val wakeup : t -> unit[@@ocaml.doc
+                        " Reactivate the given thread. After the call to [wakeup],\n   the suspended thread will resume execution at some future time. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Lightweight threads. "]
+
+type t[@@ocaml.doc " The type of thread handles. "]
+  
+
+[@@@ocaml.text " {1 Thread creation and termination} "]
+
+val create : ('a -> 'b) -> 'a -> t[@@ocaml.doc
+                                    " [Thread.create funct arg] creates a new thread of control,\n   in which the function application [funct arg]\n   is executed concurrently with the other threads of the program.\n   The application of [Thread.create]\n   returns the handle of the newly created thread.\n   The new thread terminates when the application [funct arg]\n   returns, either normally or by raising an uncaught exception.\n   In the latter case, the exception is printed on standard error,\n   but not propagated back to the parent thread. Similarly, the\n   result of the application [funct arg] is discarded and not\n   directly accessible to the parent thread. "]
+
+
+val self : unit -> t[@@ocaml.doc " Return the thread currently executing. "]
+
+
+val id : t -> int[@@ocaml.doc
+                   " Return the identifier of the given thread. A thread identifier\n   is an integer that identifies uniquely the thread.\n   It can be used to build data structures indexed by threads. "]
+
+
+val exit : unit -> unit[@@ocaml.doc
+                         " Terminate prematurely the currently executing thread. "]
+
+
+val kill : t -> unit[@@ocaml.doc
+                      " Terminate prematurely the thread whose handle is given.\n   This functionality is available only with bytecode-level threads. "]
+
+
+[@@@ocaml.text " {1 Suspending threads} "]
+
+val delay : float -> unit[@@ocaml.doc
+                           " [delay d] suspends the execution of the calling thread for\n   [d] seconds. The other program threads continue to run during\n   this time. "]
+
+
+val join : t -> unit[@@ocaml.doc
+                      " [join th] suspends the execution of the calling thread\n   until the thread [th] has terminated. "]
+
+
+val wait_read : Unix.file_descr -> unit[@@ocaml.doc
+                                         " See {!Thread.wait_write}."]
+
+
+val wait_write : Unix.file_descr -> unit[@@ocaml.doc
+                                          " Suspend the execution of the calling thread until at least\n   one character or EOF is available for reading ({!Thread.wait_read}) or\n   one character can be written without blocking ([wait_write])\n   on the given Unix file descriptor. "]
+
+
+val wait_timed_read : Unix.file_descr -> float -> bool[@@ocaml.doc
+                                                        " See {!Thread.wait_timed_write}."]
+
+
+val wait_timed_write : Unix.file_descr -> float -> bool[@@ocaml.doc
+                                                         " Same as {!Thread.wait_read} and {!Thread.wait_write}, but wait for at most\n   the amount of time given as second argument (in seconds).\n   Return [true] if the file descriptor is ready for input/output\n   and [false] if the timeout expired. "]
+
+
+val select :
+  Unix.file_descr list ->
+    Unix.file_descr list ->
+      Unix.file_descr list ->
+        float ->
+          (Unix.file_descr list * Unix.file_descr list * Unix.file_descr
+            list)[@@ocaml.doc
+                   " Suspend the execution of the calling thread until input/output\n   becomes possible on the given Unix file descriptors.\n   The arguments and results have the same meaning as for\n   {!Unix.select}. "]
+
+
+val wait_pid : int -> (int * Unix.process_status)[@@ocaml.doc
+                                                   " [wait_pid p] suspends the execution of the calling thread\n   until the Unix process specified by the process identifier [p]\n   terminates. A pid [p] of [-1] means wait for any child.\n   A pid of [0] means wait for any child in the same process group\n   as the current process. Negative pid arguments represent\n   process groups. Returns the pid of the child caught and\n   its termination status, as per {!Unix.wait}. "]
+
+
+val wait_signal : int list -> int[@@ocaml.doc
+                                   " [wait_signal sigs] suspends the execution of the calling thread\n   until the process receives one of the signals specified in the\n   list [sigs].  It then returns the number of the signal received.\n   Signal handlers attached to the signals in [sigs] will not\n   be invoked.  Do not call [wait_signal] concurrently\n   from several threads on the same signals. "]
+
+
+val yield : unit -> unit[@@ocaml.doc
+                          " Re-schedule the calling thread without suspending it.\n   This function can be used to give scheduling hints,\n   telling the scheduler that now is a good time to\n   switch to other threads. "]
+
+
+[@@@ocaml.text "/*"]
+
+[@@@ocaml.text
+  " {1 Synchronization primitives}\n\n   The following primitives provide the basis for implementing\n   synchronization functions between threads. Their direct use is\n   discouraged, as they are very low-level and prone to race conditions\n   and deadlocks. The modules {!Mutex}, {!Condition} and {!Event}\n   provide higher-level synchronization primitives. "]
+
+val critical_section : bool ref[@@ocaml.doc
+                                 " Setting this reference to [true] deactivate thread preemption\n   (the timer interrupt that transfers control from thread to thread),\n   causing the current thread to run uninterrupted until\n   [critical_section] is reset to [false] or the current thread\n   explicitly relinquishes control using [sleep], [delay],\n   [wait_inchan] or [wait_descr]. "]
+
+
+val sleep : unit -> unit[@@ocaml.doc
+                          " Suspend the calling thread until another thread reactivates it\n   using {!Thread.wakeup}. Just before suspending the thread,\n   {!Thread.critical_section} is reset to [false]. Resetting\n   {!Thread.critical_section} and suspending the calling thread is an\n   atomic operation. "]
+
+
+val wakeup : t -> unit[@@ocaml.doc
+                        " Reactivate the given thread. After the call to [wakeup],\n   the suspended thread will resume execution at some future time. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module thread.mli
+
+  Namespace: thread.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Lightweight threads. "]
+    
+    type t
+    
+    
+    [@@@ocaml.text " {1 Thread creation and termination} "]
+    
+    val create :
+    ('a -> 'b) -> 'a -> t[@@ocaml.doc
+                           " [Thread.create funct arg] creates a new thread of control,\n   in which the function application [funct arg]\n   is executed concurrently with the other threads of the program.\n   The application of [Thread.create]\n   returns the handle of the newly created thread.\n   The new thread terminates when the application [funct arg]\n   returns, either normally or by raising an uncaught exception.\n   In the latter case, the exception is printed on standard error,\n   but not propagated back to the parent thread. Similarly, the\n   result of the application [funct arg] is discarded and not\n   directly accessible to the parent thread. "]
+    
+    
+    val self :
+    unit -> t[@@ocaml.doc " Return the thread currently executing. "]
+    
+    
+    val id :
+    t -> int[@@ocaml.doc
+              " Return the identifier of the given thread. A thread identifier\n   is an integer that identifies uniquely the thread.\n   It can be used to build data structures indexed by threads. "]
+    
+    
+    val exit :
+    unit -> unit[@@ocaml.doc
+                  " Terminate prematurely the currently executing thread. "]
+    
+    
+    val kill :
+    t -> unit[@@ocaml.doc
+               " Terminate prematurely the thread whose handle is given.\n   This functionality is available only with bytecode-level threads. "]
+    
+    
+    [@@@ocaml.text " {1 Suspending threads} "]
+    
+    val delay :
+    float -> unit[@@ocaml.doc
+                   " [delay d] suspends the execution of the calling thread for\n   [d] seconds. The other program threads continue to run during\n   this time. "]
+    
+    
+    val join :
+    t -> unit[@@ocaml.doc
+               " [join th] suspends the execution of the calling thread\n   until the thread [th] has terminated. "]
+    
+    
+    val wait_read :
+    Unix.file_descr -> unit[@@ocaml.doc " See {!Thread.wait_write}."]
+    
+    
+    val wait_write :
+    Unix.file_descr -> unit[@@ocaml.doc
+                             " Suspend the execution of the calling thread until at least\n   one character or EOF is available for reading ({!Thread.wait_read}) or\n   one character can be written without blocking ([wait_write])\n   on the given Unix file descriptor. "]
+    
+    
+    val wait_timed_read :
+    Unix.file_descr -> float -> bool[@@ocaml.doc
+                                      " See {!Thread.wait_timed_write}."]
+    
+    
+    val wait_timed_write :
+    Unix.file_descr -> float -> bool[@@ocaml.doc
+                                      " Same as {!Thread.wait_read} and {!Thread.wait_write}, but wait for at most\n   the amount of time given as second argument (in seconds).\n   Return [true] if the file descriptor is ready for input/output\n   and [false] if the timeout expired. "]
+    
+    
+    val select :
+    Unix.file_descr list ->
+      Unix.file_descr list ->
+        Unix.file_descr list ->
+          float ->
+            (Unix.file_descr list * Unix.file_descr list * Unix.file_descr
+              list)[@@ocaml.doc
+                     " Suspend the execution of the calling thread until input/output\n   becomes possible on the given Unix file descriptors.\n   The arguments and results have the same meaning as for\n   {!Unix.select}. "]
+    
+    
+    val wait_pid :
+    int -> (int * Unix.process_status)[@@ocaml.doc
+                                        " [wait_pid p] suspends the execution of the calling thread\n   until the Unix process specified by the process identifier [p]\n   terminates. A pid [p] of [-1] means wait for any child.\n   A pid of [0] means wait for any child in the same process group\n   as the current process. Negative pid arguments represent\n   process groups. Returns the pid of the child caught and\n   its termination status, as per {!Unix.wait}. "]
+    
+    
+    val wait_signal :
+    int list -> int[@@ocaml.doc
+                     " [wait_signal sigs] suspends the execution of the calling thread\n   until the process receives one of the signals specified in the\n   list [sigs].  It then returns the number of the signal received.\n   Signal handlers attached to the signals in [sigs] will not\n   be invoked.  Do not call [wait_signal] concurrently\n   from several threads on the same signals. "]
+    
+    
+    val yield :
+    unit -> unit[@@ocaml.doc
+                  " Re-schedule the calling thread without suspending it.\n   This function can be used to give scheduling hints,\n   telling the scheduler that now is a good time to\n   switch to other threads. "]
+    
+    
+    [@@@ocaml.text "/*"]
+    
+    [@@@ocaml.text
+      " {1 Synchronization primitives}\n\n   The following primitives provide the basis for implementing\n   synchronization functions between threads. Their direct use is\n   discouraged, as they are very low-level and prone to race conditions\n   and deadlocks. The modules {!Mutex}, {!Condition} and {!Event}\n   provide higher-level synchronization primitives. "]
+    
+    val critical_section :
+    bool ref[@@ocaml.doc
+              " Setting this reference to [true] deactivate thread preemption\n   (the timer interrupt that transfers control from thread to thread),\n   causing the current thread to run uninterrupted until\n   [critical_section] is reset to [false] or the current thread\n   explicitly relinquishes control using [sleep], [delay],\n   [wait_inchan] or [wait_descr]. "]
+    
+    
+    val sleep :
+    unit -> unit[@@ocaml.doc
+                  " Suspend the calling thread until another thread reactivates it\n   using {!Thread.wakeup}. Just before suspending the thread,\n   {!Thread.critical_section} is reset to [false]. Resetting\n   {!Thread.critical_section} and suspending the calling thread is an\n   atomic operation. "]
+    
+    
+    val wakeup :
+    t -> unit[@@ocaml.doc
+               " Reactivate the given thread. After the call to [wakeup],\n   the suspended thread will resume execution at some future time. "]
+    
+
+
+*** OK ***
+

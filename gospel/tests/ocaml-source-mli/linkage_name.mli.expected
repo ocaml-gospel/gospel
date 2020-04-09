@@ -1,0 +1,56 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+include Identifiable.S
+val create : string -> t
+val to_string : t -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+include Identifiable.S
+
+val create : string -> t
+
+
+val to_string : t -> string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module linkage_name.mli
+
+  Namespace: linkage_name.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    include Identifiable.S
+    
+    val create : string -> t
+    
+    
+    val to_string : t -> string
+    
+
+
+*** OK ***
+

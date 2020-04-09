@@ -1,0 +1,56 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Construct export information, for emission into .cmx files, from an\n    Flambda program. "]
+val build_transient :
+  backend:(module Backend_intf.S) -> Flambda.program -> Export_info.transient
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Construct export information, for emission into .cmx files, from an\n    Flambda program. "]
+
+val build_transient :
+  backend:(module Backend_intf.S) -> Flambda.program -> Export_info.transient
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module build_export_info.mli
+
+  Namespace: build_export_info.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " Construct export information, for emission into .cmx files, from an\n    Flambda program. "]
+    
+    val build_transient :
+    backend:(module Backend_intf.S) ->
+      Flambda.program -> Export_info.transient
+    
+
+
+*** OK ***
+

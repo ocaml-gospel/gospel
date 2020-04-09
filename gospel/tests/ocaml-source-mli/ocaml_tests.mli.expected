@@ -1,0 +1,74 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val bytecode : Tests.t
+val native : Tests.t
+val toplevel : Tests.t
+val expect : Tests.t
+val ocamldoc : Tests.t
+val asmgen : Tests.t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val bytecode : Tests.t
+
+
+val native : Tests.t
+
+
+val toplevel : Tests.t
+
+
+val expect : Tests.t
+
+
+val ocamldoc : Tests.t
+
+
+val asmgen : Tests.t
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_tests.mli
+
+  Namespace: ocaml_tests.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val bytecode : Tests.t
+    
+    
+    val native : Tests.t
+    
+    
+    val toplevel : Tests.t
+    
+    
+    val expect : Tests.t
+    
+    
+    val ocamldoc : Tests.t
+    
+    
+    val asmgen : Tests.t
+    
+
+
+*** OK ***
+

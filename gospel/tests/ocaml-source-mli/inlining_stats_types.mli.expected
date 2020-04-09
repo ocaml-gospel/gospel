@@ -1,0 +1,1173 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+module Inlined :
+sig
+  type t =
+    | Classic_mode 
+    | Annotation 
+    | Decl_local_to_application 
+    | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+    | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+    Inlining_cost.Whether_sufficient_benefit.t 
+end
+module Not_inlined :
+sig
+  type t =
+    | Classic_mode 
+    | Above_threshold of int 
+    | Annotation 
+    | No_useful_approximations 
+    | Unrolling_depth_exceeded 
+    | Self_call 
+    | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+    | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+    Inlining_cost.Whether_sufficient_benefit.t 
+end
+module Specialised :
+sig
+  type t =
+    | Annotation 
+    | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+    | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+    Inlining_cost.Whether_sufficient_benefit.t 
+end
+module Not_specialised :
+sig
+  type t =
+    | Classic_mode 
+    | Above_threshold of int 
+    | Annotation 
+    | Not_recursive 
+    | Not_closed 
+    | No_invariant_parameters 
+    | No_useful_approximations 
+    | Self_call 
+    | Not_beneficial of Inlining_cost.Whether_sufficient_benefit.t *
+    Inlining_cost.Whether_sufficient_benefit.t 
+end
+module Prevented :
+sig type t =
+      | Function_prevented_from_inlining 
+      | Level_exceeded  end
+module Decision :
+sig
+  type t =
+    | Prevented of Prevented.t 
+    | Specialised of Specialised.t 
+    | Inlined of Not_specialised.t * Inlined.t 
+    | Unchanged of Not_specialised.t * Not_inlined.t 
+  val summary : Format.formatter -> t -> unit
+  val calculation : depth:int -> Format.formatter -> t -> unit
+end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+module Inlined :
+sig
+  type t =
+  | Classic_mode 
+  | Annotation 
+  | Decl_local_to_application 
+  | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+  | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+  Inlining_cost.Whether_sufficient_benefit.t 
+    
+end
+
+module Not_inlined :
+sig
+  type t =
+  | Classic_mode 
+  | Above_threshold of int 
+  | Annotation 
+  | No_useful_approximations 
+  | Unrolling_depth_exceeded 
+  | Self_call 
+  | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+  | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+  Inlining_cost.Whether_sufficient_benefit.t 
+    
+end
+
+module Specialised :
+sig
+  type t =
+  | Annotation 
+  | Without_subfunctions of Inlining_cost.Whether_sufficient_benefit.t 
+  | With_subfunctions of Inlining_cost.Whether_sufficient_benefit.t *
+  Inlining_cost.Whether_sufficient_benefit.t 
+    
+end
+
+module Not_specialised :
+sig
+  type t =
+  | Classic_mode 
+  | Above_threshold of int 
+  | Annotation 
+  | Not_recursive 
+  | Not_closed 
+  | No_invariant_parameters 
+  | No_useful_approximations 
+  | Self_call 
+  | Not_beneficial of Inlining_cost.Whether_sufficient_benefit.t *
+  Inlining_cost.Whether_sufficient_benefit.t 
+    
+end
+
+module Prevented :
+sig type t =
+    | Function_prevented_from_inlining 
+    | Level_exceeded 
+     end
+
+module Decision :
+sig
+  type t =
+  | Prevented of Prevented.t 
+  | Specialised of Specialised.t 
+  | Inlined of Not_specialised.t * Inlined.t 
+  | Unchanged of Not_specialised.t * Not_inlined.t 
+    
+  val summary : Format.formatter -> t -> unit
+  
+  val calculation : depth:int -> Format.formatter -> t -> unit
+  
+end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module inlining_stats_types.mli
+
+  Namespace: inlining_stats_types.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Decision
+        Type symbols
+           t
+          
+        Logic Symbols
+          function Inlined (_:t#1 * t#2) : t
+          function Prevented (_:t#3) : t
+          function Specialised (_:t#4) : t
+          function Unchanged (_:t#1 * t#5) : t
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Inlined
+        Type symbols
+           t#2
+          
+        Logic Symbols
+          function Annotation  : t#2
+          function Classic_mode  : t#2
+          function Decl_local_to_application  : t#2
+          function With_subfunctions (_:t#6 * t#6) : t#2
+          function Without_subfunctions (_:t#6) : t#2
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Not_inlined
+        Type symbols
+           t#5
+          
+        Logic Symbols
+          function Above_threshold (_:int) : t#5
+          function Annotation#1  : t#5
+          function Classic_mode#1  : t#5
+          function No_useful_approximations  : t#5
+          function Self_call  : t#5
+          function Unrolling_depth_exceeded  : t#5
+          function With_subfunctions#1 (_:t#6 * t#6) : t#5
+          function Without_subfunctions#1 (_:t#6) : t#5
+          
+        Exception Symbols
+          
+        Namespaces
+          Namespace: Inlining_cost
+            Type symbols
+              
+            Logic Symbols
+              
+            Exception Symbols
+              
+            Namespaces
+              Namespace: Benefit
+                Type symbols
+                   t#7
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Gospelstdlib
+                Type symbols
+                  'a array
+                   int
+                  'a ref
+                  'a seq
+                  
+                Logic Symbols
+                  function abs (_:integer) : integer
+                  function array_length (_:'a array) : integer
+                  function contents (_:'a array) : 'a seq
+                  function elts (_:'a array) : 'a seq
+                  function empty  : 'a seq
+                  function fst (_:'a * 'b) : 'a
+                  function infix * (_:integer) (_:integer) : integer
+                  function infix + (_:integer) (_:integer) : integer
+                  function infix ++ (_:'a seq) (_:'a seq) : 'a seq
+                  function infix - (_:integer) (_:integer) : integer
+                  function infix / (_:integer) (_:integer) : integer
+                  predicate infix < (_:integer) (_:integer)
+                  predicate infix <= (_:integer) (_:integer)
+                  predicate infix == (_:'a seq) (_:'a seq)
+                  predicate infix > (_:integer) (_:integer)
+                  predicate infix >= (_:integer) (_:integer)
+                  function integer_of_int (_:int) : integer
+                  function length (_:'a seq) : integer
+                  function max (_:integer) (_:integer) : integer
+                  function max_int  : integer
+                  function min (_:integer) (_:integer) : integer
+                  function min_int  : integer
+                  function mixfix [.._] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_..] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_.._] (_:'a seq) (_:integer) (_:integer) : 'a 
+                  seq
+                  function mixfix [_] (_:'a seq) (_:integer) : 'a
+                  function mod (_:integer) (_:integer) : integer
+                  function pred (_:integer) : integer
+                  function prefix ! (_:'a ref) : 'a
+                  function prefix - (_:integer) : integer
+                  function seq_of_list (_:'a list) : 'a seq
+                  function snd (_:'a * 'b) : 'b
+                  function succ (_:integer) : integer
+                  
+                Exception Symbols
+                  Invalid_argument
+                  Not_found
+                  
+                Namespaces
+                  Namespace: Array
+                    Type symbols
+                      
+                    Logic Symbols
+                      function length#1 (_:'a array) : integer
+                      function mixfix [_]#1 (_:'a array) (_:integer) : 'a
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: ArrayPermut
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate permut_all (_:'a array) (_:'a array)
+                      predicate permut_sub (_:'a array) (_:'a array) (_:
+                      integer) (_:integer)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Bag
+                    Type symbols
+                      'a bag
+                      
+                    Logic Symbols
+                      function add (_:'a) (_:'a bag) : 'a bag
+                      function card (_:'a bag) : integer
+                      function choose (_:'a bag) : 'a
+                      function diff (_:'a bag) (_:'a bag) : 'a bag
+                      function empty_bag  : 'a bag
+                      predicate eq_bag (_:'a bag) (_:'a bag)
+                      predicate mem (_:'a) (_:'a bag)
+                      function nb_occ (_:'a) (_:'a bag) : integer
+                      function singleton (_:'a) : 'a bag
+                      function union (_:'a bag) (_:'a bag) : 'a bag
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Map
+                    Type symbols
+                      
+                    Logic Symbols
+                      function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
+                      function mixfix [_]#2 (_:'a -> 'b) (_:'a) : 'b
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Order
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate is_pre_order (_:'a -> 'a -> int)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Peano
+                    Type symbols
+                       t#8
+                      
+                    Logic Symbols
+                      function int_of_peano (_:t#8) : integer
+                      function v (_:t#8) : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Seq
+                    Type symbols
+                      
+                    Logic Symbols
+                      function cons (_:'a) (_:'a seq) : 'a seq
+                      function create (_:integer) (_:integer -> 'a) : 'a seq
+                      predicate distinct (_:'a seq)
+                      function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b 
+                      seq) : 'a
+                      function fold_right (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
+                      function get (_:'a seq) (_:integer) : 'a
+                      function hd (_:'a seq) : 'a
+                      function len (_:'a seq) : integer
+                      function map (_:'a -> 'b) (_:'a seq) : 'b seq
+                      predicate mem#1 (_:'a seq) (_:'a)
+                      function mixfix [<-]#1 (_:'a seq) (_:integer) (_:'a) : 'a 
+                      seq
+                      function rev (_:'a seq) : 'a seq
+                      function snoc (_:'a seq) (_:'a) : 'a seq
+                      predicate sorted (_:int seq)
+                      predicate sorted_sub (_:int seq) (_:integer) (_:
+                      integer)
+                      function tl (_:'a seq) : 'a seq
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: SeqPerm
+                    Type symbols
+                      
+                    Logic Symbols
+                      function occ (_:'a seq) (_:'a) (_:integer) (_:integer) : 
+                      integer
+                      predicate permut (_:'a seq) (_:'a seq) (_:integer) (_:
+                      integer)
+                      predicate permut_all#1 (_:'a seq) (_:'a seq)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Set
+                    Type symbols
+                      'a set
+                      
+                    Logic Symbols
+                      predicate mem#2 (_:'a) (_:'a set)
+                      function mixfix {:_:} (_:'a) : 'a set
+                      function mixfix {}  : 'a set
+                      function sum (_:'a -> integer) (_:'a set) : integer
+                      function union#1 (_:'a set) (_:'a set) : 'a set
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Sys
+                    Type symbols
+                      
+                    Logic Symbols
+                      function big_endian  : bool
+                      function int_size  : integer
+                      function max_array_length  : integer
+                      function max_string_length  : integer
+                      function word_size  : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  
+                Type Namespaces
+                  
+              Namespace: Threshold
+                Type symbols
+                   t#9
+                  
+                Logic Symbols
+                  function Can_inline_if_no_larger_than (_:int) : t#9
+                  function Never_inline  : t#9
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Whether_sufficient_benefit
+                Type symbols
+                   t#6
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              
+            Type Namespaces
+              
+          
+        Type Namespaces
+          
+      Namespace: Not_specialised
+        Type symbols
+           t#1
+          
+        Logic Symbols
+          function Above_threshold#1 (_:int) : t#1
+          function Annotation#2  : t#1
+          function Classic_mode#2  : t#1
+          function No_invariant_parameters  : t#1
+          function No_useful_approximations#1  : t#1
+          function Not_beneficial (_:t#6 * t#6) : t#1
+          function Not_closed  : t#1
+          function Not_recursive  : t#1
+          function Self_call#1  : t#1
+          
+        Exception Symbols
+          
+        Namespaces
+          Namespace: Inlining_cost
+            Type symbols
+              
+            Logic Symbols
+              
+            Exception Symbols
+              
+            Namespaces
+              Namespace: Benefit
+                Type symbols
+                   t#7
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Gospelstdlib
+                Type symbols
+                  'a array
+                   int
+                  'a ref
+                  'a seq
+                  
+                Logic Symbols
+                  function abs (_:integer) : integer
+                  function array_length (_:'a array) : integer
+                  function contents (_:'a array) : 'a seq
+                  function elts (_:'a array) : 'a seq
+                  function empty  : 'a seq
+                  function fst (_:'a * 'b) : 'a
+                  function infix * (_:integer) (_:integer) : integer
+                  function infix + (_:integer) (_:integer) : integer
+                  function infix ++ (_:'a seq) (_:'a seq) : 'a seq
+                  function infix - (_:integer) (_:integer) : integer
+                  function infix / (_:integer) (_:integer) : integer
+                  predicate infix < (_:integer) (_:integer)
+                  predicate infix <= (_:integer) (_:integer)
+                  predicate infix == (_:'a seq) (_:'a seq)
+                  predicate infix > (_:integer) (_:integer)
+                  predicate infix >= (_:integer) (_:integer)
+                  function integer_of_int (_:int) : integer
+                  function length (_:'a seq) : integer
+                  function max (_:integer) (_:integer) : integer
+                  function max_int  : integer
+                  function min (_:integer) (_:integer) : integer
+                  function min_int  : integer
+                  function mixfix [.._] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_..] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_.._] (_:'a seq) (_:integer) (_:integer) : 'a 
+                  seq
+                  function mixfix [_] (_:'a seq) (_:integer) : 'a
+                  function mod (_:integer) (_:integer) : integer
+                  function pred (_:integer) : integer
+                  function prefix ! (_:'a ref) : 'a
+                  function prefix - (_:integer) : integer
+                  function seq_of_list (_:'a list) : 'a seq
+                  function snd (_:'a * 'b) : 'b
+                  function succ (_:integer) : integer
+                  
+                Exception Symbols
+                  Invalid_argument
+                  Not_found
+                  
+                Namespaces
+                  Namespace: Array
+                    Type symbols
+                      
+                    Logic Symbols
+                      function length#1 (_:'a array) : integer
+                      function mixfix [_]#1 (_:'a array) (_:integer) : 'a
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: ArrayPermut
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate permut_all (_:'a array) (_:'a array)
+                      predicate permut_sub (_:'a array) (_:'a array) (_:
+                      integer) (_:integer)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Bag
+                    Type symbols
+                      'a bag
+                      
+                    Logic Symbols
+                      function add (_:'a) (_:'a bag) : 'a bag
+                      function card (_:'a bag) : integer
+                      function choose (_:'a bag) : 'a
+                      function diff (_:'a bag) (_:'a bag) : 'a bag
+                      function empty_bag  : 'a bag
+                      predicate eq_bag (_:'a bag) (_:'a bag)
+                      predicate mem (_:'a) (_:'a bag)
+                      function nb_occ (_:'a) (_:'a bag) : integer
+                      function singleton (_:'a) : 'a bag
+                      function union (_:'a bag) (_:'a bag) : 'a bag
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Map
+                    Type symbols
+                      
+                    Logic Symbols
+                      function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
+                      function mixfix [_]#2 (_:'a -> 'b) (_:'a) : 'b
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Order
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate is_pre_order (_:'a -> 'a -> int)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Peano
+                    Type symbols
+                       t#8
+                      
+                    Logic Symbols
+                      function int_of_peano (_:t#8) : integer
+                      function v (_:t#8) : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Seq
+                    Type symbols
+                      
+                    Logic Symbols
+                      function cons (_:'a) (_:'a seq) : 'a seq
+                      function create (_:integer) (_:integer -> 'a) : 'a seq
+                      predicate distinct (_:'a seq)
+                      function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b 
+                      seq) : 'a
+                      function fold_right (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
+                      function get (_:'a seq) (_:integer) : 'a
+                      function hd (_:'a seq) : 'a
+                      function len (_:'a seq) : integer
+                      function map (_:'a -> 'b) (_:'a seq) : 'b seq
+                      predicate mem#1 (_:'a seq) (_:'a)
+                      function mixfix [<-]#1 (_:'a seq) (_:integer) (_:'a) : 'a 
+                      seq
+                      function rev (_:'a seq) : 'a seq
+                      function snoc (_:'a seq) (_:'a) : 'a seq
+                      predicate sorted (_:int seq)
+                      predicate sorted_sub (_:int seq) (_:integer) (_:
+                      integer)
+                      function tl (_:'a seq) : 'a seq
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: SeqPerm
+                    Type symbols
+                      
+                    Logic Symbols
+                      function occ (_:'a seq) (_:'a) (_:integer) (_:integer) : 
+                      integer
+                      predicate permut (_:'a seq) (_:'a seq) (_:integer) (_:
+                      integer)
+                      predicate permut_all#1 (_:'a seq) (_:'a seq)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Set
+                    Type symbols
+                      'a set
+                      
+                    Logic Symbols
+                      predicate mem#2 (_:'a) (_:'a set)
+                      function mixfix {:_:} (_:'a) : 'a set
+                      function mixfix {}  : 'a set
+                      function sum (_:'a -> integer) (_:'a set) : integer
+                      function union#1 (_:'a set) (_:'a set) : 'a set
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Sys
+                    Type symbols
+                      
+                    Logic Symbols
+                      function big_endian  : bool
+                      function int_size  : integer
+                      function max_array_length  : integer
+                      function max_string_length  : integer
+                      function word_size  : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  
+                Type Namespaces
+                  
+              Namespace: Threshold
+                Type symbols
+                   t#9
+                  
+                Logic Symbols
+                  function Can_inline_if_no_larger_than (_:int) : t#9
+                  function Never_inline  : t#9
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Whether_sufficient_benefit
+                Type symbols
+                   t#6
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              
+            Type Namespaces
+              
+          
+        Type Namespaces
+          
+      Namespace: Prevented
+        Type symbols
+           t#3
+          
+        Logic Symbols
+          function Function_prevented_from_inlining  : t#3
+          function Level_exceeded  : t#3
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Specialised
+        Type symbols
+           t#4
+          
+        Logic Symbols
+          function Annotation#3  : t#4
+          function With_subfunctions#2 (_:t#6 * t#6) : t#4
+          function Without_subfunctions#2 (_:t#6) : t#4
+          
+        Exception Symbols
+          
+        Namespaces
+          Namespace: Inlining_cost
+            Type symbols
+              
+            Logic Symbols
+              
+            Exception Symbols
+              
+            Namespaces
+              Namespace: Benefit
+                Type symbols
+                   t#7
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Gospelstdlib
+                Type symbols
+                  'a array
+                   int
+                  'a ref
+                  'a seq
+                  
+                Logic Symbols
+                  function abs (_:integer) : integer
+                  function array_length (_:'a array) : integer
+                  function contents (_:'a array) : 'a seq
+                  function elts (_:'a array) : 'a seq
+                  function empty  : 'a seq
+                  function fst (_:'a * 'b) : 'a
+                  function infix * (_:integer) (_:integer) : integer
+                  function infix + (_:integer) (_:integer) : integer
+                  function infix ++ (_:'a seq) (_:'a seq) : 'a seq
+                  function infix - (_:integer) (_:integer) : integer
+                  function infix / (_:integer) (_:integer) : integer
+                  predicate infix < (_:integer) (_:integer)
+                  predicate infix <= (_:integer) (_:integer)
+                  predicate infix == (_:'a seq) (_:'a seq)
+                  predicate infix > (_:integer) (_:integer)
+                  predicate infix >= (_:integer) (_:integer)
+                  function integer_of_int (_:int) : integer
+                  function length (_:'a seq) : integer
+                  function max (_:integer) (_:integer) : integer
+                  function max_int  : integer
+                  function min (_:integer) (_:integer) : integer
+                  function min_int  : integer
+                  function mixfix [.._] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_..] (_:'a seq) (_:integer) : 'a seq
+                  function mixfix [_.._] (_:'a seq) (_:integer) (_:integer) : 'a 
+                  seq
+                  function mixfix [_] (_:'a seq) (_:integer) : 'a
+                  function mod (_:integer) (_:integer) : integer
+                  function pred (_:integer) : integer
+                  function prefix ! (_:'a ref) : 'a
+                  function prefix - (_:integer) : integer
+                  function seq_of_list (_:'a list) : 'a seq
+                  function snd (_:'a * 'b) : 'b
+                  function succ (_:integer) : integer
+                  
+                Exception Symbols
+                  Invalid_argument
+                  Not_found
+                  
+                Namespaces
+                  Namespace: Array
+                    Type symbols
+                      
+                    Logic Symbols
+                      function length#1 (_:'a array) : integer
+                      function mixfix [_]#1 (_:'a array) (_:integer) : 'a
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: ArrayPermut
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate permut_all (_:'a array) (_:'a array)
+                      predicate permut_sub (_:'a array) (_:'a array) (_:
+                      integer) (_:integer)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Bag
+                    Type symbols
+                      'a bag
+                      
+                    Logic Symbols
+                      function add (_:'a) (_:'a bag) : 'a bag
+                      function card (_:'a bag) : integer
+                      function choose (_:'a bag) : 'a
+                      function diff (_:'a bag) (_:'a bag) : 'a bag
+                      function empty_bag  : 'a bag
+                      predicate eq_bag (_:'a bag) (_:'a bag)
+                      predicate mem (_:'a) (_:'a bag)
+                      function nb_occ (_:'a) (_:'a bag) : integer
+                      function singleton (_:'a) : 'a bag
+                      function union (_:'a bag) (_:'a bag) : 'a bag
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Map
+                    Type symbols
+                      
+                    Logic Symbols
+                      function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
+                      function mixfix [_]#2 (_:'a -> 'b) (_:'a) : 'b
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Order
+                    Type symbols
+                      
+                    Logic Symbols
+                      predicate is_pre_order (_:'a -> 'a -> int)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Peano
+                    Type symbols
+                       t#8
+                      
+                    Logic Symbols
+                      function int_of_peano (_:t#8) : integer
+                      function v (_:t#8) : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Seq
+                    Type symbols
+                      
+                    Logic Symbols
+                      function cons (_:'a) (_:'a seq) : 'a seq
+                      function create (_:integer) (_:integer -> 'a) : 'a seq
+                      predicate distinct (_:'a seq)
+                      function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b 
+                      seq) : 'a
+                      function fold_right (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
+                      function get (_:'a seq) (_:integer) : 'a
+                      function hd (_:'a seq) : 'a
+                      function len (_:'a seq) : integer
+                      function map (_:'a -> 'b) (_:'a seq) : 'b seq
+                      predicate mem#1 (_:'a seq) (_:'a)
+                      function mixfix [<-]#1 (_:'a seq) (_:integer) (_:'a) : 'a 
+                      seq
+                      function rev (_:'a seq) : 'a seq
+                      function snoc (_:'a seq) (_:'a) : 'a seq
+                      predicate sorted (_:int seq)
+                      predicate sorted_sub (_:int seq) (_:integer) (_:
+                      integer)
+                      function tl (_:'a seq) : 'a seq
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: SeqPerm
+                    Type symbols
+                      
+                    Logic Symbols
+                      function occ (_:'a seq) (_:'a) (_:integer) (_:integer) : 
+                      integer
+                      predicate permut (_:'a seq) (_:'a seq) (_:integer) (_:
+                      integer)
+                      predicate permut_all#1 (_:'a seq) (_:'a seq)
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Set
+                    Type symbols
+                      'a set
+                      
+                    Logic Symbols
+                      predicate mem#2 (_:'a) (_:'a set)
+                      function mixfix {:_:} (_:'a) : 'a set
+                      function mixfix {}  : 'a set
+                      function sum (_:'a -> integer) (_:'a set) : integer
+                      function union#1 (_:'a set) (_:'a set) : 'a set
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  Namespace: Sys
+                    Type symbols
+                      
+                    Logic Symbols
+                      function big_endian  : bool
+                      function int_size  : integer
+                      function max_array_length  : integer
+                      function max_string_length  : integer
+                      function word_size  : integer
+                      
+                    Exception Symbols
+                      
+                    Namespaces
+                      
+                    Type Namespaces
+                      
+                  
+                Type Namespaces
+                  
+              Namespace: Threshold
+                Type symbols
+                   t#9
+                  
+                Logic Symbols
+                  function Can_inline_if_no_larger_than (_:int) : t#9
+                  function Never_inline  : t#9
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              Namespace: Whether_sufficient_benefit
+                Type symbols
+                   t#6
+                  
+                Logic Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              
+            Type Namespaces
+              
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    module Inlined#1 :
+    sig
+      (*@ use Inlining_cost *)
+      type t#2 = Classic_mode of 
+                 function Classic_mode  : t#2
+              | Annotation of 
+                function Annotation  : t#2
+              | Decl_local_to_application of 
+                function Decl_local_to_application  : t#2
+              | Without_subfunctions of t#6
+                function Without_subfunctions (_:t#6) : t#2
+              | With_subfunctions of t#6 * t#6
+                function With_subfunctions (_:t#6 * t#6) : t#2
+      
+    end
+    
+    module Not_inlined :
+    sig
+      (*@ use Inlining_cost *)
+      type t#5 = Classic_mode#1 of 
+                 function Classic_mode#1  : t#5
+              | Above_threshold of int
+                function Above_threshold (_:int) : t#5
+              | Annotation#1 of 
+                function Annotation#1  : t#5
+              | No_useful_approximations of 
+                function No_useful_approximations  : t#5
+              | Unrolling_depth_exceeded of 
+                function Unrolling_depth_exceeded  : t#5
+              | Self_call of 
+                function Self_call  : t#5
+              | Without_subfunctions#1 of t#6
+                function Without_subfunctions#1 (_:t#6) : t#5
+              | With_subfunctions#1 of t#6 * t#6
+                function With_subfunctions#1 (_:t#6 * t#6) : t#5
+      
+    end
+    
+    module Specialised#1 :
+    sig
+      (*@ use Inlining_cost *)
+      type t#4 = Annotation#3 of 
+                 function Annotation#3  : t#4
+              | Without_subfunctions#2 of t#6
+                function Without_subfunctions#2 (_:t#6) : t#4
+              | With_subfunctions#2 of t#6 * t#6
+                function With_subfunctions#2 (_:t#6 * t#6) : t#4
+      
+    end
+    
+    module Not_specialised :
+    sig
+      (*@ use Inlining_cost *)
+      type t#1 = Classic_mode#2 of 
+                 function Classic_mode#2  : t#1
+              | Above_threshold#1 of int
+                function Above_threshold#1 (_:int) : t#1
+              | Annotation#2 of 
+                function Annotation#2  : t#1
+              | Not_recursive of 
+                function Not_recursive  : t#1
+              | Not_closed of 
+                function Not_closed  : t#1
+              | No_invariant_parameters of 
+                function No_invariant_parameters  : t#1
+              | No_useful_approximations#1 of 
+                function No_useful_approximations#1  : t#1
+              | Self_call#1 of 
+                function Self_call#1  : t#1
+              | Not_beneficial of t#6 * t#6
+                function Not_beneficial (_:t#6 * t#6) : t#1
+      
+    end
+    
+    module Prevented#1 :
+    sig
+      type t#3 = Function_prevented_from_inlining of 
+                 function Function_prevented_from_inlining  : t#3
+              | Level_exceeded of 
+                function Level_exceeded  : t#3
+      
+    end
+    
+    module Decision :
+    sig
+      type t = Prevented of t#3
+               function Prevented (_:t#3) : t
+            | Specialised of t#4
+              function Specialised (_:t#4) : t
+            | Inlined of t#1 * t#2
+              function Inlined (_:t#1 * t#2) : t
+            | Unchanged of t#1 * t#5
+              function Unchanged (_:t#1 * t#5) : t
+      
+      val summary : Format.formatter -> t -> unit
+      
+      val calculation : depth:int -> Format.formatter -> t -> unit
+      
+    end
+
+
+*** OK ***
+

@@ -1,0 +1,53 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int
+val f : int -> int
+val g : string -> int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int
+
+
+val f : int -> int
+
+
+val g : string -> int
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module multdef.mli
+
+  Namespace: multdef.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> int
+    
+    
+    val f#1 : int -> int
+    
+    
+    val g : string -> int
+    
+
+
+*** OK ***
+

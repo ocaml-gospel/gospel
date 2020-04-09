@@ -1,0 +1,147 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Analysis of the command line arguments. "]
+val current_generator : Odoc_gen.generator option ref[@@ocaml.doc
+                                                       " The current module defining the generator to use. "]
+val set_generator : Odoc_gen.generator -> unit[@@ocaml.doc
+                                                " To set the documentation generator. "]
+val extend_html_generator : (module Odoc_gen.Html_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current HTML generator.\n  @raise Failure if another kind of generator is already set."]
+val extend_latex_generator : (module Odoc_gen.Latex_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current LaTeX generator.\n  @raise Failure if another kind of generator is already set."]
+val extend_texi_generator : (module Odoc_gen.Texi_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current Texi generator.\n  @raise Failure if another kind of generator is already set."]
+val extend_man_generator : (module Odoc_gen.Man_functor) -> unit[@@ocaml.doc
+                                                                  " Extend current man generator.\n  @raise Failure if another kind of generator is already set."]
+val extend_dot_generator : (module Odoc_gen.Dot_functor) -> unit[@@ocaml.doc
+                                                                  " Extend current dot generator.\n  @raise Failure if another kind of generator is already set."]
+val extend_base_generator : (module Odoc_gen.Base_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current base generator.\n  @raise Failure if another kind of generator is already set."]
+val add_option : (string * Arg.spec * string) -> unit[@@ocaml.doc
+                                                       " Add an option specification. "]
+val parse : unit -> unit[@@ocaml.doc
+                          " Parse the args.\n   [byte] indicate if we are in bytecode mode (default is [true])."]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Analysis of the command line arguments. "]
+
+val current_generator : Odoc_gen.generator option ref[@@ocaml.doc
+                                                       " The current module defining the generator to use. "]
+
+
+val set_generator : Odoc_gen.generator -> unit[@@ocaml.doc
+                                                " To set the documentation generator. "]
+
+
+val extend_html_generator : (module Odoc_gen.Html_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current HTML generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val extend_latex_generator : (module Odoc_gen.Latex_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current LaTeX generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val extend_texi_generator : (module Odoc_gen.Texi_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current Texi generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val extend_man_generator : (module Odoc_gen.Man_functor) -> unit[@@ocaml.doc
+                                                                  " Extend current man generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val extend_dot_generator : (module Odoc_gen.Dot_functor) -> unit[@@ocaml.doc
+                                                                  " Extend current dot generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val extend_base_generator : (module Odoc_gen.Base_functor) -> unit[@@ocaml.doc
+                                                                    " Extend current base generator.\n  @raise Failure if another kind of generator is already set."]
+
+
+val add_option : (string * Arg.spec * string) -> unit[@@ocaml.doc
+                                                       " Add an option specification. "]
+
+
+val parse : unit -> unit[@@ocaml.doc
+                          " Parse the args.\n   [byte] indicate if we are in bytecode mode (default is [true])."]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_args.mli
+
+  Namespace: odoc_args.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Analysis of the command line arguments. "]
+    
+    val current_generator :
+    Odoc_gen.generator option ref[@@ocaml.doc
+                                   " The current module defining the generator to use. "]
+    
+    
+    val set_generator :
+    Odoc_gen.generator -> unit[@@ocaml.doc
+                                " To set the documentation generator. "]
+    
+    
+    val extend_html_generator :
+    (module Odoc_gen.Html_functor) -> unit[@@ocaml.doc
+                                            " Extend current HTML generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val extend_latex_generator :
+    (module Odoc_gen.Latex_functor) -> unit[@@ocaml.doc
+                                             " Extend current LaTeX generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val extend_texi_generator :
+    (module Odoc_gen.Texi_functor) -> unit[@@ocaml.doc
+                                            " Extend current Texi generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val extend_man_generator :
+    (module Odoc_gen.Man_functor) -> unit[@@ocaml.doc
+                                           " Extend current man generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val extend_dot_generator :
+    (module Odoc_gen.Dot_functor) -> unit[@@ocaml.doc
+                                           " Extend current dot generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val extend_base_generator :
+    (module Odoc_gen.Base_functor) -> unit[@@ocaml.doc
+                                            " Extend current base generator.\n  @raise Failure if another kind of generator is already set."]
+    
+    
+    val add_option :
+    (string * Arg.spec * string) -> unit[@@ocaml.doc
+                                          " Add an option specification. "]
+    
+    
+    val parse :
+    unit -> unit[@@ocaml.doc
+                  " Parse the args.\n   [byte] indicate if we are in bytecode mode (default is [true])."]
+    
+
+
+*** OK ***
+

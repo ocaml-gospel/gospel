@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val choose : 'a -> 'a -> 'a
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val choose : 'a -> 'a -> 'a
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module opaque_intf.mli
+
+  Namespace: opaque_intf.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val choose : 'a -> 'a -> 'a
+    
+
+
+*** OK ***
+

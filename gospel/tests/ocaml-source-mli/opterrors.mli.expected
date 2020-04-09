@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val report_error : Format.formatter -> exn -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val report_error : Format.formatter -> exn -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module opterrors.mli
+
+  Namespace: opterrors.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val report_error : Format.formatter -> exn -> unit
+    
+
+
+*** OK ***
+

@@ -1,0 +1,74 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val srcdir : unit -> string
+val stdlib : string -> string
+val libunix : string -> string
+val toplevel : string -> string
+val runtime : string -> string
+val tools : string -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val srcdir : unit -> string
+
+
+val stdlib : string -> string
+
+
+val libunix : string -> string
+
+
+val toplevel : string -> string
+
+
+val runtime : string -> string
+
+
+val tools : string -> string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_directories.mli
+
+  Namespace: ocaml_directories.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val srcdir : unit -> string
+    
+    
+    val stdlib : string -> string
+    
+    
+    val libunix : string -> string
+    
+    
+    val toplevel : string -> string
+    
+    
+    val runtime : string -> string
+    
+    
+    val tools : string -> string
+    
+
+
+*** OK ***
+

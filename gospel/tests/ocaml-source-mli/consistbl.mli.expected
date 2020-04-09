@@ -1,0 +1,116 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Consistency tables: for checking consistency of module CRCs\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+type t
+val create : unit -> t
+val clear : t -> unit
+val check : t -> string -> Digest.t -> string -> unit
+val check_noadd : t -> string -> Digest.t -> string -> unit
+val set : t -> string -> Digest.t -> string -> unit
+val source : t -> string -> string
+val extract : string list -> t -> (string * Digest.t option) list
+val filter : (string -> bool) -> t -> unit
+exception Inconsistency of string * string * string 
+exception Not_available of string 
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Consistency tables: for checking consistency of module CRCs\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+type t
+  
+
+val create : unit -> t
+
+
+val clear : t -> unit
+
+
+val check : t -> string -> Digest.t -> string -> unit
+
+
+val check_noadd : t -> string -> Digest.t -> string -> unit
+
+
+val set : t -> string -> Digest.t -> string -> unit
+
+
+val source : t -> string -> string
+
+
+val extract : string list -> t -> (string * Digest.t option) list
+
+
+val filter : (string -> bool) -> t -> unit
+
+
+exception Inconsistency of string * string * string 
+
+exception Not_available of string 
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module consistbl.mli
+
+  Namespace: consistbl.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      
+    Exception Symbols
+      Inconsistency
+      Not_available
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Consistency tables: for checking consistency of module CRCs\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+    
+    type t
+    
+    
+    val create : unit -> t
+    
+    
+    val clear : t -> unit
+    
+    
+    val check : t -> string -> Digest.t -> string -> unit
+    
+    
+    val check_noadd : t -> string -> Digest.t -> string -> unit
+    
+    
+    val set : t -> string -> Digest.t -> string -> unit
+    
+    
+    val source : t -> string -> string
+    
+    
+    val extract : string list -> t -> (string * Digest.t option) list
+    
+    
+    val filter : (string -> bool) -> t -> unit
+    
+    
+    exception Inconsistency
+    
+    exception Not_available
+
+
+*** OK ***
+

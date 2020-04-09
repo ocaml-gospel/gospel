@@ -1,0 +1,514 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Memory management control and statistics; finalised values. "]
+type stat =
+  {
+  minor_words: float
+    [@ocaml.doc
+      " Number of words allocated in the minor heap since\n       the program was started.  This number is accurate in\n       byte-code programs, but only an approximation in programs\n       compiled to native code. "];
+  promoted_words: float
+    [@ocaml.doc
+      " Number of words allocated in the minor heap that\n       survived a minor collection and were moved to the major heap\n       since the program was started. "];
+  major_words: float
+    [@ocaml.doc
+      " Number of words allocated in the major heap, including\n       the promoted words, since the program was started. "];
+  minor_collections: int
+    [@ocaml.doc
+      " Number of minor collections since the program was started. "];
+  major_collections: int
+    [@ocaml.doc
+      " Number of major collection cycles completed since the program\n        was started. "];
+  heap_words: int [@ocaml.doc " Total size of the major heap, in words. "];
+  heap_chunks: int
+    [@ocaml.doc
+      " Number of contiguous pieces of memory that make up the major heap. "];
+  live_words: int
+    [@ocaml.doc
+      " Number of words of live data in the major heap, including the header\n       words. "];
+  live_blocks: int [@ocaml.doc " Number of live blocks in the major heap. "];
+  free_words: int [@ocaml.doc " Number of words in the free list. "];
+  free_blocks: int [@ocaml.doc " Number of blocks in the free list. "];
+  largest_free: int
+    [@ocaml.doc " Size (in words) of the largest block in the free list. "];
+  fragments: int
+    [@ocaml.doc
+      " Number of wasted words due to fragmentation.  These are\n       1-words free blocks placed between two live blocks.  They\n       are not available for allocation. "];
+  compactions: int
+    [@ocaml.doc
+      " Number of heap compactions since the program was started. "];
+  top_heap_words: int
+    [@ocaml.doc " Maximum size reached by the major heap, in words. "];
+  stack_size: int
+    [@ocaml.doc " Current size of the stack, in words. @since 3.12.0 "]}
+[@@ocaml.doc
+  " The memory management counters are returned in a [stat] record.\n\n   The total amount of memory allocated by the program since it was started\n   is (in words) [minor_words + major_words - promoted_words].  Multiply by\n   the word size (4 on a 32-bit machine, 8 on a 64-bit machine) to get\n   the number of bytes.\n"]
+type control =
+  {
+  mutable minor_heap_size: int
+    [@ocaml.doc
+      " The size (in words) of the minor heap.  Changing\n       this parameter will trigger a minor collection.  Default: 256k. "];
+  mutable major_heap_increment: int
+    [@ocaml.doc
+      " How much to add to the major heap when increasing it. If this\n        number is less than or equal to 1000, it is a percentage of\n        the current heap size (i.e. setting it to 100 will double the heap\n        size at each increase). If it is more than 1000, it is a fixed\n        number of words that will be added to the heap. Default: 15. "];
+  mutable space_overhead: int
+    [@ocaml.doc
+      " The major GC speed is computed from this parameter.\n       This is the memory that will be \"wasted\" because the GC does not\n       immediately collect unreachable blocks.  It is expressed as a\n       percentage of the memory used for live data.\n       The GC will work more (use more CPU time and collect\n       blocks more eagerly) if [space_overhead] is smaller.\n       Default: 80. "];
+  mutable verbose: int
+    [@ocaml.doc
+      " This value controls the GC messages on standard error output.\n       It is a sum of some of the following flags, to print messages\n       on the corresponding events:\n       - [0x001] Start of major GC cycle.\n       - [0x002] Minor collection and major GC slice.\n       - [0x004] Growing and shrinking of the heap.\n       - [0x008] Resizing of stacks and memory manager tables.\n       - [0x010] Heap compaction.\n       - [0x020] Change of GC parameters.\n       - [0x040] Computation of major GC slice size.\n       - [0x080] Calling of finalisation functions.\n       - [0x100] Bytecode executable and shared library search at start-up.\n       - [0x200] Computation of compaction-triggering condition.\n       - [0x400] Output GC statistics at program exit.\n       Default: 0. "];
+  mutable max_overhead: int
+    [@ocaml.doc
+      " Heap compaction is triggered when the estimated amount\n       of \"wasted\" memory is more than [max_overhead] percent of the\n       amount of live data.  If [max_overhead] is set to 0, heap\n       compaction is triggered at the end of each major GC cycle\n       (this setting is intended for testing purposes only).\n       If [max_overhead >= 1000000], compaction is never triggered.\n       If compaction is permanently disabled, it is strongly suggested\n       to set [allocation_policy] to 1.\n       Default: 500. "];
+  mutable stack_limit: int
+    [@ocaml.doc
+      " The maximum size of the stack (in words).  This is only\n       relevant to the byte-code runtime, as the native code runtime\n       uses the operating system's stack.  Default: 1024k. "];
+  mutable allocation_policy: int
+    [@ocaml.doc
+      " The policy used for allocating in the heap.  Possible\n        values are 0 and 1.  0 is the next-fit policy, which is\n        quite fast but can result in fragmentation.  1 is the\n        first-fit policy, which can be slower in some cases but\n        can be better for programs with fragmentation problems.\n        Default: 0. @since 3.11.0 "];
+  window_size: int
+    [@ocaml.doc
+      " The size of the window used by the major GC for smoothing\n        out variations in its workload. This is an integer between\n        1 and 50.\n        Default: 1. @since 4.03.0 "]}
+[@@ocaml.doc
+  " The GC parameters are given as a [control] record.  Note that\n    these parameters can also be initialised by setting the\n    OCAMLRUNPARAM environment variable.  See the documentation of\n    [ocamlrun]. "]
+external stat : unit -> stat = "caml_gc_stat"[@@ocaml.doc
+                                               " Return the current values of the memory management counters in a\n   [stat] record.  This function examines every heap block to get the\n   statistics. "]
+external quick_stat : unit -> stat = "caml_gc_quick_stat"[@@ocaml.doc
+                                                           " Same as [stat] except that [live_words], [live_blocks], [free_words],\n    [free_blocks], [largest_free], and [fragments] are set to 0.  This\n    function is much faster than [stat] because it does not need to go\n    through the heap. "]
+external counters : unit -> (float * float * float) = "caml_gc_counters"
+[@@ocaml.doc
+  " Return [(minor_words, promoted_words, major_words)].  This function\n    is as fast as [quick_stat]. "]
+external minor_words :
+  unit -> ((float)[@unboxed ]) = "caml_gc_minor_words"
+    "caml_gc_minor_words_unboxed"[@@ocaml.doc
+                                   " Number of words allocated in the minor heap since the program was\n    started. This number is accurate in byte-code programs, but only an\n    approximation in programs compiled to native code.\n\n    In native code this function does not allocate.\n\n    @since 4.04 "]
+external get : unit -> control = "caml_gc_get"[@@ocaml.doc
+                                                " Return the current values of the GC parameters in a [control] record. "]
+external set : control -> unit = "caml_gc_set"[@@ocaml.doc
+                                                " [set r] changes the GC parameters according to the [control] record [r].\n   The normal usage is: [Gc.set { (Gc.get()) with Gc.verbose = 0x00d }] "]
+external minor : unit -> unit = "caml_gc_minor"[@@ocaml.doc
+                                                 " Trigger a minor collection. "]
+external major_slice : int -> int = "caml_gc_major_slice"[@@ocaml.doc
+                                                           " [major_slice n]\n    Do a minor collection and a slice of major collection. [n] is the\n    size of the slice: the GC will do enough work to free (on average)\n    [n] words of memory. If [n] = 0, the GC will try to do enough work\n    to ensure that the next automatic slice has no work to do.\n    This function returns an unspecified integer (currently: 0). "]
+external major : unit -> unit = "caml_gc_major"[@@ocaml.doc
+                                                 " Do a minor collection and finish the current major collection cycle. "]
+external full_major : unit -> unit = "caml_gc_full_major"[@@ocaml.doc
+                                                           " Do a minor collection, finish the current major collection cycle,\n   and perform a complete new cycle.  This will collect all currently\n   unreachable blocks. "]
+external compact : unit -> unit = "caml_gc_compaction"[@@ocaml.doc
+                                                        " Perform a full major collection and compact the heap.  Note that heap\n   compaction is a lengthy operation. "]
+val print_stat : out_channel -> unit[@@ocaml.doc
+                                      " Print the current values of the memory management counters (in\n   human-readable form) into the channel argument. "]
+val allocated_bytes : unit -> float[@@ocaml.doc
+                                     " Return the total number of bytes allocated since the program was\n   started.  It is returned as a [float] to avoid overflow problems\n   with [int] on 32-bit machines. "]
+external get_minor_free : unit -> int = "caml_get_minor_free"[@@ocaml.doc
+                                                               " Return the current size of the free space inside the minor heap.\n\n    @since 4.03.0 "]
+external get_bucket : int -> int = "caml_get_major_bucket"[@@noalloc ]
+[@@ocaml.doc
+  " [get_bucket n] returns the current size of the [n]-th future bucket\n    of the GC smoothing system. The unit is one millionth of a full GC.\n    Raise [Invalid_argument] if [n] is negative, return 0 if n is larger\n    than the smoothing window.\n\n    @since 4.03.0 "]
+external get_credit : unit -> int = "caml_get_major_credit"[@@noalloc ]
+[@@ocaml.doc
+  " [get_credit ()] returns the current size of the \"work done in advance\"\n    counter of the GC smoothing system. The unit is one millionth of a\n    full GC.\n\n    @since 4.03.0 "]
+external huge_fallback_count : unit -> int = "caml_gc_huge_fallback_count"
+[@@ocaml.doc
+  " Return the number of times we tried to map huge pages and had to fall\n    back to small pages. This is always 0 if [OCAMLRUNPARAM] contains [H=1].\n    @since 4.03.0 "]
+val finalise : ('a -> unit) -> 'a -> unit[@@ocaml.doc
+                                           " [finalise f v] registers [f] as a finalisation function for [v].\n   [v] must be heap-allocated.  [f] will be called with [v] as\n   argument at some point between the first time [v] becomes unreachable\n   (including through weak pointers) and the time [v] is collected by\n   the GC. Several functions can\n   be registered for the same value, or even several instances of the\n   same function.  Each instance will be called once (or never,\n   if the program terminates before [v] becomes unreachable).\n\n   The GC will call the finalisation functions in the order of\n   deallocation.  When several values become unreachable at the\n   same time (i.e. during the same GC cycle), the finalisation\n   functions will be called in the reverse order of the corresponding\n   calls to [finalise].  If [finalise] is called in the same order\n   as the values are allocated, that means each value is finalised\n   before the values it depends upon.  Of course, this becomes\n   false if additional dependencies are introduced by assignments.\n\n   In the presence of multiple OCaml threads it should be assumed that\n   any particular finaliser may be executed in any of the threads.\n\n   Anything reachable from the closure of finalisation functions\n   is considered reachable, so the following code will not work\n   as expected:\n   - [ let v = ... in Gc.finalise (fun _ -> ...v...) v ]\n\n   Instead you should make sure that [v] is not in the closure of\n   the finalisation function by writing:\n   - [ let f = fun x -> ...  let v = ... in Gc.finalise f v ]\n\n\n   The [f] function can use all features of OCaml, including\n   assignments that make the value reachable again.  It can also\n   loop forever (in this case, the other\n   finalisation functions will not be called during the execution of f,\n   unless it calls [finalise_release]).\n   It can call [finalise] on [v] or other values to register other\n   functions or even itself.  It can raise an exception; in this case\n   the exception will interrupt whatever the program was doing when\n   the function was called.\n\n\n   [finalise] will raise [Invalid_argument] if [v] is not\n   guaranteed to be heap-allocated.  Some examples of values that are not\n   heap-allocated are integers, constant constructors, booleans,\n   the empty array, the empty list, the unit value.  The exact list\n   of what is heap-allocated or not is implementation-dependent.\n   Some constant values can be heap-allocated but never deallocated\n   during the lifetime of the program, for example a list of integer\n   constants; this is also implementation-dependent.\n   Note that values of types [float] are sometimes allocated and\n   sometimes not, so finalising them is unsafe, and [finalise] will\n   also raise [Invalid_argument] for them. Values of type ['a Lazy.t]\n   (for any ['a]) are like [float] in this respect, except that the\n   compiler sometimes optimizes them in a way that prevents [finalise]\n   from detecting them. In this case, it will not raise\n   [Invalid_argument], but you should still avoid calling [finalise]\n   on lazy values.\n\n\n   The results of calling {!String.make}, {!Bytes.make}, {!Bytes.create},\n   {!Array.make}, and {!Stdlib.ref} are guaranteed to be\n   heap-allocated and non-constant except when the length argument is [0].\n"]
+val finalise_last : (unit -> unit) -> 'a -> unit[@@ocaml.doc
+                                                  " same as {!finalise} except the value is not given as argument. So\n    you can't use the given value for the computation of the\n    finalisation function. The benefit is that the function is called\n    after the value is unreachable for the last time instead of the\n    first time. So contrary to {!finalise} the value will never be\n    reachable again or used again. In particular every weak pointer\n    and ephemeron that contained this value as key or data is unset\n    before running the finalisation function. Moreover the\n    finalisation function attached with `GC.finalise` are always\n    called before the finalisation function attached with `GC.finalise_last`.\n\n    @since 4.04\n"]
+val finalise_release : unit -> unit[@@ocaml.doc
+                                     " A finalisation function may call [finalise_release] to tell the\n    GC that it can launch the next finalisation function without waiting\n    for the current one to return. "]
+type alarm[@@ocaml.doc
+            " An alarm is a piece of data that calls a user function at the end of\n   each major GC cycle.  The following functions are provided to create\n   and delete alarms. "]
+val create_alarm : (unit -> unit) -> alarm[@@ocaml.doc
+                                            " [create_alarm f] will arrange for [f] to be called at the end of each\n   major GC cycle, starting with the current cycle or the next one.\n   A value of type [alarm] is returned that you can\n   use to call [delete_alarm]. "]
+val delete_alarm : alarm -> unit[@@ocaml.doc
+                                  " [delete_alarm a] will stop the calls to the function associated\n   to [a].  Calling [delete_alarm a] again has no effect. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Memory management control and statistics; finalised values. "]
+
+type stat =
+{
+minor_words: float
+  [@ocaml.doc
+    " Number of words allocated in the minor heap since\n       the program was started.  This number is accurate in\n       byte-code programs, but only an approximation in programs\n       compiled to native code. "];
+promoted_words: float
+  [@ocaml.doc
+    " Number of words allocated in the minor heap that\n       survived a minor collection and were moved to the major heap\n       since the program was started. "];
+major_words: float
+  [@ocaml.doc
+    " Number of words allocated in the major heap, including\n       the promoted words, since the program was started. "];
+minor_collections: int
+  [@ocaml.doc " Number of minor collections since the program was started. "];
+major_collections: int
+  [@ocaml.doc
+    " Number of major collection cycles completed since the program\n        was started. "];
+heap_words: int [@ocaml.doc " Total size of the major heap, in words. "];
+heap_chunks: int
+  [@ocaml.doc
+    " Number of contiguous pieces of memory that make up the major heap. "];
+live_words: int
+  [@ocaml.doc
+    " Number of words of live data in the major heap, including the header\n       words. "];
+live_blocks: int [@ocaml.doc " Number of live blocks in the major heap. "];
+free_words: int [@ocaml.doc " Number of words in the free list. "];
+free_blocks: int [@ocaml.doc " Number of blocks in the free list. "];
+largest_free: int
+  [@ocaml.doc " Size (in words) of the largest block in the free list. "];
+fragments: int
+  [@ocaml.doc
+    " Number of wasted words due to fragmentation.  These are\n       1-words free blocks placed between two live blocks.  They\n       are not available for allocation. "];
+compactions: int
+  [@ocaml.doc " Number of heap compactions since the program was started. "];
+top_heap_words: int
+  [@ocaml.doc " Maximum size reached by the major heap, in words. "];
+stack_size: int
+  [@ocaml.doc " Current size of the stack, in words. @since 3.12.0 "]}
+[@@ocaml.doc
+  " The memory management counters are returned in a [stat] record.\n\n   The total amount of memory allocated by the program since it was started\n   is (in words) [minor_words + major_words - promoted_words].  Multiply by\n   the word size (4 on a 32-bit machine, 8 on a 64-bit machine) to get\n   the number of bytes.\n"]
+  
+
+type control =
+{
+mutable minor_heap_size: int
+  [@ocaml.doc
+    " The size (in words) of the minor heap.  Changing\n       this parameter will trigger a minor collection.  Default: 256k. "];
+mutable major_heap_increment: int
+  [@ocaml.doc
+    " How much to add to the major heap when increasing it. If this\n        number is less than or equal to 1000, it is a percentage of\n        the current heap size (i.e. setting it to 100 will double the heap\n        size at each increase). If it is more than 1000, it is a fixed\n        number of words that will be added to the heap. Default: 15. "];
+mutable space_overhead: int
+  [@ocaml.doc
+    " The major GC speed is computed from this parameter.\n       This is the memory that will be \"wasted\" because the GC does not\n       immediately collect unreachable blocks.  It is expressed as a\n       percentage of the memory used for live data.\n       The GC will work more (use more CPU time and collect\n       blocks more eagerly) if [space_overhead] is smaller.\n       Default: 80. "];
+mutable verbose: int
+  [@ocaml.doc
+    " This value controls the GC messages on standard error output.\n       It is a sum of some of the following flags, to print messages\n       on the corresponding events:\n       - [0x001] Start of major GC cycle.\n       - [0x002] Minor collection and major GC slice.\n       - [0x004] Growing and shrinking of the heap.\n       - [0x008] Resizing of stacks and memory manager tables.\n       - [0x010] Heap compaction.\n       - [0x020] Change of GC parameters.\n       - [0x040] Computation of major GC slice size.\n       - [0x080] Calling of finalisation functions.\n       - [0x100] Bytecode executable and shared library search at start-up.\n       - [0x200] Computation of compaction-triggering condition.\n       - [0x400] Output GC statistics at program exit.\n       Default: 0. "];
+mutable max_overhead: int
+  [@ocaml.doc
+    " Heap compaction is triggered when the estimated amount\n       of \"wasted\" memory is more than [max_overhead] percent of the\n       amount of live data.  If [max_overhead] is set to 0, heap\n       compaction is triggered at the end of each major GC cycle\n       (this setting is intended for testing purposes only).\n       If [max_overhead >= 1000000], compaction is never triggered.\n       If compaction is permanently disabled, it is strongly suggested\n       to set [allocation_policy] to 1.\n       Default: 500. "];
+mutable stack_limit: int
+  [@ocaml.doc
+    " The maximum size of the stack (in words).  This is only\n       relevant to the byte-code runtime, as the native code runtime\n       uses the operating system's stack.  Default: 1024k. "];
+mutable allocation_policy: int
+  [@ocaml.doc
+    " The policy used for allocating in the heap.  Possible\n        values are 0 and 1.  0 is the next-fit policy, which is\n        quite fast but can result in fragmentation.  1 is the\n        first-fit policy, which can be slower in some cases but\n        can be better for programs with fragmentation problems.\n        Default: 0. @since 3.11.0 "];
+window_size: int
+  [@ocaml.doc
+    " The size of the window used by the major GC for smoothing\n        out variations in its workload. This is an integer between\n        1 and 50.\n        Default: 1. @since 4.03.0 "]}
+[@@ocaml.doc
+  " The GC parameters are given as a [control] record.  Note that\n    these parameters can also be initialised by setting the\n    OCAMLRUNPARAM environment variable.  See the documentation of\n    [ocamlrun]. "]
+  
+
+external stat : unit -> stat = "caml_gc_stat"[@@ocaml.doc
+                                               " Return the current values of the memory management counters in a\n   [stat] record.  This function examines every heap block to get the\n   statistics. "]
+
+
+external quick_stat : unit -> stat = "caml_gc_quick_stat"[@@ocaml.doc
+                                                           " Same as [stat] except that [live_words], [live_blocks], [free_words],\n    [free_blocks], [largest_free], and [fragments] are set to 0.  This\n    function is much faster than [stat] because it does not need to go\n    through the heap. "]
+
+
+external counters : unit -> (float * float * float) = "caml_gc_counters"
+[@@ocaml.doc
+  " Return [(minor_words, promoted_words, major_words)].  This function\n    is as fast as [quick_stat]. "]
+
+
+external minor_words :
+  unit -> ((float)[@unboxed ]) = "caml_gc_minor_words"
+  "caml_gc_minor_words_unboxed"[@@ocaml.doc
+                                 " Number of words allocated in the minor heap since the program was\n    started. This number is accurate in byte-code programs, but only an\n    approximation in programs compiled to native code.\n\n    In native code this function does not allocate.\n\n    @since 4.04 "]
+
+
+external get : unit -> control = "caml_gc_get"[@@ocaml.doc
+                                                " Return the current values of the GC parameters in a [control] record. "]
+
+
+external set : control -> unit = "caml_gc_set"[@@ocaml.doc
+                                                " [set r] changes the GC parameters according to the [control] record [r].\n   The normal usage is: [Gc.set { (Gc.get()) with Gc.verbose = 0x00d }] "]
+
+
+external minor : unit -> unit = "caml_gc_minor"[@@ocaml.doc
+                                                 " Trigger a minor collection. "]
+
+
+external major_slice : int -> int = "caml_gc_major_slice"[@@ocaml.doc
+                                                           " [major_slice n]\n    Do a minor collection and a slice of major collection. [n] is the\n    size of the slice: the GC will do enough work to free (on average)\n    [n] words of memory. If [n] = 0, the GC will try to do enough work\n    to ensure that the next automatic slice has no work to do.\n    This function returns an unspecified integer (currently: 0). "]
+
+
+external major : unit -> unit = "caml_gc_major"[@@ocaml.doc
+                                                 " Do a minor collection and finish the current major collection cycle. "]
+
+
+external full_major : unit -> unit = "caml_gc_full_major"[@@ocaml.doc
+                                                           " Do a minor collection, finish the current major collection cycle,\n   and perform a complete new cycle.  This will collect all currently\n   unreachable blocks. "]
+
+
+external compact : unit -> unit = "caml_gc_compaction"[@@ocaml.doc
+                                                        " Perform a full major collection and compact the heap.  Note that heap\n   compaction is a lengthy operation. "]
+
+
+val print_stat : out_channel -> unit[@@ocaml.doc
+                                      " Print the current values of the memory management counters (in\n   human-readable form) into the channel argument. "]
+
+
+val allocated_bytes : unit -> float[@@ocaml.doc
+                                     " Return the total number of bytes allocated since the program was\n   started.  It is returned as a [float] to avoid overflow problems\n   with [int] on 32-bit machines. "]
+
+
+external get_minor_free : unit -> int = "caml_get_minor_free"[@@ocaml.doc
+                                                               " Return the current size of the free space inside the minor heap.\n\n    @since 4.03.0 "]
+
+
+external get_bucket : int -> int = "caml_get_major_bucket"[@@noalloc ]
+[@@ocaml.doc
+  " [get_bucket n] returns the current size of the [n]-th future bucket\n    of the GC smoothing system. The unit is one millionth of a full GC.\n    Raise [Invalid_argument] if [n] is negative, return 0 if n is larger\n    than the smoothing window.\n\n    @since 4.03.0 "]
+
+
+external get_credit : unit -> int = "caml_get_major_credit"[@@noalloc ]
+[@@ocaml.doc
+  " [get_credit ()] returns the current size of the \"work done in advance\"\n    counter of the GC smoothing system. The unit is one millionth of a\n    full GC.\n\n    @since 4.03.0 "]
+
+
+external huge_fallback_count : unit -> int = "caml_gc_huge_fallback_count"
+[@@ocaml.doc
+  " Return the number of times we tried to map huge pages and had to fall\n    back to small pages. This is always 0 if [OCAMLRUNPARAM] contains [H=1].\n    @since 4.03.0 "]
+
+
+val finalise : ('a -> unit) -> 'a -> unit[@@ocaml.doc
+                                           " [finalise f v] registers [f] as a finalisation function for [v].\n   [v] must be heap-allocated.  [f] will be called with [v] as\n   argument at some point between the first time [v] becomes unreachable\n   (including through weak pointers) and the time [v] is collected by\n   the GC. Several functions can\n   be registered for the same value, or even several instances of the\n   same function.  Each instance will be called once (or never,\n   if the program terminates before [v] becomes unreachable).\n\n   The GC will call the finalisation functions in the order of\n   deallocation.  When several values become unreachable at the\n   same time (i.e. during the same GC cycle), the finalisation\n   functions will be called in the reverse order of the corresponding\n   calls to [finalise].  If [finalise] is called in the same order\n   as the values are allocated, that means each value is finalised\n   before the values it depends upon.  Of course, this becomes\n   false if additional dependencies are introduced by assignments.\n\n   In the presence of multiple OCaml threads it should be assumed that\n   any particular finaliser may be executed in any of the threads.\n\n   Anything reachable from the closure of finalisation functions\n   is considered reachable, so the following code will not work\n   as expected:\n   - [ let v = ... in Gc.finalise (fun _ -> ...v...) v ]\n\n   Instead you should make sure that [v] is not in the closure of\n   the finalisation function by writing:\n   - [ let f = fun x -> ...  let v = ... in Gc.finalise f v ]\n\n\n   The [f] function can use all features of OCaml, including\n   assignments that make the value reachable again.  It can also\n   loop forever (in this case, the other\n   finalisation functions will not be called during the execution of f,\n   unless it calls [finalise_release]).\n   It can call [finalise] on [v] or other values to register other\n   functions or even itself.  It can raise an exception; in this case\n   the exception will interrupt whatever the program was doing when\n   the function was called.\n\n\n   [finalise] will raise [Invalid_argument] if [v] is not\n   guaranteed to be heap-allocated.  Some examples of values that are not\n   heap-allocated are integers, constant constructors, booleans,\n   the empty array, the empty list, the unit value.  The exact list\n   of what is heap-allocated or not is implementation-dependent.\n   Some constant values can be heap-allocated but never deallocated\n   during the lifetime of the program, for example a list of integer\n   constants; this is also implementation-dependent.\n   Note that values of types [float] are sometimes allocated and\n   sometimes not, so finalising them is unsafe, and [finalise] will\n   also raise [Invalid_argument] for them. Values of type ['a Lazy.t]\n   (for any ['a]) are like [float] in this respect, except that the\n   compiler sometimes optimizes them in a way that prevents [finalise]\n   from detecting them. In this case, it will not raise\n   [Invalid_argument], but you should still avoid calling [finalise]\n   on lazy values.\n\n\n   The results of calling {!String.make}, {!Bytes.make}, {!Bytes.create},\n   {!Array.make}, and {!Stdlib.ref} are guaranteed to be\n   heap-allocated and non-constant except when the length argument is [0].\n"]
+
+
+val finalise_last : (unit -> unit) -> 'a -> unit[@@ocaml.doc
+                                                  " same as {!finalise} except the value is not given as argument. So\n    you can't use the given value for the computation of the\n    finalisation function. The benefit is that the function is called\n    after the value is unreachable for the last time instead of the\n    first time. So contrary to {!finalise} the value will never be\n    reachable again or used again. In particular every weak pointer\n    and ephemeron that contained this value as key or data is unset\n    before running the finalisation function. Moreover the\n    finalisation function attached with `GC.finalise` are always\n    called before the finalisation function attached with `GC.finalise_last`.\n\n    @since 4.04\n"]
+
+
+val finalise_release : unit -> unit[@@ocaml.doc
+                                     " A finalisation function may call [finalise_release] to tell the\n    GC that it can launch the next finalisation function without waiting\n    for the current one to return. "]
+
+
+type alarm[@@ocaml.doc
+            " An alarm is a piece of data that calls a user function at the end of\n   each major GC cycle.  The following functions are provided to create\n   and delete alarms. "]
+  
+
+val create_alarm : (unit -> unit) -> alarm[@@ocaml.doc
+                                            " [create_alarm f] will arrange for [f] to be called at the end of each\n   major GC cycle, starting with the current cycle or the next one.\n   A value of type [alarm] is returned that you can\n   use to call [delete_alarm]. "]
+
+
+val delete_alarm : alarm -> unit[@@ocaml.doc
+                                  " [delete_alarm a] will stop the calls to the function associated\n   to [a].  Calling [delete_alarm a] again has no effect. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module gc.mli
+
+  Namespace: gc.mli
+    Type symbols
+       alarm
+       control
+       stat
+      
+    Logic Symbols
+      function allocation_policy (_:control) : int
+      function compactions (_:stat) : int
+      function constr#control (_:int) (_:int) (_:int) (_:int) (_:int) (_:
+      int) (_:int) (_:int) : control
+      function constr#stat (_:float) (_:float) (_:float) (_:int) (_:int) (_:
+      int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:
+      int) (_:int) (_:int) : stat
+      function fragments (_:stat) : int
+      function free_blocks (_:stat) : int
+      function free_words (_:stat) : int
+      function heap_chunks (_:stat) : int
+      function heap_words (_:stat) : int
+      function largest_free (_:stat) : int
+      function live_blocks (_:stat) : int
+      function live_words (_:stat) : int
+      function major_collections (_:stat) : int
+      function major_heap_increment (_:control) : int
+      function major_words (_:stat) : float
+      function max_overhead (_:control) : int
+      function minor_collections (_:stat) : int
+      function minor_heap_size (_:control) : int
+      function minor_words (_:stat) : float
+      function promoted_words (_:stat) : float
+      function space_overhead (_:control) : int
+      function stack_limit (_:control) : int
+      function stack_size (_:stat) : int
+      function top_heap_words (_:stat) : int
+      function verbose (_:control) : int
+      function window_size (_:control) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Memory management control and statistics; finalised values. "]
+    
+    type stat = {minor_words:float; promoted_words:float; major_words:
+             float; minor_collections:int; major_collections:int; heap_words:
+             int; heap_chunks:int; live_words:int; live_blocks:int; free_words:
+             int; free_blocks:int; largest_free:int; fragments:int; compactions:
+             int; top_heap_words:int; stack_size:int}
+             function constr#stat (_:float) (_:float) (_:float) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) : stat
+               function minor_words (_:stat) : float
+               function promoted_words (_:stat) : float
+               function major_words (_:stat) : float
+               function minor_collections (_:stat) : int
+               function major_collections (_:stat) : int
+               function heap_words (_:stat) : int
+               function heap_chunks (_:stat) : int
+               function live_words (_:stat) : int
+               function live_blocks (_:stat) : int
+               function free_words (_:stat) : int
+               function free_blocks (_:stat) : int
+               function largest_free (_:stat) : int
+               function fragments (_:stat) : int
+               function compactions (_:stat) : int
+               function top_heap_words (_:stat) : int
+               function stack_size (_:stat) : int
+    
+    
+    type control = {mutable minor_heap_size:int; mutable major_heap_increment:
+                int; mutable space_overhead:int; mutable verbose:int; mutable max_overhead:
+                int; mutable stack_limit:int; mutable allocation_policy:
+                int; window_size:int}
+                function constr#control (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) (_:int) : control
+                  function minor_heap_size (_:control) : int
+                  function major_heap_increment (_:control) : int
+                  function space_overhead (_:control) : int
+                  function verbose (_:control) : int
+                  function max_overhead (_:control) : int
+                  function stack_limit (_:control) : int
+                  function allocation_policy (_:control) : int
+                  function window_size (_:control) : int
+    
+    
+    external stat#1 : unit -> stat =
+    "caml_gc_stat"[@@ocaml.doc
+                    " Return the current values of the memory management counters in a\n   [stat] record.  This function examines every heap block to get the\n   statistics. "]
+    
+    
+    external quick_stat : unit -> stat =
+    "caml_gc_quick_stat"[@@ocaml.doc
+                          " Same as [stat] except that [live_words], [live_blocks], [free_words],\n    [free_blocks], [largest_free], and [fragments] are set to 0.  This\n    function is much faster than [stat] because it does not need to go\n    through the heap. "]
+    
+    
+    external counters : unit -> (float * float * float) =
+    "caml_gc_counters"[@@ocaml.doc
+                        " Return [(minor_words, promoted_words, major_words)].  This function\n    is as fast as [quick_stat]. "]
+    
+    
+    external minor_words#1 : unit -> ((float)[@unboxed ]) =
+    "caml_gc_minor_words"
+    "caml_gc_minor_words_unboxed"[@@ocaml.doc
+                                   " Number of words allocated in the minor heap since the program was\n    started. This number is accurate in byte-code programs, but only an\n    approximation in programs compiled to native code.\n\n    In native code this function does not allocate.\n\n    @since 4.04 "]
+    
+    
+    external get : unit -> control =
+    "caml_gc_get"[@@ocaml.doc
+                   " Return the current values of the GC parameters in a [control] record. "]
+    
+    
+    external set : control -> unit =
+    "caml_gc_set"[@@ocaml.doc
+                   " [set r] changes the GC parameters according to the [control] record [r].\n   The normal usage is: [Gc.set { (Gc.get()) with Gc.verbose = 0x00d }] "]
+    
+    
+    external minor : unit -> unit =
+    "caml_gc_minor"[@@ocaml.doc " Trigger a minor collection. "]
+    
+    
+    external major_slice : int -> int =
+    "caml_gc_major_slice"[@@ocaml.doc
+                           " [major_slice n]\n    Do a minor collection and a slice of major collection. [n] is the\n    size of the slice: the GC will do enough work to free (on average)\n    [n] words of memory. If [n] = 0, the GC will try to do enough work\n    to ensure that the next automatic slice has no work to do.\n    This function returns an unspecified integer (currently: 0). "]
+    
+    
+    external major : unit -> unit =
+    "caml_gc_major"[@@ocaml.doc
+                     " Do a minor collection and finish the current major collection cycle. "]
+    
+    
+    external full_major : unit -> unit =
+    "caml_gc_full_major"[@@ocaml.doc
+                          " Do a minor collection, finish the current major collection cycle,\n   and perform a complete new cycle.  This will collect all currently\n   unreachable blocks. "]
+    
+    
+    external compact : unit -> unit =
+    "caml_gc_compaction"[@@ocaml.doc
+                          " Perform a full major collection and compact the heap.  Note that heap\n   compaction is a lengthy operation. "]
+    
+    
+    val print_stat :
+    out_channel -> unit[@@ocaml.doc
+                         " Print the current values of the memory management counters (in\n   human-readable form) into the channel argument. "]
+    
+    
+    val allocated_bytes :
+    unit -> float[@@ocaml.doc
+                   " Return the total number of bytes allocated since the program was\n   started.  It is returned as a [float] to avoid overflow problems\n   with [int] on 32-bit machines. "]
+    
+    
+    external get_minor_free : unit -> int =
+    "caml_get_minor_free"[@@ocaml.doc
+                           " Return the current size of the free space inside the minor heap.\n\n    @since 4.03.0 "]
+    
+    
+    external get_bucket : int -> int =
+    "caml_get_major_bucket"[@@noalloc ][@@ocaml.doc
+                                         " [get_bucket n] returns the current size of the [n]-th future bucket\n    of the GC smoothing system. The unit is one millionth of a full GC.\n    Raise [Invalid_argument] if [n] is negative, return 0 if n is larger\n    than the smoothing window.\n\n    @since 4.03.0 "]
+    
+    
+    external get_credit : unit -> int =
+    "caml_get_major_credit"[@@noalloc ][@@ocaml.doc
+                                         " [get_credit ()] returns the current size of the \"work done in advance\"\n    counter of the GC smoothing system. The unit is one millionth of a\n    full GC.\n\n    @since 4.03.0 "]
+    
+    
+    external huge_fallback_count : unit -> int =
+    "caml_gc_huge_fallback_count"[@@ocaml.doc
+                                   " Return the number of times we tried to map huge pages and had to fall\n    back to small pages. This is always 0 if [OCAMLRUNPARAM] contains [H=1].\n    @since 4.03.0 "]
+    
+    
+    val finalise :
+    ('a -> unit) -> 'a -> unit[@@ocaml.doc
+                                " [finalise f v] registers [f] as a finalisation function for [v].\n   [v] must be heap-allocated.  [f] will be called with [v] as\n   argument at some point between the first time [v] becomes unreachable\n   (including through weak pointers) and the time [v] is collected by\n   the GC. Several functions can\n   be registered for the same value, or even several instances of the\n   same function.  Each instance will be called once (or never,\n   if the program terminates before [v] becomes unreachable).\n\n   The GC will call the finalisation functions in the order of\n   deallocation.  When several values become unreachable at the\n   same time (i.e. during the same GC cycle), the finalisation\n   functions will be called in the reverse order of the corresponding\n   calls to [finalise].  If [finalise] is called in the same order\n   as the values are allocated, that means each value is finalised\n   before the values it depends upon.  Of course, this becomes\n   false if additional dependencies are introduced by assignments.\n\n   In the presence of multiple OCaml threads it should be assumed that\n   any particular finaliser may be executed in any of the threads.\n\n   Anything reachable from the closure of finalisation functions\n   is considered reachable, so the following code will not work\n   as expected:\n   - [ let v = ... in Gc.finalise (fun _ -> ...v...) v ]\n\n   Instead you should make sure that [v] is not in the closure of\n   the finalisation function by writing:\n   - [ let f = fun x -> ...  let v = ... in Gc.finalise f v ]\n\n\n   The [f] function can use all features of OCaml, including\n   assignments that make the value reachable again.  It can also\n   loop forever (in this case, the other\n   finalisation functions will not be called during the execution of f,\n   unless it calls [finalise_release]).\n   It can call [finalise] on [v] or other values to register other\n   functions or even itself.  It can raise an exception; in this case\n   the exception will interrupt whatever the program was doing when\n   the function was called.\n\n\n   [finalise] will raise [Invalid_argument] if [v] is not\n   guaranteed to be heap-allocated.  Some examples of values that are not\n   heap-allocated are integers, constant constructors, booleans,\n   the empty array, the empty list, the unit value.  The exact list\n   of what is heap-allocated or not is implementation-dependent.\n   Some constant values can be heap-allocated but never deallocated\n   during the lifetime of the program, for example a list of integer\n   constants; this is also implementation-dependent.\n   Note that values of types [float] are sometimes allocated and\n   sometimes not, so finalising them is unsafe, and [finalise] will\n   also raise [Invalid_argument] for them. Values of type ['a Lazy.t]\n   (for any ['a]) are like [float] in this respect, except that the\n   compiler sometimes optimizes them in a way that prevents [finalise]\n   from detecting them. In this case, it will not raise\n   [Invalid_argument], but you should still avoid calling [finalise]\n   on lazy values.\n\n\n   The results of calling {!String.make}, {!Bytes.make}, {!Bytes.create},\n   {!Array.make}, and {!Stdlib.ref} are guaranteed to be\n   heap-allocated and non-constant except when the length argument is [0].\n"]
+    
+    
+    val finalise_last :
+    (unit -> unit) -> 'a -> unit[@@ocaml.doc
+                                  " same as {!finalise} except the value is not given as argument. So\n    you can't use the given value for the computation of the\n    finalisation function. The benefit is that the function is called\n    after the value is unreachable for the last time instead of the\n    first time. So contrary to {!finalise} the value will never be\n    reachable again or used again. In particular every weak pointer\n    and ephemeron that contained this value as key or data is unset\n    before running the finalisation function. Moreover the\n    finalisation function attached with `GC.finalise` are always\n    called before the finalisation function attached with `GC.finalise_last`.\n\n    @since 4.04\n"]
+    
+    
+    val finalise_release :
+    unit -> unit[@@ocaml.doc
+                  " A finalisation function may call [finalise_release] to tell the\n    GC that it can launch the next finalisation function without waiting\n    for the current one to return. "]
+    
+    
+    type alarm
+    
+    
+    val create_alarm :
+    (unit -> unit) -> alarm[@@ocaml.doc
+                             " [create_alarm f] will arrange for [f] to be called at the end of each\n   major GC cycle, starting with the current cycle or the next one.\n   A value of type [alarm] is returned that you can\n   use to call [delete_alarm]. "]
+    
+    
+    val delete_alarm :
+    alarm -> unit[@@ocaml.doc
+                   " [delete_alarm a] will stop the calls to the function associated\n   to [a].  Calling [delete_alarm a] again has no effect. "]
+    
+
+
+*** OK ***
+

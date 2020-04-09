@@ -1,0 +1,81 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val (=) : int -> int -> bool
+val (<>) : int -> int -> bool
+val (<) : int -> int -> bool
+val (>) : int -> int -> bool
+val (<=) : int -> int -> bool
+val (>=) : int -> int -> bool
+val compare : int -> int -> int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val (=) : int -> int -> bool
+
+
+val (<>) : int -> int -> bool
+
+
+val (<) : int -> int -> bool
+
+
+val (>) : int -> int -> bool
+
+
+val (<=) : int -> int -> bool
+
+
+val (>=) : int -> int -> bool
+
+
+val compare : int -> int -> int
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module int_replace_polymorphic_compare.mli
+
+  Namespace: int_replace_polymorphic_compare.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val = : int -> int -> bool
+    
+    
+    val <> : int -> int -> bool
+    
+    
+    val < : int -> int -> bool
+    
+    
+    val > : int -> int -> bool
+    
+    
+    val <= : int -> int -> bool
+    
+    
+    val >= : int -> int -> bool
+    
+    
+    val compare : int -> int -> int
+    
+
+
+*** OK ***
+

@@ -1,0 +1,175 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Analysis of comments. "]
+val simple_blank : string
+module type Texter  =
+  sig
+    val text_of_string : string -> Odoc_types.text[@@ocaml.doc
+                                                    " Return a text structure from a string. "]
+  end[@@ocaml.doc " The type of modules in argument to Info_retriever "]
+module Basic_info_retriever :
+sig
+  val blank_line_outside_simple : string -> string -> bool[@@ocaml.doc
+                                                            " Return true if the given string contains a blank line. "]
+  val all_special : string -> string -> (int * Odoc_types.info list)[@@ocaml.doc
+                                                                    " This function retrieves all the special comments in the given string. "]
+  val just_after_special : string -> string -> (int * Odoc_types.info option)
+  [@@ocaml.doc
+    " [just_after_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str], without any blank line before. [length] is the number\n       of chars from the beginning of [str] to the end of the special comment. "]
+  val first_special : string -> string -> (int * Odoc_types.info option)
+  [@@ocaml.doc
+    " [first_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str]. [length] is the number of chars from the beginning of\n       [str] to the end of the special comment. "]
+  val get_comments :
+    (Odoc_types.text -> 'a) ->
+      string -> string -> (Odoc_types.info option * 'a list)[@@ocaml.doc
+                                                              " Return a pair [(comment_opt, element_comment_list)], where [comment_opt] is the last special\n       comment found in the given string and not followed by a blank line,\n       and [element_comment_list] the list of values built from the other\n       special comments found and the given function. "]
+end[@@ocaml.doc " The basic module for special comments analysis."]
+val info_of_string : string -> Odoc_types.info[@@ocaml.doc
+                                                " [info_of_string s] parses the given string\n   like a regular ocamldoc comment and return an\n   {!Odoc_types.info} structure.\n   @return an empty structure if there was a syntax error. TODO: change this\n"]
+val info_of_comment_file :
+  Odoc_module.t_module list -> string -> Odoc_types.info[@@ocaml.doc
+                                                          " [info_of_comment_file file] parses the given file\n   and return an {!Odoc_types.info} structure. The content of the\n   file must have the same syntax as the content of a special comment.\n   The given module list is used for cross reference.\n   @raise Failure if the file could not be opened or there is a\n   syntax error.\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Analysis of comments. "]
+
+val simple_blank : string
+
+
+module type Texter  =
+  sig
+    val text_of_string : string -> Odoc_types.text[@@ocaml.doc
+                                                    " Return a text structure from a string. "]
+    
+  end[@@ocaml.doc " The type of modules in argument to Info_retriever "]
+
+module Basic_info_retriever :
+sig
+  val blank_line_outside_simple : string -> string -> bool[@@ocaml.doc
+                                                            " Return true if the given string contains a blank line. "]
+  
+  val all_special : string -> string -> (int * Odoc_types.info list)[@@ocaml.doc
+                                                                    " This function retrieves all the special comments in the given string. "]
+  
+  val just_after_special : string -> string -> (int * Odoc_types.info option)
+  [@@ocaml.doc
+    " [just_after_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str], without any blank line before. [length] is the number\n       of chars from the beginning of [str] to the end of the special comment. "]
+  
+  val first_special : string -> string -> (int * Odoc_types.info option)
+  [@@ocaml.doc
+    " [first_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str]. [length] is the number of chars from the beginning of\n       [str] to the end of the special comment. "]
+  
+  val get_comments :
+    (Odoc_types.text -> 'a) ->
+      string -> string -> (Odoc_types.info option * 'a list)[@@ocaml.doc
+                                                              " Return a pair [(comment_opt, element_comment_list)], where [comment_opt] is the last special\n       comment found in the given string and not followed by a blank line,\n       and [element_comment_list] the list of values built from the other\n       special comments found and the given function. "]
+  
+end[@@ocaml.doc " The basic module for special comments analysis."]
+
+val info_of_string : string -> Odoc_types.info[@@ocaml.doc
+                                                " [info_of_string s] parses the given string\n   like a regular ocamldoc comment and return an\n   {!Odoc_types.info} structure.\n   @return an empty structure if there was a syntax error. TODO: change this\n"]
+
+
+val info_of_comment_file :
+  Odoc_module.t_module list -> string -> Odoc_types.info[@@ocaml.doc
+                                                          " [info_of_comment_file file] parses the given file\n   and return an {!Odoc_types.info} structure. The content of the\n   file must have the same syntax as the content of a special comment.\n   The given module list is used for cross reference.\n   @raise Failure if the file could not be opened or there is a\n   syntax error.\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_comments.mli
+
+  Namespace: odoc_comments.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Basic_info_retriever
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      Namespace: Texter
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Analysis of comments. "]
+    
+    val simple_blank : string
+    
+    
+    module type Texter  =
+      sig
+        val text_of_string :
+        string -> Odoc_types.text[@@ocaml.doc
+                                   " Return a text structure from a string. "]
+        
+      end[@@ocaml.doc " The type of modules in argument to Info_retriever "]
+    
+    module Basic_info_retriever :
+    sig
+      val blank_line_outside_simple :
+      string -> string -> bool[@@ocaml.doc
+                                " Return true if the given string contains a blank line. "]
+      
+      val all_special :
+      string -> string -> (int * Odoc_types.info list)[@@ocaml.doc
+                                                        " This function retrieves all the special comments in the given string. "]
+      
+      val just_after_special :
+      string -> string -> (int * Odoc_types.info option)[@@ocaml.doc
+                                                          " [just_after_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str], without any blank line before. [length] is the number\n       of chars from the beginning of [str] to the end of the special comment. "]
+      
+      val first_special :
+      string -> string -> (int * Odoc_types.info option)[@@ocaml.doc
+                                                          " [first_special file str] return the pair ([length], [info_opt])\n       where [info_opt] is the first optional special comment found\n       in [str]. [length] is the number of chars from the beginning of\n       [str] to the end of the special comment. "]
+      
+      val get_comments :
+      (Odoc_types.text -> 'a) ->
+        string -> string -> (Odoc_types.info option * 'a list)[@@ocaml.doc
+                                                                " Return a pair [(comment_opt, element_comment_list)], where [comment_opt] is the last special\n       comment found in the given string and not followed by a blank line,\n       and [element_comment_list] the list of values built from the other\n       special comments found and the given function. "]
+      
+    end[@@ocaml.doc " The basic module for special comments analysis."]
+    
+    val info_of_string :
+    string -> Odoc_types.info[@@ocaml.doc
+                               " [info_of_string s] parses the given string\n   like a regular ocamldoc comment and return an\n   {!Odoc_types.info} structure.\n   @return an empty structure if there was a syntax error. TODO: change this\n"]
+    
+    
+    val info_of_comment_file :
+    Odoc_module.t_module list -> string -> Odoc_types.info[@@ocaml.doc
+                                                            " [info_of_comment_file file] parses the given file\n   and return an {!Odoc_types.info} structure. The content of the\n   file must have the same syntax as the content of a special comment.\n   The given module list is used for cross reference.\n   @raise Failure if the file could not be opened or there is a\n   syntax error.\n"]
+    
+
+
+*** OK ***
+

@@ -1,0 +1,16 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y z w ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+(*@ r  = f  x  y  z  w 
+     *)
+File "t24.mli", line 12, characters 16-17:
+Error: Type checking error: parameter do not match with val type

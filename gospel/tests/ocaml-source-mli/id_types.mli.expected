@@ -1,0 +1,82 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+module type BaseId  =
+  sig
+    type t
+    val equal : t -> t -> bool
+    val compare : t -> t -> int
+    val hash : t -> int
+    val name : t -> string option
+    val to_string : t -> string
+    val output : out_channel -> t -> unit
+    val print : Format.formatter -> t -> unit
+  end[@@ocaml.doc " Generic identifier type "]
+module type Id  =
+  sig include BaseId val create : ?name:string -> unit -> t end
+module type UnitId  =
+  sig
+    module Compilation_unit : Identifiable.Thing
+    include BaseId
+    val create : ?name:string -> Compilation_unit.t -> t
+    val unit : t -> Compilation_unit.t
+  end[@@ocaml.doc " Fully qualified identifiers "]
+module Id : functor (E : sig  end) -> Id[@@ocaml.doc
+                                          " If applied generatively, i.e. [Id(struct end)], creates a new type\n    of identifiers. "]
+module UnitId :
+functor (Id : Id) ->
+  functor (Compilation_unit : Identifiable.Thing) ->
+    UnitId with module Compilation_unit := Compilation_unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+module type BaseId  =
+  sig
+    type t
+      
+    val equal : t -> t -> bool
+    
+    val compare : t -> t -> int
+    
+    val hash : t -> int
+    
+    val name : t -> string option
+    
+    val to_string : t -> string
+    
+    val output : out_channel -> t -> unit
+    
+    val print : Format.formatter -> t -> unit
+    
+  end[@@ocaml.doc " Generic identifier type "]
+
+module type Id  =
+  sig include BaseId val create : ?name:string -> unit -> t
+     end
+
+module type UnitId  =
+  sig
+    module Compilation_unit : Identifiable.Thing
+    include BaseId
+    val create : ?name:string -> Compilation_unit.t -> t
+    
+    val unit : t -> Compilation_unit.t
+    
+  end[@@ocaml.doc " Fully qualified identifiers "]
+
+module Id : functor (E : sig  end) -> Id[@@ocaml.doc
+                                          " If applied generatively, i.e. [Id(struct end)], creates a new type\n    of identifiers. "]
+
+module UnitId :
+functor (Id : Id) ->
+  functor (Compilation_unit : Identifiable.Thing) ->
+    UnitId with module Compilation_unit := Compilation_unit
+File "./identifiable.mli", line 37, characters 13-28:
+Error: Symbol Set.OrderedType not found

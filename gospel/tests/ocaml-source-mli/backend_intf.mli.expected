@@ -1,0 +1,122 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text " Knowledge that the middle end needs about the backend. "]
+module type S  =
+  sig
+    val symbol_for_global' : Ident.t -> Symbol.t[@@ocaml.doc
+                                                  " Compute the symbol for the given identifier. "]
+    val really_import_approx : Simple_value_approx.t -> Simple_value_approx.t
+    [@@ocaml.doc
+      " If the given approximation is that of a symbol (Value_symbol) or an\n      external (Value_extern), attempt to find a more informative\n      approximation from a previously-written compilation artifact.  In the\n      native code backend, for example, this might consult a .cmx file. "]
+    val import_symbol : Symbol.t -> Simple_value_approx.t
+    val closure_symbol : Closure_id.t -> Symbol.t
+    val size_int : int[@@ocaml.doc
+                        " The natural size of an integer on the target architecture\n      (cf. [Arch.size_int] in the native code backend). "]
+    val big_endian : bool[@@ocaml.doc
+                           " [true] iff the target architecture is big endian. "]
+    val max_sensible_number_of_arguments : int[@@ocaml.doc
+                                                " The maximum number of arguments that is reasonable for a function\n      to have.  This should be fewer than the threshold that causes non-self\n      tail call optimization to be inhibited (in particular, if it would\n      entail passing arguments on the stack; see [Selectgen]). "]
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text " Knowledge that the middle end needs about the backend. "]
+
+module type S  =
+  sig
+    val symbol_for_global' : Ident.t -> Symbol.t[@@ocaml.doc
+                                                  " Compute the symbol for the given identifier. "]
+    
+    val really_import_approx : Simple_value_approx.t -> Simple_value_approx.t
+    [@@ocaml.doc
+      " If the given approximation is that of a symbol (Value_symbol) or an\n      external (Value_extern), attempt to find a more informative\n      approximation from a previously-written compilation artifact.  In the\n      native code backend, for example, this might consult a .cmx file. "]
+    
+    val import_symbol : Symbol.t -> Simple_value_approx.t
+    
+    val closure_symbol : Closure_id.t -> Symbol.t
+    
+    val size_int : int[@@ocaml.doc
+                        " The natural size of an integer on the target architecture\n      (cf. [Arch.size_int] in the native code backend). "]
+    
+    val big_endian : bool[@@ocaml.doc
+                           " [true] iff the target architecture is big endian. "]
+    
+    val max_sensible_number_of_arguments : int[@@ocaml.doc
+                                                " The maximum number of arguments that is reasonable for a function\n      to have.  This should be fewer than the threshold that causes non-self\n      tail call optimization to be inhibited (in particular, if it would\n      entail passing arguments on the stack; see [Selectgen]). "]
+    
+  end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module backend_intf.mli
+
+  Namespace: backend_intf.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      Namespace: S
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " Knowledge that the middle end needs about the backend. "]
+    
+    module type S  =
+      sig
+        val symbol_for_global' :
+        Ident.t -> Symbol.t[@@ocaml.doc
+                             " Compute the symbol for the given identifier. "]
+        
+        val really_import_approx :
+        Simple_value_approx.t -> Simple_value_approx.t[@@ocaml.doc
+                                                        " If the given approximation is that of a symbol (Value_symbol) or an\n      external (Value_extern), attempt to find a more informative\n      approximation from a previously-written compilation artifact.  In the\n      native code backend, for example, this might consult a .cmx file. "]
+        
+        val import_symbol : Symbol.t -> Simple_value_approx.t
+        
+        val closure_symbol : Closure_id.t -> Symbol.t
+        
+        val size_int :
+        int[@@ocaml.doc
+             " The natural size of an integer on the target architecture\n      (cf. [Arch.size_int] in the native code backend). "]
+        
+        val big_endian :
+        bool[@@ocaml.doc
+              " [true] iff the target architecture is big endian. "]
+        
+        val max_sensible_number_of_arguments :
+        int[@@ocaml.doc
+             " The maximum number of arguments that is reasonable for a function\n      to have.  This should be fewer than the threshold that causes non-self\n      tail call optimization to be inhibited (in particular, if it would\n      entail passing arguments on the stack; see [Selectgen]). "]
+        
+      end
+
+
+*** OK ***
+

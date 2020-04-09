@@ -1,0 +1,45 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Latex-only test "]
+[@@@ocaml.text
+  " {1:lbl Title }\n\n    Check that {{!lbl}this text} is present in the generated latex\n    with a reference to {!lbl}.\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Latex-only test "]
+
+[@@@ocaml.text
+  " {1:lbl Title }\n\n    Check that {{!lbl}this text} is present in the generated latex\n    with a reference to {!lbl}.\n"]
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module latex_ref.mli
+
+  Namespace: latex_ref.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Latex-only test "]
+    
+    [@@@ocaml.text
+      " {1:lbl Title }\n\n    Check that {{!lbl}this text} is present in the generated latex\n    with a reference to {!lbl}.\n"]
+
+
+*** OK ***
+

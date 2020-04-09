@@ -1,0 +1,61 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val init_path : ?dir:string -> bool -> unit
+val initial_env : unit -> Env.t
+val read_color_env : unit -> unit
+val with_ppf_dump : fileprefix:string -> (Format.formatter -> unit) -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val init_path : ?dir:string -> bool -> unit
+
+
+val initial_env : unit -> Env.t
+
+
+val read_color_env : unit -> unit
+
+
+val with_ppf_dump : fileprefix:string -> (Format.formatter -> unit) -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module compmisc.mli
+
+  Namespace: compmisc.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val init_path : ?dir:string -> bool -> unit
+    
+    
+    val initial_env : unit -> Env.t
+    
+    
+    val read_color_env : unit -> unit
+    
+    
+    val with_ppf_dump :
+    fileprefix:string -> (Format.formatter -> unit) -> unit
+    
+
+
+*** OK ***
+

@@ -1,0 +1,291 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " The module for analysing a signature and source code and creating modules, classes, ..., elements."]
+module Signature_search :
+sig
+  type ele
+  type tab = (ele, Types.signature_item) Hashtbl.t
+  val table : Types.signature -> tab[@@ocaml.doc
+                                      " Create a table from a signature. This table is used by some\n         of the search functions below. "]
+  val search_value : tab -> string -> Types.type_expr[@@ocaml.doc
+                                                       " This function returns the type expression for the value whose name is given,\n         in the given signature.\n         @raise Not_found if error."]
+  val search_extension : tab -> string -> Types.extension_constructor
+  [@@ocaml.doc
+    " This function returns the Types.extension_constructor for the extension whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_type : tab -> string -> Types.type_declaration[@@ocaml.doc
+                                                             " This function returns the Types.type_declaration  for the type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_class : tab -> string -> Types.class_declaration[@@ocaml.doc
+                                                               " This function returns the Types.class_declaration  for the class whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_class_type : tab -> string -> Types.class_type_declaration
+  [@@ocaml.doc
+    " This function returns the Types.class_type_declaration  for the class type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_module : tab -> string -> Types.module_type[@@ocaml.doc
+                                                          " This function returns the Types.module_type  for the module whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_module_type : tab -> string -> Types.module_type option[@@ocaml.doc
+                                                                    " This function returns the optional Types.module_type  for the module type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  val search_attribute_type :
+    Types.Vars.key -> Types.class_signature -> Types.type_expr[@@ocaml.doc
+                                                                " This function returns the Types.type_expr  for the given val name\n         in the given class signature.\n         @raise Not_found if error."]
+  val search_method_type : string -> Types.class_signature -> Types.type_expr
+  [@@ocaml.doc
+    " This function returns the Types.type_expr  for the given method name\n        in the given class signature.\n        @raise Not_found if error."]
+end[@@ocaml.doc
+     " The functions used to retrieve information from a signature. "]
+module type Info_retriever  =
+  sig
+    val all_special : string -> string -> (int * Odoc_types.info list)
+    [@@ocaml.doc
+      " Return the couple [(n, list)] where [n] is the number of\n       characters read to retrieve [list], which is the list\n       of special comments found in the string. "]
+    val blank_line_outside_simple : string -> string -> bool[@@ocaml.doc
+                                                              " Return true if the given string contains a blank line. "]
+    val just_after_special :
+      string -> string -> (int * Odoc_types.info option)[@@ocaml.doc
+                                                          " [just_after_special file str] return the pair ([length], [info_opt])\n      where [info_opt] is the first optional special comment found\n      in [str], without any blank line before. [length] is the number\n      of chars from the beginning of [str] to the end of the special comment. "]
+    val first_special : string -> string -> (int * Odoc_types.info option)
+    [@@ocaml.doc
+      " [first_special file str] return the pair ([length], [info_opt])\n      where [info_opt] is the first optional special comment found\n      in [str]. [length] is the number of chars from the beginning of [str]\n      to the end of the special comment. "]
+    val get_comments :
+      (Odoc_types.text -> 'a) ->
+        string -> string -> (Odoc_types.info option * 'a list)[@@ocaml.doc
+                                                                " Return a pair [(comment_opt, element_comment_list)], where [comment_opt] is the last special\n       comment found in the given string and not followed by a blank line,\n       and [element_comment_list] the list of values built from the other\n       special comments found and the given function. "]
+  end[@@ocaml.doc
+       " Functions to retrieve simple and special comments from strings. "]
+module Analyser :
+functor (My_ir : Info_retriever) ->
+  sig
+    val file : string ref[@@ocaml.doc
+                           " This variable is used to load a file as a string and retrieve characters from it."]
+    val file_name : string ref[@@ocaml.doc
+                                " The name of the analysed file. "]
+    val get_string_of_file : int -> int -> string[@@ocaml.doc
+                                                   " This function takes two indexes (start and end) and returns the string\n         corresponding to the indexes in the file global variable. The function\n         prepare_file must have been called to fill the file global variable."]
+    val prepare_file : string -> string -> unit[@@ocaml.doc
+                                                 " [prepare_file f input_f] sets [file_name] with [f] and loads the file\n         [input_f] into [file]."]
+    val preamble :
+      string ->
+        string ->
+          ('a -> Location.t) -> 'a list -> (int * Odoc_types.info option)
+    [@@ocaml.doc
+      " [preamble f input_f loc ast ] retrieves the position and contents of\n          the preamble for the file [f]: i.e, the first documentation comment\n          before any elements in [ast].\n          If there is no such preamble, [0,None] is returned.\n          The function [loc] is used to obtain the location of this\n          first element of [ast]."]
+    val get_comments_in_class :
+      int -> int -> (Odoc_types.info option * Odoc_class.class_element list)
+    [@@ocaml.doc " The function used to get the comments in a class. "]
+    val get_comments_in_module :
+      int ->
+        int -> (Odoc_types.info option * Odoc_module.module_element list)
+    [@@ocaml.doc " The function used to get the comments in a module. "]
+    val name_comment_from_type_decl :
+      int ->
+        int ->
+          Parsetree.type_declaration ->
+            (int * (string * Odoc_types.info option) list)[@@ocaml.doc
+                                                            " [name_comment_from_type_kind pos_end pos_limit type_kind].\n         This function takes a [Parsetree.type_kind] and returns the list of\n         (name, optional comment) for the various fields/constructors of the type,\n         or an empty list for an abstract type.\n         [pos_end] is last char of the complete type definition.\n         [pos_limit] is the position of the last char we could use to look for a comment,\n         i.e. usually the beginning of the next element."]
+    val manifest_structure :
+      Odoc_env.env ->
+        (string * Odoc_types.info option) list ->
+          Types.type_expr -> Odoc_type.type_manifest[@@ocaml.doc
+                                                      " This function converts a [Types.type_expr] into a [Odoc_type.type_kind],\n         by associating the comment found in the parsetree of each object field, if any. "]
+    val get_type_kind :
+      Odoc_env.env ->
+        (string * Odoc_types.info option) list ->
+          Types.type_kind -> Odoc_type.type_kind[@@ocaml.doc
+                                                  " This function converts a [Types.type_kind] into a [Odoc_type.type_kind],\n         by associating the comment found in the parsetree of each constructor/field, if any."]
+    val get_cstr_args :
+      Odoc_env.env ->
+        int -> Typedtree.constructor_arguments -> Odoc_type.constructor_args
+    [@@ocaml.doc
+      " This function converts a [Types.constructor_arguments] into a\n          [Odoc_type.constructor_args], by associating the comment found\n          in the parsetree of each inner record field, if any."]
+    val merge_infos :
+      Odoc_types.info option ->
+        Odoc_types.info option -> Odoc_types.info option[@@ocaml.doc
+                                                          " This function merges two optional info structures. "]
+    val analyse_module_type_kind :
+      ?erased:[ `Constrained of Parsetree.with_constraint list  | `Removed ]
+        Odoc_name.Map.t ->
+        Odoc_env.env ->
+          Odoc_name.t ->
+            Parsetree.module_type ->
+              Types.module_type -> Odoc_module.module_type_kind[@@ocaml.doc
+                                                                 " Return a module_type_kind from a Parsetree.module_type and a Types.module_type "]
+    val analyse_class_type_kind :
+      Odoc_env.env ->
+        Odoc_name.t ->
+          int ->
+            Parsetree.class_type ->
+              Types.class_type -> Odoc_class.class_type_kind[@@ocaml.doc
+                                                              " Analysis of a Parsetree.class_type and a Types.class_type to\n         return a class_type_kind."]
+    val analyse_signature :
+      string ->
+        string ->
+          Parsetree.signature -> Types.signature -> Odoc_module.t_module
+    [@@ocaml.doc
+      " This function takes an interface file name, a file containing the code, a parse tree\n         and the signature obtained from the compiler.\n         It goes through the parse tree, creating values for encountered\n         functions, modules, ..., looking in the source file for comments,\n         and in the signature for types information. "]
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " The module for analysing a signature and source code and creating modules, classes, ..., elements."]
+
+module Signature_search :
+sig
+  type ele
+    
+  type tab = (ele, Types.signature_item) Hashtbl.t
+    
+  val table : Types.signature -> tab[@@ocaml.doc
+                                      " Create a table from a signature. This table is used by some\n         of the search functions below. "]
+  
+  val search_value : tab -> string -> Types.type_expr[@@ocaml.doc
+                                                       " This function returns the type expression for the value whose name is given,\n         in the given signature.\n         @raise Not_found if error."]
+  
+  val search_extension : tab -> string -> Types.extension_constructor
+  [@@ocaml.doc
+    " This function returns the Types.extension_constructor for the extension whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_type : tab -> string -> Types.type_declaration[@@ocaml.doc
+                                                             " This function returns the Types.type_declaration  for the type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_class : tab -> string -> Types.class_declaration[@@ocaml.doc
+                                                               " This function returns the Types.class_declaration  for the class whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_class_type : tab -> string -> Types.class_type_declaration
+  [@@ocaml.doc
+    " This function returns the Types.class_type_declaration  for the class type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_module : tab -> string -> Types.module_type[@@ocaml.doc
+                                                          " This function returns the Types.module_type  for the module whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_module_type : tab -> string -> Types.module_type option[@@ocaml.doc
+                                                                    " This function returns the optional Types.module_type  for the module type whose name is given,\n         in the given table.\n         @raise Not_found if error."]
+  
+  val search_attribute_type :
+    Types.Vars.key -> Types.class_signature -> Types.type_expr[@@ocaml.doc
+                                                                " This function returns the Types.type_expr  for the given val name\n         in the given class signature.\n         @raise Not_found if error."]
+  
+  val search_method_type : string -> Types.class_signature -> Types.type_expr
+  [@@ocaml.doc
+    " This function returns the Types.type_expr  for the given method name\n        in the given class signature.\n        @raise Not_found if error."]
+  
+end[@@ocaml.doc
+     " The functions used to retrieve information from a signature. "]
+
+module type Info_retriever  =
+  sig
+    val all_special : string -> string -> (int * Odoc_types.info list)
+    [@@ocaml.doc
+      " Return the couple [(n, list)] where [n] is the number of\n       characters read to retrieve [list], which is the list\n       of special comments found in the string. "]
+    
+    val blank_line_outside_simple : string -> string -> bool[@@ocaml.doc
+                                                              " Return true if the given string contains a blank line. "]
+    
+    val just_after_special :
+      string -> string -> (int * Odoc_types.info option)[@@ocaml.doc
+                                                          " [just_after_special file str] return the pair ([length], [info_opt])\n      where [info_opt] is the first optional special comment found\n      in [str], without any blank line before. [length] is the number\n      of chars from the beginning of [str] to the end of the special comment. "]
+    
+    val first_special : string -> string -> (int * Odoc_types.info option)
+    [@@ocaml.doc
+      " [first_special file str] return the pair ([length], [info_opt])\n      where [info_opt] is the first optional special comment found\n      in [str]. [length] is the number of chars from the beginning of [str]\n      to the end of the special comment. "]
+    
+    val get_comments :
+      (Odoc_types.text -> 'a) ->
+        string -> string -> (Odoc_types.info option * 'a list)[@@ocaml.doc
+                                                                " Return a pair [(comment_opt, element_comment_list)], where [comment_opt] is the last special\n       comment found in the given string and not followed by a blank line,\n       and [element_comment_list] the list of values built from the other\n       special comments found and the given function. "]
+    
+  end[@@ocaml.doc
+       " Functions to retrieve simple and special comments from strings. "]
+
+module Analyser :
+functor (My_ir : Info_retriever) ->
+  sig
+    val file : string ref[@@ocaml.doc
+                           " This variable is used to load a file as a string and retrieve characters from it."]
+    
+    val file_name : string ref[@@ocaml.doc
+                                " The name of the analysed file. "]
+    
+    val get_string_of_file : int -> int -> string[@@ocaml.doc
+                                                   " This function takes two indexes (start and end) and returns the string\n         corresponding to the indexes in the file global variable. The function\n         prepare_file must have been called to fill the file global variable."]
+    
+    val prepare_file : string -> string -> unit[@@ocaml.doc
+                                                 " [prepare_file f input_f] sets [file_name] with [f] and loads the file\n         [input_f] into [file]."]
+    
+    val preamble :
+      string ->
+        string ->
+          ('a -> Location.t) -> 'a list -> (int * Odoc_types.info option)
+    [@@ocaml.doc
+      " [preamble f input_f loc ast ] retrieves the position and contents of\n          the preamble for the file [f]: i.e, the first documentation comment\n          before any elements in [ast].\n          If there is no such preamble, [0,None] is returned.\n          The function [loc] is used to obtain the location of this\n          first element of [ast]."]
+    
+    val get_comments_in_class :
+      int -> int -> (Odoc_types.info option * Odoc_class.class_element list)
+    [@@ocaml.doc " The function used to get the comments in a class. "]
+    
+    val get_comments_in_module :
+      int ->
+        int -> (Odoc_types.info option * Odoc_module.module_element list)
+    [@@ocaml.doc " The function used to get the comments in a module. "]
+    
+    val name_comment_from_type_decl :
+      int ->
+        int ->
+          Parsetree.type_declaration ->
+            (int * (string * Odoc_types.info option) list)[@@ocaml.doc
+                                                            " [name_comment_from_type_kind pos_end pos_limit type_kind].\n         This function takes a [Parsetree.type_kind] and returns the list of\n         (name, optional comment) for the various fields/constructors of the type,\n         or an empty list for an abstract type.\n         [pos_end] is last char of the complete type definition.\n         [pos_limit] is the position of the last char we could use to look for a comment,\n         i.e. usually the beginning of the next element."]
+    
+    val manifest_structure :
+      Odoc_env.env ->
+        (string * Odoc_types.info option) list ->
+          Types.type_expr -> Odoc_type.type_manifest[@@ocaml.doc
+                                                      " This function converts a [Types.type_expr] into a [Odoc_type.type_kind],\n         by associating the comment found in the parsetree of each object field, if any. "]
+    
+    val get_type_kind :
+      Odoc_env.env ->
+        (string * Odoc_types.info option) list ->
+          Types.type_kind -> Odoc_type.type_kind[@@ocaml.doc
+                                                  " This function converts a [Types.type_kind] into a [Odoc_type.type_kind],\n         by associating the comment found in the parsetree of each constructor/field, if any."]
+    
+    val get_cstr_args :
+      Odoc_env.env ->
+        int -> Typedtree.constructor_arguments -> Odoc_type.constructor_args
+    [@@ocaml.doc
+      " This function converts a [Types.constructor_arguments] into a\n          [Odoc_type.constructor_args], by associating the comment found\n          in the parsetree of each inner record field, if any."]
+    
+    val merge_infos :
+      Odoc_types.info option ->
+        Odoc_types.info option -> Odoc_types.info option[@@ocaml.doc
+                                                          " This function merges two optional info structures. "]
+    
+    val analyse_module_type_kind :
+      ?erased:[ `Constrained of Parsetree.with_constraint list  | `Removed ]
+        Odoc_name.Map.t ->
+        Odoc_env.env ->
+          Odoc_name.t ->
+            Parsetree.module_type ->
+              Types.module_type -> Odoc_module.module_type_kind[@@ocaml.doc
+                                                                 " Return a module_type_kind from a Parsetree.module_type and a Types.module_type "]
+    
+    val analyse_class_type_kind :
+      Odoc_env.env ->
+        Odoc_name.t ->
+          int ->
+            Parsetree.class_type ->
+              Types.class_type -> Odoc_class.class_type_kind[@@ocaml.doc
+                                                              " Analysis of a Parsetree.class_type and a Types.class_type to\n         return a class_type_kind."]
+    
+    val analyse_signature :
+      string ->
+        string ->
+          Parsetree.signature -> Types.signature -> Odoc_module.t_module
+    [@@ocaml.doc
+      " This function takes an interface file name, a file containing the code, a parse tree\n         and the signature obtained from the compiler.\n         It goes through the parse tree, creating values for encountered\n         functions, modules, ..., looking in the source file for comments,\n         and in the signature for types information. "]
+    
+  end
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

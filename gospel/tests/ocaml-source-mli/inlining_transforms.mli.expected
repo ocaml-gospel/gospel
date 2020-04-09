@@ -1,0 +1,165 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text " Source code transformations used during inlining. "]
+val inline_by_copying_function_body :
+  env:Inline_and_simplify_aux.Env.t ->
+    r:Inline_and_simplify_aux.Result.t ->
+      lhs_of_application:Variable.t ->
+        inline_requested:Lambda.inline_attribute ->
+          specialise_requested:Lambda.specialise_attribute ->
+            closure_id_being_applied:Closure_id.t ->
+              function_decl:Simple_value_approx.function_declaration ->
+                function_body:Simple_value_approx.function_body ->
+                  fun_vars:Variable.Set.t ->
+                    args:Variable.t list ->
+                      dbg:Debuginfo.t ->
+                        simplify:Inlining_decision_intf.simplify ->
+                          (Flambda.t * Inline_and_simplify_aux.Result.t)
+[@@ocaml.doc
+  " Inline a function by substituting its body (which may be subject to\n    further transformation) at a call site.  The function's declaration is\n    not copied.\n\n    This transformation is used when:\n    - inlining a call to a non-recursive function;\n    - inlining a call, within a recursive or mutually-recursive function, to\n      the same or another function being defined simultaneously (\"unrolling\").\n      The maximum depth of unrolling is bounded (see [E.unrolling_allowed]).\n\n    In both cases, the body of the function is copied, within a sequence of\n    [let]s that bind the function parameters, the variables \"bound by the\n    closure\" (see flambda.mli), and any function identifiers introduced by the\n    set of closures.  These stages are delimited below by comments.\n\n    As an example, suppose we are inlining the following function:\n\n     let f x = x + y\n     ...\n     let p = f, f in\n     (fst p) 42\n\n    The call site [ (fst p) 42] will be transformed to:\n\n      let clos_id = fst p in  (* must eventually yield a closure *)\n      let y = <access to [y] in [clos_id]> in\n      let x' = 42 in\n      let x = x' in\n      x + y\n\n    When unrolling a recursive function we rename the arguments to the\n    recursive call in order to avoid clashes with existing bindings.  For\n    example, suppose we are inlining the following call to [f], which lies\n    within its own declaration:\n\n      let rec f x y =\n        f (fst x) (y + snd x)\n\n    This will be transformed to:\n\n      let rec f x y =\n        let clos_id = f in (* not used this time, since [f] has no free vars *)\n        let x' = fst x in\n        let y' = y + snd x in\n        f (fst x') (y' + snd x')  (* body of [f] with parameters freshened *)\n"]
+val inline_by_copying_function_declaration :
+  env:Inline_and_simplify_aux.Env.t ->
+    r:Inline_and_simplify_aux.Result.t ->
+      function_decls:Simple_value_approx.function_declarations ->
+        lhs_of_application:Variable.t ->
+          inline_requested:Lambda.inline_attribute ->
+            closure_id_being_applied:Closure_id.t ->
+              function_decl:Simple_value_approx.function_declaration ->
+                args:Variable.t list ->
+                  args_approxs:Simple_value_approx.t list ->
+                    invariant_params:Variable.Set.t Variable.Map.t lazy_t ->
+                      specialised_args:Flambda.specialised_to Variable.Map.t
+                        ->
+                        free_vars:Flambda.specialised_to Variable.Map.t ->
+                          direct_call_surrogates:Closure_id.t
+                            Closure_id.Map.t ->
+                            dbg:Debuginfo.t ->
+                              simplify:Inlining_decision_intf.simplify ->
+                                (Flambda.t *
+                                  Inline_and_simplify_aux.Result.t) option
+[@@ocaml.doc
+  " Inlining of recursive function(s) yields a copy of the functions'\n    definitions (not just their bodies, unlike the non-recursive case) and\n    a direct application of the new body.\n    Note: the function really does need to be recursive (but possibly only via\n    some mutual recursion) to end up in here; a simultaneous binding [that is\n    non-recursive] is not sufficient.\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text " Source code transformations used during inlining. "]
+
+val inline_by_copying_function_body :
+  env:Inline_and_simplify_aux.Env.t ->
+    r:Inline_and_simplify_aux.Result.t ->
+      lhs_of_application:Variable.t ->
+        inline_requested:Lambda.inline_attribute ->
+          specialise_requested:Lambda.specialise_attribute ->
+            closure_id_being_applied:Closure_id.t ->
+              function_decl:Simple_value_approx.function_declaration ->
+                function_body:Simple_value_approx.function_body ->
+                  fun_vars:Variable.Set.t ->
+                    args:Variable.t list ->
+                      dbg:Debuginfo.t ->
+                        simplify:Inlining_decision_intf.simplify ->
+                          (Flambda.t * Inline_and_simplify_aux.Result.t)
+[@@ocaml.doc
+  " Inline a function by substituting its body (which may be subject to\n    further transformation) at a call site.  The function's declaration is\n    not copied.\n\n    This transformation is used when:\n    - inlining a call to a non-recursive function;\n    - inlining a call, within a recursive or mutually-recursive function, to\n      the same or another function being defined simultaneously (\"unrolling\").\n      The maximum depth of unrolling is bounded (see [E.unrolling_allowed]).\n\n    In both cases, the body of the function is copied, within a sequence of\n    [let]s that bind the function parameters, the variables \"bound by the\n    closure\" (see flambda.mli), and any function identifiers introduced by the\n    set of closures.  These stages are delimited below by comments.\n\n    As an example, suppose we are inlining the following function:\n\n     let f x = x + y\n     ...\n     let p = f, f in\n     (fst p) 42\n\n    The call site [ (fst p) 42] will be transformed to:\n\n      let clos_id = fst p in  (* must eventually yield a closure *)\n      let y = <access to [y] in [clos_id]> in\n      let x' = 42 in\n      let x = x' in\n      x + y\n\n    When unrolling a recursive function we rename the arguments to the\n    recursive call in order to avoid clashes with existing bindings.  For\n    example, suppose we are inlining the following call to [f], which lies\n    within its own declaration:\n\n      let rec f x y =\n        f (fst x) (y + snd x)\n\n    This will be transformed to:\n\n      let rec f x y =\n        let clos_id = f in (* not used this time, since [f] has no free vars *)\n        let x' = fst x in\n        let y' = y + snd x in\n        f (fst x') (y' + snd x')  (* body of [f] with parameters freshened *)\n"]
+
+
+val inline_by_copying_function_declaration :
+  env:Inline_and_simplify_aux.Env.t ->
+    r:Inline_and_simplify_aux.Result.t ->
+      function_decls:Simple_value_approx.function_declarations ->
+        lhs_of_application:Variable.t ->
+          inline_requested:Lambda.inline_attribute ->
+            closure_id_being_applied:Closure_id.t ->
+              function_decl:Simple_value_approx.function_declaration ->
+                args:Variable.t list ->
+                  args_approxs:Simple_value_approx.t list ->
+                    invariant_params:Variable.Set.t Variable.Map.t lazy_t ->
+                      specialised_args:Flambda.specialised_to Variable.Map.t
+                        ->
+                        free_vars:Flambda.specialised_to Variable.Map.t ->
+                          direct_call_surrogates:Closure_id.t
+                            Closure_id.Map.t ->
+                            dbg:Debuginfo.t ->
+                              simplify:Inlining_decision_intf.simplify ->
+                                (Flambda.t *
+                                  Inline_and_simplify_aux.Result.t) option
+[@@ocaml.doc
+  " Inlining of recursive function(s) yields a copy of the functions'\n    definitions (not just their bodies, unlike the non-recursive case) and\n    a direct application of the new body.\n    Note: the function really does need to be recursive (but possibly only via\n    some mutual recursion) to end up in here; a simultaneous binding [that is\n    non-recursive] is not sufficient.\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module inlining_transforms.mli
+
+  Namespace: inlining_transforms.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text " Source code transformations used during inlining. "]
+    
+    val inline_by_copying_function_body :
+    env:Inline_and_simplify_aux.Env.t ->
+      r:Inline_and_simplify_aux.Result.t ->
+        lhs_of_application:Variable.t ->
+          inline_requested:Lambda.inline_attribute ->
+            specialise_requested:Lambda.specialise_attribute ->
+              closure_id_being_applied:Closure_id.t ->
+                function_decl:Simple_value_approx.function_declaration ->
+                  function_body:Simple_value_approx.function_body ->
+                    fun_vars:Variable.Set.t ->
+                      args:Variable.t list ->
+                        dbg:Debuginfo.t ->
+                          simplify:Inlining_decision_intf.simplify ->
+                            (Flambda.t * Inline_and_simplify_aux.Result.t)
+    [@@ocaml.doc
+      " Inline a function by substituting its body (which may be subject to\n    further transformation) at a call site.  The function's declaration is\n    not copied.\n\n    This transformation is used when:\n    - inlining a call to a non-recursive function;\n    - inlining a call, within a recursive or mutually-recursive function, to\n      the same or another function being defined simultaneously (\"unrolling\").\n      The maximum depth of unrolling is bounded (see [E.unrolling_allowed]).\n\n    In both cases, the body of the function is copied, within a sequence of\n    [let]s that bind the function parameters, the variables \"bound by the\n    closure\" (see flambda.mli), and any function identifiers introduced by the\n    set of closures.  These stages are delimited below by comments.\n\n    As an example, suppose we are inlining the following function:\n\n     let f x = x + y\n     ...\n     let p = f, f in\n     (fst p) 42\n\n    The call site [ (fst p) 42] will be transformed to:\n\n      let clos_id = fst p in  (* must eventually yield a closure *)\n      let y = <access to [y] in [clos_id]> in\n      let x' = 42 in\n      let x = x' in\n      x + y\n\n    When unrolling a recursive function we rename the arguments to the\n    recursive call in order to avoid clashes with existing bindings.  For\n    example, suppose we are inlining the following call to [f], which lies\n    within its own declaration:\n\n      let rec f x y =\n        f (fst x) (y + snd x)\n\n    This will be transformed to:\n\n      let rec f x y =\n        let clos_id = f in (* not used this time, since [f] has no free vars *)\n        let x' = fst x in\n        let y' = y + snd x in\n        f (fst x') (y' + snd x')  (* body of [f] with parameters freshened *)\n"]
+    
+    
+    val inline_by_copying_function_declaration :
+    env:Inline_and_simplify_aux.Env.t ->
+      r:Inline_and_simplify_aux.Result.t ->
+        function_decls:Simple_value_approx.function_declarations ->
+          lhs_of_application:Variable.t ->
+            inline_requested:Lambda.inline_attribute ->
+              closure_id_being_applied:Closure_id.t ->
+                function_decl:Simple_value_approx.function_declaration ->
+                  args:Variable.t list ->
+                    args_approxs:Simple_value_approx.t list ->
+                      invariant_params:Variable.Set.t Variable.Map.t lazy_t
+                        ->
+                        specialised_args:Flambda.specialised_to
+                          Variable.Map.t ->
+                          free_vars:Flambda.specialised_to Variable.Map.t ->
+                            direct_call_surrogates:Closure_id.t
+                              Closure_id.Map.t ->
+                              dbg:Debuginfo.t ->
+                                simplify:Inlining_decision_intf.simplify ->
+                                  (Flambda.t *
+                                    Inline_and_simplify_aux.Result.t) option
+    [@@ocaml.doc
+      " Inlining of recursive function(s) yields a copy of the functions'\n    definitions (not just their bodies, unlike the non-recursive case) and\n    a direct application of the new body.\n    Note: the function really does need to be recursive (but possibly only via\n    some mutual recursion) to end up in here; a simultaneous binding [that is\n    non-recursive] is not sufficient.\n"]
+    
+
+
+*** OK ***
+

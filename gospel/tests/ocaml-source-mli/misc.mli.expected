@@ -1,0 +1,546 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Miscellaneous useful types and functions\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+val fatal_error : string -> 'a
+val fatal_errorf : ('a, Format.formatter, unit, 'b) format4 -> 'a
+exception Fatal_error 
+val try_finally :
+  ?always:(unit -> unit) ->
+    ?exceptionally:(unit -> unit) -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                         " [try_finally work ~always ~exceptionally] is designed to run code\n    in [work] that may fail with an exception, and has two kind of\n    cleanup routines: [always], that must be run after any execution\n    of the function (typically, freeing system resources), and\n    [exceptionally], that should be run only if [work] or [always]\n    failed with an exception (typically, undoing user-visible state\n    changes that would only make sense if the function completes\n    correctly). For example:\n\n    {[\n      let objfile = outputprefix ^ \".cmo\" in\n      let oc = open_out_bin objfile in\n      Misc.try_finally\n        (fun () ->\n           bytecode\n           ++ Timings.(accumulate_time (Generate sourcefile))\n               (Emitcode.to_file oc modulename objfile);\n           Warnings.check_fatal ())\n        ~always:(fun () -> close_out oc)\n        ~exceptionally:(fun _exn -> remove_file objfile);\n    ]}\n\n    If [exceptionally] fail with an exception, it is propagated as\n    usual.\n\n    If [always] or [exceptionally] use exceptions internally for\n    control-flow but do not raise, then [try_finally] is careful to\n    preserve any exception backtrace coming from [work] or [always]\n    for easier debugging.\n"]
+val map_end : ('a -> 'b) -> 'a list -> 'b list -> 'b list
+val map_left_right : ('a -> 'b) -> 'a list -> 'b list
+val for_all2 : ('a -> 'b -> bool) -> 'a list -> 'b list -> bool
+val replicate_list : 'a -> int -> 'a list
+val list_remove : 'a -> 'a list -> 'a list
+val split_last : 'a list -> ('a list * 'a)
+val may : ('a -> unit) -> 'a option -> unit
+val may_map : ('a -> 'b) -> 'a option -> 'b option
+type ref_and_value =
+  | R: 'a ref * 'a -> ref_and_value 
+val protect_refs : ref_and_value list -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                             " [protect_refs l f] temporarily sets [r] to [v] for each [R (r, v)] in [l]\n    while executing [f]. The previous contents of the references is restored\n    even if [f] raises an exception. "]
+module Stdlib :
+sig
+  module List :
+  sig
+    type 'a t = 'a list
+    val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int[@@ocaml.doc
+                                                            " The lexicographic order supported by the provided order.\n        There is no constraint on the relative lengths of the lists. "]
+    val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool[@@ocaml.doc
+                                                            " Returns [true] iff the given lists have the same length and content\n        with respect to the given equality function. "]
+    val filter_map : ('a -> 'b option) -> 'a t -> 'b t[@@ocaml.doc
+                                                        " [filter_map f l] applies [f] to every element of [l], filters\n        out the [None] elements and returns the list of the arguments of\n        the [Some] elements. "]
+    val some_if_all_elements_are_some : 'a option t -> 'a t option[@@ocaml.doc
+                                                                    " If all elements of the given list are [Some _] then [Some xs]\n        is returned with the [xs] being the contents of those [Some]s, with\n        order preserved.  Otherwise return [None]. "]
+    val map2_prefix : ('a -> 'b -> 'c) -> 'a t -> 'b t -> ('c t * 'b t)
+    [@@ocaml.doc
+      " [let r1, r2 = map2_prefix f l1 l2]\n        If [l1] is of length n and [l2 = h2 @ t2] with h2 of length n,\n        r1 is [List.map2 f l1 h1] and r2 is t2. "]
+    val split_at : int -> 'a t -> ('a t * 'a t)[@@ocaml.doc
+                                                 " [split_at n l] returns the pair [before, after] where [before] is\n        the [n] first elements of [l] and [after] the remaining ones.\n        If [l] has less than [n] elements, raises Invalid_argument. "]
+  end
+  module Option :
+  sig
+    type 'a t = 'a option
+    val is_none : 'a t -> bool
+    val is_some : 'a t -> bool
+    val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+    val iter : ('a -> unit) -> 'a t -> unit
+    val map : ('a -> 'b) -> 'a t -> 'b t
+    val fold : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+    val value_default : ('a -> 'b) -> default:'b -> 'a t -> 'b
+  end
+  module Array :
+  sig val exists2 : ('a -> 'b -> bool) -> 'a array -> 'b array -> bool end
+  module String :
+  sig
+    include module type of String
+    module Set : Set.S with type  elt =  string
+    module Map : Map.S with type  key =  string
+  end
+  external compare : 'a -> 'a -> int = "%compare"
+end
+val find_in_path : string list -> string -> string
+val find_in_path_rel : string list -> string -> string
+val find_in_path_uncap : string list -> string -> string
+val remove_file : string -> unit
+val expand_directory : string -> string -> string
+val create_hashtable : int -> ('a * 'b) list -> ('a, 'b) Hashtbl.t
+val copy_file : in_channel -> out_channel -> unit
+val copy_file_chunk : in_channel -> out_channel -> int -> unit
+val string_of_file : in_channel -> string
+val output_to_file_via_temporary :
+  ?mode:open_flag list -> string -> (string -> out_channel -> 'a) -> 'a
+val log2 : int -> int
+val align : int -> int -> int
+val no_overflow_add : int -> int -> bool
+val no_overflow_sub : int -> int -> bool
+val no_overflow_mul : int -> int -> bool
+val no_overflow_lsl : int -> int -> bool
+module Int_literal_converter :
+sig
+  val int : string -> int
+  val int32 : string -> int32
+  val int64 : string -> int64
+  val nativeint : string -> nativeint
+end
+val chop_extensions : string -> string
+val search_substring : string -> string -> int -> int
+val replace_substring : before:string -> after:string -> string -> string
+val rev_split_words : string -> string list
+val get_ref : 'a list ref -> 'a list
+val fst3 : ('a * 'b * 'c) -> 'a
+val snd3 : ('a * 'b * 'c) -> 'b
+val thd3 : ('a * 'b * 'c) -> 'c
+val fst4 : ('a * 'b * 'c * 'd) -> 'a
+val snd4 : ('a * 'b * 'c * 'd) -> 'b
+val thd4 : ('a * 'b * 'c * 'd) -> 'c
+val for4 : ('a * 'b * 'c * 'd) -> 'd
+module LongString :
+sig
+  type t = bytes array
+  val create : int -> t
+  val length : t -> int
+  val get : t -> int -> char
+  val set : t -> int -> char -> unit
+  val blit : t -> int -> t -> int -> int -> unit
+  val blit_string : string -> int -> t -> int -> int -> unit
+  val output : out_channel -> t -> int -> int -> unit
+  val input_bytes_into : t -> in_channel -> int -> unit
+  val input_bytes : in_channel -> int -> t
+end
+val edit_distance : string -> string -> int -> int option[@@ocaml.doc
+                                                           " [edit_distance a b cutoff] computes the edit distance between\n    strings [a] and [b]. To help efficiency, it uses a cutoff: if the\n    distance [d] is smaller than [cutoff], it returns [Some d], else\n    [None].\n\n    The distance algorithm currently used is Damerau-Levenshtein: it\n    computes the number of insertion, deletion, substitution of\n    letters, or swapping of adjacent letters to go from one word to the\n    other. The particular algorithm may change in the future.\n"]
+val spellcheck : string list -> string -> string list[@@ocaml.doc
+                                                       " [spellcheck env name] takes a list of names [env] that exist in\n    the current environment and an erroneous [name], and returns a\n    list of suggestions taken from [env], that are close enough to\n    [name] that it may be a typo for one of them. "]
+val did_you_mean : Format.formatter -> (unit -> string list) -> unit[@@ocaml.doc
+                                                                    " [did_you_mean ppf get_choices] hints that the user may have meant\n    one of the option returned by calling [get_choices]. It does nothing\n    if the returned list is empty.\n\n    The [unit -> ...] thunking is meant to delay any potentially-slow\n    computation (typically computing edit-distance with many things\n    from the current environment) to when the hint message is to be\n    printed. You should print an understandable error message before\n    calling [did_you_mean], so that users get a clear notification of\n    the failure even if producing the hint is slow.\n"]
+val cut_at : string -> char -> (string * string)[@@ocaml.doc
+                                                  " [String.cut_at s c] returns a pair containing the sub-string before\n   the first occurrence of [c] in [s], and the sub-string after the\n   first occurrence of [c] in [s].\n   [let (before, after) = String.cut_at s c in\n    before ^ String.make 1 c ^ after] is the identity if [s] contains [c].\n\n   Raise [Not_found] if the character does not appear in the string\n   @since 4.01\n"]
+module Color :
+sig
+  type color =
+    | Black 
+    | Red 
+    | Green 
+    | Yellow 
+    | Blue 
+    | Magenta 
+    | Cyan 
+    | White 
+  type style =
+    | FG of color 
+    | BG of color 
+    | Bold 
+    | Reset 
+  val ansi_of_style_l : style list -> string
+  type styles = {
+    error: style list ;
+    warning: style list ;
+    loc: style list }
+  val default_styles : styles
+  val get_styles : unit -> styles
+  val set_styles : styles -> unit
+  type setting =
+    | Auto 
+    | Always 
+    | Never 
+  val setup : setting option -> unit
+  val set_color_tag_handling : Format.formatter -> unit
+end
+val normalise_eol : string -> string[@@ocaml.doc
+                                      " [normalise_eol s] returns a fresh copy of [s] with any '\\r' characters\n   removed. Intended for pre-processing text which will subsequently be printed\n   on a channel which performs EOL transformations (i.e. Windows) "]
+val delete_eol_spaces : string -> string[@@ocaml.doc
+                                          " [delete_eol_spaces s] returns a fresh copy of [s] with any end of\n   line spaces removed. Intended to normalize the output of the\n   toplevel for tests. "]
+[@@@ocaml.text
+  " {1 Hook machinery}\n\n    Hooks machinery:\n   [add_hook name f] will register a function that will be called on the\n    argument of a later call to [apply_hooks]. Hooks are applied in the\n    lexicographical order of their names.\n"]
+type hook_info = {
+  sourcefile: string }
+exception HookExnWrapper of
+  {
+  error: exn ;
+  hook_name: string ;
+  hook_info: hook_info }
+  [@ocaml.doc
+    " An exception raised by a hook will be wrapped into a\n        [HookExnWrapper] constructor by the hook machinery.  "]
+val raise_direct_hook_exn : exn -> 'a[@@ocaml.doc
+                                       " A hook can use [raise_unwrapped_hook_exn] to raise an exception that will\n      not be wrapped into a {!HookExnWrapper}. "]
+module type HookSig  =
+  sig
+    type t
+    val add_hook : string -> (hook_info -> t -> t) -> unit
+    val apply_hooks : hook_info -> t -> t
+  end
+module MakeHooks :
+functor (M : sig type t end) -> HookSig with type  t =  M.t
+val show_config_and_exit : unit -> unit[@@ocaml.doc
+                                         " configuration variables "]
+val show_config_variable_and_exit : string -> unit
+val get_build_path_prefix_map : unit -> Build_path_prefix_map.map option
+[@@ocaml.doc
+  " Returns the map encoded in the [BUILD_PATH_PREFIX_MAP] environment\n    variable. "]
+val debug_prefix_map_flags : unit -> string list[@@ocaml.doc
+                                                  " Returns the list of [--debug-prefix-map] flags to be passed to the\n    assembler, built from the [BUILD_PATH_PREFIX_MAP] environment variable. "]
+val print_if :
+  Format.formatter ->
+    bool ref -> (Format.formatter -> 'a -> unit) -> 'a -> 'a[@@ocaml.doc
+                                                              " [print_if ppf flag fmt x] prints [x] with [fmt] on [ppf] if [b] is true. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Miscellaneous useful types and functions\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+val fatal_error : string -> 'a
+
+
+val fatal_errorf : ('a, Format.formatter, unit, 'b) format4 -> 'a
+
+
+exception Fatal_error 
+
+val try_finally :
+  ?always:(unit -> unit) ->
+    ?exceptionally:(unit -> unit) -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                         " [try_finally work ~always ~exceptionally] is designed to run code\n    in [work] that may fail with an exception, and has two kind of\n    cleanup routines: [always], that must be run after any execution\n    of the function (typically, freeing system resources), and\n    [exceptionally], that should be run only if [work] or [always]\n    failed with an exception (typically, undoing user-visible state\n    changes that would only make sense if the function completes\n    correctly). For example:\n\n    {[\n      let objfile = outputprefix ^ \".cmo\" in\n      let oc = open_out_bin objfile in\n      Misc.try_finally\n        (fun () ->\n           bytecode\n           ++ Timings.(accumulate_time (Generate sourcefile))\n               (Emitcode.to_file oc modulename objfile);\n           Warnings.check_fatal ())\n        ~always:(fun () -> close_out oc)\n        ~exceptionally:(fun _exn -> remove_file objfile);\n    ]}\n\n    If [exceptionally] fail with an exception, it is propagated as\n    usual.\n\n    If [always] or [exceptionally] use exceptions internally for\n    control-flow but do not raise, then [try_finally] is careful to\n    preserve any exception backtrace coming from [work] or [always]\n    for easier debugging.\n"]
+
+
+val map_end : ('a -> 'b) -> 'a list -> 'b list -> 'b list
+
+
+val map_left_right : ('a -> 'b) -> 'a list -> 'b list
+
+
+val for_all2 : ('a -> 'b -> bool) -> 'a list -> 'b list -> bool
+
+
+val replicate_list : 'a -> int -> 'a list
+
+
+val list_remove : 'a -> 'a list -> 'a list
+
+
+val split_last : 'a list -> ('a list * 'a)
+
+
+val may : ('a -> unit) -> 'a option -> unit
+
+
+val may_map : ('a -> 'b) -> 'a option -> 'b option
+
+
+type ref_and_value =
+| R: 'a ref * 'a -> ref_and_value 
+  
+
+val protect_refs : ref_and_value list -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                             " [protect_refs l f] temporarily sets [r] to [v] for each [R (r, v)] in [l]\n    while executing [f]. The previous contents of the references is restored\n    even if [f] raises an exception. "]
+
+
+module Stdlib :
+sig
+  module List :
+  sig
+    type 'a t = 'a list
+      
+    val compare : ('a -> 'a -> int) -> 'a t -> 'a t -> int[@@ocaml.doc
+                                                            " The lexicographic order supported by the provided order.\n        There is no constraint on the relative lengths of the lists. "]
+    
+    val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool[@@ocaml.doc
+                                                            " Returns [true] iff the given lists have the same length and content\n        with respect to the given equality function. "]
+    
+    val filter_map : ('a -> 'b option) -> 'a t -> 'b t[@@ocaml.doc
+                                                        " [filter_map f l] applies [f] to every element of [l], filters\n        out the [None] elements and returns the list of the arguments of\n        the [Some] elements. "]
+    
+    val some_if_all_elements_are_some : 'a option t -> 'a t option[@@ocaml.doc
+                                                                    " If all elements of the given list are [Some _] then [Some xs]\n        is returned with the [xs] being the contents of those [Some]s, with\n        order preserved.  Otherwise return [None]. "]
+    
+    val map2_prefix : ('a -> 'b -> 'c) -> 'a t -> 'b t -> ('c t * 'b t)
+    [@@ocaml.doc
+      " [let r1, r2 = map2_prefix f l1 l2]\n        If [l1] is of length n and [l2 = h2 @ t2] with h2 of length n,\n        r1 is [List.map2 f l1 h1] and r2 is t2. "]
+    
+    val split_at : int -> 'a t -> ('a t * 'a t)[@@ocaml.doc
+                                                 " [split_at n l] returns the pair [before, after] where [before] is\n        the [n] first elements of [l] and [after] the remaining ones.\n        If [l] has less than [n] elements, raises Invalid_argument. "]
+    
+  end
+  module Option :
+  sig
+    type 'a t = 'a option
+      
+    val is_none : 'a t -> bool
+    
+    val is_some : 'a t -> bool
+    
+    val equal : ('a -> 'a -> bool) -> 'a t -> 'a t -> bool
+    
+    val iter : ('a -> unit) -> 'a t -> unit
+    
+    val map : ('a -> 'b) -> 'a t -> 'b t
+    
+    val fold : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+    
+    val value_default : ('a -> 'b) -> default:'b -> 'a t -> 'b
+    
+  end
+  module Array :
+  sig val exists2 : ('a -> 'b -> bool) -> 'a array -> 'b array -> bool
+     end
+  module String :
+  sig
+    include module type of String
+    module Set : Set.S with type  elt =  string
+    module Map : Map.S with type  key =  string
+  end
+  external compare : 'a -> 'a -> int = "%compare"
+  
+end
+
+val find_in_path : string list -> string -> string
+
+
+val find_in_path_rel : string list -> string -> string
+
+
+val find_in_path_uncap : string list -> string -> string
+
+
+val remove_file : string -> unit
+
+
+val expand_directory : string -> string -> string
+
+
+val create_hashtable : int -> ('a * 'b) list -> ('a, 'b) Hashtbl.t
+
+
+val copy_file : in_channel -> out_channel -> unit
+
+
+val copy_file_chunk : in_channel -> out_channel -> int -> unit
+
+
+val string_of_file : in_channel -> string
+
+
+val output_to_file_via_temporary :
+  ?mode:open_flag list -> string -> (string -> out_channel -> 'a) -> 'a
+
+
+val log2 : int -> int
+
+
+val align : int -> int -> int
+
+
+val no_overflow_add : int -> int -> bool
+
+
+val no_overflow_sub : int -> int -> bool
+
+
+val no_overflow_mul : int -> int -> bool
+
+
+val no_overflow_lsl : int -> int -> bool
+
+
+module Int_literal_converter :
+sig
+  val int : string -> int
+  
+  val int32 : string -> int32
+  
+  val int64 : string -> int64
+  
+  val nativeint : string -> nativeint
+  
+end
+
+val chop_extensions : string -> string
+
+
+val search_substring : string -> string -> int -> int
+
+
+val replace_substring : before:string -> after:string -> string -> string
+
+
+val rev_split_words : string -> string list
+
+
+val get_ref : 'a list ref -> 'a list
+
+
+val fst3 : ('a * 'b * 'c) -> 'a
+
+
+val snd3 : ('a * 'b * 'c) -> 'b
+
+
+val thd3 : ('a * 'b * 'c) -> 'c
+
+
+val fst4 : ('a * 'b * 'c * 'd) -> 'a
+
+
+val snd4 : ('a * 'b * 'c * 'd) -> 'b
+
+
+val thd4 : ('a * 'b * 'c * 'd) -> 'c
+
+
+val for4 : ('a * 'b * 'c * 'd) -> 'd
+
+
+module LongString :
+sig
+  type t = bytes array
+    
+  val create : int -> t
+  
+  val length : t -> int
+  
+  val get : t -> int -> char
+  
+  val set : t -> int -> char -> unit
+  
+  val blit : t -> int -> t -> int -> int -> unit
+  
+  val blit_string : string -> int -> t -> int -> int -> unit
+  
+  val output : out_channel -> t -> int -> int -> unit
+  
+  val input_bytes_into : t -> in_channel -> int -> unit
+  
+  val input_bytes : in_channel -> int -> t
+  
+end
+
+val edit_distance : string -> string -> int -> int option[@@ocaml.doc
+                                                           " [edit_distance a b cutoff] computes the edit distance between\n    strings [a] and [b]. To help efficiency, it uses a cutoff: if the\n    distance [d] is smaller than [cutoff], it returns [Some d], else\n    [None].\n\n    The distance algorithm currently used is Damerau-Levenshtein: it\n    computes the number of insertion, deletion, substitution of\n    letters, or swapping of adjacent letters to go from one word to the\n    other. The particular algorithm may change in the future.\n"]
+
+
+val spellcheck : string list -> string -> string list[@@ocaml.doc
+                                                       " [spellcheck env name] takes a list of names [env] that exist in\n    the current environment and an erroneous [name], and returns a\n    list of suggestions taken from [env], that are close enough to\n    [name] that it may be a typo for one of them. "]
+
+
+val did_you_mean : Format.formatter -> (unit -> string list) -> unit[@@ocaml.doc
+                                                                    " [did_you_mean ppf get_choices] hints that the user may have meant\n    one of the option returned by calling [get_choices]. It does nothing\n    if the returned list is empty.\n\n    The [unit -> ...] thunking is meant to delay any potentially-slow\n    computation (typically computing edit-distance with many things\n    from the current environment) to when the hint message is to be\n    printed. You should print an understandable error message before\n    calling [did_you_mean], so that users get a clear notification of\n    the failure even if producing the hint is slow.\n"]
+
+
+val cut_at : string -> char -> (string * string)[@@ocaml.doc
+                                                  " [String.cut_at s c] returns a pair containing the sub-string before\n   the first occurrence of [c] in [s], and the sub-string after the\n   first occurrence of [c] in [s].\n   [let (before, after) = String.cut_at s c in\n    before ^ String.make 1 c ^ after] is the identity if [s] contains [c].\n\n   Raise [Not_found] if the character does not appear in the string\n   @since 4.01\n"]
+
+
+module Color :
+sig
+  type color =
+  | Black 
+  | Red 
+  | Green 
+  | Yellow 
+  | Blue 
+  | Magenta 
+  | Cyan 
+  | White 
+    
+  type style =
+  | FG of color 
+  | BG of color 
+  | Bold 
+  | Reset 
+    
+  val ansi_of_style_l : style list -> string
+  
+  type styles = {
+  error: style list ;
+  warning: style list ;
+  loc: style list }
+    
+  val default_styles : styles
+  
+  val get_styles : unit -> styles
+  
+  val set_styles : styles -> unit
+  
+  type setting =
+  | Auto 
+  | Always 
+  | Never 
+    
+  val setup : setting option -> unit
+  
+  val set_color_tag_handling : Format.formatter -> unit
+  
+end
+
+val normalise_eol : string -> string[@@ocaml.doc
+                                      " [normalise_eol s] returns a fresh copy of [s] with any '\\r' characters\n   removed. Intended for pre-processing text which will subsequently be printed\n   on a channel which performs EOL transformations (i.e. Windows) "]
+
+
+val delete_eol_spaces : string -> string[@@ocaml.doc
+                                          " [delete_eol_spaces s] returns a fresh copy of [s] with any end of\n   line spaces removed. Intended to normalize the output of the\n   toplevel for tests. "]
+
+
+[@@@ocaml.text
+  " {1 Hook machinery}\n\n    Hooks machinery:\n   [add_hook name f] will register a function that will be called on the\n    argument of a later call to [apply_hooks]. Hooks are applied in the\n    lexicographical order of their names.\n"]
+
+type hook_info = {
+sourcefile: string }
+  
+
+exception HookExnWrapper of
+  {
+  error: exn ;
+  hook_name: string ;
+  hook_info: hook_info }
+  [@ocaml.doc
+    " An exception raised by a hook will be wrapped into a\n        [HookExnWrapper] constructor by the hook machinery.  "]
+
+val raise_direct_hook_exn : exn -> 'a[@@ocaml.doc
+                                       " A hook can use [raise_unwrapped_hook_exn] to raise an exception that will\n      not be wrapped into a {!HookExnWrapper}. "]
+
+
+module type HookSig  =
+  sig
+    type t
+      
+    val add_hook : string -> (hook_info -> t -> t) -> unit
+    
+    val apply_hooks : hook_info -> t -> t
+    
+  end
+
+module MakeHooks :
+functor (M : sig type t
+                  end) -> HookSig with type  t =  M.t
+
+val show_config_and_exit : unit -> unit[@@ocaml.doc
+                                         " configuration variables "]
+
+
+val show_config_variable_and_exit : string -> unit
+
+
+val get_build_path_prefix_map : unit -> Build_path_prefix_map.map option
+[@@ocaml.doc
+  " Returns the map encoded in the [BUILD_PATH_PREFIX_MAP] environment\n    variable. "]
+
+
+val debug_prefix_map_flags : unit -> string list[@@ocaml.doc
+                                                  " Returns the list of [--debug-prefix-map] flags to be passed to the\n    assembler, built from the [BUILD_PATH_PREFIX_MAP] environment variable. "]
+
+
+val print_if :
+  Format.formatter ->
+    bool ref -> (Format.formatter -> 'a -> unit) -> 'a -> 'a[@@ocaml.doc
+                                                              " [print_if ppf flag fmt x] prints [x] with [fmt] on [ppf] if [b] is true. "]
+
+File "misc.mli", line 82, characters 21-53:
+Error: Not supported: type in constructors not supported

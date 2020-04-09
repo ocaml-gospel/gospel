@@ -1,0 +1,29 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+module Simplify_boxed_nativeint :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Nativeint.t
+module Simplify_boxed_int32 :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Int32.t
+module Simplify_boxed_int64 :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Int64.t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+module Simplify_boxed_nativeint :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Nativeint.t
+
+module Simplify_boxed_int32 :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Int32.t
+
+module Simplify_boxed_int64 :
+Simplify_boxed_integer_ops_intf.S with type  t :=  Int64.t
+File "./nativeint.mli", line 188, characters 9-18:
+Error: Symbol nativeint not found

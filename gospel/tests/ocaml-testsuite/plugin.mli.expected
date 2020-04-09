@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val facts : int list
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val facts : int list
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module plugin.mli
+
+  Namespace: plugin.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val facts : int list
+    
+
+
+*** OK ***
+

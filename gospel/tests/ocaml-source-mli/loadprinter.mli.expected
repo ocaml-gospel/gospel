@@ -1,0 +1,52 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Format
+val init : unit -> unit
+val loadfile : formatter -> string -> unit
+val install_printer : formatter -> Longident.t -> unit
+val remove_printer : Longident.t -> unit
+type error =
+  | Load_failure of Compdynlink.error 
+  | Unbound_identifier of Longident.t 
+  | Unavailable_module of string * Longident.t 
+  | Wrong_type of Longident.t 
+  | No_active_printer of Longident.t 
+exception Error of error 
+val report_error : formatter -> error -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Format
+
+val init : unit -> unit
+
+
+val loadfile : formatter -> string -> unit
+
+
+val install_printer : formatter -> Longident.t -> unit
+
+
+val remove_printer : Longident.t -> unit
+
+
+type error =
+| Load_failure of Compdynlink.error 
+| Unbound_identifier of Longident.t 
+| Unavailable_module of string * Longident.t 
+| Wrong_type of Longident.t 
+| No_active_printer of Longident.t 
+  
+
+exception Error of error 
+
+val report_error : formatter -> error -> unit
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        

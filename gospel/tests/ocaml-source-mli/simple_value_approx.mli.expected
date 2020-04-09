@@ -1,0 +1,737 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Simple approximations to the runtime results of computations.\n    This pass is designed for speed rather than accuracy; the performance\n    is important since it is used heavily during inlining. "]
+type 'a boxed_int =
+  | Int32: int32 boxed_int 
+  | Int64: int64 boxed_int 
+  | Nativeint: nativeint boxed_int 
+type value_string = {
+  contents: string option ;
+  size: int }
+type unresolved_value =
+  | Set_of_closures_id of Set_of_closures_id.t 
+  | Symbol of Symbol.t 
+type unknown_because_of =
+  | Unresolved_value of unresolved_value 
+  | Other 
+type t = private
+  {
+  descr: descr ;
+  var: Variable.t option ;
+  symbol: (Symbol.t * int option) option }[@@ocaml.doc
+                                            " A value of type [t] corresponds to an \"approximation\" of the result of\n    a computation in the program being compiled.  That is to say, it\n    represents what knowledge we have about such a result at compile time.\n    The simplification pass exploits this information to partially evaluate\n    computations.\n\n    At a high level, an approximation for a value [v] has three parts:\n    - the \"description\" (for example, \"the constant integer 42\");\n    - an optional variable;\n    - an optional symbol or symbol field.\n    If the variable (resp. symbol) is present then that variable (resp.\n    symbol) may be used to obtain the value [v].\n\n    The exact semantics of the variable and symbol fields follows.\n\n    Approximations are deduced at particular points in an expression tree,\n    but may subsequently be propagated to other locations.\n\n    At the point at which an approximation is built for some value [v], we can\n    construct a set of variables (call the set [S]) that are known to alias the\n    same value [v].  Each member of [S] will have the same or a more precise\n    [descr] field in its approximation relative to the approximation for [v].\n    (An increase in precision may currently be introduced for pattern\n    matches.)  If [S] is non-empty then it is guaranteed that there is a\n    unique member of [S] that was declared in a scope further out (\"earlier\")\n    than all other members of [S].  If such a member exists then it is\n    recorded in the [var] field.  Otherwise [var] is [None].\n\n    Analogous to the construction of the set [S], we can construct a set [T]\n    consisting of all symbols that are known to alias the value whose\n    approximation is being constructed.  If [T] is non-empty then the\n    [symbol] field is set to some member of [T]; it does not matter which\n    one.  (There is no notion of scope for symbols.)\n\n    Note about mutable blocks:\n\n    Mutable blocks are always represented by [Value_unknown] or\n    [Value_bottom].  Any other approximation could leave the door open to\n    a miscompilation.   Such bad scenarios are most likely a user using\n    [Obj.magic] or [Obj.set_field] in an inappropriate situation.\n    Such a situation might be:\n    [let x = (1, 1) in\n     Obj.set_field (Obj.repr x) 0 (Obj.repr 2);\n     assert(fst x = 2)]\n    The user would probably expect the assertion to be true, but the\n    compiler could in fact propagate the value of [x] across the\n    [Obj.set_field].\n\n    Insisting that mutable blocks have [Value_unknown] or [Value_bottom]\n    approximations certainly won't always prevent this kind of error, but\n    should help catch many of them.\n\n    It is possible that there may be some false positives, with correct\n    but unreachable code causing this check to fail.  However the likelihood\n    of this seems sufficiently low, especially compared to the advantages\n    gained by performing the check, that we include it.\n\n    An example of a pattern that might trigger a false positive is:\n    [type a = { a : int }\n     type b = { mutable b : int }\n     type _ t =\n       | A : a t\n       | B : b t\n     let f (type x) (v:x t) (r:x) =\n       match v with\n       | A -> r.a\n       | B -> r.b <- 2; 3\n\n    let v =\n    let r =\n      ref A in\n      r := A; (* Some pattern that the compiler can't understand *)\n      f !r { a = 1 }]\n    When inlining [f], the B branch is unreachable, yet the compiler\n    cannot prove it and must therefore keep it.\n"]
+and descr = private
+  | Value_block of Tag.t * t array 
+  | Value_int of int 
+  | Value_char of char 
+  | Value_constptr of int 
+  | Value_float of float option 
+  | Value_boxed_int: 'a boxed_int * 'a -> descr 
+  | Value_set_of_closures of value_set_of_closures 
+  | Value_closure of value_closure 
+  | Value_string of value_string 
+  | Value_float_array of value_float_array 
+  | Value_unknown of unknown_because_of 
+  | Value_bottom 
+  | Value_extern of Export_id.t 
+  | Value_symbol of Symbol.t 
+  | Value_unresolved of unresolved_value 
+and value_closure = {
+  set_of_closures: t ;
+  closure_id: Closure_id.t }
+and function_declarations = private
+  {
+  is_classic_mode: bool ;
+  set_of_closures_id: Set_of_closures_id.t ;
+  set_of_closures_origin: Set_of_closures_origin.t ;
+  funs: function_declaration Variable.Map.t }
+and function_body = private
+  {
+  free_variables: Variable.Set.t ;
+  free_symbols: Symbol.Set.t ;
+  stub: bool ;
+  dbg: Debuginfo.t ;
+  inline: Lambda.inline_attribute ;
+  specialise: Lambda.specialise_attribute ;
+  is_a_functor: bool ;
+  body: Flambda.t }
+and function_declaration = private
+  {
+  closure_origin: Closure_origin.t ;
+  params: Parameter.t list ;
+  function_body: function_body option }
+and value_set_of_closures = private
+  {
+  function_decls: function_declarations ;
+  bound_vars: t Var_within_closure.Map.t ;
+  free_vars: Flambda.specialised_to Variable.Map.t ;
+  invariant_params: Variable.Set.t Variable.Map.t Lazy.t ;
+  recursive: Variable.Set.t Lazy.t ;
+  size: int option Variable.Map.t Lazy.t
+    [@ocaml.doc
+      " For functions that are very likely to be inlined, the size of the\n      function's body. "];
+  specialised_args: Flambda.specialised_to Variable.Map.t ;
+  freshening: Freshening.Project_var.t ;
+  direct_call_surrogates: Closure_id.t Closure_id.Map.t }
+and value_float_array_contents =
+  | Contents of t array 
+  | Unknown_or_mutable 
+and value_float_array = {
+  contents: value_float_array_contents ;
+  size: int }
+val descr : t -> descr[@@ocaml.doc
+                        " Extraction of the description of approximation(s). "]
+val descrs : t list -> descr list
+val print : Format.formatter -> t -> unit[@@ocaml.doc
+                                           " Pretty-printing of approximations to a formatter. "]
+val print_descr : Format.formatter -> descr -> unit
+val print_value_set_of_closures :
+  Format.formatter -> value_set_of_closures -> unit
+val print_function_declarations :
+  Format.formatter -> function_declarations -> unit
+val function_declarations_approx :
+  keep_body:(Variable.t -> Flambda.function_declaration -> bool) ->
+    Flambda.function_declarations -> function_declarations
+val create_value_set_of_closures :
+  function_decls:function_declarations ->
+    bound_vars:t Var_within_closure.Map.t ->
+      free_vars:Flambda.specialised_to Variable.Map.t ->
+        invariant_params:Variable.Set.t Variable.Map.t lazy_t ->
+          recursive:Variable.Set.t Lazy.t ->
+            specialised_args:Flambda.specialised_to Variable.Map.t ->
+              freshening:Freshening.Project_var.t ->
+                direct_call_surrogates:Closure_id.t Closure_id.Map.t ->
+                  value_set_of_closures
+val update_freshening_of_value_set_of_closures :
+  value_set_of_closures ->
+    freshening:Freshening.Project_var.t -> value_set_of_closures
+val value_unknown : unknown_because_of -> t[@@ocaml.doc
+                                             " Basic construction of approximations. "]
+val value_int : int -> t
+val value_char : char -> t
+val value_float : float -> t
+val value_any_float : t
+val value_mutable_float_array : size:int -> t
+val value_immutable_float_array : t array -> t
+val value_string : int -> string option -> t
+val value_boxed_int : 'i boxed_int -> 'i -> t
+val value_constptr : int -> t
+val value_block : Tag.t -> t array -> t
+val value_extern : Export_id.t -> t
+val value_symbol : Symbol.t -> t
+val value_bottom : t
+val value_unresolved : unresolved_value -> t
+val value_closure :
+  ?closure_var:Variable.t ->
+    ?set_of_closures_var:Variable.t ->
+      ?set_of_closures_symbol:Symbol.t ->
+        value_set_of_closures -> Closure_id.t -> t[@@ocaml.doc
+                                                    " Construct a closure approximation given the approximation of the\n    corresponding set of closures and the closure ID of the closure to\n    be projected from such set.  [closure_var] and/or [set_of_closures_var]\n    may be specified to augment the approximation with variables that may\n    be used to access the closure value itself, so long as they are in\n    scope at the proposed point of use. "]
+val value_set_of_closures :
+  ?set_of_closures_var:Variable.t -> value_set_of_closures -> t[@@ocaml.doc
+                                                                 " Construct a set of closures approximation.  [set_of_closures_var] is as for\n    the parameter of the same name in [value_closure], above. "]
+val make_const_int : int -> (Flambda.t * t)[@@ocaml.doc
+                                             " Take the given constant and produce an appropriate approximation for it\n    together with an Flambda expression representing it. "]
+val make_const_char : char -> (Flambda.t * t)
+val make_const_ptr : int -> (Flambda.t * t)
+val make_const_bool : bool -> (Flambda.t * t)
+val make_const_float : float -> (Flambda.t * t)
+val make_const_boxed_int : 'i boxed_int -> 'i -> (Flambda.t * t)
+val make_const_int_named : int -> (Flambda.named * t)
+val make_const_char_named : char -> (Flambda.named * t)
+val make_const_ptr_named : int -> (Flambda.named * t)
+val make_const_bool_named : bool -> (Flambda.named * t)
+val make_const_float_named : float -> (Flambda.named * t)
+val make_const_boxed_int_named : 'i boxed_int -> 'i -> (Flambda.named * t)
+val augment_with_variable : t -> Variable.t -> t[@@ocaml.doc
+                                                  " Augment an approximation with a given variable (see comment above).\n    If the approximation was already augmented with a variable, the one\n    passed to this function replaces it within the approximation. "]
+val augment_with_symbol : t -> Symbol.t -> t[@@ocaml.doc
+                                              " Like [augment_with_variable], but for symbol information. "]
+val augment_with_symbol_field : t -> Symbol.t -> int -> t[@@ocaml.doc
+                                                           " Like [augment_with_symbol], but for symbol field information. "]
+val replace_description : t -> descr -> t[@@ocaml.doc
+                                           " Replace the description within an approximation. "]
+val augment_with_kind : t -> Lambda.value_kind -> t[@@ocaml.doc
+                                                     " Improve the description by taking the kind into account "]
+val augment_kind_with_approx : t -> Lambda.value_kind -> Lambda.value_kind
+[@@ocaml.doc " Improve the kind by taking the description into account "]
+val equal_boxed_int : 'a boxed_int -> 'a -> 'b boxed_int -> 'b -> bool
+val meet : really_import_approx:(t -> t) -> t -> t -> t
+val known : t -> bool[@@ocaml.doc
+                       " An approximation is \"known\" iff it is not [Value_unknown]. "]
+val useful : t -> bool[@@ocaml.doc
+                        " An approximation is \"useful\" iff it is neither unknown nor bottom. "]
+val all_not_useful : t list -> bool[@@ocaml.doc
+                                     " Whether all approximations in the given list do *not* satisfy [useful]. "]
+val warn_on_mutation : t -> bool[@@ocaml.doc
+                                  " Whether to warn on attempts to mutate a value.\n    It must have been resolved (it cannot be [Value_extern] or\n    [Value_symbol]).  (See comment above for further explanation.) "]
+type simplification_summary =
+  | Nothing_done 
+  | Replaced_term 
+type simplification_result = (Flambda.t * simplification_summary * t)
+type simplification_result_named =
+  (Flambda.named * simplification_summary * t)
+val simplify : t -> Flambda.t -> simplification_result[@@ocaml.doc
+                                                        " Given an expression and its approximation, attempt to simplify the\n    expression to a constant (with associated approximation), taking into\n    account whether the expression has any side effects. "]
+val simplify_using_env :
+  t ->
+    is_present_in_env:(Variable.t -> bool) ->
+      Flambda.t -> simplification_result[@@ocaml.doc
+                                          " As for [simplify], but also enables us to simplify based on equalities\n    between variables.  The caller must provide a function that tells us\n    whether, if we simplify to a given variable, the value of that variable\n    will be accessible in the current environment. "]
+val simplify_named : t -> Flambda.named -> simplification_result_named
+val simplify_named_using_env :
+  t ->
+    is_present_in_env:(Variable.t -> bool) ->
+      Flambda.named -> simplification_result_named
+val simplify_var_to_var_using_env :
+  t -> is_present_in_env:(Variable.t -> bool) -> Variable.t option[@@ocaml.doc
+                                                                    " If the given approximation identifies another variable and\n    [is_present_in_env] deems it to be in scope, return that variable (wrapped\n    in a [Some]), otherwise return [None]. "]
+val simplify_var : t -> (Flambda.named * t) option
+type get_field_result =
+  | Ok of t 
+  | Unreachable 
+val get_field : t -> field_index:int -> get_field_result[@@ocaml.doc
+                                                          " Given the approximation [t] of a value, expected to correspond to a block\n    (in the [Pmakeblock] sense of the word), and a field index then return\n    an appropriate approximation for that field of the block (or\n    [Unreachable] if the code with the approximation [t] is unreachable).\n    N.B. Not all cases of unreachable code are returned as [Unreachable].\n"]
+type checked_approx_for_block =
+  | Wrong 
+  | Ok of Tag.t * t array 
+val check_approx_for_block : t -> checked_approx_for_block[@@ocaml.doc
+                                                            " Try to prove that a value with the given approximation may be used\n    as a block. "]
+val approx_for_bound_var : value_set_of_closures -> Var_within_closure.t -> t
+[@@ocaml.doc
+  " Find the approximation for a bound variable in a set-of-closures\n    approximation.  A fatal error is produced if the variable is not bound in\n    the given approximation. "]
+val freshen_and_check_closure_id :
+  value_set_of_closures -> Closure_id.t -> Closure_id.t[@@ocaml.doc
+                                                         " Given a set-of-closures approximation and a closure ID, apply any\n    freshening specified by the approximation to the closure ID, and return\n    the resulting ID.  Causes a fatal error if the resulting closure ID does\n    not correspond to any function declaration in the approximation. "]
+type strict_checked_approx_for_set_of_closures =
+  | Wrong 
+  | Ok of Variable.t option * value_set_of_closures 
+val strict_check_approx_for_set_of_closures :
+  t -> strict_checked_approx_for_set_of_closures
+type checked_approx_for_set_of_closures =
+  | Wrong 
+  | Unresolved of unresolved_value 
+  | Unknown 
+  | Unknown_because_of_unresolved_value of unresolved_value 
+  | Ok of Variable.t option * value_set_of_closures 
+val check_approx_for_set_of_closures :
+  t -> checked_approx_for_set_of_closures[@@ocaml.doc
+                                           " Try to prove that a value with the given approximation may be used as a\n    set of closures.  Values coming from external compilation units with\n    unresolved approximations are permitted. "]
+type checked_approx_for_closure =
+  | Wrong 
+  | Ok of value_closure * Variable.t option * Symbol.t option *
+  value_set_of_closures 
+val check_approx_for_closure : t -> checked_approx_for_closure[@@ocaml.doc
+                                                                " Try to prove that a value with the given approximation may be used as a\n    closure.  Values coming from external compilation units with unresolved\n    approximations are not permitted. "]
+type checked_approx_for_closure_allowing_unresolved =
+  | Wrong 
+  | Unresolved of unresolved_value 
+  | Unknown 
+  | Unknown_because_of_unresolved_value of unresolved_value 
+  | Ok of value_closure * Variable.t option * Symbol.t option *
+  value_set_of_closures 
+val check_approx_for_closure_allowing_unresolved :
+  t -> checked_approx_for_closure_allowing_unresolved[@@ocaml.doc
+                                                       " As for [check_approx_for_closure], but values coming from external\n    compilation units with unresolved approximations are permitted. "]
+val check_approx_for_float : t -> float option[@@ocaml.doc
+                                                " Returns the value if it can be proved to be a constant float "]
+val float_array_as_constant : value_float_array -> float list option[@@ocaml.doc
+                                                                    " Returns the value if it can be proved to be a constant float array "]
+val check_approx_for_string : t -> string option[@@ocaml.doc
+                                                  " Returns the value if it can be proved to be a constant string "]
+type switch_branch_selection =
+  | Cannot_be_taken 
+  | Can_be_taken 
+  | Must_be_taken 
+val potentially_taken_const_switch_branch :
+  t -> int -> switch_branch_selection[@@ocaml.doc
+                                       " Check that the branch is compatible with the approximation "]
+val potentially_taken_block_switch_branch :
+  t -> int -> switch_branch_selection
+val function_arity : function_declaration -> int
+val update_function_declarations :
+  function_declarations ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations based on another set of function\n    declarations. "]
+val import_function_declarations_for_pack :
+  function_declarations ->
+    (Set_of_closures_id.t -> Set_of_closures_id.t) ->
+      (Set_of_closures_origin.t -> Set_of_closures_origin.t) ->
+        function_declarations
+val update_function_declaration_body :
+  function_declaration -> (Flambda.t -> Flambda.t) -> function_declaration
+val make_closure_map :
+  function_declarations Set_of_closures_id.Map.t ->
+    function_declarations Closure_id.Map.t[@@ocaml.doc
+                                            " Creates a map from closure IDs to function declarations by iterating over\n    all sets of closures in the given map. "]
+val clear_function_bodies : function_declarations -> function_declarations
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Simple approximations to the runtime results of computations.\n    This pass is designed for speed rather than accuracy; the performance\n    is important since it is used heavily during inlining. "]
+
+type 'a boxed_int =
+| Int32: int32 boxed_int 
+| Int64: int64 boxed_int 
+| Nativeint: nativeint boxed_int 
+  
+
+type value_string = {
+contents: string option ;
+size: int }
+  
+
+type unresolved_value =
+| Set_of_closures_id of Set_of_closures_id.t 
+| Symbol of Symbol.t 
+  
+
+type unknown_because_of =
+| Unresolved_value of unresolved_value 
+| Other 
+  
+
+type t = private
+{
+descr: descr ;
+var: Variable.t option ;
+symbol: (Symbol.t * int option) option }[@@ocaml.doc
+                                          " A value of type [t] corresponds to an \"approximation\" of the result of\n    a computation in the program being compiled.  That is to say, it\n    represents what knowledge we have about such a result at compile time.\n    The simplification pass exploits this information to partially evaluate\n    computations.\n\n    At a high level, an approximation for a value [v] has three parts:\n    - the \"description\" (for example, \"the constant integer 42\");\n    - an optional variable;\n    - an optional symbol or symbol field.\n    If the variable (resp. symbol) is present then that variable (resp.\n    symbol) may be used to obtain the value [v].\n\n    The exact semantics of the variable and symbol fields follows.\n\n    Approximations are deduced at particular points in an expression tree,\n    but may subsequently be propagated to other locations.\n\n    At the point at which an approximation is built for some value [v], we can\n    construct a set of variables (call the set [S]) that are known to alias the\n    same value [v].  Each member of [S] will have the same or a more precise\n    [descr] field in its approximation relative to the approximation for [v].\n    (An increase in precision may currently be introduced for pattern\n    matches.)  If [S] is non-empty then it is guaranteed that there is a\n    unique member of [S] that was declared in a scope further out (\"earlier\")\n    than all other members of [S].  If such a member exists then it is\n    recorded in the [var] field.  Otherwise [var] is [None].\n\n    Analogous to the construction of the set [S], we can construct a set [T]\n    consisting of all symbols that are known to alias the value whose\n    approximation is being constructed.  If [T] is non-empty then the\n    [symbol] field is set to some member of [T]; it does not matter which\n    one.  (There is no notion of scope for symbols.)\n\n    Note about mutable blocks:\n\n    Mutable blocks are always represented by [Value_unknown] or\n    [Value_bottom].  Any other approximation could leave the door open to\n    a miscompilation.   Such bad scenarios are most likely a user using\n    [Obj.magic] or [Obj.set_field] in an inappropriate situation.\n    Such a situation might be:\n    [let x = (1, 1) in\n     Obj.set_field (Obj.repr x) 0 (Obj.repr 2);\n     assert(fst x = 2)]\n    The user would probably expect the assertion to be true, but the\n    compiler could in fact propagate the value of [x] across the\n    [Obj.set_field].\n\n    Insisting that mutable blocks have [Value_unknown] or [Value_bottom]\n    approximations certainly won't always prevent this kind of error, but\n    should help catch many of them.\n\n    It is possible that there may be some false positives, with correct\n    but unreachable code causing this check to fail.  However the likelihood\n    of this seems sufficiently low, especially compared to the advantages\n    gained by performing the check, that we include it.\n\n    An example of a pattern that might trigger a false positive is:\n    [type a = { a : int }\n     type b = { mutable b : int }\n     type _ t =\n       | A : a t\n       | B : b t\n     let f (type x) (v:x t) (r:x) =\n       match v with\n       | A -> r.a\n       | B -> r.b <- 2; 3\n\n    let v =\n    let r =\n      ref A in\n      r := A; (* Some pattern that the compiler can't understand *)\n      f !r { a = 1 }]\n    When inlining [f], the B branch is unreachable, yet the compiler\n    cannot prove it and must therefore keep it.\n"]
+  
+and descr = private
+| Value_block of Tag.t * t array 
+| Value_int of int 
+| Value_char of char 
+| Value_constptr of int 
+| Value_float of float option 
+| Value_boxed_int: 'a boxed_int * 'a -> descr 
+| Value_set_of_closures of value_set_of_closures 
+| Value_closure of value_closure 
+| Value_string of value_string 
+| Value_float_array of value_float_array 
+| Value_unknown of unknown_because_of 
+| Value_bottom 
+| Value_extern of Export_id.t 
+| Value_symbol of Symbol.t 
+| Value_unresolved of unresolved_value 
+  
+and value_closure = {
+set_of_closures: t ;
+closure_id: Closure_id.t }
+  
+and function_declarations = private
+{
+is_classic_mode: bool ;
+set_of_closures_id: Set_of_closures_id.t ;
+set_of_closures_origin: Set_of_closures_origin.t ;
+funs: function_declaration Variable.Map.t }
+  
+and function_body = private
+{
+free_variables: Variable.Set.t ;
+free_symbols: Symbol.Set.t ;
+stub: bool ;
+dbg: Debuginfo.t ;
+inline: Lambda.inline_attribute ;
+specialise: Lambda.specialise_attribute ;
+is_a_functor: bool ;
+body: Flambda.t }
+  
+and function_declaration = private
+{
+closure_origin: Closure_origin.t ;
+params: Parameter.t list ;
+function_body: function_body option }
+  
+and value_set_of_closures = private
+{
+function_decls: function_declarations ;
+bound_vars: t Var_within_closure.Map.t ;
+free_vars: Flambda.specialised_to Variable.Map.t ;
+invariant_params: Variable.Set.t Variable.Map.t Lazy.t ;
+recursive: Variable.Set.t Lazy.t ;
+size: int option Variable.Map.t Lazy.t
+  [@ocaml.doc
+    " For functions that are very likely to be inlined, the size of the\n      function's body. "];
+specialised_args: Flambda.specialised_to Variable.Map.t ;
+freshening: Freshening.Project_var.t ;
+direct_call_surrogates: Closure_id.t Closure_id.Map.t }
+  
+and value_float_array_contents =
+| Contents of t array 
+| Unknown_or_mutable 
+  
+and value_float_array = {
+contents: value_float_array_contents ;
+size: int }
+  
+
+val descr : t -> descr[@@ocaml.doc
+                        " Extraction of the description of approximation(s). "]
+
+
+val descrs : t list -> descr list
+
+
+val print : Format.formatter -> t -> unit[@@ocaml.doc
+                                           " Pretty-printing of approximations to a formatter. "]
+
+
+val print_descr : Format.formatter -> descr -> unit
+
+
+val print_value_set_of_closures :
+  Format.formatter -> value_set_of_closures -> unit
+
+
+val print_function_declarations :
+  Format.formatter -> function_declarations -> unit
+
+
+val function_declarations_approx :
+  keep_body:(Variable.t -> Flambda.function_declaration -> bool) ->
+    Flambda.function_declarations -> function_declarations
+
+
+val create_value_set_of_closures :
+  function_decls:function_declarations ->
+    bound_vars:t Var_within_closure.Map.t ->
+      free_vars:Flambda.specialised_to Variable.Map.t ->
+        invariant_params:Variable.Set.t Variable.Map.t lazy_t ->
+          recursive:Variable.Set.t Lazy.t ->
+            specialised_args:Flambda.specialised_to Variable.Map.t ->
+              freshening:Freshening.Project_var.t ->
+                direct_call_surrogates:Closure_id.t Closure_id.Map.t ->
+                  value_set_of_closures
+
+
+val update_freshening_of_value_set_of_closures :
+  value_set_of_closures ->
+    freshening:Freshening.Project_var.t -> value_set_of_closures
+
+
+val value_unknown : unknown_because_of -> t[@@ocaml.doc
+                                             " Basic construction of approximations. "]
+
+
+val value_int : int -> t
+
+
+val value_char : char -> t
+
+
+val value_float : float -> t
+
+
+val value_any_float : t
+
+
+val value_mutable_float_array : size:int -> t
+
+
+val value_immutable_float_array : t array -> t
+
+
+val value_string : int -> string option -> t
+
+
+val value_boxed_int : 'i boxed_int -> 'i -> t
+
+
+val value_constptr : int -> t
+
+
+val value_block : Tag.t -> t array -> t
+
+
+val value_extern : Export_id.t -> t
+
+
+val value_symbol : Symbol.t -> t
+
+
+val value_bottom : t
+
+
+val value_unresolved : unresolved_value -> t
+
+
+val value_closure :
+  ?closure_var:Variable.t ->
+    ?set_of_closures_var:Variable.t ->
+      ?set_of_closures_symbol:Symbol.t ->
+        value_set_of_closures -> Closure_id.t -> t[@@ocaml.doc
+                                                    " Construct a closure approximation given the approximation of the\n    corresponding set of closures and the closure ID of the closure to\n    be projected from such set.  [closure_var] and/or [set_of_closures_var]\n    may be specified to augment the approximation with variables that may\n    be used to access the closure value itself, so long as they are in\n    scope at the proposed point of use. "]
+
+
+val value_set_of_closures :
+  ?set_of_closures_var:Variable.t -> value_set_of_closures -> t[@@ocaml.doc
+                                                                 " Construct a set of closures approximation.  [set_of_closures_var] is as for\n    the parameter of the same name in [value_closure], above. "]
+
+
+val make_const_int : int -> (Flambda.t * t)[@@ocaml.doc
+                                             " Take the given constant and produce an appropriate approximation for it\n    together with an Flambda expression representing it. "]
+
+
+val make_const_char : char -> (Flambda.t * t)
+
+
+val make_const_ptr : int -> (Flambda.t * t)
+
+
+val make_const_bool : bool -> (Flambda.t * t)
+
+
+val make_const_float : float -> (Flambda.t * t)
+
+
+val make_const_boxed_int : 'i boxed_int -> 'i -> (Flambda.t * t)
+
+
+val make_const_int_named : int -> (Flambda.named * t)
+
+
+val make_const_char_named : char -> (Flambda.named * t)
+
+
+val make_const_ptr_named : int -> (Flambda.named * t)
+
+
+val make_const_bool_named : bool -> (Flambda.named * t)
+
+
+val make_const_float_named : float -> (Flambda.named * t)
+
+
+val make_const_boxed_int_named : 'i boxed_int -> 'i -> (Flambda.named * t)
+
+
+val augment_with_variable : t -> Variable.t -> t[@@ocaml.doc
+                                                  " Augment an approximation with a given variable (see comment above).\n    If the approximation was already augmented with a variable, the one\n    passed to this function replaces it within the approximation. "]
+
+
+val augment_with_symbol : t -> Symbol.t -> t[@@ocaml.doc
+                                              " Like [augment_with_variable], but for symbol information. "]
+
+
+val augment_with_symbol_field : t -> Symbol.t -> int -> t[@@ocaml.doc
+                                                           " Like [augment_with_symbol], but for symbol field information. "]
+
+
+val replace_description : t -> descr -> t[@@ocaml.doc
+                                           " Replace the description within an approximation. "]
+
+
+val augment_with_kind : t -> Lambda.value_kind -> t[@@ocaml.doc
+                                                     " Improve the description by taking the kind into account "]
+
+
+val augment_kind_with_approx : t -> Lambda.value_kind -> Lambda.value_kind
+[@@ocaml.doc " Improve the kind by taking the description into account "]
+
+
+val equal_boxed_int : 'a boxed_int -> 'a -> 'b boxed_int -> 'b -> bool
+
+
+val meet : really_import_approx:(t -> t) -> t -> t -> t
+
+
+val known : t -> bool[@@ocaml.doc
+                       " An approximation is \"known\" iff it is not [Value_unknown]. "]
+
+
+val useful : t -> bool[@@ocaml.doc
+                        " An approximation is \"useful\" iff it is neither unknown nor bottom. "]
+
+
+val all_not_useful : t list -> bool[@@ocaml.doc
+                                     " Whether all approximations in the given list do *not* satisfy [useful]. "]
+
+
+val warn_on_mutation : t -> bool[@@ocaml.doc
+                                  " Whether to warn on attempts to mutate a value.\n    It must have been resolved (it cannot be [Value_extern] or\n    [Value_symbol]).  (See comment above for further explanation.) "]
+
+
+type simplification_summary =
+| Nothing_done 
+| Replaced_term 
+  
+
+type simplification_result = (Flambda.t * simplification_summary * t)
+  
+
+type simplification_result_named =
+(Flambda.named * simplification_summary * t)
+  
+
+val simplify : t -> Flambda.t -> simplification_result[@@ocaml.doc
+                                                        " Given an expression and its approximation, attempt to simplify the\n    expression to a constant (with associated approximation), taking into\n    account whether the expression has any side effects. "]
+
+
+val simplify_using_env :
+  t ->
+    is_present_in_env:(Variable.t -> bool) ->
+      Flambda.t -> simplification_result[@@ocaml.doc
+                                          " As for [simplify], but also enables us to simplify based on equalities\n    between variables.  The caller must provide a function that tells us\n    whether, if we simplify to a given variable, the value of that variable\n    will be accessible in the current environment. "]
+
+
+val simplify_named : t -> Flambda.named -> simplification_result_named
+
+
+val simplify_named_using_env :
+  t ->
+    is_present_in_env:(Variable.t -> bool) ->
+      Flambda.named -> simplification_result_named
+
+
+val simplify_var_to_var_using_env :
+  t -> is_present_in_env:(Variable.t -> bool) -> Variable.t option[@@ocaml.doc
+                                                                    " If the given approximation identifies another variable and\n    [is_present_in_env] deems it to be in scope, return that variable (wrapped\n    in a [Some]), otherwise return [None]. "]
+
+
+val simplify_var : t -> (Flambda.named * t) option
+
+
+type get_field_result =
+| Ok of t 
+| Unreachable 
+  
+
+val get_field : t -> field_index:int -> get_field_result[@@ocaml.doc
+                                                          " Given the approximation [t] of a value, expected to correspond to a block\n    (in the [Pmakeblock] sense of the word), and a field index then return\n    an appropriate approximation for that field of the block (or\n    [Unreachable] if the code with the approximation [t] is unreachable).\n    N.B. Not all cases of unreachable code are returned as [Unreachable].\n"]
+
+
+type checked_approx_for_block =
+| Wrong 
+| Ok of Tag.t * t array 
+  
+
+val check_approx_for_block : t -> checked_approx_for_block[@@ocaml.doc
+                                                            " Try to prove that a value with the given approximation may be used\n    as a block. "]
+
+
+val approx_for_bound_var : value_set_of_closures -> Var_within_closure.t -> t
+[@@ocaml.doc
+  " Find the approximation for a bound variable in a set-of-closures\n    approximation.  A fatal error is produced if the variable is not bound in\n    the given approximation. "]
+
+
+val freshen_and_check_closure_id :
+  value_set_of_closures -> Closure_id.t -> Closure_id.t[@@ocaml.doc
+                                                         " Given a set-of-closures approximation and a closure ID, apply any\n    freshening specified by the approximation to the closure ID, and return\n    the resulting ID.  Causes a fatal error if the resulting closure ID does\n    not correspond to any function declaration in the approximation. "]
+
+
+type strict_checked_approx_for_set_of_closures =
+| Wrong 
+| Ok of Variable.t option * value_set_of_closures 
+  
+
+val strict_check_approx_for_set_of_closures :
+  t -> strict_checked_approx_for_set_of_closures
+
+
+type checked_approx_for_set_of_closures =
+| Wrong 
+| Unresolved of unresolved_value 
+| Unknown 
+| Unknown_because_of_unresolved_value of unresolved_value 
+| Ok of Variable.t option * value_set_of_closures 
+  
+
+val check_approx_for_set_of_closures :
+  t -> checked_approx_for_set_of_closures[@@ocaml.doc
+                                           " Try to prove that a value with the given approximation may be used as a\n    set of closures.  Values coming from external compilation units with\n    unresolved approximations are permitted. "]
+
+
+type checked_approx_for_closure =
+| Wrong 
+| Ok of value_closure * Variable.t option * Symbol.t option *
+value_set_of_closures 
+  
+
+val check_approx_for_closure : t -> checked_approx_for_closure[@@ocaml.doc
+                                                                " Try to prove that a value with the given approximation may be used as a\n    closure.  Values coming from external compilation units with unresolved\n    approximations are not permitted. "]
+
+
+type checked_approx_for_closure_allowing_unresolved =
+| Wrong 
+| Unresolved of unresolved_value 
+| Unknown 
+| Unknown_because_of_unresolved_value of unresolved_value 
+| Ok of value_closure * Variable.t option * Symbol.t option *
+value_set_of_closures 
+  
+
+val check_approx_for_closure_allowing_unresolved :
+  t -> checked_approx_for_closure_allowing_unresolved[@@ocaml.doc
+                                                       " As for [check_approx_for_closure], but values coming from external\n    compilation units with unresolved approximations are permitted. "]
+
+
+val check_approx_for_float : t -> float option[@@ocaml.doc
+                                                " Returns the value if it can be proved to be a constant float "]
+
+
+val float_array_as_constant : value_float_array -> float list option[@@ocaml.doc
+                                                                    " Returns the value if it can be proved to be a constant float array "]
+
+
+val check_approx_for_string : t -> string option[@@ocaml.doc
+                                                  " Returns the value if it can be proved to be a constant string "]
+
+
+type switch_branch_selection =
+| Cannot_be_taken 
+| Can_be_taken 
+| Must_be_taken 
+  
+
+val potentially_taken_const_switch_branch :
+  t -> int -> switch_branch_selection[@@ocaml.doc
+                                       " Check that the branch is compatible with the approximation "]
+
+
+val potentially_taken_block_switch_branch :
+  t -> int -> switch_branch_selection
+
+
+val function_arity : function_declaration -> int
+
+
+val update_function_declarations :
+  function_declarations ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations based on another set of function\n    declarations. "]
+
+
+val import_function_declarations_for_pack :
+  function_declarations ->
+    (Set_of_closures_id.t -> Set_of_closures_id.t) ->
+      (Set_of_closures_origin.t -> Set_of_closures_origin.t) ->
+        function_declarations
+
+
+val update_function_declaration_body :
+  function_declaration -> (Flambda.t -> Flambda.t) -> function_declaration
+
+
+val make_closure_map :
+  function_declarations Set_of_closures_id.Map.t ->
+    function_declarations Closure_id.Map.t[@@ocaml.doc
+                                            " Creates a map from closure IDs to function declarations by iterating over\n    all sets of closures in the given map. "]
+
+
+val clear_function_bodies : function_declarations -> function_declarations
+
+File "simple_value_approx.mli", line 24, characters 2-27:
+Error: Not supported: type in constructors not supported

@@ -1,0 +1,59 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Ocamldoc configuration constants. "]
+val custom_generators_path : string[@@ocaml.doc
+                                     " Default path to search for custom generators and to install them. "]
+val print_warnings : bool ref[@@ocaml.doc
+                               " A flag to indicate whether to print ocamldoc warnings or not. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Ocamldoc configuration constants. "]
+
+val custom_generators_path : string[@@ocaml.doc
+                                     " Default path to search for custom generators and to install them. "]
+
+
+val print_warnings : bool ref[@@ocaml.doc
+                               " A flag to indicate whether to print ocamldoc warnings or not. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_config.mli
+
+  Namespace: odoc_config.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Ocamldoc configuration constants. "]
+    
+    val custom_generators_path :
+    string[@@ocaml.doc
+            " Default path to search for custom generators and to install them. "]
+    
+    
+    val print_warnings :
+    bool ref[@@ocaml.doc
+              " A flag to indicate whether to print ocamldoc warnings or not. "]
+    
+
+
+*** OK ***
+

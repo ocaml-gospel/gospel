@@ -1,0 +1,76 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Asttypes
+open Typedtree
+open Lambda
+val transl_exp : expression -> lambda
+val transl_apply :
+  ?should_be_tailcall:bool ->
+    ?inlined:inline_attribute ->
+      ?specialised:specialise_attribute ->
+        lambda ->
+          (arg_label * expression option) list -> Location.t -> lambda
+val transl_let : rec_flag -> value_binding list -> lambda -> lambda
+val transl_extension_constructor :
+  Env.t -> Path.t option -> extension_constructor -> lambda
+type error =
+  | Free_super_var 
+  | Unreachable_reached 
+exception Error of Location.t * error 
+open Format
+val report_error : formatter -> error -> unit
+val transl_module :
+  (module_coercion -> Path.t option -> module_expr -> lambda) ref
+val transl_object : (Ident.t -> string list -> class_expr -> lambda) ref
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Asttypes
+
+open Typedtree
+
+open Lambda
+
+val transl_exp : expression -> lambda
+
+
+val transl_apply :
+  ?should_be_tailcall:bool ->
+    ?inlined:inline_attribute ->
+      ?specialised:specialise_attribute ->
+        lambda ->
+          (arg_label * expression option) list -> Location.t -> lambda
+
+
+val transl_let : rec_flag -> value_binding list -> lambda -> lambda
+
+
+val transl_extension_constructor :
+  Env.t -> Path.t option -> extension_constructor -> lambda
+
+
+type error =
+| Free_super_var 
+| Unreachable_reached 
+  
+
+exception Error of Location.t * error 
+
+open Format
+
+val report_error : formatter -> error -> unit
+
+
+val transl_module :
+  (module_coercion -> Path.t option -> module_expr -> lambda) ref
+
+
+val transl_object : (Ident.t -> string list -> class_expr -> lambda) ref
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

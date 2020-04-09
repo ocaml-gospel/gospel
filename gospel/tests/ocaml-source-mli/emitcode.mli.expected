@@ -1,0 +1,53 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Cmo_format
+open Instruct
+val to_file :
+  out_channel ->
+    string ->
+      string -> required_globals:Ident.Set.t -> instruction list -> unit
+val to_memory :
+  instruction list ->
+    instruction list ->
+      (Misc.LongString.t * (reloc_info * int) list * debug_event list)
+val to_packed_file :
+  out_channel -> instruction list -> (reloc_info * int) list
+val reset : unit -> unit
+val marshal_to_channel_with_possibly_32bit_compat :
+  filename:string -> kind:string -> out_channel -> 'a -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Cmo_format
+
+open Instruct
+
+val to_file :
+  out_channel ->
+    string ->
+      string -> required_globals:Ident.Set.t -> instruction list -> unit
+
+
+val to_memory :
+  instruction list ->
+    instruction list ->
+      (Misc.LongString.t * (reloc_info * int) list * debug_event list)
+
+
+val to_packed_file :
+  out_channel -> instruction list -> (reloc_info * int) list
+
+
+val reset : unit -> unit
+
+
+val marshal_to_channel_with_possibly_32bit_compat :
+  filename:string -> kind:string -> out_channel -> 'a -> unit
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

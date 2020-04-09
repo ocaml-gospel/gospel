@@ -1,0 +1,41 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Typedtree
+open Lambda
+val transl_class :
+  Ident.t list ->
+    Ident.t -> string list -> class_expr -> Asttypes.virtual_flag -> lambda
+type error =
+  | Tags of string * string 
+exception Error of Location.t * error 
+open Format
+val report_error : formatter -> error -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Typedtree
+
+open Lambda
+
+val transl_class :
+  Ident.t list ->
+    Ident.t -> string list -> class_expr -> Asttypes.virtual_flag -> lambda
+
+
+type error =
+| Tags of string * string 
+  
+
+exception Error of Location.t * error 
+
+open Format
+
+val report_error : formatter -> error -> unit
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

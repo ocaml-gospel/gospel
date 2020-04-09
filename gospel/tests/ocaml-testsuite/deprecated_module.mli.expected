@@ -1,0 +1,76 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.deprecated
+  {|
+  As you could guess, Deprecated_module is deprecated.
+  Please use something else!
+|}]
+module M :
+sig val x : int[@@ocaml.deprecated ] type t[@@ocaml.deprecated ] end[@@ocaml.deprecated
+                                                                    ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.deprecated
+  {|
+  As you could guess, Deprecated_module is deprecated.
+  Please use something else!
+|}]
+
+module M :
+sig val x : int[@@ocaml.deprecated ]
+   type t[@@ocaml.deprecated ]
+     end[@@ocaml.deprecated ]
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module deprecated_module.mli
+
+  Namespace: deprecated_module.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: M
+        Type symbols
+           t
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.deprecated
+      {|
+  As you could guess, Deprecated_module is deprecated.
+  Please use something else!
+|}]
+    
+    module M : sig
+                 val x : int[@@ocaml.deprecated ]
+                 
+                 type t
+                 
+               end[@@ocaml.deprecated ]
+
+
+*** OK ***
+

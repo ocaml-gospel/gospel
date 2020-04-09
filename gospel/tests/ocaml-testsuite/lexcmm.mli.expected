@@ -1,0 +1,74 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val token : Lexing.lexbuf -> Parsecmm.token
+type error =
+  | Illegal_character 
+  | Unterminated_comment 
+  | Unterminated_string 
+exception Error of error 
+val report_error : Lexing.lexbuf -> error -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val token : Lexing.lexbuf -> Parsecmm.token
+
+
+type error =
+| Illegal_character 
+| Unterminated_comment 
+| Unterminated_string 
+  
+
+exception Error of error 
+
+val report_error : Lexing.lexbuf -> error -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module lexcmm.mli
+
+  Namespace: lexcmm.mli
+    Type symbols
+       error
+      
+    Logic Symbols
+      function Illegal_character  : error
+      function Unterminated_comment  : error
+      function Unterminated_string  : error
+      
+    Exception Symbols
+      Error
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val token : Lexing.lexbuf -> Parsecmm.token
+    
+    
+    type error = Illegal_character of 
+                 function Illegal_character  : error
+              | Unterminated_comment of 
+                function Unterminated_comment  : error
+              | Unterminated_string of 
+                function Unterminated_string  : error
+    
+    
+    exception Error
+    
+    val report_error : Lexing.lexbuf -> error -> unit
+    
+
+
+*** OK ***
+

@@ -1,0 +1,408 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type environment
+val env_add : Ident.t -> Reg.t array -> environment -> environment
+val env_find : Ident.t -> environment -> Reg.t array
+val size_expr : environment -> Cmm.expression -> int
+module Effect : sig type t =
+                      | None 
+                      | Raise 
+                      | Arbitrary  end
+module Coeffect : sig type t =
+                        | None 
+                        | Read_mutable 
+                        | Arbitrary  end
+module Effect_and_coeffect :
+sig
+  type t
+  val none : t
+  val arbitrary : t
+  val effect : t -> Effect.t
+  val coeffect : t -> Coeffect.t
+  val effect_only : Effect.t -> t
+  val coeffect_only : Coeffect.t -> t
+  val join : t -> t -> t
+  val join_list_map : 'a list -> ('a -> t) -> t
+end
+class virtual selector_generic :
+  object
+    method  virtual is_immediate : int -> bool
+    method  virtual select_addressing :
+      Cmm.memory_chunk ->
+        Cmm.expression -> (Arch.addressing_mode * Cmm.expression)
+    method  is_simple_expr : Cmm.expression -> bool
+    method  effects_of : Cmm.expression -> Effect_and_coeffect.t
+    method  select_operation :
+      Cmm.operation ->
+        Cmm.expression list ->
+          Debuginfo.t -> (Mach.operation * Cmm.expression list)
+    method  select_condition : Cmm.expression -> (Mach.test * Cmm.expression)
+    method  select_store :
+      bool ->
+        Arch.addressing_mode ->
+          Cmm.expression -> (Mach.operation * Cmm.expression)
+    method  regs_for : Cmm.machtype -> Reg.t array
+    method  insert_op :
+      Mach.operation -> Reg.t array -> Reg.t array -> Reg.t array
+    method  insert_op_debug :
+      Mach.operation ->
+        Debuginfo.t -> Reg.t array -> Reg.t array -> Reg.t array
+    method  emit_extcall_args :
+      environment -> Cmm.expression list -> (Reg.t array * int)
+    method  emit_stores :
+      environment -> Cmm.expression list -> Reg.t array -> unit
+    method  mark_call : unit
+    method  mark_tailcall : unit
+    method  mark_c_tailcall : unit
+    method  mark_instr : Mach.instruction_desc -> unit
+    method  emit_fundecl : Cmm.fundecl -> Mach.fundecl
+    method  extract : Mach.instruction
+    method  extract_core : end_instr:Mach.instruction -> Mach.instruction
+    method  insert :
+      Mach.instruction_desc -> Reg.t array -> Reg.t array -> unit
+    method  insert_debug :
+      Mach.instruction_desc ->
+        Debuginfo.t -> Reg.t array -> Reg.t array -> unit
+    method  insert_move : Reg.t -> Reg.t -> unit
+    method  insert_move_args : Reg.t array -> Reg.t array -> int -> unit
+    method  insert_move_results : Reg.t array -> Reg.t array -> int -> unit
+    method  insert_moves : Reg.t array -> Reg.t array -> unit
+    method  adjust_type : Reg.t -> Reg.t -> unit
+    method  adjust_types : Reg.t array -> Reg.t array -> unit
+    method  emit_expr : environment -> Cmm.expression -> Reg.t array option
+    method  emit_tail : environment -> Cmm.expression -> unit
+    method  select_allocation : int -> Mach.operation
+    method  select_allocation_args : environment -> Reg.t array
+    method  select_checkbound : unit -> Mach.integer_operation
+    method  select_checkbound_extra_args : unit -> Cmm.expression list
+    method  emit_blockheader :
+      environment -> nativeint -> Debuginfo.t -> Reg.t array option
+    method  about_to_emit_call :
+      environment ->
+        Mach.instruction_desc -> Reg.t array -> Reg.t array option
+    method  initial_env : unit -> environment
+    method  insert_prologue :
+      Cmm.fundecl ->
+        loc_arg:Reg.t array ->
+          rarg:Reg.t array ->
+            spacetime_node_hole:(Ident.t * Reg.t array) option ->
+              env:environment -> Mach.spacetime_shape option
+    val  mutable instr_seq : Mach.instruction
+  end
+val reset : unit -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type environment
+  
+
+val env_add : Ident.t -> Reg.t array -> environment -> environment
+
+
+val env_find : Ident.t -> environment -> Reg.t array
+
+
+val size_expr : environment -> Cmm.expression -> int
+
+
+module Effect : sig type t =
+                    | None 
+                    | Raise 
+                    | Arbitrary 
+                     end
+
+module Coeffect : sig type t =
+                      | None 
+                      | Read_mutable 
+                      | Arbitrary 
+                       end
+
+module Effect_and_coeffect :
+sig
+  type t
+    
+  val none : t
+  
+  val arbitrary : t
+  
+  val effect : t -> Effect.t
+  
+  val coeffect : t -> Coeffect.t
+  
+  val effect_only : Effect.t -> t
+  
+  val coeffect_only : Coeffect.t -> t
+  
+  val join : t -> t -> t
+  
+  val join_list_map : 'a list -> ('a -> t) -> t
+  
+end
+
+class virtual selector_generic :
+  object
+    method  virtual is_immediate : int -> bool
+    method  virtual select_addressing :
+      Cmm.memory_chunk ->
+        Cmm.expression -> (Arch.addressing_mode * Cmm.expression)
+    method  is_simple_expr : Cmm.expression -> bool
+    method  effects_of : Cmm.expression -> Effect_and_coeffect.t
+    method  select_operation :
+      Cmm.operation ->
+        Cmm.expression list ->
+          Debuginfo.t -> (Mach.operation * Cmm.expression list)
+    method  select_condition : Cmm.expression -> (Mach.test * Cmm.expression)
+    method  select_store :
+      bool ->
+        Arch.addressing_mode ->
+          Cmm.expression -> (Mach.operation * Cmm.expression)
+    method  regs_for : Cmm.machtype -> Reg.t array
+    method  insert_op :
+      Mach.operation -> Reg.t array -> Reg.t array -> Reg.t array
+    method  insert_op_debug :
+      Mach.operation ->
+        Debuginfo.t -> Reg.t array -> Reg.t array -> Reg.t array
+    method  emit_extcall_args :
+      environment -> Cmm.expression list -> (Reg.t array * int)
+    method  emit_stores :
+      environment -> Cmm.expression list -> Reg.t array -> unit
+    method  mark_call : unit
+    method  mark_tailcall : unit
+    method  mark_c_tailcall : unit
+    method  mark_instr : Mach.instruction_desc -> unit
+    method  emit_fundecl : Cmm.fundecl -> Mach.fundecl
+    method  extract : Mach.instruction
+    method  extract_core : end_instr:Mach.instruction -> Mach.instruction
+    method  insert :
+      Mach.instruction_desc -> Reg.t array -> Reg.t array -> unit
+    method  insert_debug :
+      Mach.instruction_desc ->
+        Debuginfo.t -> Reg.t array -> Reg.t array -> unit
+    method  insert_move : Reg.t -> Reg.t -> unit
+    method  insert_move_args : Reg.t array -> Reg.t array -> int -> unit
+    method  insert_move_results : Reg.t array -> Reg.t array -> int -> unit
+    method  insert_moves : Reg.t array -> Reg.t array -> unit
+    method  adjust_type : Reg.t -> Reg.t -> unit
+    method  adjust_types : Reg.t array -> Reg.t array -> unit
+    method  emit_expr : environment -> Cmm.expression -> Reg.t array option
+    method  emit_tail : environment -> Cmm.expression -> unit
+    method  select_allocation : int -> Mach.operation
+    method  select_allocation_args : environment -> Reg.t array
+    method  select_checkbound : unit -> Mach.integer_operation
+    method  select_checkbound_extra_args : unit -> Cmm.expression list
+    method  emit_blockheader :
+      environment -> nativeint -> Debuginfo.t -> Reg.t array option
+    method  about_to_emit_call :
+      environment ->
+        Mach.instruction_desc -> Reg.t array -> Reg.t array option
+    method  initial_env : unit -> environment
+    method  insert_prologue :
+      Cmm.fundecl ->
+        loc_arg:Reg.t array ->
+          rarg:Reg.t array ->
+            spacetime_node_hole:(Ident.t * Reg.t array) option ->
+              env:environment -> Mach.spacetime_shape option
+    val  mutable instr_seq : Mach.instruction
+  end
+
+val reset : unit -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module selectgen.mli
+
+  Namespace: selectgen.mli
+    Type symbols
+       environment
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Coeffect
+        Type symbols
+           t
+          
+        Logic Symbols
+          function Arbitrary  : t
+          function None  : t
+          function Read_mutable  : t
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Effect
+        Type symbols
+           t#1
+          
+        Logic Symbols
+          function Arbitrary#1  : t#1
+          function None#1  : t#1
+          function Raise  : t#1
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Effect_and_coeffect
+        Type symbols
+           t#2
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type environment
+    
+    
+    val env_add : Ident.t -> Reg.t array -> environment -> environment
+    
+    
+    val env_find : Ident.t -> environment -> Reg.t array
+    
+    
+    val size_expr : environment -> Cmm.expression -> int
+    
+    
+    module Effect :
+    sig
+      type t#1 = None#1 of 
+                 function None#1  : t#1
+              | Raise of 
+                function Raise  : t#1
+              | Arbitrary#1 of 
+                function Arbitrary#1  : t#1
+      
+    end
+    
+    module Coeffect :
+    sig
+      type t = None of 
+               function None  : t
+            | Read_mutable of 
+              function Read_mutable  : t
+            | Arbitrary of 
+              function Arbitrary  : t
+      
+    end
+    
+    module Effect_and_coeffect :
+    sig
+      type t#2
+      
+      val none : t
+      
+      val arbitrary : t
+      
+      val effect : t -> Effect.t
+      
+      val coeffect : t -> Coeffect.t
+      
+      val effect_only : Effect.t -> t
+      
+      val coeffect_only : Coeffect.t -> t
+      
+      val join : t -> t -> t
+      
+      val join_list_map : 'a list -> ('a -> t) -> t
+      
+    end
+    
+    class virtual selector_generic :
+      object
+        method  virtual is_immediate : int -> bool
+        method  virtual select_addressing :
+          Cmm.memory_chunk ->
+            Cmm.expression -> (Arch.addressing_mode * Cmm.expression)
+        method  is_simple_expr : Cmm.expression -> bool
+        method  effects_of : Cmm.expression -> Effect_and_coeffect.t
+        method  select_operation :
+          Cmm.operation ->
+            Cmm.expression list ->
+              Debuginfo.t -> (Mach.operation * Cmm.expression list)
+        method  select_condition :
+          Cmm.expression -> (Mach.test * Cmm.expression)
+        method  select_store :
+          bool ->
+            Arch.addressing_mode ->
+              Cmm.expression -> (Mach.operation * Cmm.expression)
+        method  regs_for : Cmm.machtype -> Reg.t array
+        method  insert_op :
+          Mach.operation -> Reg.t array -> Reg.t array -> Reg.t array
+        method  insert_op_debug :
+          Mach.operation ->
+            Debuginfo.t -> Reg.t array -> Reg.t array -> Reg.t array
+        method  emit_extcall_args :
+          environment -> Cmm.expression list -> (Reg.t array * int)
+        method  emit_stores :
+          environment -> Cmm.expression list -> Reg.t array -> unit
+        method  mark_call : unit
+        method  mark_tailcall : unit
+        method  mark_c_tailcall : unit
+        method  mark_instr : Mach.instruction_desc -> unit
+        method  emit_fundecl : Cmm.fundecl -> Mach.fundecl
+        method  extract : Mach.instruction
+        method  extract_core : end_instr:Mach.instruction -> Mach.instruction
+        method  insert :
+          Mach.instruction_desc -> Reg.t array -> Reg.t array -> unit
+        method  insert_debug :
+          Mach.instruction_desc ->
+            Debuginfo.t -> Reg.t array -> Reg.t array -> unit
+        method  insert_move : Reg.t -> Reg.t -> unit
+        method  insert_move_args : Reg.t array -> Reg.t array -> int -> unit
+        method  insert_move_results :
+          Reg.t array -> Reg.t array -> int -> unit
+        method  insert_moves : Reg.t array -> Reg.t array -> unit
+        method  adjust_type : Reg.t -> Reg.t -> unit
+        method  adjust_types : Reg.t array -> Reg.t array -> unit
+        method  emit_expr :
+          environment -> Cmm.expression -> Reg.t array option
+        method  emit_tail : environment -> Cmm.expression -> unit
+        method  select_allocation : int -> Mach.operation
+        method  select_allocation_args : environment -> Reg.t array
+        method  select_checkbound : unit -> Mach.integer_operation
+        method  select_checkbound_extra_args : unit -> Cmm.expression list
+        method  emit_blockheader :
+          environment -> nativeint -> Debuginfo.t -> Reg.t array option
+        method  about_to_emit_call :
+          environment ->
+            Mach.instruction_desc -> Reg.t array -> Reg.t array option
+        method  initial_env : unit -> environment
+        method  insert_prologue :
+          Cmm.fundecl ->
+            loc_arg:Reg.t array ->
+              rarg:Reg.t array ->
+                spacetime_node_hole:(Ident.t * Reg.t array) option ->
+                  env:environment -> Mach.spacetime_shape option
+        val  mutable instr_seq : Mach.instruction
+      end
+    
+    val reset : unit -> unit
+    
+
+
+*** OK ***
+

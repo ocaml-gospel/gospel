@@ -1,0 +1,149 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int -> int[@@gospel  r = f y x ]
+val f : y:int -> int -> int[@@gospel  r = f ~y x ]
+val f : ?y:int -> int -> int[@@gospel  r = f ?y x ]
+val f : y:int -> ?x:int -> int[@@gospel  r = f ~y ?x ]
+val f : ?y:int -> x:int -> int[@@gospel  r = f ?y ~x ]
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y z ]
+val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f ~x y z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel  r = f ~x ~y z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
+                                                 r = f ~x [w:int] ~y z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
+                                                 r = f ~x [w:int] ~y [p:integer] z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
+                                                 r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
+                                                 [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
+                                                 [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int -> int
+(*@ r  = f  y  x 
+     *)
+
+val f : y:int -> int -> int
+(*@ r  = f  ~y  x 
+     *)
+
+val f : ?y:int -> int -> int
+(*@ r  = f  ?y  x 
+     *)
+
+val f : y:int -> ?x:int -> int
+(*@ r  = f  ~y  ?x 
+     *)
+
+val f : ?y:int -> x:int -> int
+(*@ r  = f  ?y  ~x 
+     *)
+
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+(*@ r  = f  x  y  z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+(*@ r  = f  ~x  y  z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ r  = f  ~x  ~y  z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ r  = f  ~x  [w  : TY] ~y  z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ r  = f  ~x  [w  : TY] ~y  [p  : TY] z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ [b  : TY],r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+     *)
+
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+(*@ [b  : TY],r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module vals.mli
+
+  Namespace: vals.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> int -> int
+    (*@ r:int = f y:int x:int*)
+    
+    val f#1 : y:int -> int -> int
+    (*@ r#1:int = f#1 ~y#1:int x#1:int*)
+    
+    val f#2 : ?y:int -> int -> int
+    (*@ r#2:int = f#2 ?y#2:int option x#2:int*)
+    
+    val f#3 : y:int -> ?x:int -> int
+    (*@ r#3:int = f#3 ~y#3:int ?x#3:int option*)
+    
+    val f#4 : ?y:int -> x:int -> int
+    (*@ r#4:int = f#4 ?y#4:int option ~x#4:int*)
+    
+    val f#5 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+    (*@ r#5:'c = f#5 x#5:'a -> 'b -> 'c y#5:'a z:'b*)
+    
+    val f#6 : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+    (*@ r#6:'c = f#6 ~x#6:'a -> 'b -> 'c y#6:'a z#1:'b*)
+    
+    val f#7 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r#7:'c = f#7 ~x#7:'a -> 'b -> 'c ~y#7:'a z#2:'b*)
+    
+    val f#8 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r#8:'c = f#8 ~x#8:'a -> 'b -> 'c [w:int: int] ~y#8:'a z#3:'b*)
+    
+    val f#9 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r#9:'c = f#9
+        ~x#9:'a -> 'b -> 'c [w#1:int: int] ~y#9:'a [p:integer: integer] 
+        z#4:'b*)
+    
+    val f#10 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r#10:'c, [a#1:'a: 'a] = f#10
+        ~x#10:'a -> 'b -> 'c [w#2:int: int] ~y#10:'a [p#1:integer: integer] 
+        z#5:'b*)
+    
+    val f#11 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ [b#1:integer: integer], r#11:'c, [a#2:'a: 'a] = f#11
+        ~x#11:'a -> 'b -> 'c [w#3:int: int] ~y#11:'a [p#2:integer: integer] 
+        z#6:'b*)
+    
+    val f#12 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ [b#2:integer: integer], r#12:'c, [a#3:'a: 'a] = f#12
+        ~x#12:'a -> 'b -> 'c [w#4:int: int] ~y#12:'a [p#3:integer: integer] 
+        z#7:'b*)
+
+
+*** OK ***
+

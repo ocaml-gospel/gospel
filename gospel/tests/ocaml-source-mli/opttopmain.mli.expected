@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val main : unit -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val main : unit -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module opttopmain.mli
+
+  Namespace: opttopmain.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val main : unit -> unit
+    
+
+
+*** OK ***
+

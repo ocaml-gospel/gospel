@@ -1,0 +1,26 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Format
+open Linearize
+val instr : formatter -> instruction -> unit
+val fundecl : formatter -> fundecl -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Format
+
+open Linearize
+
+val instr : formatter -> instruction -> unit
+
+
+val fundecl : formatter -> fundecl -> unit
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        

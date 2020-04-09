@@ -1,0 +1,14 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel  axiom a1: 1 ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ axiom ... *)
+File "t1.mli", line 11, characters 14-15:
+Error: Type mysmatch. Cannot match integer with bool
