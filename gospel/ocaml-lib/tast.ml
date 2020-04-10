@@ -254,7 +254,7 @@ let mk_function ?result ls r params def spec loc =
   let args = List.fold_left2 add_v Svs.empty params ls.ls_args in
 
   (* check 3 *)
-  ignore (opmap (t_free_vs_in_set args) def);
+  Option.iter (t_free_vs_in_set args) def;
   List.iter (t_free_vs_in_set args) spec.fun_req;
   let args_r = match result,ls.ls_value with
     | Some vs, Some ty ->
@@ -264,7 +264,7 @@ let mk_function ?result ls r params def spec loc =
 
   (* check 4 and 5 *)
   let check_ty ty t = t_ty_check t ty in
-  ignore (opmap (check_ty ls.ls_value) def);
+  Option.iter (check_ty ls.ls_value) def;
   List.iter (check_ty (Some ty_integer)) spec.fun_variant;
   List.iter (check_ty None) spec.fun_ens;
 
@@ -411,7 +411,7 @@ let print_rec_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
     print_ident (ld.ld_field.ls_name)
-    print_ty (opget ld.ld_field.ls_value)
+    print_ty (Option.get ld.ld_field.ls_value)
 
 let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}"
@@ -450,7 +450,7 @@ let print_type_spec fmt {ty_ephemeral;ty_fields;ty_invariants} =
     let print_field f (ls, mut) =
       pp f "@[%s%a : %a@]" (if mut then "mutable model " else "model ")
         print_ls_nm ls
-        print_ty (opget ls.ls_value) in
+        print_ty (Option.get ls.ls_value) in
     pp fmt "(*@@ @[%a%a%a@] *)"
       print_ephemeral ty_ephemeral
       (list_with_first_last ~first:"@\n@["
@@ -539,15 +539,17 @@ let print_param f p =
 let print_function f x =
   let func_pred = if x.fun_ls.ls_value = None then "predicate" else "function" in
   let print_term f t = pp f "@[%a@]" print_term t in
+  let print_term f t = pp f "@[%a@]" print_term t in
   let func f x =
     pp f "@[%s %s%a %a%a%a%a%a%a%a@]"
       func_pred
       (if x.fun_rec then "rec " else "")
       print_ident x.fun_ls.ls_name
       (list ~sep:" " print_param) x.fun_params
-      (print_option ~first:": " print_ty) x.fun_ls.ls_value
-      (print_option ~first:" =@\n@[<hov2>@["
-         ~last:"@]@]" print_term) x.fun_def
+      (pp_print_option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
+      (pp_print_option
+         (fun f -> pp f " =@\n@[<hov2>@[%a@]@]" print_term))
+      x.fun_def
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
       (list_with_first_last ~first:"@\n@[@[<hov2>variant "
          ~sep:"@\nvariant " ~last:"@]@]"

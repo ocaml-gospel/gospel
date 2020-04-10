@@ -38,20 +38,20 @@ let dty_of_ty ty = Tty ty
    We definitively need a map between the dtv_id and identifiers (or
    tyvars)
 *)
-(* let tyvars = Hint.create 17 *)
+(* let tyvars = Hashtbl.create 17 *)
 
 let ty_of_dty =
-  let tyvars = Hint.create 17 in
+  let tyvars = Hashtbl.create 0 in
   fun dty ->
-  let get_var id = try Hint.find tyvars id with Not_found ->
-    let ty = fresh_ty_var ("a" ^ string_of_int id)  in
-    Hint.add tyvars id ty; ty in
-  let rec to_ty dty = match dty with
-    | Tvar {dtv_id;dtv_def = None} -> get_var dtv_id
-    | Tvar {dtv_def = Some dty} -> to_ty dty
-    | Tapp (ts,dtyl) -> ty_app  ts (List.map to_ty dtyl)
-    | Tty ty -> ty in
-  to_ty dty
+    let get_var id = try Hashtbl.find tyvars id with Not_found ->
+      let ty = fresh_ty_var ("a" ^ string_of_int id)  in
+      Hashtbl.add tyvars id ty; ty in
+    let rec to_ty dty = match dty with
+      | Tvar {dtv_id;dtv_def = None} -> get_var dtv_id
+      | Tvar {dtv_def = Some dty} -> to_ty dty
+      | Tapp (ts,dtyl) -> ty_app  ts (List.map to_ty dtyl)
+      | Tty ty -> ty in
+    to_ty dty
 
 (* predefined types *)
 
@@ -71,16 +71,18 @@ let specialize_ls ls =
   let rec spec ty = match ty.ty_node with
     | Tyvar tv -> find_tv tv
     | Tyapp (ts,tyl) -> Tapp (ts,List.map spec tyl) in
-  List.map spec ls.ls_args, Utils.opmap spec ls.ls_value
+  List.map spec ls.ls_args, Option.map spec ls.ls_value
 
 exception ConstructorExpected of lsymbol
 
 let specialize_cs ?loc cs =
   if cs.ls_constr = false then error ?loc (ConstructorExpected cs);
   let dtyl, dty = specialize_ls cs in
-  dtyl, opget dty
+  dtyl, Option.get dty
 
 (* terms *)
+
+module Mstr = Map.Make(String)
 
 type dpattern = {
   dp_node : dpattern_node;
@@ -363,7 +365,7 @@ and term_node ?loc env prop dty dterm_node =
      let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in (* TODO should I match vs.vs_ty with dty? *)
      t_var vs
   | DTconst c ->
-     t_const c (ty_of_dty (opget dty))
+     t_const c (ty_of_dty (Option.get dty))
   | DTapp (ls,[]) when ls_equal ls fs_bool_true ->
      if prop then t_true else t_bool_true
   | DTapp (ls,[]) when ls_equal ls fs_bool_false ->
@@ -373,7 +375,7 @@ and term_node ?loc env prop dty dterm_node =
        f_iff (term env true dt1) (term env true dt2)
      else t_equ (term env false dt1) (term env false dt2)
   | DTapp (ls,dtl) ->
-     t_app ls (List.map (term env false) dtl) (opmap ty_of_dty dty)
+     t_app ls (List.map (term env false) dtl) (Option.map ty_of_dty dty)
   | DTif (dt1,dt2,dt3) ->
      let prop = prop || dty = None in
      t_if (term env true dt1) (term env prop dt2) (term env prop dt3)
@@ -402,7 +404,7 @@ and term_node ?loc env prop dty dterm_node =
      (* CHECK not sure if we want prop in triggers *)
      let tl = List.map (List.map (term env false)) dtl in
      let t = term env prop dt in
-     t_quant q (List.rev vsl) tl t (opmap ty_of_dty dty)
+     t_quant q (List.rev vsl) tl t (Option.map ty_of_dty dty)
   | DTcase (dt,ptl) ->
      let t = term env false dt in
      let branch (dp,dt) =

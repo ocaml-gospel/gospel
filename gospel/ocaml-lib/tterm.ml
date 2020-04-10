@@ -65,13 +65,13 @@ let psymbol nm ty =
 
 let ls_subst_ts old_ts new_ts ({ls_name;ls_args;ls_value;ls_constr} as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
-  let ls_value = opmap (ty_subst_ts old_ts new_ts) ls.ls_value in
+  let ls_value = Option.map (ty_subst_ts old_ts new_ts) ls.ls_value in
   lsymbol ls_name ls_args ls_value ~constr:ls_constr
 
 let ls_subst_ty old_ts new_ts new_ty ls =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
   let ls_args = List.map subst ls.ls_args in
-  let ls_value = opmap subst ls.ls_value in
+  let ls_value = Option.map subst ls.ls_value in
   lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr
 
 (** buil-in lsymbols *)
@@ -94,13 +94,16 @@ let fs_apply =
 let fs_tuple_ids = Hid.create 17
 
 let fs_tuple =
-  let ls_tuples = Hint.create 17 in
-  fun n -> try Hint.find ls_tuples n with | Not_found ->
-    let id = fresh_id ("tuple" ^ string_of_int n) in
-    let tyl = List.init n (fun _ -> fresh_ty_var "a") in
-    let ty = ty_app (ts_tuple n) tyl in
-    let ls = fsymbol  ~constr:true id tyl ty in
-    Hid.add fs_tuple_ids id ls; Hint.add ls_tuples n ls; ls
+  let ls_tuples = Hashtbl.create 17 in
+  fun n ->
+    try Hashtbl.find ls_tuples n
+    with Not_found ->
+      let id = fresh_id ("tuple" ^ string_of_int n) in
+      let tyl = List.init n (fun _ -> fresh_ty_var "a") in
+      let ty = ty_app (ts_tuple n) tyl in
+      let ls = fsymbol  ~constr:true id tyl ty in
+      Hid.add fs_tuple_ids id ls;
+      Hashtbl.add ls_tuples n ls; ls
 
 let is_fs_tuple fs =
   fs.ls_constr = true && Hid.mem fs_tuple_ids fs.ls_name
@@ -319,14 +322,14 @@ let print_vs fmt {vs_name; vs_ty} =
   pp fmt "@[%a:%a@]" print_ident vs_name print_ty vs_ty
 
 let print_ls_decl fmt {ls_name;ls_args;ls_value} =
-  let is_func = Utils.is_some ls_value in
+  let is_func = Option.is_some ls_value in
   let print_unnamed_arg fmt ty = pp fmt "(_:%a)" print_ty ty in
   pp fmt "%s %a %a%s%a"
     (if is_func then "function" else "predicate")
     print_ident ls_name
     (list ~sep:" " print_unnamed_arg) ls_args
     (if is_func then " : " else "")
-    (Utils.print_option print_ty) ls_value
+    (pp_print_option print_ty) ls_value
 
 let print_ls_nm fmt {ls_name} =
   pp fmt "%a" print_ident ls_name
@@ -380,11 +383,16 @@ let rec print_term fmt {t_node; t_ty; t_attrs; t_loc } =
     | Tfalse -> pp fmt "false%a" print_ty t_ty
     | Tvar vs ->
        pp fmt "%a" print_vs vs;
-       assert (vs.vs_ty = Utils.opget t_ty ) (* TODO remove this *)
+       assert (vs.vs_ty = Option.get t_ty ) (* TODO remove this *)
     | Tapp (ls,[x1;x2]) when is_infix ls.ls_name.id_str ->
+       let op_nm =
+         match String.split_on_char ' ' ls.ls_name.id_str with 
+           | [x] | [_; x] -> x
+           | _ -> assert false
+       in
        pp fmt "(%a %s %a)%a"
          print_term x1
-         (get_op_nm ls.ls_name.id_str)
+         op_nm
          print_term x2
          print_ty t_ty
     | Tapp (ls,tl) ->

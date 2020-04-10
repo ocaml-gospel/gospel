@@ -162,14 +162,14 @@ func:
   { let ps = match ps with | None -> [] | Some ps -> ps in
     let spec = match spec with
         None -> empty_fspec | Some spec -> rev_fspec spec in
-    { fun_name = fname; fun_rec = Utils.opt2bool r; fun_type = Some ty;
+    { fun_name = fname; fun_rec = Utils.Option.is_some r; fun_type = Some ty;
       fun_params = ps; fun_def = def; fun_spec = spec;
       fun_loc = mk_loc $startpos $endpos} }
 | PREDICATE r=REC? fname=func_name ps=params
     def=preceded(EQUAL, term)? spec=func_spec?
   { let spec = match spec with
         None -> empty_fspec | Some spec -> rev_fspec spec in
-    { fun_name = fname; fun_rec = Utils.opt2bool r; fun_type = None;
+    { fun_name = fname; fun_rec = Utils.Option.is_some r; fun_type = None;
       fun_params = ps; fun_def = def; fun_spec = spec ;
       fun_loc = mk_loc $startpos $endpos} }
 ;

@@ -71,8 +71,8 @@ let id_register pid =
   create_id pid.pid_str (Sattr.of_list pid.pid_ats) pid.pid_loc
 
 let fresh_id ?loc ?ats s =
-  let loc = opget_def Location.none loc in
-  let ats = opget_def Sattr.empty ats in
+  let loc = Option.value loc ~default:Location.none in
+  let ats = Option.value ats ~default:Sattr.empty in
   create_id s ats loc
 
 let id_add_loc l id = {id with id_loc = l}
@@ -113,18 +113,21 @@ let print_pid fmt pid = pp fmt "%s@ %a" pid.pid_str
                             print_attrs pid.pid_ats
 
 let print_ident =
-  let current = Hstr.create (1 lsl 8) in
-  let output  = Hint.create (1 lsl 8) in
+  let current = Hashtbl.create 0 in
+  let output  = Hashtbl.create 0 in
   let current s =
-    try let x = Hstr.find current s + 1 in
-        Hstr.replace current s x; x with
-    | Not_found -> Hstr.add current s 0; 0 in
+    let x = match Hashtbl.find_opt current s with
+      | Some x -> x + 1
+      | None -> 0
+    in
+    Hashtbl.replace current s x; x
+  in
   let str_of_id id =
-    try Hint.find output id.id_tag with
+    try Hashtbl.find output id.id_tag with
     | Not_found ->
        let x = current id.id_str in
        let str = if x = 0 then id.id_str else
                    id.id_str ^ "#" ^ string_of_int x in
-       Hint.replace output id.id_tag str; str in
+       Hashtbl.replace output id.id_tag str; str in
   fun fmt id -> pp fmt "%s%a" (str_of_id id)
                   print_attrs (Sattr.elements id.id_ats)

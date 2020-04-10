@@ -178,7 +178,7 @@ let rec dpattern kid ns {pat_desc;pat_loc=loc} =
   | Prec qpl ->
      let cs,pjl,fll = parse_record ~loc kid ns qpl in
      let get_pattern pj = try dpattern kid ns (Mls.find pj fll) with
-       Not_found -> mk_pwild loc (dty_of_ty (opget pj.ls_value)) in
+       Not_found -> mk_pwild loc (dty_of_ty (Option.get pj.ls_value)) in
      let dpl = List.map get_pattern pjl in
      mk_papp ~loc cs dpl
 
@@ -276,9 +276,10 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
        let ls = find_ls ~loc:op1.pid_loc ns [symbol] in
        let dtyl, dty = specialize_ls ls in
        if ls_equal ls ps_equ then begin
-           let max = max_dty crcm [de1;de2] in
-           try dty_unify (opget_def dty_bool max) (List.hd dtyl) with
-             Exit -> () end;
+         let max = max_dty crcm [de1;de2] in
+         try
+           dty_unify (Option.value max ~default:dty_bool) (List.hd dtyl)
+         with Exit -> () end;
        let dtl = app_unify_map ls (dterm_expected crcm) [de1;de2] dtyl in
        if op.pid_str = neq.id_str then
          mk_dterm  (DTnot (mk_dterm (DTapp (ls,dtl)) dty)) None
@@ -313,7 +314,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
      | Uast.Tforall -> dfmla_unify dt; None, Tforall
      | Uast.Texists -> dfmla_unify dt; None, Texists
      | Uast.Tlambda ->
-        let dty = opget_def dty_bool dt.dt_dty in
+        let dty = Option.value dt.dt_dty ~default:dty_bool in
         let apply (_,dty1) dty2 = Dterm.Tapp (ts_arrow,[dty1;dty2]) in
         Some (List.fold_right apply vl dty), Tlambda in
      mk_dterm (DTquant (q,vl,dtrl,dt)) dty
@@ -410,8 +411,8 @@ let type_type_declaration kid crcm ns tdl =
     else
       Mstr.add td.tname.txt td tdm in
   let tdm = List.fold_left add_new Mstr.empty tdl in
-  let hts = Hstr.create 5 in
-  let htd = Hstr.create 5 in
+  let hts = Hashtbl.create 0 in
+  let htd = Hashtbl.create 0 in
   let open Oparsetree in
 
   let rec parse_core alias tvl core = match core.ptyp_desc with
@@ -434,11 +435,11 @@ let type_type_declaration kid crcm ns tdl =
        let ts = match idl with
          | [s] when Sstr.mem s alias ->
             error ~loc:core.ptyp_loc (CyclicTypeDecl s)
-         | [s] when Hstr.mem hts s ->
-            Hstr.find hts s
+         | [s] when Hashtbl.mem hts s ->
+            Hashtbl.find hts s
          | [s] when Mstr.mem s tdm ->
             visit ~alias s (Mstr.find s tdm);
-            Hstr.find hts s
+            Hashtbl.find hts s
          | s -> find_ts ~loc:lid.loc ns s in
        if List.length tyl <> ts_arity ts then
          error ~loc:core.ptyp_loc (BadTypeArity (ts, List.length tyl));
@@ -459,9 +460,9 @@ let type_type_declaration kid crcm ns tdl =
     let tvl,params,variance_list =
       List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
-    let manifest = opmap (parse_core (Sstr.add s alias) tvl) td.tmanifest in
+    let manifest = Option.map (parse_core (Sstr.add s alias) tvl) td.tmanifest in
     let td_ts = mk_ts (fresh_id ~loc:td.tname.loc s) params manifest in
-    Hstr.add hts s td_ts;
+    Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
       let cs_id = fresh_id ("constr#" ^ s) in
@@ -523,10 +524,10 @@ let type_type_declaration kid crcm ns tdl =
     let td = type_declaration td_ts params [] kind
                (private_flag td.tprivate) manifest
                td.tattributes spec td.tloc in
-    Hstr.add htd s td in
+    Hashtbl.add htd s td in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
-  List.map (fun td -> Hstr.find htd td.tname.txt) tdl
+  List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl
 
 let process_sig_type ~loc ?(ghost=false) kid crcm ns r tdl =
   let tdl = type_type_declaration kid crcm ns tdl in
@@ -646,7 +647,7 @@ let process_val_spec kid crcm ns id cty vs =
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in
-  let spec = opmap (process_val_spec kid crcm ns id vd.vtype) vd.vspec in
+  let spec = Option.map (process_val_spec kid crcm ns id vd.vtype) vd.vspec in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
   mk_sig_item (Sig_val (vd,ghost)) loc
@@ -656,7 +657,7 @@ let process_val ~loc ?(ghost=false) kid crcm ns vd =
 (* Currently checking:
    1 - arguments have different names *)
 let process_function kid crcm ns f =
-  let f_ty = opmap (ty_of_pty ns) f.fun_type in
+  let f_ty = Option.map (ty_of_pty ns) f.fun_type in
 
   let params = List.map (fun (_,pid,pty) ->
     create_vsymbol pid (ty_of_pty ns pty)) f.fun_params in
@@ -680,8 +681,8 @@ let process_function kid crcm ns f =
        Mstr.add "result" result env, Some result in
 
   let def = match f_ty with
-    | None -> opmap (fmla kid crcm ns env) f.fun_def
-    | Some ty -> opmap (term_with_unify kid crcm ty ns env) f.fun_def in
+    | None -> Option.map (fmla kid crcm ns env) f.fun_def
+    | Some ty -> Option.map (term_with_unify kid crcm ty ns env) f.fun_def in
 
   let spec =
     let req = List.map (fmla kid crcm ns env) f.fun_spec.fun_req in
@@ -882,7 +883,7 @@ and process_mod penv loc m muc =
 and process_modtype_decl penv loc decl muc =
   let nm = decl.mtdname.txt in
   let muc = open_module muc nm in
-  let md_mty = opmap (process_modtype penv muc) decl.mtdtype in
+  let md_mty = Option.map (process_modtype penv muc) decl.mtdtype in
   let muc, mty = match md_mty with
     | None -> muc, None
     | Some (muc,mty) -> muc, Some mty in

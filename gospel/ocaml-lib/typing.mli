@@ -9,7 +9,6 @@
 (*                                                                  *)
 (********************************************************************)
 
-open Utils
 open Tast
 open Tmodule
 
@@ -19,7 +18,7 @@ type parse_env
 (** `penv load_paths module_nm` creates a `parse_env` for typing a
    module with name `module_nm`. The paths in `load_paths` are to be
    used when searching for modules dependencies. *)
-val penv : string list -> Sstr.t -> parse_env
+val penv : string list -> Utils.Sstr.t -> parse_env
 
 (** `process_sig_item penv muc s` returns a new module under
    construction after type checking `s` and the typed signature

@@ -34,10 +34,12 @@ let create_tv id = { tv_name = id }
 let fresh_tv s = { tv_name = fresh_id s }
 
 let tv_of_string =
-  let hs = Hstr.create (1 lsl 5) in fun s ->
-  try Hstr.find hs s with Not_found ->
-  let tv = create_tv (fresh_id s) in
-  Hstr.add hs s tv; tv
+  let hs = Hashtbl.create 0 in
+  fun s ->
+    try Hashtbl.find hs s
+    with Not_found ->
+      let tv = create_tv (fresh_id s) in
+      Hashtbl.add hs s tv; tv
 
 (** types *)
 
@@ -108,7 +110,7 @@ let ty_app ts tyl = match ts.ts_alias with
 
 let rec ts_subst_ts old_ts new_ts ({ts_ident;ts_args;ts_alias} as ts) =
   if ts_equal old_ts ts then new_ts else
-    let ts_alias = opmap (ty_subst_ts old_ts new_ts) ts_alias in
+    let ts_alias = Option.map (ty_subst_ts old_ts new_ts) ts_alias in
     mk_ts ts_ident ts_args ts_alias
 
 and ty_subst_ts old_ts new_ts ty = match ty.ty_node with
@@ -128,7 +130,7 @@ let rec ty_subst_ty old_ts new_ts new_ty ty = match ty.ty_node with
 
 and ts_subst_ty old_ts new_ts new_ty ts =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
-  let ts_alias = opmap subst ts.ts_alias in
+  let ts_alias = Option.map subst ts.ts_alias in
   mk_ts ts.ts_ident ts.ts_args ts_alias
 
 (** type matching *)
@@ -170,16 +172,15 @@ let ts_option  = ts (fresh_id "option" ) [fresh_tv "a"]
 let ts_list    = ts (fresh_id "list"   ) [fresh_tv "a"]
 
 let ts_tuple =
-  let ts_tuples = Hint.create 17 in
-  begin fun n ->
-  try Hint.find ts_tuples n with | Not_found ->
-     let ts_id = fresh_id ("tuple" ^ string_of_int n) in
-     let ts_args = List.init n (fun x ->
-                       fresh_tv ("a" ^ string_of_int x)) in
-     let ts = ts ts_id ts_args in
-     Hint.add ts_tuples n ts;
-     ts
-  end
+  let ts_tuples = Hashtbl.create 0 in
+  fun n ->
+    try Hashtbl.find ts_tuples n
+    with Not_found ->
+      let ts_id = fresh_id ("tuple" ^ string_of_int n) in
+      let ts_args = List.init n (fun x -> fresh_tv ("a" ^ string_of_int x)) in
+      let ts = ts ts_id ts_args in
+      Hashtbl.add ts_tuples n ts;
+      ts
 
 let ts_arrow =
   let ta = fresh_tv "a"  in
