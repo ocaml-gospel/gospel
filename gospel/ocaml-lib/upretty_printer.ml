@@ -23,14 +23,14 @@ let labelled_arg fmt (l:labelled_arg) = match l with
   | Lnone pid -> print_pid fmt pid
   | Lquestion pid -> pp fmt "@[?%a@]" print_pid pid
   | Lnamed pid -> pp fmt "@[~%a@]" print_pid pid
-  | Lghost (pid,ty) -> pp fmt "@[[%a : TY]@]" print_pid pid
+  | Lghost (pid,_) -> pp fmt "@[[%a : TY]@]" print_pid pid
 
 let spec f fmt x =
   pp fmt "@[(*@@ %a@ *)@]" f x
 
-let term fmt x = pp fmt "@[TERM ... @]"
+let term fmt _ = pp fmt "@[TERM ... @]"
 
-let invariant fmt i = pp fmt "@[INVARIANT ... @]"
+let invariant fmt _ = pp fmt "@[INVARIANT ... @]"
 
 let list_keyword s fmt x = match x with
   | [] -> ()
@@ -40,7 +40,7 @@ let list_keyword s fmt x = match x with
 let type_spec f ts =
   let ephemeral f e =
     if e then pp f "ephemeral@\n" else () in
-  let print_tspec fmt ts =
+  let print_tspec _fmt ts =
     pp f "@[<v>%a%a%a@]" ephemeral ts.ty_ephemeral
       (list_keyword "model ...") ts.ty_field
       (list_keyword "invariant ...") ts.ty_invariant in
@@ -167,7 +167,7 @@ let function_ f x =
   spec func f x
 
 let axiom f x =
-  let axiom f x = pp f "@[axiom ...@]" in
+  let axiom f _ = pp f "@[axiom ...@]" in
   spec axiom f x
 
 let rec s_signature_item f x=
