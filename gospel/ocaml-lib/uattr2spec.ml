@@ -352,7 +352,7 @@ and module_type_desc m =
   | Pmty_signature s ->
      Mod_signature (signature s)
   | Pmty_functor (l,m1,m2) ->
-     Mod_functor (l,Utils.opmap module_type m1, module_type m2)
+     Mod_functor (l, Option.map module_type m1, module_type m2)
   | Pmty_with (m,c) ->
      Mod_with (module_type m, List.map with_constraint c)
   | Pmty_typeof m ->
@@ -374,6 +374,6 @@ and module_declaration m =
 and module_type_declaration m =
   let attrs, specs = get_spec_attrs m.pmtd_attributes in
   let mtd = { mtdname = m.pmtd_name;
-              mtdtype = Utils.opmap module_type m.pmtd_type;
+              mtdtype = Option.map module_type m.pmtd_type;
               mtdattributes = attrs; mtdloc = m.pmtd_loc} in
   mtd, specs

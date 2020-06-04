@@ -8,74 +8,47 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-let is_none = function
-  | None -> true | _ -> false
-
-let is_some o = not (is_none o)
-
-(** Makes a partition at the point in which the property stops to hold
-   *)
 let rec split_at_f f = function
-  | [] -> [],[]
-  | x::xs ->
-     if f x then let xs',ys' = split_at_f f xs in x::xs',ys'
-     else [],x::xs
+  | [] -> [], []
+  | x::xs as l ->
+      if f x then
+        let xs', ys' = split_at_f f xs in
+        x::xs', ys'
+      else [], l
 
 let rec split_at_i i = function
-  | [] -> [],[]
-  | l when i <= 0 -> [],l
-  | x::xs -> let a,b = split_at_i (i-1) xs in
-             x::a, b
-
-(** 'map_until_exc f l = (l1,l2)' applies 'f' to the elements of 'l'
-   until an exception is raised. The result of applying 'f'
-   successfuly are returned in 'l1' and the remaining in 'l2'. *)
-let rec map_until_exc f = function
-  | [] -> [],[]
+  | [] -> [], []
+  | l when i <= 0 -> [], l
   | x::xs ->
-     try let x' = f x in
-         let xs',ys' = map_until_exc f xs in
-         x'::xs',ys'
-     with _ -> ([],x::xs)
+      let xs', ys' = split_at_i (i-1) xs in
+      x::xs', ys'
 
-let rec map_filter f = function
-  | [] -> []
-  | x::xs -> match f x with
-             | None -> map_filter f xs
-             | Some v -> v :: map_filter f xs
 
-let cons_opt o l = match o with | None -> l | Some x -> x :: l
+module Option = struct
+  let value o ~default = match o with
+    | Some x -> x
+    | None -> default
 
-let opt2list = function | None -> [] | Some x -> [x]
+  let get = function
+    | Some x -> x
+    | None -> invalid_arg "option is None"
 
-let opt2bool = function None -> false | Some _ -> true
+  let map f = function
+    | Some v -> Some (f v)
+    | None -> None
 
-let opmap f = function | None -> None | Some v -> Some (f v)
+  let iter f = function
+    | Some v -> f v
+    | None -> ()
 
-let opiter f = function | None -> () | Some v -> f v
+  let is_some = function
+    | Some _ -> true
+    | None-> false
+end
 
-let opget = function | None -> assert false | Some x -> x
-
-let opget_def x = function | None -> x | Some x -> x
-
-let app_pair f g (a,b) = (f a, g b)
-
-let app_triple f g h (a,b,c) = (f a, g b, h c)
-
-let identity x = x
-
-(* TODO: move this to a better place and avoid the translation to list *)
-let print_option ?first ?last printer fmt = function
-  | None -> ()
-  | Some x -> let open Opprintast in
-              let to_sf sf = match sf with
-                | None -> ("":_ format6)
-                | Some sf -> sf in
-              pp fmt "%a%a%a" pp (to_sf first) printer x pp (to_sf last)
-
-let print_option_default printer s fmt = function
-  | None -> Format.fprintf fmt "%s" s
-  | Some x -> printer fmt x
+let pp_print_option ?(none = fun _ () -> ()) pp_v ppf = function
+  | None -> none ppf ()
+  | Some v -> pp_v ppf v
 
 let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
   ?first:Opprintast.space_formatter -> ?last:Opprintast.space_formatter ->
@@ -98,30 +71,7 @@ let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
           end in
     aux f xs
 
-module Int = struct
-  type t = int
-  let compare (x: int) y = Stdlib.compare x y
-  let equal (x: int) y = x = y
-  let hash (x: int) = x
-end
-
-module Hint = Hashtbl.Make(Int)
-module Hstr = Hashtbl.Make(struct
-                type t = String.t
-                let hash = (Hashtbl.hash : string -> int)
-                let equal = ((=) : string -> string -> bool)
-                end)
-module Mstr = Map.Make(String)
 module Sstr = Set.Make(String)
-
-(* to be moved to a better place *)
-
-let get_op_nm s =
-  let sl = String.split_on_char ' ' s in
-  match sl with
-  | [x] -> x
-  | [x1;x2] -> x2
-  | _ -> assert false
 
 exception TypeCheckingError of string
 exception NotSupported of string

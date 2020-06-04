@@ -16,6 +16,8 @@ open Tast
 
 (** Namespace *)
 
+module Mstr = Map.Make(String)
+
 type namespace = {
     ns_ts  : tysymbol  Mstr.t;
     ns_ls  : lsymbol   Mstr.t;
