@@ -1,0 +1,54 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Check AST invariants\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+val structure : Parsetree.structure -> unit
+val signature : Parsetree.signature -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Check AST invariants\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+val structure : Parsetree.structure -> unit
+
+
+val signature : Parsetree.signature -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ast_invariants.mli
+
+  Namespace: ast_invariants.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Check AST invariants\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+    
+    val structure : Parsetree.structure -> unit
+    
+    
+    val signature : Parsetree.signature -> unit
+    
+
+
+*** OK ***
+

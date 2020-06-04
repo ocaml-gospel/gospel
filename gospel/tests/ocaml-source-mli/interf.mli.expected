@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val build_graph : Mach.fundecl -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val build_graph : Mach.fundecl -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module interf.mli
+
+  Namespace: interf.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val build_graph : Mach.fundecl -> unit
+    
+
+
+*** OK ***
+

@@ -1,0 +1,46 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val protect : (unit -> unit) -> unit
+val unprotect : (unit -> unit) -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val protect : (unit -> unit) -> unit
+
+
+val unprotect : (unit -> unit) -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module exec.mli
+
+  Namespace: exec.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val protect : (unit -> unit) -> unit
+    
+    
+    val unprotect : (unit -> unit) -> unit
+    
+
+
+*** OK ***
+

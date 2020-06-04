@@ -1,0 +1,82 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Turn free variables of closures into specialised arguments.\n    The aim is to cause the closure to become closed. "]
+val rewrite_set_of_closures :
+  env:Inline_and_simplify_aux.Env.t ->
+    duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                          set_of_closures:Flambda.set_of_closures ->
+                            fun_var:Variable.t ->
+                              new_fun_var:Variable.t ->
+                                (Flambda.function_declaration *
+                                  Flambda.specialised_to Variable.Map.t))
+      ->
+      set_of_closures:Flambda.set_of_closures ->
+        (Flambda.expr * Inlining_cost.Benefit.t) option
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Turn free variables of closures into specialised arguments.\n    The aim is to cause the closure to become closed. "]
+
+val rewrite_set_of_closures :
+  env:Inline_and_simplify_aux.Env.t ->
+    duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                          set_of_closures:Flambda.set_of_closures ->
+                            fun_var:Variable.t ->
+                              new_fun_var:Variable.t ->
+                                (Flambda.function_declaration *
+                                  Flambda.specialised_to Variable.Map.t))
+      ->
+      set_of_closures:Flambda.set_of_closures ->
+        (Flambda.expr * Inlining_cost.Benefit.t) option
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module unbox_closures.mli
+
+  Namespace: unbox_closures.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " Turn free variables of closures into specialised arguments.\n    The aim is to cause the closure to become closed. "]
+    
+    val rewrite_set_of_closures :
+    env:Inline_and_simplify_aux.Env.t ->
+      duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                            set_of_closures:Flambda.set_of_closures ->
+                              fun_var:Variable.t ->
+                                new_fun_var:Variable.t ->
+                                  (Flambda.function_declaration *
+                                    Flambda.specialised_to Variable.Map.t))
+        ->
+        set_of_closures:Flambda.set_of_closures ->
+          (Flambda.expr * Inlining_cost.Benefit.t) option
+    
+
+
+*** OK ***
+

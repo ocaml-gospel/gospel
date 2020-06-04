@@ -1,0 +1,159 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Definitions shared between the 32 and 64 bit Intel backends. "]
+open X86_ast
+[@@@ocaml.text " Helpers for textual emitters "]
+val string_of_reg8l : reg64 -> string
+val string_of_reg8h : reg8h -> string
+val string_of_reg16 : reg64 -> string
+val string_of_reg32 : reg64 -> string
+val string_of_reg64 : reg64 -> string
+val string_of_registerf : registerf -> string
+val string_of_string_literal : string -> string
+val string_of_condition : condition -> string
+val string_of_symbol : string -> string -> string
+val string_of_rounding : rounding -> string
+val buf_bytes_directive : Buffer.t -> string -> string -> unit
+[@@@ocaml.text " Buffer of assembly code "]
+val emit : instruction -> unit
+val directive : asm_line -> unit
+val reset_asm_code : unit -> unit
+[@@@ocaml.text " Code emission "]
+val generate_code : (X86_ast.asm_line list -> unit) option -> unit[@@ocaml.doc
+                                                                    " Post-process the stream of instructions.  Dump it (using\n      the provided syntax emitter) in a file (if provided) and\n      compile it with an internal assembler (if registered\n      through [register_internal_assembler]). "]
+val assemble_file : string -> string -> int[@@ocaml.doc
+                                             " Generate an object file corresponding to the last call to\n    [generate_code].  An internal assembler is used if available (and\n    the input file is ignored). Otherwise, the source asm file with an\n    external assembler. "]
+[@@@ocaml.text " System detection "]
+type system =
+  | S_macosx 
+  | S_gnu 
+  | S_cygwin 
+  | S_solaris 
+  | S_win32 
+  | S_linux_elf 
+  | S_bsd_elf 
+  | S_beos 
+  | S_mingw 
+  | S_win64 
+  | S_linux 
+  | S_mingw64 
+  | S_unknown 
+val system : system
+val masm : bool
+val windows : bool
+val use_plt : bool[@@ocaml.doc " Whether calls need to go via the PLT. "]
+[@@@ocaml.text " Support for plumbing a binary code emitter "]
+val register_internal_assembler : (asm_program -> string -> unit) -> unit
+[@@@ocaml.text " Hooks for rewriting the assembly code "]
+val assembler_passes : (asm_program -> asm_program) list ref
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Definitions shared between the 32 and 64 bit Intel backends. "]
+
+open X86_ast
+
+[@@@ocaml.text " Helpers for textual emitters "]
+
+val string_of_reg8l : reg64 -> string
+
+
+val string_of_reg8h : reg8h -> string
+
+
+val string_of_reg16 : reg64 -> string
+
+
+val string_of_reg32 : reg64 -> string
+
+
+val string_of_reg64 : reg64 -> string
+
+
+val string_of_registerf : registerf -> string
+
+
+val string_of_string_literal : string -> string
+
+
+val string_of_condition : condition -> string
+
+
+val string_of_symbol : string -> string -> string
+
+
+val string_of_rounding : rounding -> string
+
+
+val buf_bytes_directive : Buffer.t -> string -> string -> unit
+
+
+[@@@ocaml.text " Buffer of assembly code "]
+
+val emit : instruction -> unit
+
+
+val directive : asm_line -> unit
+
+
+val reset_asm_code : unit -> unit
+
+
+[@@@ocaml.text " Code emission "]
+
+val generate_code : (X86_ast.asm_line list -> unit) option -> unit[@@ocaml.doc
+                                                                    " Post-process the stream of instructions.  Dump it (using\n      the provided syntax emitter) in a file (if provided) and\n      compile it with an internal assembler (if registered\n      through [register_internal_assembler]). "]
+
+
+val assemble_file : string -> string -> int[@@ocaml.doc
+                                             " Generate an object file corresponding to the last call to\n    [generate_code].  An internal assembler is used if available (and\n    the input file is ignored). Otherwise, the source asm file with an\n    external assembler. "]
+
+
+[@@@ocaml.text " System detection "]
+
+type system =
+| S_macosx 
+| S_gnu 
+| S_cygwin 
+| S_solaris 
+| S_win32 
+| S_linux_elf 
+| S_bsd_elf 
+| S_beos 
+| S_mingw 
+| S_win64 
+| S_linux 
+| S_mingw64 
+| S_unknown 
+  
+
+val system : system
+
+
+val masm : bool
+
+
+val windows : bool
+
+
+val use_plt : bool[@@ocaml.doc " Whether calls need to go via the PLT. "]
+
+
+[@@@ocaml.text " Support for plumbing a binary code emitter "]
+
+val register_internal_assembler : (asm_program -> string -> unit) -> unit
+
+
+[@@@ocaml.text " Hooks for rewriting the assembly code "]
+
+val assembler_passes : (asm_program -> asm_program) list ref
+
+File "./x86_ast.mli", line 35, characters 13-18:
+Error: Symbol int64 not found

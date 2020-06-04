@@ -1,0 +1,244 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Option values.\n\n    Option values explicitly indicate the presence or absence of a value.\n\n    @since 4.08 "]
+[@@@ocaml.text " {1:options Options} "]
+type 'a t = 'a option =
+  | None 
+  | Some of 'a
+  [@ocaml.doc
+    " The type for option values. Either [None] or a value [Some v]. "]
+val none : 'a option[@@ocaml.doc " [none] is [None]. "]
+val some : 'a -> 'a option[@@ocaml.doc " [some v] is [Some v]. "]
+val value : 'a option -> default:'a -> 'a[@@ocaml.doc
+                                           " [value o ~default] is [v] if [o] is [Some v] and [default] otherwise. "]
+val get : 'a option -> 'a[@@ocaml.doc
+                           " [get o] is [v] if [o] is [Some v] and @raise Invalid_argument otherwise. "]
+val bind : 'a option -> ('a -> 'b option) -> 'b option[@@ocaml.doc
+                                                        " [bind o f] is [Some (f v)] if [o] is [Some v] and [None] if [o] is\n    [None]. "]
+val join : 'a option option -> 'a option[@@ocaml.doc
+                                          " [join oo] is [Some v] if [oo] is [Some (Some v)] and [None] otherwise. "]
+val map : ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                                " [map f o] is [None] if [o] is [None] and [Some (f v)] is [o] is [Some v]. "]
+val fold : none:'a -> some:('b -> 'a) -> 'b option -> 'a[@@ocaml.doc
+                                                          " [fold ~none ~some o] is [none] if [o] is [None] and [some v] if [o] is\n    [Some v]. "]
+val iter : ('a -> unit) -> 'a option -> unit[@@ocaml.doc
+                                              " [iter f o] is [f v] if [o] is [Some v] and [()] otherwise. "]
+[@@@ocaml.text " {1:preds Predicates and comparisons} "]
+val is_none : 'a option -> bool[@@ocaml.doc
+                                 " [is_none o] is [true] iff [o] is [None]. "]
+val is_some : 'a option -> bool[@@ocaml.doc
+                                 " [is_some o] is [true] iff [o] is [Some o]. "]
+val equal : ('a -> 'a -> bool) -> 'a option -> 'a option -> bool[@@ocaml.doc
+                                                                  " [equal eq o0 o1] is [true] iff [o0] and [o1] are both [None] or if\n    they are [Some v0] and [Some v1] and [eq v0 v1] is [true]. "]
+val compare : ('a -> 'a -> int) -> 'a option -> 'a option -> int[@@ocaml.doc
+                                                                  " [compare cmp o0 o1] is a total order on options using [cmp] to compare\n    values wrapped by [Some _]. [None] is smaller than [Some _] values. "]
+[@@@ocaml.text " {1:convert Converting} "]
+val to_result : none:'e -> 'a option -> ('a, 'e) result[@@ocaml.doc
+                                                         " [to_result ~none o] is [Ok v] if [o] is [Some v] and [Error none]\n    otherwise. "]
+val to_list : 'a option -> 'a list[@@ocaml.doc
+                                    " [to_list o] is [[]] if [o] is [None] and [[v]] if [o] is [Some v]. "]
+val to_seq : 'a option -> 'a Seq.t[@@ocaml.doc
+                                    " [to_seq o] is [o] as a sequence. [None] is the empty sequence and\n    [Some v] is the singleton sequence containing [v]. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Option values.\n\n    Option values explicitly indicate the presence or absence of a value.\n\n    @since 4.08 "]
+
+[@@@ocaml.text " {1:options Options} "]
+
+type 'a t = 'a option =
+| None 
+| Some of 'a
+[@ocaml.doc
+  " The type for option values. Either [None] or a value [Some v]. "]
+  
+
+val none : 'a option[@@ocaml.doc " [none] is [None]. "]
+
+
+val some : 'a -> 'a option[@@ocaml.doc " [some v] is [Some v]. "]
+
+
+val value : 'a option -> default:'a -> 'a[@@ocaml.doc
+                                           " [value o ~default] is [v] if [o] is [Some v] and [default] otherwise. "]
+
+
+val get : 'a option -> 'a[@@ocaml.doc
+                           " [get o] is [v] if [o] is [Some v] and @raise Invalid_argument otherwise. "]
+
+
+val bind : 'a option -> ('a -> 'b option) -> 'b option[@@ocaml.doc
+                                                        " [bind o f] is [Some (f v)] if [o] is [Some v] and [None] if [o] is\n    [None]. "]
+
+
+val join : 'a option option -> 'a option[@@ocaml.doc
+                                          " [join oo] is [Some v] if [oo] is [Some (Some v)] and [None] otherwise. "]
+
+
+val map : ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                                " [map f o] is [None] if [o] is [None] and [Some (f v)] is [o] is [Some v]. "]
+
+
+val fold : none:'a -> some:('b -> 'a) -> 'b option -> 'a[@@ocaml.doc
+                                                          " [fold ~none ~some o] is [none] if [o] is [None] and [some v] if [o] is\n    [Some v]. "]
+
+
+val iter : ('a -> unit) -> 'a option -> unit[@@ocaml.doc
+                                              " [iter f o] is [f v] if [o] is [Some v] and [()] otherwise. "]
+
+
+[@@@ocaml.text " {1:preds Predicates and comparisons} "]
+
+val is_none : 'a option -> bool[@@ocaml.doc
+                                 " [is_none o] is [true] iff [o] is [None]. "]
+
+
+val is_some : 'a option -> bool[@@ocaml.doc
+                                 " [is_some o] is [true] iff [o] is [Some o]. "]
+
+
+val equal : ('a -> 'a -> bool) -> 'a option -> 'a option -> bool[@@ocaml.doc
+                                                                  " [equal eq o0 o1] is [true] iff [o0] and [o1] are both [None] or if\n    they are [Some v0] and [Some v1] and [eq v0 v1] is [true]. "]
+
+
+val compare : ('a -> 'a -> int) -> 'a option -> 'a option -> int[@@ocaml.doc
+                                                                  " [compare cmp o0 o1] is a total order on options using [cmp] to compare\n    values wrapped by [Some _]. [None] is smaller than [Some _] values. "]
+
+
+[@@@ocaml.text " {1:convert Converting} "]
+
+val to_result : none:'e -> 'a option -> ('a, 'e) result[@@ocaml.doc
+                                                         " [to_result ~none o] is [Ok v] if [o] is [Some v] and [Error none]\n    otherwise. "]
+
+
+val to_list : 'a option -> 'a list[@@ocaml.doc
+                                    " [to_list o] is [[]] if [o] is [None] and [[v]] if [o] is [Some v]. "]
+
+
+val to_seq : 'a option -> 'a Seq.t[@@ocaml.doc
+                                    " [to_seq o] is [o] as a sequence. [None] is the empty sequence and\n    [Some v] is the singleton sequence containing [v]. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module option.mli
+
+  Namespace: option.mli
+    Type symbols
+      'a t [='a option]
+      
+    Logic Symbols
+      function None  : 'a option
+      function Some (_:'a) : 'a option
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Option values.\n\n    Option values explicitly indicate the presence or absence of a value.\n\n    @since 4.08 "]
+    
+    [@@@ocaml.text " {1:options Options} "]
+    
+    type 'a t = 'a option = None of 
+                            function None  : 'a option
+                         | Some of 'a
+                           function Some (_:'a) : 'a option
+    
+    
+    val none : 'a option[@@ocaml.doc " [none] is [None]. "]
+    
+    
+    val some : 'a -> 'a option[@@ocaml.doc " [some v] is [Some v]. "]
+    
+    
+    val value :
+    'a option -> default:'a -> 'a[@@ocaml.doc
+                                   " [value o ~default] is [v] if [o] is [Some v] and [default] otherwise. "]
+    
+    
+    val get :
+    'a option -> 'a[@@ocaml.doc
+                     " [get o] is [v] if [o] is [Some v] and @raise Invalid_argument otherwise. "]
+    
+    
+    val bind :
+    'a option -> ('a -> 'b option) -> 'b option[@@ocaml.doc
+                                                 " [bind o f] is [Some (f v)] if [o] is [Some v] and [None] if [o] is\n    [None]. "]
+    
+    
+    val join :
+    'a option option -> 'a option[@@ocaml.doc
+                                   " [join oo] is [Some v] if [oo] is [Some (Some v)] and [None] otherwise. "]
+    
+    
+    val map :
+    ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                          " [map f o] is [None] if [o] is [None] and [Some (f v)] is [o] is [Some v]. "]
+    
+    
+    val fold :
+    none:'a -> some:('b -> 'a) -> 'b option -> 'a[@@ocaml.doc
+                                                   " [fold ~none ~some o] is [none] if [o] is [None] and [some v] if [o] is\n    [Some v]. "]
+    
+    
+    val iter :
+    ('a -> unit) -> 'a option -> unit[@@ocaml.doc
+                                       " [iter f o] is [f v] if [o] is [Some v] and [()] otherwise. "]
+    
+    
+    [@@@ocaml.text " {1:preds Predicates and comparisons} "]
+    
+    val is_none :
+    'a option -> bool[@@ocaml.doc
+                       " [is_none o] is [true] iff [o] is [None]. "]
+    
+    
+    val is_some :
+    'a option -> bool[@@ocaml.doc
+                       " [is_some o] is [true] iff [o] is [Some o]. "]
+    
+    
+    val equal :
+    ('a -> 'a -> bool) -> 'a option -> 'a option -> bool[@@ocaml.doc
+                                                          " [equal eq o0 o1] is [true] iff [o0] and [o1] are both [None] or if\n    they are [Some v0] and [Some v1] and [eq v0 v1] is [true]. "]
+    
+    
+    val compare :
+    ('a -> 'a -> int) -> 'a option -> 'a option -> int[@@ocaml.doc
+                                                        " [compare cmp o0 o1] is a total order on options using [cmp] to compare\n    values wrapped by [Some _]. [None] is smaller than [Some _] values. "]
+    
+    
+    [@@@ocaml.text " {1:convert Converting} "]
+    
+    val to_result :
+    none:'e -> 'a option -> ('a, 'e) result[@@ocaml.doc
+                                             " [to_result ~none o] is [Ok v] if [o] is [Some v] and [Error none]\n    otherwise. "]
+    
+    
+    val to_list :
+    'a option -> 'a list[@@ocaml.doc
+                          " [to_list o] is [[]] if [o] is [None] and [[v]] if [o] is [Some v]. "]
+    
+    
+    val to_seq :
+    'a option -> 'a Seq.t[@@ocaml.doc
+                           " [to_seq o] is [o] as a sequence. [None] is the empty sequence and\n    [Some v] is the singleton sequence containing [v]. "]
+    
+
+
+*** OK ***
+

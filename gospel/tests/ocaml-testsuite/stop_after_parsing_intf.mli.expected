@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val x : Module_that_does_not_exists.type_that_does_not_exists
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val x : Module_that_does_not_exists.type_that_does_not_exists
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module stop_after_parsing_intf.mli
+
+  Namespace: stop_after_parsing_intf.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val x : Module_that_does_not_exists.type_that_does_not_exists
+    
+
+
+*** OK ***
+

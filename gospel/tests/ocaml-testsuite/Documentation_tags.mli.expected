@@ -1,0 +1,60 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Test the html rendering of ocamldoc documentation tags "]
+val heterological : unit[@@ocaml.doc
+                          "\n @author yes\n @param no No description\n @param neither see no description\n @deprecated since the start of time\n @return ()\n @see \"Documentation_tags.mli\" Self reference\n @since Now\n @before Time not implemented\n"]
+val noop : unit[@@ocaml.doc
+                 "\n @raise Not_found Never\n @raise Invalid_argument Never\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Test the html rendering of ocamldoc documentation tags "]
+
+val heterological : unit[@@ocaml.doc
+                          "\n @author yes\n @param no No description\n @param neither see no description\n @deprecated since the start of time\n @return ()\n @see \"Documentation_tags.mli\" Self reference\n @since Now\n @before Time not implemented\n"]
+
+
+val noop : unit[@@ocaml.doc
+                 "\n @raise Not_found Never\n @raise Invalid_argument Never\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Documentation_tags.mli
+
+  Namespace: Documentation_tags.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Test the html rendering of ocamldoc documentation tags "]
+    
+    val heterological :
+    unit[@@ocaml.doc
+          "\n @author yes\n @param no No description\n @param neither see no description\n @deprecated since the start of time\n @return ()\n @see \"Documentation_tags.mli\" Self reference\n @since Now\n @before Time not implemented\n"]
+    
+    
+    val noop :
+    unit[@@ocaml.doc
+          "\n @raise Not_found Never\n @raise Invalid_argument Never\n"]
+    
+
+
+*** OK ***
+

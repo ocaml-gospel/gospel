@@ -1,0 +1,87 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " [Variable.t] is the equivalent of a non-persistent [Ident.t] in\n    the [Flambda] tree.  It wraps an [Ident.t] together with its source\n    [compilation_unit].  As such, it is unique within a whole program,\n    not just one compilation unit.\n\n    Introducing a new type helps in tracing the source of identifiers\n    when debugging the inliner.  It also avoids Ident renaming when\n    importing cmx files.\n"]
+include Identifiable.S
+val create :
+  ?current_compilation_unit:Compilation_unit.t ->
+    Internal_variable_names.t -> t
+val create_with_same_name_as_ident : Ident.t -> t
+val rename : ?current_compilation_unit:Compilation_unit.t -> t -> t
+val in_compilation_unit : t -> Compilation_unit.t -> bool
+val name : t -> string
+val unique_name : t -> string
+val get_compilation_unit : t -> Compilation_unit.t
+val print_list : Format.formatter -> t list -> unit
+val print_opt : Format.formatter -> t option -> unit
+val debug_when_stamp_matches : t -> stamp:int -> f:(unit -> unit) -> unit
+[@@ocaml.doc
+  " If the given variable has the given stamp, call the user-supplied\n    function.  For debugging purposes only. "]
+type pair = (t * t)
+module Pair : Identifiable.S with type  t :=  pair
+val compare_lists : t list -> t list -> int
+val output_full : out_channel -> t -> unit[@@ocaml.doc
+                                            " Unlike [output], [output_full] includes the compilation unit. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " [Variable.t] is the equivalent of a non-persistent [Ident.t] in\n    the [Flambda] tree.  It wraps an [Ident.t] together with its source\n    [compilation_unit].  As such, it is unique within a whole program,\n    not just one compilation unit.\n\n    Introducing a new type helps in tracing the source of identifiers\n    when debugging the inliner.  It also avoids Ident renaming when\n    importing cmx files.\n"]
+
+include Identifiable.S
+
+val create :
+  ?current_compilation_unit:Compilation_unit.t ->
+    Internal_variable_names.t -> t
+
+
+val create_with_same_name_as_ident : Ident.t -> t
+
+
+val rename : ?current_compilation_unit:Compilation_unit.t -> t -> t
+
+
+val in_compilation_unit : t -> Compilation_unit.t -> bool
+
+
+val name : t -> string
+
+
+val unique_name : t -> string
+
+
+val get_compilation_unit : t -> Compilation_unit.t
+
+
+val print_list : Format.formatter -> t list -> unit
+
+
+val print_opt : Format.formatter -> t option -> unit
+
+
+val debug_when_stamp_matches : t -> stamp:int -> f:(unit -> unit) -> unit
+[@@ocaml.doc
+  " If the given variable has the given stamp, call the user-supplied\n    function.  For debugging purposes only. "]
+
+
+type pair = (t * t)
+  
+
+module Pair : Identifiable.S with type  t :=  pair
+
+val compare_lists : t list -> t list -> int
+
+
+val output_full : out_channel -> t -> unit[@@ocaml.doc
+                                            " Unlike [output], [output_full] includes the compilation unit. "]
+
+File "variable.mli", line 57, characters 12-13:
+Error: Symbol t not found

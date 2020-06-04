@@ -1,0 +1,71 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Format
+val dir_quit : unit -> unit
+val dir_directory : string -> unit
+val dir_remove_directory : string -> unit
+val dir_cd : string -> unit
+val dir_load : formatter -> string -> unit
+val dir_use : formatter -> string -> unit
+val dir_install_printer : formatter -> Longident.t -> unit
+val dir_remove_printer : formatter -> Longident.t -> unit
+val dir_trace : formatter -> Longident.t -> unit
+val dir_untrace : formatter -> Longident.t -> unit
+val dir_untrace_all : formatter -> unit -> unit
+type 'a printer_type_new = Format.formatter -> 'a -> unit
+type 'a printer_type_old = 'a -> unit
+val load_file : formatter -> string -> bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Format
+
+val dir_quit : unit -> unit
+
+
+val dir_directory : string -> unit
+
+
+val dir_remove_directory : string -> unit
+
+
+val dir_cd : string -> unit
+
+
+val dir_load : formatter -> string -> unit
+
+
+val dir_use : formatter -> string -> unit
+
+
+val dir_install_printer : formatter -> Longident.t -> unit
+
+
+val dir_remove_printer : formatter -> Longident.t -> unit
+
+
+val dir_trace : formatter -> Longident.t -> unit
+
+
+val dir_untrace : formatter -> Longident.t -> unit
+
+
+val dir_untrace_all : formatter -> unit -> unit
+
+
+type 'a printer_type_new = Format.formatter -> 'a -> unit
+  
+
+type 'a printer_type_old = 'a -> unit
+  
+
+val load_file : formatter -> string -> bool
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        

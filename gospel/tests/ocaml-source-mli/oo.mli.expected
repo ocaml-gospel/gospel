@@ -1,0 +1,81 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Operations on objects "]
+val copy : (< .. >  as 'a) -> 'a[@@ocaml.doc
+                                  " [Oo.copy o] returns a copy of object [o], that is a fresh\n   object with the same methods and instance variables as [o]. "]
+external id : < .. >  -> int = "%field1"[@@ocaml.doc
+                                          " Return an integer identifying this object, unique for\n    the current execution of the program. The generic comparison\n    and hashing functions are based on this integer. When an object\n    is obtained by unmarshaling, the id is refreshed, and thus\n    different from the original object. As a consequence, the internal\n    invariants of data structures such as hash table or sets containing\n    objects are broken after unmarshaling the data structures.\n  "]
+[@@@ocaml.text "/*"]
+val new_method : string -> CamlinternalOO.tag[@@ocaml.doc
+                                               " For internal use (CamlIDL) "]
+val public_method_label : string -> CamlinternalOO.tag
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Operations on objects "]
+
+val copy : (< .. >  as 'a) -> 'a[@@ocaml.doc
+                                  " [Oo.copy o] returns a copy of object [o], that is a fresh\n   object with the same methods and instance variables as [o]. "]
+
+
+external id : < .. >  -> int = "%field1"[@@ocaml.doc
+                                          " Return an integer identifying this object, unique for\n    the current execution of the program. The generic comparison\n    and hashing functions are based on this integer. When an object\n    is obtained by unmarshaling, the id is refreshed, and thus\n    different from the original object. As a consequence, the internal\n    invariants of data structures such as hash table or sets containing\n    objects are broken after unmarshaling the data structures.\n  "]
+
+
+[@@@ocaml.text "/*"]
+
+val new_method : string -> CamlinternalOO.tag[@@ocaml.doc
+                                               " For internal use (CamlIDL) "]
+
+
+val public_method_label : string -> CamlinternalOO.tag
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module oo.mli
+
+  Namespace: oo.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Operations on objects "]
+    
+    val copy :
+    (< .. >  as 'a) -> 'a[@@ocaml.doc
+                           " [Oo.copy o] returns a copy of object [o], that is a fresh\n   object with the same methods and instance variables as [o]. "]
+    
+    
+    external id : < .. >  -> int =
+    "%field1"[@@ocaml.doc
+               " Return an integer identifying this object, unique for\n    the current execution of the program. The generic comparison\n    and hashing functions are based on this integer. When an object\n    is obtained by unmarshaling, the id is refreshed, and thus\n    different from the original object. As a consequence, the internal\n    invariants of data structures such as hash table or sets containing\n    objects are broken after unmarshaling the data structures.\n  "]
+    
+    
+    [@@@ocaml.text "/*"]
+    
+    val new_method :
+    string -> CamlinternalOO.tag[@@ocaml.doc " For internal use (CamlIDL) "]
+    
+    
+    val public_method_label : string -> CamlinternalOO.tag
+    
+
+
+*** OK ***
+

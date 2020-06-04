@@ -1,0 +1,178 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " First-class synchronous communication.\n\n   This module implements synchronous inter-thread communications over\n   channels. As in John Reppy's Concurrent ML system, the communication\n   events are first-class values: they can be built and combined\n   independently before being offered for communication.\n"]
+type 'a channel[@@ocaml.doc
+                 " The type of communication channels carrying values of type ['a]. "]
+val new_channel : unit -> 'a channel[@@ocaml.doc " Return a new channel. "]
+type +'a event[@@ocaml.doc
+                " The type of communication events returning a result of type ['a]. "]
+val send : 'a channel -> 'a -> unit event[@@ocaml.doc
+                                           " [send ch v] returns the event consisting in sending the value [v]\n   over the channel [ch]. The result value of this event is [()]. "]
+val receive : 'a channel -> 'a event[@@ocaml.doc
+                                      " [receive ch] returns the event consisting in receiving a value\n   from the channel [ch]. The result value of this event is the\n   value received. "]
+val always : 'a -> 'a event[@@ocaml.doc
+                             " [always v] returns an event that is always ready for\n   synchronization.  The result value of this event is [v]. "]
+val choose : 'a event list -> 'a event[@@ocaml.doc
+                                        " [choose evl] returns the event that is the alternative of\n   all the events in the list [evl]. "]
+val wrap : 'a event -> ('a -> 'b) -> 'b event[@@ocaml.doc
+                                               " [wrap ev fn] returns the event that performs the same communications\n   as [ev], then applies the post-processing function [fn]\n   on the return value. "]
+val wrap_abort : 'a event -> (unit -> unit) -> 'a event[@@ocaml.doc
+                                                         " [wrap_abort ev fn] returns the event that performs\n   the same communications as [ev], but if it is not selected\n   the function [fn] is called after the synchronization. "]
+val guard : (unit -> 'a event) -> 'a event[@@ocaml.doc
+                                            " [guard fn] returns the event that, when synchronized, computes\n   [fn()] and behaves as the resulting event. This allows events with\n   side-effects to be computed at the time of the synchronization\n   operation. "]
+val sync : 'a event -> 'a[@@ocaml.doc
+                           " ``Synchronize'' on an event: offer all the communication\n   possibilities specified in the event to the outside world,\n   and block until one of the communications succeed. The result\n   value of that communication is returned. "]
+val select : 'a event list -> 'a[@@ocaml.doc
+                                  " ``Synchronize'' on an alternative of events.\n   [select evl] is shorthand for [sync(choose evl)]. "]
+val poll : 'a event -> 'a option[@@ocaml.doc
+                                  " Non-blocking version of {!Event.sync}: offer all the communication\n   possibilities specified in the event to the outside world,\n   and if one can take place immediately, perform it and return\n   [Some r] where [r] is the result value of that communication.\n   Otherwise, return [None] without blocking. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " First-class synchronous communication.\n\n   This module implements synchronous inter-thread communications over\n   channels. As in John Reppy's Concurrent ML system, the communication\n   events are first-class values: they can be built and combined\n   independently before being offered for communication.\n"]
+
+type 'a channel[@@ocaml.doc
+                 " The type of communication channels carrying values of type ['a]. "]
+  
+
+val new_channel : unit -> 'a channel[@@ocaml.doc " Return a new channel. "]
+
+
+type +'a event[@@ocaml.doc
+                " The type of communication events returning a result of type ['a]. "]
+  
+
+val send : 'a channel -> 'a -> unit event[@@ocaml.doc
+                                           " [send ch v] returns the event consisting in sending the value [v]\n   over the channel [ch]. The result value of this event is [()]. "]
+
+
+val receive : 'a channel -> 'a event[@@ocaml.doc
+                                      " [receive ch] returns the event consisting in receiving a value\n   from the channel [ch]. The result value of this event is the\n   value received. "]
+
+
+val always : 'a -> 'a event[@@ocaml.doc
+                             " [always v] returns an event that is always ready for\n   synchronization.  The result value of this event is [v]. "]
+
+
+val choose : 'a event list -> 'a event[@@ocaml.doc
+                                        " [choose evl] returns the event that is the alternative of\n   all the events in the list [evl]. "]
+
+
+val wrap : 'a event -> ('a -> 'b) -> 'b event[@@ocaml.doc
+                                               " [wrap ev fn] returns the event that performs the same communications\n   as [ev], then applies the post-processing function [fn]\n   on the return value. "]
+
+
+val wrap_abort : 'a event -> (unit -> unit) -> 'a event[@@ocaml.doc
+                                                         " [wrap_abort ev fn] returns the event that performs\n   the same communications as [ev], but if it is not selected\n   the function [fn] is called after the synchronization. "]
+
+
+val guard : (unit -> 'a event) -> 'a event[@@ocaml.doc
+                                            " [guard fn] returns the event that, when synchronized, computes\n   [fn()] and behaves as the resulting event. This allows events with\n   side-effects to be computed at the time of the synchronization\n   operation. "]
+
+
+val sync : 'a event -> 'a[@@ocaml.doc
+                           " ``Synchronize'' on an event: offer all the communication\n   possibilities specified in the event to the outside world,\n   and block until one of the communications succeed. The result\n   value of that communication is returned. "]
+
+
+val select : 'a event list -> 'a[@@ocaml.doc
+                                  " ``Synchronize'' on an alternative of events.\n   [select evl] is shorthand for [sync(choose evl)]. "]
+
+
+val poll : 'a event -> 'a option[@@ocaml.doc
+                                  " Non-blocking version of {!Event.sync}: offer all the communication\n   possibilities specified in the event to the outside world,\n   and if one can take place immediately, perform it and return\n   [Some r] where [r] is the result value of that communication.\n   Otherwise, return [None] without blocking. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module event.mli
+
+  Namespace: event.mli
+    Type symbols
+      'a channel
+      'a event
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " First-class synchronous communication.\n\n   This module implements synchronous inter-thread communications over\n   channels. As in John Reppy's Concurrent ML system, the communication\n   events are first-class values: they can be built and combined\n   independently before being offered for communication.\n"]
+    
+    type 'a channel
+    
+    
+    val new_channel :
+    unit -> 'a channel[@@ocaml.doc " Return a new channel. "]
+    
+    
+    type +'a event
+    
+    
+    val send :
+    'a channel -> 'a -> unit event[@@ocaml.doc
+                                    " [send ch v] returns the event consisting in sending the value [v]\n   over the channel [ch]. The result value of this event is [()]. "]
+    
+    
+    val receive :
+    'a channel -> 'a event[@@ocaml.doc
+                            " [receive ch] returns the event consisting in receiving a value\n   from the channel [ch]. The result value of this event is the\n   value received. "]
+    
+    
+    val always :
+    'a -> 'a event[@@ocaml.doc
+                    " [always v] returns an event that is always ready for\n   synchronization.  The result value of this event is [v]. "]
+    
+    
+    val choose :
+    'a event list -> 'a event[@@ocaml.doc
+                               " [choose evl] returns the event that is the alternative of\n   all the events in the list [evl]. "]
+    
+    
+    val wrap :
+    'a event -> ('a -> 'b) -> 'b event[@@ocaml.doc
+                                        " [wrap ev fn] returns the event that performs the same communications\n   as [ev], then applies the post-processing function [fn]\n   on the return value. "]
+    
+    
+    val wrap_abort :
+    'a event -> (unit -> unit) -> 'a event[@@ocaml.doc
+                                            " [wrap_abort ev fn] returns the event that performs\n   the same communications as [ev], but if it is not selected\n   the function [fn] is called after the synchronization. "]
+    
+    
+    val guard :
+    (unit -> 'a event) -> 'a event[@@ocaml.doc
+                                    " [guard fn] returns the event that, when synchronized, computes\n   [fn()] and behaves as the resulting event. This allows events with\n   side-effects to be computed at the time of the synchronization\n   operation. "]
+    
+    
+    val sync :
+    'a event -> 'a[@@ocaml.doc
+                    " ``Synchronize'' on an event: offer all the communication\n   possibilities specified in the event to the outside world,\n   and block until one of the communications succeed. The result\n   value of that communication is returned. "]
+    
+    
+    val select :
+    'a event list -> 'a[@@ocaml.doc
+                         " ``Synchronize'' on an alternative of events.\n   [select evl] is shorthand for [sync(choose evl)]. "]
+    
+    
+    val poll :
+    'a event -> 'a option[@@ocaml.doc
+                           " Non-blocking version of {!Event.sync}: offer all the communication\n   possibilities specified in the event to the outside world,\n   and if one can take place immediately, perform it and return\n   [Some r] where [r] is the result value of that communication.\n   Otherwise, return [None] without blocking. "]
+    
+
+
+*** OK ***
+

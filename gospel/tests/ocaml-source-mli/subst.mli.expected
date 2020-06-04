@@ -1,0 +1,130 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Types
+type t
+val identity : t
+val add_type : Ident.t -> Path.t -> t -> t
+val add_type_path : Path.t -> Path.t -> t -> t
+val add_type_function :
+  Path.t -> params:type_expr list -> body:type_expr -> t -> t
+val add_module : Ident.t -> Path.t -> t -> t
+val add_module_path : Path.t -> Path.t -> t -> t
+val add_modtype : Ident.t -> module_type -> t -> t
+val for_saving : t -> t
+val reset_for_saving : unit -> unit
+val change_locs : t -> Location.t -> t
+val module_path : t -> Path.t -> Path.t
+val type_path : t -> Path.t -> Path.t
+val type_expr : t -> type_expr -> type_expr
+val class_type : t -> class_type -> class_type
+val value_description : t -> value_description -> value_description
+val type_declaration : t -> type_declaration -> type_declaration
+val extension_constructor :
+  t -> extension_constructor -> extension_constructor
+val class_declaration : t -> class_declaration -> class_declaration
+val cltype_declaration :
+  t -> class_type_declaration -> class_type_declaration
+val modtype : t -> module_type -> module_type
+val signature : t -> signature -> signature
+val modtype_declaration : t -> modtype_declaration -> modtype_declaration
+val module_declaration : t -> module_declaration -> module_declaration
+val class_signature : t -> class_signature -> class_signature
+val compose : t -> t -> t
+val ctype_apply_env_empty :
+  (type_expr list -> type_expr -> type_expr list -> type_expr) ref
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Types
+
+type t
+  
+
+val identity : t
+
+
+val add_type : Ident.t -> Path.t -> t -> t
+
+
+val add_type_path : Path.t -> Path.t -> t -> t
+
+
+val add_type_function :
+  Path.t -> params:type_expr list -> body:type_expr -> t -> t
+
+
+val add_module : Ident.t -> Path.t -> t -> t
+
+
+val add_module_path : Path.t -> Path.t -> t -> t
+
+
+val add_modtype : Ident.t -> module_type -> t -> t
+
+
+val for_saving : t -> t
+
+
+val reset_for_saving : unit -> unit
+
+
+val change_locs : t -> Location.t -> t
+
+
+val module_path : t -> Path.t -> Path.t
+
+
+val type_path : t -> Path.t -> Path.t
+
+
+val type_expr : t -> type_expr -> type_expr
+
+
+val class_type : t -> class_type -> class_type
+
+
+val value_description : t -> value_description -> value_description
+
+
+val type_declaration : t -> type_declaration -> type_declaration
+
+
+val extension_constructor :
+  t -> extension_constructor -> extension_constructor
+
+
+val class_declaration : t -> class_declaration -> class_declaration
+
+
+val cltype_declaration :
+  t -> class_type_declaration -> class_type_declaration
+
+
+val modtype : t -> module_type -> module_type
+
+
+val signature : t -> signature -> signature
+
+
+val modtype_declaration : t -> modtype_declaration -> modtype_declaration
+
+
+val module_declaration : t -> module_declaration -> module_declaration
+
+
+val class_signature : t -> class_signature -> class_signature
+
+
+val compose : t -> t -> t
+
+
+val ctype_apply_env_empty :
+  (type_expr list -> type_expr -> type_expr list -> type_expr) ref
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

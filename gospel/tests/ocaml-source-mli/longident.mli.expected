@@ -1,0 +1,98 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Long identifiers, used in parsetree.\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+type t =
+  | Lident of string 
+  | Ldot of t * string 
+  | Lapply of t * t 
+val flatten : t -> string list
+val unflatten : string list -> t option
+val last : t -> string
+val parse : string -> t
+[@@@ocaml.text
+  " To print a longident, see {!Pprintast.longident}, using\n    {!Format.asprintf} to convert to a string. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Long identifiers, used in parsetree.\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+type t =
+| Lident of string 
+| Ldot of t * string 
+| Lapply of t * t 
+  
+
+val flatten : t -> string list
+
+
+val unflatten : string list -> t option
+
+
+val last : t -> string
+
+
+val parse : string -> t
+
+
+[@@@ocaml.text
+  " To print a longident, see {!Pprintast.longident}, using\n    {!Format.asprintf} to convert to a string. "]
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module longident.mli
+
+  Namespace: longident.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      function Lapply (_:t * t) : t
+      function Ldot (_:t * string) : t
+      function Lident (_:string) : t
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Long identifiers, used in parsetree.\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+    
+    type t = Lident of string
+             function Lident (_:string) : t
+          | Ldot of t * string
+            function Ldot (_:t * string) : t
+          | Lapply of t * t
+            function Lapply (_:t * t) : t
+    
+    
+    val flatten : t -> string list
+    
+    
+    val unflatten : string list -> t option
+    
+    
+    val last : t -> string
+    
+    
+    val parse : string -> t
+    
+    
+    [@@@ocaml.text
+      " To print a longident, see {!Pprintast.longident}, using\n    {!Format.asprintf} to convert to a string. "]
+
+
+*** OK ***
+

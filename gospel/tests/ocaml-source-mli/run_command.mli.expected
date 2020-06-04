@@ -1,0 +1,49 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type settings =
+  {
+  progname: string ;
+  argv: string array ;
+  envp: string array ;
+  stdin_filename: string ;
+  stdout_filename: string ;
+  stderr_filename: string ;
+  append: bool ;
+  timeout: int ;
+  log: out_channel }
+val settings_of_commandline :
+  ?stdout_fname:string -> ?stderr_fname:string -> string -> settings
+val run : settings -> int
+val run_commandline : string -> int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type settings =
+{
+progname: string ;
+argv: string array ;
+envp: string array ;
+stdin_filename: string ;
+stdout_filename: string ;
+stderr_filename: string ;
+append: bool ;
+timeout: int ;
+log: out_channel }
+  
+
+val settings_of_commandline :
+  ?stdout_fname:string -> ?stderr_fname:string -> string -> settings
+
+
+val run : settings -> int
+
+
+val run_commandline : string -> int
+
+File "run_command.mli", line 27, characters 8-19:
+Error: Symbol out_channel not found

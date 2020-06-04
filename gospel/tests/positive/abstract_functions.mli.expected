@@ -1,0 +1,181 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel  open Type_decl ]
+[@@@gospel  function f1 : integer ]
+[@@@gospel  function f2 : integer -> integer ]
+[@@@gospel  function f3 : integer t2 -> integer ]
+[@@@gospel  function f4 : 'a t2 -> integer ]
+[@@@gospel  function f5 : 'a t2 -> 'b ]
+[@@@gospel  function f6 : ('a,'b) t3 -> ('b,'a) t3 ]
+[@@@gospel  function h1 (x : integer): integer ]
+[@@@gospel  function h2 (x : integer) (y: integer): integer ]
+[@@@gospel  function h3 (x : t1) (y: integer t2): integer ]
+[@@@gospel  function h4 (x : (integer,'a) t3) (y: integer t2): integer ]
+[@@@gospel  predicate h5 (x : integer) ]
+[@@@gospel  predicate h6 (x : integer) (y: integer) ]
+[@@@gospel  predicate h7 (x : t1) (y: integer t2) ]
+[@@@gospel  predicate h8 (x : (integer,'a) t3) (y: integer t2) ]
+[@@@gospel  function (!!) (x:integer) : integer ]
+[@@@gospel  function (??) (x: 'a): 'a ]
+[@@@gospel  function (!?) (x: 'a) : 'a * 'b ]
+[@@@gospel  function h9 (x: 'a) : 'a * 'b ]
+[@@@gospel  function h10 (x: 'a) (y: 'b): 'a * 'b ]
+[@@@gospel  predicate h11 (x: 'a) (y: 'b) (z: 'c) ]
+[@@@gospel  function h12 (x: 'a) : 'b -> 'c ]
+[@@@gospel  function h13 (x: 'a * 'b) (y: 'b * 'a): 'a * 'b ]
+[@@@gospel  function h14 (x: 'a): test ]
+[@@@gospel  function h15 (x: test): integer ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ open Type_decl *)
+
+(*@ function f1  ... *)
+
+(*@ function f2  ... *)
+
+(*@ function f3  ... *)
+
+(*@ function f4  ... *)
+
+(*@ function f5  ... *)
+
+(*@ function f6  ... *)
+
+(*@ function h1  ... *)
+
+(*@ function h2  ... *)
+
+(*@ function h3  ... *)
+
+(*@ function h4  ... *)
+
+(*@ predicate h5  ... *)
+
+(*@ predicate h6  ... *)
+
+(*@ predicate h7  ... *)
+
+(*@ predicate h8  ... *)
+
+(*@ function prefix !!  ... *)
+
+(*@ function prefix ??  ... *)
+
+(*@ function prefix !?  ... *)
+
+(*@ function h9  ... *)
+
+(*@ function h10  ... *)
+
+(*@ predicate h11  ... *)
+
+(*@ function h12  ... *)
+
+(*@ function h13  ... *)
+
+(*@ function h14  ... *)
+
+(*@ function h15  ... *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module abstract_functions.mli
+
+  Namespace: abstract_functions.mli
+    Type symbols
+      
+    Logic Symbols
+      function f1  : integer
+      function f2  : integer -> integer
+      function f3  : integer t2 -> integer
+      function f4  : 'a t2 -> integer
+      function f5  : 'a t2 -> 'b
+      function f6  : ('a,'b) t3 -> ('b,'a) t3
+      function h1 (_:integer) : integer
+      function h10 (_:'a) (_:'b) : 'a * 'b
+      predicate h11 (_:'a) (_:'b) (_:'c)
+      function h12 (_:'a) : 'b -> 'c
+      function h13 (_:'a * 'b) (_:'b * 'a) : 'a * 'b
+      function h14 (_:'a) : test
+      function h15 (_:test) : integer
+      function h2 (_:integer) (_:integer) : integer
+      function h3 (_:t1) (_:integer t2) : integer
+      function h4 (_:(integer,'a) t3) (_:integer t2) : integer
+      predicate h5 (_:integer)
+      predicate h6 (_:integer) (_:integer)
+      predicate h7 (_:t1) (_:integer t2)
+      predicate h8 (_:(integer,'a) t3) (_:integer t2)
+      function h9 (_:'a) : 'a * 'b
+      function prefix !! (_:integer) : integer
+      function prefix !? (_:'a) : 'a * 'b
+      function prefix ?? (_:'a) : 'a
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ open Type_decl *)
+    
+    (*@ function f1 : integer *)
+    
+    (*@ function f2 : integer -> integer *)
+    
+    (*@ function f3 : integer t2 -> integer *)
+    
+    (*@ function f4 : 'a t2 -> integer *)
+    
+    (*@ function f5 : 'a t2 -> 'b *)
+    
+    (*@ function f6 : ('a,'b) t3 -> ('b,'a) t3 *)
+    
+    (*@ function h1 (x:integer): integer *)
+    
+    (*@ function h2 (x#1:integer) (y:integer): integer *)
+    
+    (*@ function h3 (x#2:t1) (y#1:integer t2): integer *)
+    
+    (*@ function h4 (x#3:(integer,'a) t3) (y#2:integer t2): integer *)
+    
+    (*@ predicate h5 (x#4:integer) *)
+    
+    (*@ predicate h6 (x#5:integer) (y#3:integer) *)
+    
+    (*@ predicate h7 (x#6:t1) (y#4:integer t2) *)
+    
+    (*@ predicate h8 (x#7:(integer,'a) t3) (y#5:integer t2) *)
+    
+    (*@ function prefix !! (x#8:integer): integer *)
+    
+    (*@ function prefix ?? (x#9:'a): 'a *)
+    
+    (*@ function prefix !? (x#10:'a): 'a * 'b *)
+    
+    (*@ function h9 (x#11:'a): 'a * 'b *)
+    
+    (*@ function h10 (x#12:'a) (y#6:'b): 'a * 'b *)
+    
+    (*@ predicate h11 (x#13:'a) (y#7:'b) (z:'c) *)
+    
+    (*@ function h12 (x#14:'a): 'b -> 'c *)
+    
+    (*@ function h13 (x#15:'a * 'b) (y#8:'b * 'a): 'a * 'b *)
+    
+    (*@ function h14 (x#16:'a): test *)
+    
+    (*@ function h15 (x#17:test): integer *)
+
+
+*** OK ***
+

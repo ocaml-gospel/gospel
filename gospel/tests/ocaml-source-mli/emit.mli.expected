@@ -1,0 +1,60 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val fundecl : Linearize.fundecl -> unit
+val data : Cmm.data_item list -> unit
+val begin_assembly : unit -> unit
+val end_assembly : unit -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val fundecl : Linearize.fundecl -> unit
+
+
+val data : Cmm.data_item list -> unit
+
+
+val begin_assembly : unit -> unit
+
+
+val end_assembly : unit -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module emit.mli
+
+  Namespace: emit.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val fundecl : Linearize.fundecl -> unit
+    
+    
+    val data : Cmm.data_item list -> unit
+    
+    
+    val begin_assembly : unit -> unit
+    
+    
+    val end_assembly : unit -> unit
+    
+
+
+*** OK ***
+

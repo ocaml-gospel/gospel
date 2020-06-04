@@ -1,0 +1,84 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type op_class =
+  | Op_pure 
+  | Op_checkbound 
+  | Op_load 
+  | Op_store of bool 
+  | Op_other 
+class cse_generic :
+  object
+    method  class_of_operation : Mach.operation -> op_class
+    method  is_cheap_operation : Mach.operation -> bool
+    method  fundecl : Mach.fundecl -> Mach.fundecl
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type op_class =
+| Op_pure 
+| Op_checkbound 
+| Op_load 
+| Op_store of bool 
+| Op_other 
+  
+
+class cse_generic :
+  object
+    method  class_of_operation : Mach.operation -> op_class
+    method  is_cheap_operation : Mach.operation -> bool
+    method  fundecl : Mach.fundecl -> Mach.fundecl
+  end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module CSEgen.mli
+
+  Namespace: CSEgen.mli
+    Type symbols
+       op_class
+      
+    Logic Symbols
+      function Op_checkbound  : op_class
+      function Op_load  : op_class
+      function Op_other  : op_class
+      function Op_pure  : op_class
+      function Op_store (_:bool) : op_class
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type op_class = Op_pure of 
+                    function Op_pure  : op_class
+                 | Op_checkbound of 
+                   function Op_checkbound  : op_class
+                 | Op_load of 
+                   function Op_load  : op_class
+                 | Op_store of bool
+                   function Op_store (_:bool) : op_class
+                 | Op_other of 
+                   function Op_other  : op_class
+    
+    
+    class cse_generic :
+      object
+        method  class_of_operation : Mach.operation -> op_class
+        method  is_cheap_operation : Mach.operation -> bool
+        method  fundecl : Mach.fundecl -> Mach.fundecl
+      end
+
+
+*** OK ***
+

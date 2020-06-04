@@ -1,0 +1,162 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type backend_specific =
+  | Object 
+  | Library 
+  | Program 
+type t =
+  | Implementation 
+  | Interface 
+  | C 
+  | C_minus_minus 
+  | Lexer 
+  | Grammar 
+  | Binary_interface 
+  | Obj 
+  | Backend_specific of Ocaml_backends.t * backend_specific 
+  | Text [@ocaml.doc " text-only documentation file "]
+val string_of_filetype : t -> string
+val extension_of_filetype : t -> string
+val filetype_of_extension : string -> t
+val split_filename : string -> (string * string)
+val filetype : string -> (string * t)
+val make_filename : (string * t) -> string
+val action_of_filetype : t -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type backend_specific =
+| Object 
+| Library 
+| Program 
+  
+
+type t =
+| Implementation 
+| Interface 
+| C 
+| C_minus_minus 
+| Lexer 
+| Grammar 
+| Binary_interface 
+| Obj 
+| Backend_specific of Ocaml_backends.t * backend_specific 
+| Text [@ocaml.doc " text-only documentation file "]
+  
+
+val string_of_filetype : t -> string
+
+
+val extension_of_filetype : t -> string
+
+
+val filetype_of_extension : string -> t
+
+
+val split_filename : string -> (string * string)
+
+
+val filetype : string -> (string * t)
+
+
+val make_filename : (string * t) -> string
+
+
+val action_of_filetype : t -> string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_filetypes.mli
+
+  Namespace: ocaml_filetypes.mli
+    Type symbols
+       backend_specific
+       t
+      
+    Logic Symbols
+      function Backend_specific (_:t#1 * backend_specific) : t
+      function Binary_interface  : t
+      function C  : t
+      function C_minus_minus  : t
+      function Grammar  : t
+      function Implementation  : t
+      function Interface  : t
+      function Lexer  : t
+      function Library  : backend_specific
+      function Obj  : t
+      function Object  : backend_specific
+      function Program  : backend_specific
+      function Text  : t
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type backend_specific = Object of 
+                            function Object  : backend_specific
+                         | Library of 
+                           function Library  : backend_specific
+                         | Program of 
+                           function Program  : backend_specific
+    
+    
+    (*@ use Ocaml_backends *)
+    
+    type t = Implementation of 
+             function Implementation  : t
+          | Interface of 
+            function Interface  : t
+          | C of 
+            function C  : t
+          | C_minus_minus of 
+            function C_minus_minus  : t
+          | Lexer of 
+            function Lexer  : t
+          | Grammar of 
+            function Grammar  : t
+          | Binary_interface of 
+            function Binary_interface  : t
+          | Obj of 
+            function Obj  : t
+          | Backend_specific of t#1 * backend_specific
+            function Backend_specific (_:t#1 * backend_specific) : t
+          | Text of 
+            function Text  : t
+    
+    
+    val string_of_filetype : t -> string
+    
+    
+    val extension_of_filetype : t -> string
+    
+    
+    val filetype_of_extension : string -> t
+    
+    
+    val split_filename : string -> (string * string)
+    
+    
+    val filetype : string -> (string * t)
+    
+    
+    val make_filename : (string * t) -> string
+    
+    
+    val action_of_filetype : t -> string
+    
+
+
+*** OK ***
+

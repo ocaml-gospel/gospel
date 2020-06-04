@@ -1,0 +1,29 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+module type TA  =
+  sig type 'a t type 'b t2[@@gospel  function f (x: 'a t) : float ] end
+module B : functor (A : TA) -> sig type 'a t = 'a A.t end
+type t
+type int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+module type TA  = sig type 'a t
+                       type 'b t2
+                       (*@ function f  ... *) end
+
+module B : functor (A : TA) -> sig type 'a t = 'a A.t
+                                    end
+
+type t
+  
+
+type int
+  
+File "test2.mli", line 13, characters 5-8:
+Error: Multiple definitions of type int

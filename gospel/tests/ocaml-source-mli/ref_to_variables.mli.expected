@@ -1,0 +1,49 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text " Transform [let]-bound references into variables. "]
+val eliminate_ref : Flambda.program -> Flambda.program
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text " Transform [let]-bound references into variables. "]
+
+val eliminate_ref : Flambda.program -> Flambda.program
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ref_to_variables.mli
+
+  Namespace: ref_to_variables.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text " Transform [let]-bound references into variables. "]
+    
+    val eliminate_ref : Flambda.program -> Flambda.program
+    
+
+
+*** OK ***
+

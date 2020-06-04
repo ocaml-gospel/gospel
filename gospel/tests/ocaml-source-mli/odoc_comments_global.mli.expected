@@ -1,0 +1,147 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " The global variables used by the special comment parser."]
+val nb_chars : int ref[@@ocaml.doc
+                        " the number of chars used in the lexer. "]
+val authors : string list ref[@@ocaml.doc " the authors list "]
+val version : string option ref[@@ocaml.doc " the version string "]
+val sees : string list ref[@@ocaml.doc " the see references "]
+val since : string option ref[@@ocaml.doc " the since string "]
+val before : (string * string) list ref[@@ocaml.doc
+                                         " the before tag information "]
+val deprecated : string option ref[@@ocaml.doc " the deprecated flag "]
+val params : (string * string) list ref[@@ocaml.doc
+                                         " parameters, with name and description "]
+val raised_exceptions : (string * string) list ref[@@ocaml.doc
+                                                    " the raised exceptions, with name and description "]
+val return_value : string option ref[@@ocaml.doc
+                                      " the description of the return value "]
+val customs : (string * string) list ref[@@ocaml.doc
+                                          " the strings associated to custom tags. "]
+val init : unit -> unit[@@ocaml.doc
+                         " this function inits the variables filled by the parser. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " The global variables used by the special comment parser."]
+
+val nb_chars : int ref[@@ocaml.doc
+                        " the number of chars used in the lexer. "]
+
+
+val authors : string list ref[@@ocaml.doc " the authors list "]
+
+
+val version : string option ref[@@ocaml.doc " the version string "]
+
+
+val sees : string list ref[@@ocaml.doc " the see references "]
+
+
+val since : string option ref[@@ocaml.doc " the since string "]
+
+
+val before : (string * string) list ref[@@ocaml.doc
+                                         " the before tag information "]
+
+
+val deprecated : string option ref[@@ocaml.doc " the deprecated flag "]
+
+
+val params : (string * string) list ref[@@ocaml.doc
+                                         " parameters, with name and description "]
+
+
+val raised_exceptions : (string * string) list ref[@@ocaml.doc
+                                                    " the raised exceptions, with name and description "]
+
+
+val return_value : string option ref[@@ocaml.doc
+                                      " the description of the return value "]
+
+
+val customs : (string * string) list ref[@@ocaml.doc
+                                          " the strings associated to custom tags. "]
+
+
+val init : unit -> unit[@@ocaml.doc
+                         " this function inits the variables filled by the parser. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_comments_global.mli
+
+  Namespace: odoc_comments_global.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " The global variables used by the special comment parser."]
+    
+    val nb_chars :
+    int ref[@@ocaml.doc " the number of chars used in the lexer. "]
+    
+    
+    val authors : string list ref[@@ocaml.doc " the authors list "]
+    
+    
+    val version : string option ref[@@ocaml.doc " the version string "]
+    
+    
+    val sees : string list ref[@@ocaml.doc " the see references "]
+    
+    
+    val since : string option ref[@@ocaml.doc " the since string "]
+    
+    
+    val before :
+    (string * string) list ref[@@ocaml.doc " the before tag information "]
+    
+    
+    val deprecated : string option ref[@@ocaml.doc " the deprecated flag "]
+    
+    
+    val params :
+    (string * string) list ref[@@ocaml.doc
+                                " parameters, with name and description "]
+    
+    
+    val raised_exceptions :
+    (string * string) list ref[@@ocaml.doc
+                                " the raised exceptions, with name and description "]
+    
+    
+    val return_value :
+    string option ref[@@ocaml.doc " the description of the return value "]
+    
+    
+    val customs :
+    (string * string) list ref[@@ocaml.doc
+                                " the strings associated to custom tags. "]
+    
+    
+    val init :
+    unit -> unit[@@ocaml.doc
+                  " this function inits the variables filled by the parser. "]
+    
+
+
+*** OK ***
+

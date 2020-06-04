@@ -1,0 +1,34 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a t2 =
+  | C2 of 'a 
+  | C3 of bool 
+  | C4 of int * 'a [@@gospel  function gnr: 'a ][@@gospel
+                                                   function g (x y:'a) (i: int): 'a ]
+[@@gospel
+   function f (x: 'a t2): 'a =
+    match x with
+    | C2 x -> true
+    | C3 b -> gnr
+    | C4 (i,x) -> g x x i ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type 'a t2 =
+| C2 of 'a 
+| C3 of bool 
+| C4 of int * 'a 
+  
+
+(*@ function gnr  ... *)
+
+(*@ function g  ... *)
+
+(*@ function f  ... *)
+File "t15.mli", line 23, characters 18-25:
+Error: Type mysmatch. Cannot match 'a with bool

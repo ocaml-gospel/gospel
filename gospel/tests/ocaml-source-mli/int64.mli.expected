@@ -1,0 +1,254 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " 64-bit integers.\n\n   This module provides operations on the type [int64] of\n   signed 64-bit integers.  Unlike the built-in [int] type,\n   the type [int64] is guaranteed to be exactly 64-bit wide on all\n   platforms.  All arithmetic operations over [int64] are taken\n   modulo 2{^64}\n\n   Performance notice: values of type [int64] occupy more memory\n   space than values of type [int], and arithmetic operations on\n   [int64] are generally slower than those on [int].  Use [int64]\n   only when the application requires exact 64-bit arithmetic.\n\n    Literals for 64-bit integers are suffixed by L:\n    {[\n      let zero: int64 = 0L\n      let one: int64 = 1L\n      let m_one: int64 = -1L\n    ]}\n"]
+val zero : int64[@@ocaml.doc " The 64-bit integer 0. "]
+val one : int64[@@ocaml.doc " The 64-bit integer 1. "]
+val minus_one : int64[@@ocaml.doc " The 64-bit integer -1. "]
+external neg : int64 -> int64 = "%int64_neg"[@@ocaml.doc " Unary negation. "]
+external add : int64 -> int64 -> int64 = "%int64_add"[@@ocaml.doc
+                                                       " Addition. "]
+external sub : int64 -> int64 -> int64 = "%int64_sub"[@@ocaml.doc
+                                                       " Subtraction. "]
+external mul : int64 -> int64 -> int64 = "%int64_mul"[@@ocaml.doc
+                                                       " Multiplication. "]
+external div : int64 -> int64 -> int64 = "%int64_div"[@@ocaml.doc
+                                                       " Integer division.  Raise [Division_by_zero] if the second\n   argument is zero.  This division rounds the real quotient of\n   its arguments towards zero, as specified for {!Stdlib.(/)}. "]
+external rem : int64 -> int64 -> int64 = "%int64_mod"[@@ocaml.doc
+                                                       " Integer remainder.  If [y] is not zero, the result\n   of [Int64.rem x y] satisfies the following property:\n   [x = Int64.add (Int64.mul (Int64.div x y) y) (Int64.rem x y)].\n   If [y = 0], [Int64.rem x y] raises [Division_by_zero]. "]
+val succ : int64 -> int64[@@ocaml.doc
+                           " Successor.  [Int64.succ x] is [Int64.add x Int64.one]. "]
+val pred : int64 -> int64[@@ocaml.doc
+                           " Predecessor.  [Int64.pred x] is [Int64.sub x Int64.one]. "]
+val abs : int64 -> int64[@@ocaml.doc
+                          " Return the absolute value of its argument. "]
+val max_int : int64[@@ocaml.doc
+                     " The greatest representable 64-bit integer, 2{^63} - 1. "]
+val min_int : int64[@@ocaml.doc
+                     " The smallest representable 64-bit integer, -2{^63}. "]
+external logand : int64 -> int64 -> int64 = "%int64_and"[@@ocaml.doc
+                                                          " Bitwise logical and. "]
+external logor : int64 -> int64 -> int64 = "%int64_or"[@@ocaml.doc
+                                                        " Bitwise logical or. "]
+external logxor : int64 -> int64 -> int64 = "%int64_xor"[@@ocaml.doc
+                                                          " Bitwise logical exclusive or. "]
+val lognot : int64 -> int64[@@ocaml.doc " Bitwise logical negation. "]
+external shift_left : int64 -> int -> int64 = "%int64_lsl"[@@ocaml.doc
+                                                            " [Int64.shift_left x y] shifts [x] to the left by [y] bits.\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+external shift_right : int64 -> int -> int64 = "%int64_asr"[@@ocaml.doc
+                                                             " [Int64.shift_right x y] shifts [x] to the right by [y] bits.\n   This is an arithmetic shift: the sign bit of [x] is replicated\n   and inserted in the vacated bits.\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+external shift_right_logical : int64 -> int -> int64 = "%int64_lsr"[@@ocaml.doc
+                                                                    " [Int64.shift_right_logical x y] shifts [x] to the right by [y] bits.\n   This is a logical shift: zeroes are inserted in the vacated bits\n   regardless of the sign of [x].\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+external of_int : int -> int64 = "%int64_of_int"[@@ocaml.doc
+                                                  " Convert the given integer (type [int]) to a 64-bit integer\n    (type [int64]). "]
+external to_int : int64 -> int = "%int64_to_int"[@@ocaml.doc
+                                                  " Convert the given 64-bit integer (type [int64]) to an\n   integer (type [int]).  On 64-bit platforms, the 64-bit integer\n   is taken modulo 2{^63}, i.e. the high-order bit is lost\n   during the conversion.  On 32-bit platforms, the 64-bit integer\n   is taken modulo 2{^31}, i.e. the top 33 bits are lost\n   during the conversion. "]
+external of_float :
+  float -> int64 = "caml_int64_of_float" "caml_int64_of_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given floating-point number to a 64-bit integer,\n   discarding the fractional part (truncate towards 0).\n   The result of the conversion is undefined if, after truncation,\n   the number is outside the range \\[{!Int64.min_int}, {!Int64.max_int}\\]. "]
+external to_float :
+  int64 -> float = "caml_int64_to_float" "caml_int64_to_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given 64-bit integer to a floating-point number. "]
+external of_int32 : int32 -> int64 = "%int64_of_int32"[@@ocaml.doc
+                                                        " Convert the given 32-bit integer (type [int32])\n   to a 64-bit integer (type [int64]). "]
+external to_int32 : int64 -> int32 = "%int64_to_int32"[@@ocaml.doc
+                                                        " Convert the given 64-bit integer (type [int64]) to a\n   32-bit integer (type [int32]). The 64-bit integer\n   is taken modulo 2{^32}, i.e. the top 32 bits are lost\n   during the conversion.  "]
+external of_nativeint : nativeint -> int64 = "%int64_of_nativeint"[@@ocaml.doc
+                                                                    " Convert the given native integer (type [nativeint])\n   to a 64-bit integer (type [int64]). "]
+external to_nativeint : int64 -> nativeint = "%int64_to_nativeint"[@@ocaml.doc
+                                                                    " Convert the given 64-bit integer (type [int64]) to a\n   native integer.  On 32-bit platforms, the 64-bit integer\n   is taken modulo 2{^32}.  On 64-bit platforms,\n   the conversion is exact. "]
+external of_string : string -> int64 = "caml_int64_of_string"[@@ocaml.doc
+                                                               " Convert the given string to a 64-bit integer.\n   The string is read in decimal (by default, or if the string\n   begins with [0u]) or in hexadecimal, octal or binary if the\n   string begins with [0x], [0o] or [0b] respectively.\n\n   The [0u] prefix reads the input as an unsigned integer in the range\n   [[0, 2*Int64.max_int+1]].  If the input exceeds {!Int64.max_int}\n   it is converted to the signed integer\n   [Int64.min_int + input - Int64.max_int - 1].\n\n   The [_] (underscore) character can appear anywhere in the string\n   and is ignored.\n   Raise [Failure \"Int64.of_string\"] if the given string is not\n   a valid representation of an integer, or if the integer represented\n   exceeds the range of integers representable in type [int64]. "]
+val of_string_opt : string -> int64 option[@@ocaml.doc
+                                            " Same as [of_string], but return [None] instead of raising.\n    @since 4.05 "]
+val to_string : int64 -> string[@@ocaml.doc
+                                 " Return the string representation of its argument, in decimal. "]
+external bits_of_float :
+  float -> int64 = "caml_int64_bits_of_float"
+    "caml_int64_bits_of_float_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                                " Return the internal representation of the given float according\n   to the IEEE 754 floating-point 'double format' bit layout.\n   Bit 63 of the result represents the sign of the float;\n   bits 62 to 52 represent the (biased) exponent; bits 51 to 0\n   represent the mantissa. "]
+external float_of_bits :
+  int64 -> float = "caml_int64_float_of_bits"
+    "caml_int64_float_of_bits_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                                " Return the floating-point number whose internal representation,\n   according to the IEEE 754 floating-point 'double format' bit layout,\n   is the given [int64]. "]
+type t = int64[@@ocaml.doc " An alias for the type of 64-bit integers. "]
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for 64-bit integers, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Int64] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for int64s.\n    @since 4.03.0 "]
+[@@@ocaml.text "/*"]
+[@@@ocaml.text " {1 Deprecated functions} "]
+external format : string -> int64 -> string = "caml_int64_format"[@@ocaml.doc
+                                                                   " Do not use this deprecated function.  Instead,\n   used {!Printf.sprintf} with a [%L...] format. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " 64-bit integers.\n\n   This module provides operations on the type [int64] of\n   signed 64-bit integers.  Unlike the built-in [int] type,\n   the type [int64] is guaranteed to be exactly 64-bit wide on all\n   platforms.  All arithmetic operations over [int64] are taken\n   modulo 2{^64}\n\n   Performance notice: values of type [int64] occupy more memory\n   space than values of type [int], and arithmetic operations on\n   [int64] are generally slower than those on [int].  Use [int64]\n   only when the application requires exact 64-bit arithmetic.\n\n    Literals for 64-bit integers are suffixed by L:\n    {[\n      let zero: int64 = 0L\n      let one: int64 = 1L\n      let m_one: int64 = -1L\n    ]}\n"]
+
+val zero : int64[@@ocaml.doc " The 64-bit integer 0. "]
+
+
+val one : int64[@@ocaml.doc " The 64-bit integer 1. "]
+
+
+val minus_one : int64[@@ocaml.doc " The 64-bit integer -1. "]
+
+
+external neg : int64 -> int64 = "%int64_neg"[@@ocaml.doc " Unary negation. "]
+
+
+external add : int64 -> int64 -> int64 = "%int64_add"[@@ocaml.doc
+                                                       " Addition. "]
+
+
+external sub : int64 -> int64 -> int64 = "%int64_sub"[@@ocaml.doc
+                                                       " Subtraction. "]
+
+
+external mul : int64 -> int64 -> int64 = "%int64_mul"[@@ocaml.doc
+                                                       " Multiplication. "]
+
+
+external div : int64 -> int64 -> int64 = "%int64_div"[@@ocaml.doc
+                                                       " Integer division.  Raise [Division_by_zero] if the second\n   argument is zero.  This division rounds the real quotient of\n   its arguments towards zero, as specified for {!Stdlib.(/)}. "]
+
+
+external rem : int64 -> int64 -> int64 = "%int64_mod"[@@ocaml.doc
+                                                       " Integer remainder.  If [y] is not zero, the result\n   of [Int64.rem x y] satisfies the following property:\n   [x = Int64.add (Int64.mul (Int64.div x y) y) (Int64.rem x y)].\n   If [y = 0], [Int64.rem x y] raises [Division_by_zero]. "]
+
+
+val succ : int64 -> int64[@@ocaml.doc
+                           " Successor.  [Int64.succ x] is [Int64.add x Int64.one]. "]
+
+
+val pred : int64 -> int64[@@ocaml.doc
+                           " Predecessor.  [Int64.pred x] is [Int64.sub x Int64.one]. "]
+
+
+val abs : int64 -> int64[@@ocaml.doc
+                          " Return the absolute value of its argument. "]
+
+
+val max_int : int64[@@ocaml.doc
+                     " The greatest representable 64-bit integer, 2{^63} - 1. "]
+
+
+val min_int : int64[@@ocaml.doc
+                     " The smallest representable 64-bit integer, -2{^63}. "]
+
+
+external logand : int64 -> int64 -> int64 = "%int64_and"[@@ocaml.doc
+                                                          " Bitwise logical and. "]
+
+
+external logor : int64 -> int64 -> int64 = "%int64_or"[@@ocaml.doc
+                                                        " Bitwise logical or. "]
+
+
+external logxor : int64 -> int64 -> int64 = "%int64_xor"[@@ocaml.doc
+                                                          " Bitwise logical exclusive or. "]
+
+
+val lognot : int64 -> int64[@@ocaml.doc " Bitwise logical negation. "]
+
+
+external shift_left : int64 -> int -> int64 = "%int64_lsl"[@@ocaml.doc
+                                                            " [Int64.shift_left x y] shifts [x] to the left by [y] bits.\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+
+
+external shift_right : int64 -> int -> int64 = "%int64_asr"[@@ocaml.doc
+                                                             " [Int64.shift_right x y] shifts [x] to the right by [y] bits.\n   This is an arithmetic shift: the sign bit of [x] is replicated\n   and inserted in the vacated bits.\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+
+
+external shift_right_logical : int64 -> int -> int64 = "%int64_lsr"[@@ocaml.doc
+                                                                    " [Int64.shift_right_logical x y] shifts [x] to the right by [y] bits.\n   This is a logical shift: zeroes are inserted in the vacated bits\n   regardless of the sign of [x].\n   The result is unspecified if [y < 0] or [y >= 64]. "]
+
+
+external of_int : int -> int64 = "%int64_of_int"[@@ocaml.doc
+                                                  " Convert the given integer (type [int]) to a 64-bit integer\n    (type [int64]). "]
+
+
+external to_int : int64 -> int = "%int64_to_int"[@@ocaml.doc
+                                                  " Convert the given 64-bit integer (type [int64]) to an\n   integer (type [int]).  On 64-bit platforms, the 64-bit integer\n   is taken modulo 2{^63}, i.e. the high-order bit is lost\n   during the conversion.  On 32-bit platforms, the 64-bit integer\n   is taken modulo 2{^31}, i.e. the top 33 bits are lost\n   during the conversion. "]
+
+
+external of_float :
+  float -> int64 = "caml_int64_of_float" "caml_int64_of_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given floating-point number to a 64-bit integer,\n   discarding the fractional part (truncate towards 0).\n   The result of the conversion is undefined if, after truncation,\n   the number is outside the range \\[{!Int64.min_int}, {!Int64.max_int}\\]. "]
+
+
+external to_float :
+  int64 -> float = "caml_int64_to_float" "caml_int64_to_float_unboxed"
+[@@unboxed ][@@noalloc ][@@ocaml.doc
+                          " Convert the given 64-bit integer to a floating-point number. "]
+
+
+external of_int32 : int32 -> int64 = "%int64_of_int32"[@@ocaml.doc
+                                                        " Convert the given 32-bit integer (type [int32])\n   to a 64-bit integer (type [int64]). "]
+
+
+external to_int32 : int64 -> int32 = "%int64_to_int32"[@@ocaml.doc
+                                                        " Convert the given 64-bit integer (type [int64]) to a\n   32-bit integer (type [int32]). The 64-bit integer\n   is taken modulo 2{^32}, i.e. the top 32 bits are lost\n   during the conversion.  "]
+
+
+external of_nativeint : nativeint -> int64 = "%int64_of_nativeint"[@@ocaml.doc
+                                                                    " Convert the given native integer (type [nativeint])\n   to a 64-bit integer (type [int64]). "]
+
+
+external to_nativeint : int64 -> nativeint = "%int64_to_nativeint"[@@ocaml.doc
+                                                                    " Convert the given 64-bit integer (type [int64]) to a\n   native integer.  On 32-bit platforms, the 64-bit integer\n   is taken modulo 2{^32}.  On 64-bit platforms,\n   the conversion is exact. "]
+
+
+external of_string : string -> int64 = "caml_int64_of_string"[@@ocaml.doc
+                                                               " Convert the given string to a 64-bit integer.\n   The string is read in decimal (by default, or if the string\n   begins with [0u]) or in hexadecimal, octal or binary if the\n   string begins with [0x], [0o] or [0b] respectively.\n\n   The [0u] prefix reads the input as an unsigned integer in the range\n   [[0, 2*Int64.max_int+1]].  If the input exceeds {!Int64.max_int}\n   it is converted to the signed integer\n   [Int64.min_int + input - Int64.max_int - 1].\n\n   The [_] (underscore) character can appear anywhere in the string\n   and is ignored.\n   Raise [Failure \"Int64.of_string\"] if the given string is not\n   a valid representation of an integer, or if the integer represented\n   exceeds the range of integers representable in type [int64]. "]
+
+
+val of_string_opt : string -> int64 option[@@ocaml.doc
+                                            " Same as [of_string], but return [None] instead of raising.\n    @since 4.05 "]
+
+
+val to_string : int64 -> string[@@ocaml.doc
+                                 " Return the string representation of its argument, in decimal. "]
+
+
+external bits_of_float :
+  float -> int64 = "caml_int64_bits_of_float"
+  "caml_int64_bits_of_float_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                              " Return the internal representation of the given float according\n   to the IEEE 754 floating-point 'double format' bit layout.\n   Bit 63 of the result represents the sign of the float;\n   bits 62 to 52 represent the (biased) exponent; bits 51 to 0\n   represent the mantissa. "]
+
+
+external float_of_bits :
+  int64 -> float = "caml_int64_float_of_bits"
+  "caml_int64_float_of_bits_unboxed"[@@unboxed ][@@noalloc ][@@ocaml.doc
+                                                              " Return the floating-point number whose internal representation,\n   according to the IEEE 754 floating-point 'double format' bit layout,\n   is the given [int64]. "]
+
+
+type t = int64[@@ocaml.doc " An alias for the type of 64-bit integers. "]
+  
+
+val compare : t -> t -> int[@@ocaml.doc
+                             " The comparison function for 64-bit integers, with the same specification as\n    {!Stdlib.compare}.  Along with the type [t], this function [compare]\n    allows the module [Int64] to be passed as argument to the functors\n    {!Set.Make} and {!Map.Make}. "]
+
+
+val equal : t -> t -> bool[@@ocaml.doc
+                            " The equal function for int64s.\n    @since 4.03.0 "]
+
+
+[@@@ocaml.text "/*"]
+
+[@@@ocaml.text " {1 Deprecated functions} "]
+
+external format : string -> int64 -> string = "caml_int64_format"[@@ocaml.doc
+                                                                   " Do not use this deprecated function.  Instead,\n   used {!Printf.sprintf} with a [%L...] format. "]
+
+File "int64.mli", line 198, characters 9-14:
+Error: Symbol int64 not found

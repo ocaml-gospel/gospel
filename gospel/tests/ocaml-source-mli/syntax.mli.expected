@@ -1,0 +1,175 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type location =
+  {
+  loc_file: string ;
+  start_pos: int ;
+  end_pos: int ;
+  start_line: int ;
+  start_col: int }
+type regular_expression =
+  | Epsilon 
+  | Characters of Cset.t 
+  | Eof 
+  | Sequence of regular_expression * regular_expression 
+  | Alternative of regular_expression * regular_expression 
+  | Repetition of regular_expression 
+  | Bind of regular_expression * (string * location) 
+type ('arg, 'action) entry =
+  {
+  name: string ;
+  shortest: bool ;
+  args: 'arg ;
+  clauses: (regular_expression * 'action) list }
+type lexer_definition =
+  {
+  header: location ;
+  entrypoints: (string list, location) entry list ;
+  trailer: location ;
+  refill_handler: location option }
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type location =
+{
+loc_file: string ;
+start_pos: int ;
+end_pos: int ;
+start_line: int ;
+start_col: int }
+  
+
+type regular_expression =
+| Epsilon 
+| Characters of Cset.t 
+| Eof 
+| Sequence of regular_expression * regular_expression 
+| Alternative of regular_expression * regular_expression 
+| Repetition of regular_expression 
+| Bind of regular_expression * (string * location) 
+  
+
+type ('arg, 'action) entry =
+{
+name: string ;
+shortest: bool ;
+args: 'arg ;
+clauses: (regular_expression * 'action) list }
+  
+
+type lexer_definition =
+{
+header: location ;
+entrypoints: (string list, location) entry list ;
+trailer: location ;
+refill_handler: location option }
+  
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module syntax.mli
+
+  Namespace: syntax.mli
+    Type symbols
+      ('arg,'action) entry
+       lexer_definition
+       location
+       regular_expression
+      
+    Logic Symbols
+      function Alternative (_:regular_expression * regular_expression) : 
+      regular_expression
+      function Bind (_:regular_expression * string * location) : regular_expression
+      function Characters (_:t) : regular_expression
+      function Eof  : regular_expression
+      function Epsilon  : regular_expression
+      function Repetition (_:regular_expression) : regular_expression
+      function Sequence (_:regular_expression * regular_expression) : 
+      regular_expression
+      function args (_:('arg,'action) entry) : 'arg
+      function clauses (_:('arg,'action) entry) : regular_expression * 'action 
+      list
+      function constr#entry (_:string) (_:bool) (_:'arg) (_:regular_expression * 'action 
+      list) : ('arg,'action) entry
+      function constr#lexer_definition (_:location) (_:(string list,location) 
+      entry list) (_:location) (_:location option) : lexer_definition
+      function constr#location (_:string) (_:int) (_:int) (_:int) (_:
+      int) : location
+      function end_pos (_:location) : int
+      function entrypoints (_:lexer_definition) : (string list,location) 
+      entry list
+      function header (_:lexer_definition) : location
+      function loc_file (_:location) : string
+      function name (_:('arg,'action) entry) : string
+      function refill_handler (_:lexer_definition) : location option
+      function shortest (_:('arg,'action) entry) : bool
+      function start_col (_:location) : int
+      function start_line (_:location) : int
+      function start_pos (_:location) : int
+      function trailer (_:lexer_definition) : location
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type location = {loc_file:string; start_pos:int; end_pos:int; start_line:
+                 int; start_col:int}
+                 function constr#location (_:string) (_:int) (_:int) (_:int) (_:int) : location
+                   function loc_file (_:location) : string
+                   function start_pos (_:location) : int
+                   function end_pos (_:location) : int
+                   function start_line (_:location) : int
+                   function start_col (_:location) : int
+    
+    
+    (*@ use Cset *)
+    
+    type regular_expression = Epsilon of 
+                              function Epsilon  : regular_expression
+                           | Characters of t
+                             function Characters (_:t) : regular_expression
+                           | Eof of 
+                             function Eof  : regular_expression
+                           | Sequence of regular_expression * regular_expression
+                             function Sequence (_:regular_expression * regular_expression) : regular_expression
+                           | Alternative of regular_expression * regular_expression
+                             function Alternative (_:regular_expression * regular_expression) : regular_expression
+                           | Repetition of regular_expression
+                             function Repetition (_:regular_expression) : regular_expression
+                           | Bind of regular_expression * string * location
+                             function Bind (_:regular_expression * string * location) : regular_expression
+    
+    
+    type ('arg,'action) entry = {name:string; shortest:bool; args:'arg; clauses:
+                             regular_expression * 'action list}
+                             function constr#entry (_:string) (_:bool) (_:'arg) (_:regular_expression * 'action list) : ('arg,'action) entry
+                               function name (_:('arg,'action) entry) : string
+                               function shortest (_:('arg,'action) entry) : bool
+                               function args (_:('arg,'action) entry) : 'arg
+                               function clauses (_:('arg,'action) entry) : regular_expression * 'action list
+    
+    
+    type lexer_definition = {header:location; entrypoints:(string list,
+                         location) entry list; trailer:location; refill_handler:
+                         location option}
+                         function constr#lexer_definition (_:location) (_:(string list,location) entry list) (_:location) (_:location option) : lexer_definition
+                           function header (_:lexer_definition) : location
+                           function entrypoints (_:lexer_definition) : (string list,location) entry list
+                           function trailer (_:lexer_definition) : location
+                           function refill_handler (_:lexer_definition) : location option
+    
+
+
+*** OK ***
+

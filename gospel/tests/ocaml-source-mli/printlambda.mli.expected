@@ -1,0 +1,41 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Lambda
+open Format
+val structured_constant : formatter -> structured_constant -> unit
+val lambda : formatter -> lambda -> unit
+val program : formatter -> program -> unit
+val primitive : formatter -> primitive -> unit
+val name_of_primitive : primitive -> string
+val value_kind : value_kind -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Lambda
+
+open Format
+
+val structured_constant : formatter -> structured_constant -> unit
+
+
+val lambda : formatter -> lambda -> unit
+
+
+val program : formatter -> program -> unit
+
+
+val primitive : formatter -> primitive -> unit
+
+
+val name_of_primitive : primitive -> string
+
+
+val value_kind : value_kind -> string
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

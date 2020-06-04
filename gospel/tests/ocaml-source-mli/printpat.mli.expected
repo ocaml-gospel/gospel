@@ -1,0 +1,68 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val pretty_const : Asttypes.constant -> string
+val top_pretty : Format.formatter -> Typedtree.pattern -> unit
+val pretty_pat : Typedtree.pattern -> unit
+val pretty_line : Format.formatter -> Typedtree.pattern list -> unit
+val pretty_matrix : Format.formatter -> Typedtree.pattern list list -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val pretty_const : Asttypes.constant -> string
+
+
+val top_pretty : Format.formatter -> Typedtree.pattern -> unit
+
+
+val pretty_pat : Typedtree.pattern -> unit
+
+
+val pretty_line : Format.formatter -> Typedtree.pattern list -> unit
+
+
+val pretty_matrix : Format.formatter -> Typedtree.pattern list list -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module printpat.mli
+
+  Namespace: printpat.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val pretty_const : Asttypes.constant -> string
+    
+    
+    val top_pretty : Format.formatter -> Typedtree.pattern -> unit
+    
+    
+    val pretty_pat : Typedtree.pattern -> unit
+    
+    
+    val pretty_line : Format.formatter -> Typedtree.pattern list -> unit
+    
+    
+    val pretty_matrix :
+    Format.formatter -> Typedtree.pattern list list -> unit
+    
+
+
+*** OK ***
+

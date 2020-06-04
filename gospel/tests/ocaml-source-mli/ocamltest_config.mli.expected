@@ -1,0 +1,303 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val arch : string[@@ocaml.doc
+                   " Architecture for the native compiler, \"none\" if it is disabled "]
+val afl_instrument : bool[@@ocaml.doc
+                           " Whether AFL support has been enabled in the compiler "]
+val asm : string[@@ocaml.doc " Path to the assembler"]
+val cc : string[@@ocaml.doc " Path to the C compiler"]
+val cflags : string[@@ocaml.doc " Flags to pass to the C compiler "]
+val ccomptype : string[@@ocaml.doc " Type of C compiler (msvc, cc, etc.) "]
+val shared_libraries : bool[@@ocaml.doc
+                             " [true] if shared libraries are supported, [false] otherwise "]
+val libunix : bool[@@ocaml.doc " [true] for unix, [false] for win32unix "]
+val objext : string[@@ocaml.doc " Extension of object files "]
+val system : string[@@ocaml.doc " The content of the SYSTEM Make variable "]
+val c_preprocessor : string[@@ocaml.doc
+                             " Command to use to invoke the C preprocessor "]
+val ocamlc_default_flags : string[@@ocaml.doc
+                                   " Flags passed by default to ocamlc.byte and ocamlc.opt "]
+val ocamlopt_default_flags : string[@@ocaml.doc
+                                     " Flags passed by default to ocamlopt.byte and ocamlopt.opt "]
+val ocamlsrcdir : string[@@ocaml.doc
+                          " The absolute path of the directory containing the sources of OCaml "]
+val flambda : bool[@@ocaml.doc
+                    " Whether flambda has been enabled at configure time "]
+val spacetime : bool[@@ocaml.doc
+                      " Whether Spacetime profiling has been enabled at configure time "]
+val safe_string : bool[@@ocaml.doc
+                        " Whether the compiler was configured with -safe-string "]
+val flat_float_array : bool
+val ocamldoc : bool[@@ocaml.doc
+                     " Whether ocamldoc has been enabled at configure time "]
+val ocamldebug : bool[@@ocaml.doc
+                       " Whether ocamldebug has been enabled at configure time "]
+val native_dynlink : bool[@@ocaml.doc
+                           " Whether support for native dynlink is available or not "]
+val shared_library_cflags : string[@@ocaml.doc
+                                    " Flags to use when compiling a C object for a shared library "]
+val sharedobjext : string[@@ocaml.doc " Extension of shared object files "]
+val csc : string[@@ocaml.doc
+                  " Path of the CSharp compiler, empty if not available "]
+val csc_flags : string[@@ocaml.doc " Flags for the CSharp compiler "]
+val mkdll : string
+val mkexe : string
+val bytecc_libs : string
+val nativecc_libs : string
+val windows_unicode : bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val arch : string[@@ocaml.doc
+                   " Architecture for the native compiler, \"none\" if it is disabled "]
+
+
+val afl_instrument : bool[@@ocaml.doc
+                           " Whether AFL support has been enabled in the compiler "]
+
+
+val asm : string[@@ocaml.doc " Path to the assembler"]
+
+
+val cc : string[@@ocaml.doc " Path to the C compiler"]
+
+
+val cflags : string[@@ocaml.doc " Flags to pass to the C compiler "]
+
+
+val ccomptype : string[@@ocaml.doc " Type of C compiler (msvc, cc, etc.) "]
+
+
+val shared_libraries : bool[@@ocaml.doc
+                             " [true] if shared libraries are supported, [false] otherwise "]
+
+
+val libunix : bool[@@ocaml.doc " [true] for unix, [false] for win32unix "]
+
+
+val objext : string[@@ocaml.doc " Extension of object files "]
+
+
+val system : string[@@ocaml.doc " The content of the SYSTEM Make variable "]
+
+
+val c_preprocessor : string[@@ocaml.doc
+                             " Command to use to invoke the C preprocessor "]
+
+
+val ocamlc_default_flags : string[@@ocaml.doc
+                                   " Flags passed by default to ocamlc.byte and ocamlc.opt "]
+
+
+val ocamlopt_default_flags : string[@@ocaml.doc
+                                     " Flags passed by default to ocamlopt.byte and ocamlopt.opt "]
+
+
+val ocamlsrcdir : string[@@ocaml.doc
+                          " The absolute path of the directory containing the sources of OCaml "]
+
+
+val flambda : bool[@@ocaml.doc
+                    " Whether flambda has been enabled at configure time "]
+
+
+val spacetime : bool[@@ocaml.doc
+                      " Whether Spacetime profiling has been enabled at configure time "]
+
+
+val safe_string : bool[@@ocaml.doc
+                        " Whether the compiler was configured with -safe-string "]
+
+
+val flat_float_array : bool
+
+
+val ocamldoc : bool[@@ocaml.doc
+                     " Whether ocamldoc has been enabled at configure time "]
+
+
+val ocamldebug : bool[@@ocaml.doc
+                       " Whether ocamldebug has been enabled at configure time "]
+
+
+val native_dynlink : bool[@@ocaml.doc
+                           " Whether support for native dynlink is available or not "]
+
+
+val shared_library_cflags : string[@@ocaml.doc
+                                    " Flags to use when compiling a C object for a shared library "]
+
+
+val sharedobjext : string[@@ocaml.doc " Extension of shared object files "]
+
+
+val csc : string[@@ocaml.doc
+                  " Path of the CSharp compiler, empty if not available "]
+
+
+val csc_flags : string[@@ocaml.doc " Flags for the CSharp compiler "]
+
+
+val mkdll : string
+
+
+val mkexe : string
+
+
+val bytecc_libs : string
+
+
+val nativecc_libs : string
+
+
+val windows_unicode : bool
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocamltest_config.mli
+
+  Namespace: ocamltest_config.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val arch :
+    string[@@ocaml.doc
+            " Architecture for the native compiler, \"none\" if it is disabled "]
+    
+    
+    val afl_instrument :
+    bool[@@ocaml.doc
+          " Whether AFL support has been enabled in the compiler "]
+    
+    
+    val asm : string[@@ocaml.doc " Path to the assembler"]
+    
+    
+    val cc : string[@@ocaml.doc " Path to the C compiler"]
+    
+    
+    val cflags : string[@@ocaml.doc " Flags to pass to the C compiler "]
+    
+    
+    val ccomptype :
+    string[@@ocaml.doc " Type of C compiler (msvc, cc, etc.) "]
+    
+    
+    val shared_libraries :
+    bool[@@ocaml.doc
+          " [true] if shared libraries are supported, [false] otherwise "]
+    
+    
+    val libunix :
+    bool[@@ocaml.doc " [true] for unix, [false] for win32unix "]
+    
+    
+    val objext : string[@@ocaml.doc " Extension of object files "]
+    
+    
+    val system :
+    string[@@ocaml.doc " The content of the SYSTEM Make variable "]
+    
+    
+    val c_preprocessor :
+    string[@@ocaml.doc " Command to use to invoke the C preprocessor "]
+    
+    
+    val ocamlc_default_flags :
+    string[@@ocaml.doc
+            " Flags passed by default to ocamlc.byte and ocamlc.opt "]
+    
+    
+    val ocamlopt_default_flags :
+    string[@@ocaml.doc
+            " Flags passed by default to ocamlopt.byte and ocamlopt.opt "]
+    
+    
+    val ocamlsrcdir :
+    string[@@ocaml.doc
+            " The absolute path of the directory containing the sources of OCaml "]
+    
+    
+    val flambda :
+    bool[@@ocaml.doc " Whether flambda has been enabled at configure time "]
+    
+    
+    val spacetime :
+    bool[@@ocaml.doc
+          " Whether Spacetime profiling has been enabled at configure time "]
+    
+    
+    val safe_string :
+    bool[@@ocaml.doc
+          " Whether the compiler was configured with -safe-string "]
+    
+    
+    val flat_float_array : bool
+    
+    
+    val ocamldoc :
+    bool[@@ocaml.doc " Whether ocamldoc has been enabled at configure time "]
+    
+    
+    val ocamldebug :
+    bool[@@ocaml.doc
+          " Whether ocamldebug has been enabled at configure time "]
+    
+    
+    val native_dynlink :
+    bool[@@ocaml.doc
+          " Whether support for native dynlink is available or not "]
+    
+    
+    val shared_library_cflags :
+    string[@@ocaml.doc
+            " Flags to use when compiling a C object for a shared library "]
+    
+    
+    val sharedobjext :
+    string[@@ocaml.doc " Extension of shared object files "]
+    
+    
+    val csc :
+    string[@@ocaml.doc
+            " Path of the CSharp compiler, empty if not available "]
+    
+    
+    val csc_flags : string[@@ocaml.doc " Flags for the CSharp compiler "]
+    
+    
+    val mkdll : string
+    
+    
+    val mkexe : string
+    
+    
+    val bytecc_libs : string
+    
+    
+    val nativecc_libs : string
+    
+    
+    val windows_unicode : bool
+    
+
+
+*** OK ***
+

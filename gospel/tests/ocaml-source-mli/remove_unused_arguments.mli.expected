@@ -1,0 +1,66 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+val separate_unused_arguments_in_closures :
+  Flambda.program -> backend:(module Backend_intf.S) -> Flambda.program
+[@@ocaml.doc
+  " Introduce a stub function to avoid depending on unused arguments.\n\n    For instance, it turns\n      [let rec fact n unused =\n         if n = 0 then 1\n         else n * fact (n-1) unused]\n    into\n      [let rec fact' n =\n         if n = 0 then 1\n         else n * fact' (n-1)\n       and fact n unused = fact' n]\n"]
+val separate_unused_arguments_in_set_of_closures :
+  Flambda.set_of_closures ->
+    backend:(module Backend_intf.S) -> Flambda.set_of_closures option
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+val separate_unused_arguments_in_closures :
+  Flambda.program -> backend:(module Backend_intf.S) -> Flambda.program
+[@@ocaml.doc
+  " Introduce a stub function to avoid depending on unused arguments.\n\n    For instance, it turns\n      [let rec fact n unused =\n         if n = 0 then 1\n         else n * fact (n-1) unused]\n    into\n      [let rec fact' n =\n         if n = 0 then 1\n         else n * fact' (n-1)\n       and fact n unused = fact' n]\n"]
+
+
+val separate_unused_arguments_in_set_of_closures :
+  Flambda.set_of_closures ->
+    backend:(module Backend_intf.S) -> Flambda.set_of_closures option
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module remove_unused_arguments.mli
+
+  Namespace: remove_unused_arguments.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    val separate_unused_arguments_in_closures :
+    Flambda.program -> backend:(module Backend_intf.S) -> Flambda.program
+    [@@ocaml.doc
+      " Introduce a stub function to avoid depending on unused arguments.\n\n    For instance, it turns\n      [let rec fact n unused =\n         if n = 0 then 1\n         else n * fact (n-1) unused]\n    into\n      [let rec fact' n =\n         if n = 0 then 1\n         else n * fact' (n-1)\n       and fact n unused = fact' n]\n"]
+    
+    
+    val separate_unused_arguments_in_set_of_closures :
+    Flambda.set_of_closures ->
+      backend:(module Backend_intf.S) -> Flambda.set_of_closures option
+    
+
+
+*** OK ***
+

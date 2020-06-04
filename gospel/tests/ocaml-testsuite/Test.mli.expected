@@ -1,0 +1,128 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Ten comments for tests "]
+[@@@ocaml.text " {6 A first comments for title } "]
+[@@@ocaml.text " {7 A subsection for ocamldoc *} "]
+[@@@ocaml.text " {7 Bis } "]
+[@@@ocaml.text " {7 Ter } "]
+[@@@ocaml.text " {6 A new section } "]
+[@@@ocaml.text " {7 And its subsection } "]
+[@@@ocaml.text " {7 Encore } "]
+[@@@ocaml.text " Encore! Encore! "]
+[@@@ocaml.text "/*"]
+module Silence : sig [@@@ocaml.text " At last "] end
+[@@@ocaml.text "/*"]
+[@@@ocaml.text " {7 With strange aeons } "]
+module End : sig  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Ten comments for tests "]
+
+[@@@ocaml.text " {6 A first comments for title } "]
+
+[@@@ocaml.text " {7 A subsection for ocamldoc *} "]
+
+[@@@ocaml.text " {7 Bis } "]
+
+[@@@ocaml.text " {7 Ter } "]
+
+[@@@ocaml.text " {6 A new section } "]
+
+[@@@ocaml.text " {7 And its subsection } "]
+
+[@@@ocaml.text " {7 Encore } "]
+
+[@@@ocaml.text " Encore! Encore! "]
+
+[@@@ocaml.text "/*"]
+
+module Silence : sig [@@@ocaml.text " At last "] end
+
+[@@@ocaml.text "/*"]
+
+[@@@ocaml.text " {7 With strange aeons } "]
+
+module End : sig  end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Test.mli
+
+  Namespace: Test.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: End
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Silence
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Ten comments for tests "]
+    
+    [@@@ocaml.text " {6 A first comments for title } "]
+    
+    [@@@ocaml.text " {7 A subsection for ocamldoc *} "]
+    
+    [@@@ocaml.text " {7 Bis } "]
+    
+    [@@@ocaml.text " {7 Ter } "]
+    
+    [@@@ocaml.text " {6 A new section } "]
+    
+    [@@@ocaml.text " {7 And its subsection } "]
+    
+    [@@@ocaml.text " {7 Encore } "]
+    
+    [@@@ocaml.text " Encore! Encore! "]
+    
+    [@@@ocaml.text "/*"]
+    
+    module Silence : sig
+                       [@@@ocaml.text " At last "]
+                     end
+    
+    [@@@ocaml.text "/*"]
+    
+    [@@@ocaml.text " {7 With strange aeons } "]
+    
+    module End : sig
+                   
+                 end
+
+
+*** OK ***
+

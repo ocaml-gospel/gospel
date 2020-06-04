@@ -1,0 +1,71 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " An identifier, unique across the whole program, that identifies a set\n    of closures (viz. [Set_of_closures]). "]
+include Identifiable.S
+val create : ?name:string -> Compilation_unit.t -> t
+val name : t -> string option
+val get_compilation_unit : t -> Compilation_unit.t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " An identifier, unique across the whole program, that identifies a set\n    of closures (viz. [Set_of_closures]). "]
+
+include Identifiable.S
+
+val create : ?name:string -> Compilation_unit.t -> t
+
+
+val name : t -> string option
+
+
+val get_compilation_unit : t -> Compilation_unit.t
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module set_of_closures_id.mli
+
+  Namespace: set_of_closures_id.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " An identifier, unique across the whole program, that identifies a set\n    of closures (viz. [Set_of_closures]). "]
+    
+    include Identifiable.S
+    
+    val create : ?name:string -> Compilation_unit.t -> t
+    
+    
+    val name : t -> string option
+    
+    
+    val get_compilation_unit : t -> Compilation_unit.t
+    
+
+
+*** OK ***
+

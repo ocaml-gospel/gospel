@@ -1,0 +1,45 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open A1
+type t2 = t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open A1
+
+type t2 = t
+  
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module a2.mli
+
+  Namespace: a2.mli
+    Type symbols
+       t2 [=t]
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    open A1
+    
+    type t2 = t
+    
+
+
+*** OK ***
+

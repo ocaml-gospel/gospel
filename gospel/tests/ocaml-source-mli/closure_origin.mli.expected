@@ -1,0 +1,51 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+include Identifiable.S
+val create : Closure_id.t -> t
+val get_compilation_unit : t -> Compilation_unit.t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+include Identifiable.S
+
+val create : Closure_id.t -> t
+
+
+val get_compilation_unit : t -> Compilation_unit.t
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module closure_origin.mli
+
+  Namespace: closure_origin.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    include Identifiable.S
+    
+    val create : Closure_id.t -> t
+    
+    
+    val get_compilation_unit : t -> Compilation_unit.t
+    
+
+
+*** OK ***
+

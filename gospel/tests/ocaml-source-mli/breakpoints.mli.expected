@@ -1,0 +1,62 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Instruct
+val debug_breakpoints : bool ref
+val breakpoints_count : unit -> int
+val breakpoints : (int * debug_event) list ref
+val breakpoint_at_pc : int -> bool
+val breakpoints_at_pc : int -> int list
+val update_breakpoints : unit -> unit
+val execute_without_breakpoints : (unit -> unit) -> unit
+val new_breakpoint : debug_event -> unit
+val remove_breakpoint : int -> unit
+val remove_all_breakpoints : unit -> unit
+val temporary_breakpoint_position : int option ref
+val exec_with_temporary_breakpoint : int -> (unit -> unit) -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Instruct
+
+val debug_breakpoints : bool ref
+
+
+val breakpoints_count : unit -> int
+
+
+val breakpoints : (int * debug_event) list ref
+
+
+val breakpoint_at_pc : int -> bool
+
+
+val breakpoints_at_pc : int -> int list
+
+
+val update_breakpoints : unit -> unit
+
+
+val execute_without_breakpoints : (unit -> unit) -> unit
+
+
+val new_breakpoint : debug_event -> unit
+
+
+val remove_breakpoint : int -> unit
+
+
+val remove_all_breakpoints : unit -> unit
+
+
+val temporary_breakpoint_position : int option ref
+
+
+val exec_with_temporary_breakpoint : int -> (unit -> unit) -> unit
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

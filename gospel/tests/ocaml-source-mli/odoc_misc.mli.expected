@@ -1,0 +1,348 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Miscellaneous functions "]
+val no_blanks : string -> string[@@ocaml.doc
+                                  " [no_blanks s] returns the given string without any blank\n   characters, i.e. '\\n' '\\r' ' ' '\\t'.\n"]
+val input_file_as_string : string -> string[@@ocaml.doc
+                                             " This function returns a file in the form of one string."]
+val split_with_blanks : string -> string list[@@ocaml.doc
+                                               " [split_with_blanks s] splits the given string [s] according to blanks. "]
+val string_of_longident : Longident.t -> string[@@ocaml.doc
+                                                 " This function creates a string from a Longident.t ."]
+val get_fields : Types.type_expr -> (string * Types.type_expr) list[@@ocaml.doc
+                                                                    " This function returns the list of (label, type_expr) describing\n   the methods of a type_expr in a Tobject."]
+val string_of_text : Odoc_types.text -> string[@@ocaml.doc
+                                                " get a string from a text "]
+val string_of_author_list : string list -> string[@@ocaml.doc
+                                                   " @return a string for an authors list. "]
+val string_of_version_opt : string option -> string[@@ocaml.doc
+                                                     " @return a string for the given optional version information."]
+val string_of_since_opt : string option -> string[@@ocaml.doc
+                                                   " @return a string for the given optional since information."]
+val string_of_raised_exceptions : (string * Odoc_types.text) list -> string
+[@@ocaml.doc " @return a string for the given list of raised exceptions."]
+val string_of_see : (Odoc_types.see_ref * Odoc_types.text) -> string[@@ocaml.doc
+                                                                    " @return a string for the given \"see also\" reference."]
+val string_of_sees : (Odoc_types.see_ref * Odoc_types.text) list -> string
+[@@ocaml.doc
+  " @return a string for the given list of \"see also\" references."]
+val string_of_return_opt : Odoc_types.text option -> string[@@ocaml.doc
+                                                             " @return a string for the given optional return information."]
+val string_of_info : Odoc_types.info -> string[@@ocaml.doc
+                                                " get a string from a Odoc_info.info structure "]
+val apply_opt : ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                                      " Apply a function to an optional value. "]
+val string_of_date : ?absolute:bool -> ?hour:bool -> float -> string[@@ocaml.doc
+                                                                    " Return a string representing a date given as a number of seconds\n   since 1970. The hour is optionally displayed. "]
+val current_date : string
+val first_sentence_of_text : Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                                                 " Return the first sentence (until the first dot) of a text.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+val first_sentence_and_rest_of_text :
+  Odoc_types.text -> (Odoc_types.text * Odoc_types.text)[@@ocaml.doc
+                                                          " Return the first sentence (until the first dot) of a text,\n   and the remaining text after.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+val text_no_title_no_list : Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                                                " Return the given [text] without any title or list. "]
+val text_concat : Odoc_types.text -> Odoc_types.text list -> Odoc_types.text
+[@@ocaml.doc
+  " [concat sep l] concats the given list of text [l], each separated with\n   the text [sep]. "]
+val get_titles_in_text :
+  Odoc_types.text -> (int * string option * Odoc_types.text) list[@@ocaml.doc
+                                                                   " Return the list of titles in a [text].\n   A title is a title level, an optional label and a text."]
+val create_index_lists : 'a list -> ('a -> string) -> 'a list list[@@ocaml.doc
+                                                                    " Take a sorted list of elements, a function to get the name\n   of an element and return the list of list of elements,\n   where each list group elements beginning by the same letter.\n   Since the original list is sorted, elements whose name does not\n   begin with a letter should be in the first returned list."]
+val remove_ending_newline : string -> string[@@ocaml.doc
+                                              " [remove_ending_newline s] returns [s] without the optional ending newline. "]
+val search_string_backward : pat:string -> s:string -> int[@@ocaml.doc
+                                                            " [search_string_backward pat s] searches backward string [pat] in string [s].\n   Return position in string [s] where [pat] appears, orelse raise [Not_found]. "]
+val remove_option : Types.type_expr -> Types.type_expr[@@ocaml.doc
+                                                        " Take a type and remove the option top constructor. This is\n   useful when printing labels, we then remove the top option constructor\n   for optional labels."]
+val is_optional : Asttypes.arg_label -> bool[@@ocaml.doc
+                                              " Return [true] if the given label is optional."]
+val label_name : Asttypes.arg_label -> string[@@ocaml.doc
+                                               " Return the label name for the given label,\n   i.e. removes the beginning '?' if present."]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Miscellaneous functions "]
+
+val no_blanks : string -> string[@@ocaml.doc
+                                  " [no_blanks s] returns the given string without any blank\n   characters, i.e. '\\n' '\\r' ' ' '\\t'.\n"]
+
+
+val input_file_as_string : string -> string[@@ocaml.doc
+                                             " This function returns a file in the form of one string."]
+
+
+val split_with_blanks : string -> string list[@@ocaml.doc
+                                               " [split_with_blanks s] splits the given string [s] according to blanks. "]
+
+
+val string_of_longident : Longident.t -> string[@@ocaml.doc
+                                                 " This function creates a string from a Longident.t ."]
+
+
+val get_fields : Types.type_expr -> (string * Types.type_expr) list[@@ocaml.doc
+                                                                    " This function returns the list of (label, type_expr) describing\n   the methods of a type_expr in a Tobject."]
+
+
+val string_of_text : Odoc_types.text -> string[@@ocaml.doc
+                                                " get a string from a text "]
+
+
+val string_of_author_list : string list -> string[@@ocaml.doc
+                                                   " @return a string for an authors list. "]
+
+
+val string_of_version_opt : string option -> string[@@ocaml.doc
+                                                     " @return a string for the given optional version information."]
+
+
+val string_of_since_opt : string option -> string[@@ocaml.doc
+                                                   " @return a string for the given optional since information."]
+
+
+val string_of_raised_exceptions : (string * Odoc_types.text) list -> string
+[@@ocaml.doc " @return a string for the given list of raised exceptions."]
+
+
+val string_of_see : (Odoc_types.see_ref * Odoc_types.text) -> string[@@ocaml.doc
+                                                                    " @return a string for the given \"see also\" reference."]
+
+
+val string_of_sees : (Odoc_types.see_ref * Odoc_types.text) list -> string
+[@@ocaml.doc
+  " @return a string for the given list of \"see also\" references."]
+
+
+val string_of_return_opt : Odoc_types.text option -> string[@@ocaml.doc
+                                                             " @return a string for the given optional return information."]
+
+
+val string_of_info : Odoc_types.info -> string[@@ocaml.doc
+                                                " get a string from a Odoc_info.info structure "]
+
+
+val apply_opt : ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                                      " Apply a function to an optional value. "]
+
+
+val string_of_date : ?absolute:bool -> ?hour:bool -> float -> string[@@ocaml.doc
+                                                                    " Return a string representing a date given as a number of seconds\n   since 1970. The hour is optionally displayed. "]
+
+
+val current_date : string
+
+
+val first_sentence_of_text : Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                                                 " Return the first sentence (until the first dot) of a text.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+
+
+val first_sentence_and_rest_of_text :
+  Odoc_types.text -> (Odoc_types.text * Odoc_types.text)[@@ocaml.doc
+                                                          " Return the first sentence (until the first dot) of a text,\n   and the remaining text after.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+
+
+val text_no_title_no_list : Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                                                " Return the given [text] without any title or list. "]
+
+
+val text_concat : Odoc_types.text -> Odoc_types.text list -> Odoc_types.text
+[@@ocaml.doc
+  " [concat sep l] concats the given list of text [l], each separated with\n   the text [sep]. "]
+
+
+val get_titles_in_text :
+  Odoc_types.text -> (int * string option * Odoc_types.text) list[@@ocaml.doc
+                                                                   " Return the list of titles in a [text].\n   A title is a title level, an optional label and a text."]
+
+
+val create_index_lists : 'a list -> ('a -> string) -> 'a list list[@@ocaml.doc
+                                                                    " Take a sorted list of elements, a function to get the name\n   of an element and return the list of list of elements,\n   where each list group elements beginning by the same letter.\n   Since the original list is sorted, elements whose name does not\n   begin with a letter should be in the first returned list."]
+
+
+val remove_ending_newline : string -> string[@@ocaml.doc
+                                              " [remove_ending_newline s] returns [s] without the optional ending newline. "]
+
+
+val search_string_backward : pat:string -> s:string -> int[@@ocaml.doc
+                                                            " [search_string_backward pat s] searches backward string [pat] in string [s].\n   Return position in string [s] where [pat] appears, orelse raise [Not_found]. "]
+
+
+val remove_option : Types.type_expr -> Types.type_expr[@@ocaml.doc
+                                                        " Take a type and remove the option top constructor. This is\n   useful when printing labels, we then remove the top option constructor\n   for optional labels."]
+
+
+val is_optional : Asttypes.arg_label -> bool[@@ocaml.doc
+                                              " Return [true] if the given label is optional."]
+
+
+val label_name : Asttypes.arg_label -> string[@@ocaml.doc
+                                               " Return the label name for the given label,\n   i.e. removes the beginning '?' if present."]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_misc.mli
+
+  Namespace: odoc_misc.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Miscellaneous functions "]
+    
+    val no_blanks :
+    string -> string[@@ocaml.doc
+                      " [no_blanks s] returns the given string without any blank\n   characters, i.e. '\\n' '\\r' ' ' '\\t'.\n"]
+    
+    
+    val input_file_as_string :
+    string -> string[@@ocaml.doc
+                      " This function returns a file in the form of one string."]
+    
+    
+    val split_with_blanks :
+    string -> string list[@@ocaml.doc
+                           " [split_with_blanks s] splits the given string [s] according to blanks. "]
+    
+    
+    val string_of_longident :
+    Longident.t -> string[@@ocaml.doc
+                           " This function creates a string from a Longident.t ."]
+    
+    
+    val get_fields :
+    Types.type_expr -> (string * Types.type_expr) list[@@ocaml.doc
+                                                        " This function returns the list of (label, type_expr) describing\n   the methods of a type_expr in a Tobject."]
+    
+    
+    val string_of_text :
+    Odoc_types.text -> string[@@ocaml.doc " get a string from a text "]
+    
+    
+    val string_of_author_list :
+    string list -> string[@@ocaml.doc
+                           " @return a string for an authors list. "]
+    
+    
+    val string_of_version_opt :
+    string option -> string[@@ocaml.doc
+                             " @return a string for the given optional version information."]
+    
+    
+    val string_of_since_opt :
+    string option -> string[@@ocaml.doc
+                             " @return a string for the given optional since information."]
+    
+    
+    val string_of_raised_exceptions :
+    (string * Odoc_types.text) list -> string[@@ocaml.doc
+                                               " @return a string for the given list of raised exceptions."]
+    
+    
+    val string_of_see :
+    (Odoc_types.see_ref * Odoc_types.text) -> string[@@ocaml.doc
+                                                      " @return a string for the given \"see also\" reference."]
+    
+    
+    val string_of_sees :
+    (Odoc_types.see_ref * Odoc_types.text) list -> string[@@ocaml.doc
+                                                           " @return a string for the given list of \"see also\" references."]
+    
+    
+    val string_of_return_opt :
+    Odoc_types.text option -> string[@@ocaml.doc
+                                      " @return a string for the given optional return information."]
+    
+    
+    val string_of_info :
+    Odoc_types.info -> string[@@ocaml.doc
+                               " get a string from a Odoc_info.info structure "]
+    
+    
+    val apply_opt :
+    ('a -> 'b) -> 'a option -> 'b option[@@ocaml.doc
+                                          " Apply a function to an optional value. "]
+    
+    
+    val string_of_date :
+    ?absolute:bool -> ?hour:bool -> float -> string[@@ocaml.doc
+                                                     " Return a string representing a date given as a number of seconds\n   since 1970. The hour is optionally displayed. "]
+    
+    
+    val current_date : string
+    
+    
+    val first_sentence_of_text :
+    Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                        " Return the first sentence (until the first dot) of a text.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+    
+    
+    val first_sentence_and_rest_of_text :
+    Odoc_types.text -> (Odoc_types.text * Odoc_types.text)[@@ocaml.doc
+                                                            " Return the first sentence (until the first dot) of a text,\n   and the remaining text after.\n   Don't stop in the middle of [Code], [Verbatim], [List], [Lnum],\n   [Latex], [Link], or [Ref]. "]
+    
+    
+    val text_no_title_no_list :
+    Odoc_types.text -> Odoc_types.text[@@ocaml.doc
+                                        " Return the given [text] without any title or list. "]
+    
+    
+    val text_concat :
+    Odoc_types.text -> Odoc_types.text list -> Odoc_types.text[@@ocaml.doc
+                                                                " [concat sep l] concats the given list of text [l], each separated with\n   the text [sep]. "]
+    
+    
+    val get_titles_in_text :
+    Odoc_types.text -> (int * string option * Odoc_types.text) list[@@ocaml.doc
+                                                                    " Return the list of titles in a [text].\n   A title is a title level, an optional label and a text."]
+    
+    
+    val create_index_lists :
+    'a list -> ('a -> string) -> 'a list list[@@ocaml.doc
+                                               " Take a sorted list of elements, a function to get the name\n   of an element and return the list of list of elements,\n   where each list group elements beginning by the same letter.\n   Since the original list is sorted, elements whose name does not\n   begin with a letter should be in the first returned list."]
+    
+    
+    val remove_ending_newline :
+    string -> string[@@ocaml.doc
+                      " [remove_ending_newline s] returns [s] without the optional ending newline. "]
+    
+    
+    val search_string_backward :
+    pat:string -> s:string -> int[@@ocaml.doc
+                                   " [search_string_backward pat s] searches backward string [pat] in string [s].\n   Return position in string [s] where [pat] appears, orelse raise [Not_found]. "]
+    
+    
+    val remove_option :
+    Types.type_expr -> Types.type_expr[@@ocaml.doc
+                                        " Take a type and remove the option top constructor. This is\n   useful when printing labels, we then remove the top option constructor\n   for optional labels."]
+    
+    
+    val is_optional :
+    Asttypes.arg_label -> bool[@@ocaml.doc
+                                " Return [true] if the given label is optional."]
+    
+    
+    val label_name :
+    Asttypes.arg_label -> string[@@ocaml.doc
+                                  " Return the label name for the given label,\n   i.e. removes the beginning '?' if present."]
+    
+
+
+*** OK ***
+

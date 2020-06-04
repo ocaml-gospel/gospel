@@ -1,0 +1,98 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t =
+  | Native 
+  | Bytecode 
+val is_bytecode : t -> bool
+val is_native : t -> bool
+val string_of_backend : t -> string
+val make_backend_function : 'a -> 'a -> t -> 'a
+val module_extension : t -> string
+val library_extension : t -> string
+val executable_extension : t -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t =
+| Native 
+| Bytecode 
+  
+
+val is_bytecode : t -> bool
+
+
+val is_native : t -> bool
+
+
+val string_of_backend : t -> string
+
+
+val make_backend_function : 'a -> 'a -> t -> 'a
+
+
+val module_extension : t -> string
+
+
+val library_extension : t -> string
+
+
+val executable_extension : t -> string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_backends.mli
+
+  Namespace: ocaml_backends.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      function Bytecode  : t
+      function Native  : t
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t = Native of 
+             function Native  : t
+          | Bytecode of 
+            function Bytecode  : t
+    
+    
+    val is_bytecode : t -> bool
+    
+    
+    val is_native : t -> bool
+    
+    
+    val string_of_backend : t -> string
+    
+    
+    val make_backend_function : 'a -> 'a -> t -> 'a
+    
+    
+    val module_extension : t -> string
+    
+    
+    val library_extension : t -> string
+    
+    
+    val executable_extension : t -> string
+    
+
+
+*** OK ***
+

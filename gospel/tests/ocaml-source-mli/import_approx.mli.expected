@@ -1,0 +1,82 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Create simple value approximations from the export information in\n    .cmx files. "]
+val really_import : Simple_value_approx.descr -> Simple_value_approx.descr
+[@@ocaml.doc
+  " Given an approximation description, load .cmx files (possibly more\n    than one) until the description is fully resolved.  If a necessary .cmx\n    file cannot be found, \"unresolved\" will be returned. "]
+val really_import_approx : Simple_value_approx.t -> Simple_value_approx.t
+[@@ocaml.doc
+  " Maps the description of the given approximation through [really_import]. "]
+val import_symbol : Symbol.t -> Simple_value_approx.t[@@ocaml.doc
+                                                       " Read and convert the approximation of a given symbol from the\n    relevant .cmx file.  Unlike the \"really_\" functions, this does not\n    continue to load .cmx files until the approximation is fully\n    resolved. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Create simple value approximations from the export information in\n    .cmx files. "]
+
+val really_import : Simple_value_approx.descr -> Simple_value_approx.descr
+[@@ocaml.doc
+  " Given an approximation description, load .cmx files (possibly more\n    than one) until the description is fully resolved.  If a necessary .cmx\n    file cannot be found, \"unresolved\" will be returned. "]
+
+
+val really_import_approx : Simple_value_approx.t -> Simple_value_approx.t
+[@@ocaml.doc
+  " Maps the description of the given approximation through [really_import]. "]
+
+
+val import_symbol : Symbol.t -> Simple_value_approx.t[@@ocaml.doc
+                                                       " Read and convert the approximation of a given symbol from the\n    relevant .cmx file.  Unlike the \"really_\" functions, this does not\n    continue to load .cmx files until the approximation is fully\n    resolved. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module import_approx.mli
+
+  Namespace: import_approx.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " Create simple value approximations from the export information in\n    .cmx files. "]
+    
+    val really_import :
+    Simple_value_approx.descr -> Simple_value_approx.descr[@@ocaml.doc
+                                                            " Given an approximation description, load .cmx files (possibly more\n    than one) until the description is fully resolved.  If a necessary .cmx\n    file cannot be found, \"unresolved\" will be returned. "]
+    
+    
+    val really_import_approx :
+    Simple_value_approx.t -> Simple_value_approx.t[@@ocaml.doc
+                                                    " Maps the description of the given approximation through [really_import]. "]
+    
+    
+    val import_symbol :
+    Symbol.t -> Simple_value_approx.t[@@ocaml.doc
+                                       " Read and convert the approximation of a given symbol from the\n    relevant .cmx file.  Unlike the \"really_\" functions, this does not\n    continue to load .cmx files until the approximation is fully\n    resolved. "]
+    
+
+
+*** OK ***
+

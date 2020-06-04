@@ -1,0 +1,41 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+type lifter = Flambda.program -> Flambda.program
+val lift_lets : lifter[@@ocaml.doc
+                        " Lift [let] bindings to attempt to increase the length of scopes, as an\n    aid to further optimizations.  For example:\n      let c = let b = <expr> in b, b in fst c\n    would be transformed to:\n      let b = <expr> in let c = b, b in fst c\n    which is then clearly just:\n      <expr>\n"]
+val lift_lets_expr : Flambda.t -> toplevel:bool -> Flambda.t
+val lifting_helper :
+  Flambda.t list ->
+    evaluation_order:[ `Left_to_right  | `Right_to_left ] ->
+      create_body:(Variable.t list -> Flambda.t) ->
+        name:Internal_variable_names.t -> Flambda.t
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+type lifter = Flambda.program -> Flambda.program
+  
+
+val lift_lets : lifter[@@ocaml.doc
+                        " Lift [let] bindings to attempt to increase the length of scopes, as an\n    aid to further optimizations.  For example:\n      let c = let b = <expr> in b, b in fst c\n    would be transformed to:\n      let b = <expr> in let c = b, b in fst c\n    which is then clearly just:\n      <expr>\n"]
+
+
+val lift_lets_expr : Flambda.t -> toplevel:bool -> Flambda.t
+
+
+val lifting_helper :
+  Flambda.t list ->
+    evaluation_order:[ `Left_to_right  | `Right_to_left ] ->
+      create_body:(Variable.t list -> Flambda.t) ->
+        name:Internal_variable_names.t -> Flambda.t
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        

@@ -1,0 +1,88 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Condition variables to synchronize between threads.\n\n   Condition variables are used when one thread wants to wait until another\n   thread has finished doing something: the former thread ``waits'' on the\n   condition variable, the latter thread ``signals'' the condition when it\n   is done. Condition variables should always be protected by a mutex.\n   The typical use is (if [D] is a shared data structure, [m] its mutex,\n   and [c] is a condition variable):\n   {[\n     Mutex.lock m;\n     while (* some predicate P over D is not satisfied *) do\n       Condition.wait c m\n     done;\n     (* Modify D *)\n     if (* the predicate P over D is now satisfied *) then Condition.signal c;\n     Mutex.unlock m\n   ]}\n"]
+type t[@@ocaml.doc " The type of condition variables. "]
+val create : unit -> t[@@ocaml.doc " Return a new condition variable. "]
+val wait : t -> Mutex.t -> unit[@@ocaml.doc
+                                 " [wait c m] atomically unlocks the mutex [m] and suspends the\n   calling process on the condition variable [c]. The process will\n   restart after the condition variable [c] has been signalled.\n   The mutex [m] is locked again before [wait] returns. "]
+val signal : t -> unit[@@ocaml.doc
+                        " [signal c] restarts one of the processes waiting on the\n   condition variable [c]. "]
+val broadcast : t -> unit[@@ocaml.doc
+                           " [broadcast c] restarts all processes waiting on the\n   condition variable [c]. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Condition variables to synchronize between threads.\n\n   Condition variables are used when one thread wants to wait until another\n   thread has finished doing something: the former thread ``waits'' on the\n   condition variable, the latter thread ``signals'' the condition when it\n   is done. Condition variables should always be protected by a mutex.\n   The typical use is (if [D] is a shared data structure, [m] its mutex,\n   and [c] is a condition variable):\n   {[\n     Mutex.lock m;\n     while (* some predicate P over D is not satisfied *) do\n       Condition.wait c m\n     done;\n     (* Modify D *)\n     if (* the predicate P over D is now satisfied *) then Condition.signal c;\n     Mutex.unlock m\n   ]}\n"]
+
+type t[@@ocaml.doc " The type of condition variables. "]
+  
+
+val create : unit -> t[@@ocaml.doc " Return a new condition variable. "]
+
+
+val wait : t -> Mutex.t -> unit[@@ocaml.doc
+                                 " [wait c m] atomically unlocks the mutex [m] and suspends the\n   calling process on the condition variable [c]. The process will\n   restart after the condition variable [c] has been signalled.\n   The mutex [m] is locked again before [wait] returns. "]
+
+
+val signal : t -> unit[@@ocaml.doc
+                        " [signal c] restarts one of the processes waiting on the\n   condition variable [c]. "]
+
+
+val broadcast : t -> unit[@@ocaml.doc
+                           " [broadcast c] restarts all processes waiting on the\n   condition variable [c]. "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module condition.mli
+
+  Namespace: condition.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Condition variables to synchronize between threads.\n\n   Condition variables are used when one thread wants to wait until another\n   thread has finished doing something: the former thread ``waits'' on the\n   condition variable, the latter thread ``signals'' the condition when it\n   is done. Condition variables should always be protected by a mutex.\n   The typical use is (if [D] is a shared data structure, [m] its mutex,\n   and [c] is a condition variable):\n   {[\n     Mutex.lock m;\n     while (* some predicate P over D is not satisfied *) do\n       Condition.wait c m\n     done;\n     (* Modify D *)\n     if (* the predicate P over D is now satisfied *) then Condition.signal c;\n     Mutex.unlock m\n   ]}\n"]
+    
+    type t
+    
+    
+    val create : unit -> t[@@ocaml.doc " Return a new condition variable. "]
+    
+    
+    val wait :
+    t -> Mutex.t -> unit[@@ocaml.doc
+                          " [wait c m] atomically unlocks the mutex [m] and suspends the\n   calling process on the condition variable [c]. The process will\n   restart after the condition variable [c] has been signalled.\n   The mutex [m] is locked again before [wait] returns. "]
+    
+    
+    val signal :
+    t -> unit[@@ocaml.doc
+               " [signal c] restarts one of the processes waiting on the\n   condition variable [c]. "]
+    
+    
+    val broadcast :
+    t -> unit[@@ocaml.doc
+               " [broadcast c] restarts all processes waiting on the\n   condition variable [c]. "]
+    
+
+
+*** OK ***
+

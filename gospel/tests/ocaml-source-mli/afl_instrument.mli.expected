@@ -1,0 +1,46 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val instrument_function : Cmm.expression -> Cmm.expression
+val instrument_initialiser : Cmm.expression -> Cmm.expression
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val instrument_function : Cmm.expression -> Cmm.expression
+
+
+val instrument_initialiser : Cmm.expression -> Cmm.expression
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module afl_instrument.mli
+
+  Namespace: afl_instrument.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val instrument_function : Cmm.expression -> Cmm.expression
+    
+    
+    val instrument_initialiser : Cmm.expression -> Cmm.expression
+    
+
+
+*** OK ***
+

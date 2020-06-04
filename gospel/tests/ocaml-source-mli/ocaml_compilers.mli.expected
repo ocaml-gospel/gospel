@@ -1,0 +1,110 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+class compiler :
+  name:(string -> string) ->
+    flags:string ->
+      directory:string ->
+        exit_status_variable:Variables.t ->
+          reference_variable:Variables.t ->
+            output_variable:Variables.t ->
+              host:Ocaml_backends.t ->
+                target:Ocaml_backends.t ->
+                  object
+                    inherit Ocaml_tools.tool
+                    method  host : Ocaml_backends.t
+                    method  target : Ocaml_backends.t
+                    method  program_variable : Variables.t
+                    method  program_output_variable : Variables.t option
+                  end
+val ocamlc_byte : compiler
+val ocamlc_opt : compiler
+val ocamlopt_byte : compiler
+val ocamlopt_opt : compiler
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+class compiler :
+  name:(string -> string) ->
+    flags:string ->
+      directory:string ->
+        exit_status_variable:Variables.t ->
+          reference_variable:Variables.t ->
+            output_variable:Variables.t ->
+              host:Ocaml_backends.t ->
+                target:Ocaml_backends.t ->
+                  object
+                    inherit Ocaml_tools.tool
+                    method  host : Ocaml_backends.t
+                    method  target : Ocaml_backends.t
+                    method  program_variable : Variables.t
+                    method  program_output_variable : Variables.t option
+                  end
+
+val ocamlc_byte : compiler
+
+
+val ocamlc_opt : compiler
+
+
+val ocamlopt_byte : compiler
+
+
+val ocamlopt_opt : compiler
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_compilers.mli
+
+  Namespace: ocaml_compilers.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    class compiler :
+      name:(string -> string) ->
+        flags:string ->
+          directory:string ->
+            exit_status_variable:Variables.t ->
+              reference_variable:Variables.t ->
+                output_variable:Variables.t ->
+                  host:Ocaml_backends.t ->
+                    target:Ocaml_backends.t ->
+                      object
+                        inherit Ocaml_tools.tool
+                        method  host : Ocaml_backends.t
+                        method  target : Ocaml_backends.t
+                        method  program_variable : Variables.t
+                        method  program_output_variable : Variables.t option
+                      end
+    
+    val ocamlc_byte : compiler
+    
+    
+    val ocamlc_opt : compiler
+    
+    
+    val ocamlopt_byte : compiler
+    
+    
+    val ocamlopt_opt : compiler
+    
+
+
+*** OK ***
+

@@ -1,0 +1,376 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Asttypes
+open Types
+module TypeSet : Set.S with type  elt =  type_expr
+module TypeMap : Map.S with type  key =  type_expr
+module TypeHash : Hashtbl.S with type  key =  type_expr
+val generic_level : int
+val newty2 : int -> type_desc -> type_expr
+val newgenty : type_desc -> type_expr
+val newgenvar : ?name:string -> unit -> type_expr
+val is_Tvar : type_expr -> bool
+val is_Tunivar : type_expr -> bool
+val is_Tconstr : type_expr -> bool
+val dummy_method : label
+val default_mty : module_type option -> module_type
+val repr : type_expr -> type_expr
+val field_kind_repr : field_kind -> field_kind
+val commu_repr : commutable -> commutable
+val row_repr : row_desc -> row_desc
+val row_field_repr : row_field -> row_field
+val row_field : label -> row_desc -> row_field
+val row_more : row_desc -> type_expr
+val row_fixed : row_desc -> bool
+val static_row : row_desc -> bool
+val hash_variant : label -> int
+val proxy : type_expr -> type_expr
+val row_of_type : type_expr -> type_expr
+val has_constr_row : type_expr -> bool
+val is_row_name : string -> bool
+val is_constr_row : allow_ident:bool -> type_expr -> bool
+val iter_type_expr : (type_expr -> unit) -> type_expr -> unit
+val fold_type_expr : ('a -> type_expr -> 'a) -> 'a -> type_expr -> 'a
+val iter_row : (type_expr -> unit) -> row_desc -> unit
+val fold_row : ('a -> type_expr -> 'a) -> 'a -> row_desc -> 'a
+val iter_abbrev : (type_expr -> unit) -> abbrev_memo -> unit
+type type_iterators =
+  {
+  it_signature: type_iterators -> signature -> unit ;
+  it_signature_item: type_iterators -> signature_item -> unit ;
+  it_value_description: type_iterators -> value_description -> unit ;
+  it_type_declaration: type_iterators -> type_declaration -> unit ;
+  it_extension_constructor: type_iterators -> extension_constructor -> unit ;
+  it_module_declaration: type_iterators -> module_declaration -> unit ;
+  it_modtype_declaration: type_iterators -> modtype_declaration -> unit ;
+  it_class_declaration: type_iterators -> class_declaration -> unit ;
+  it_class_type_declaration: type_iterators -> class_type_declaration -> unit ;
+  it_module_type: type_iterators -> module_type -> unit ;
+  it_class_type: type_iterators -> class_type -> unit ;
+  it_type_kind: type_iterators -> type_kind -> unit ;
+  it_do_type_expr: type_iterators -> type_expr -> unit ;
+  it_type_expr: type_iterators -> type_expr -> unit ;
+  it_path: Path.t -> unit }
+val type_iterators : type_iterators
+val unmark_iterators : type_iterators
+val copy_type_desc :
+  ?keep_names:bool -> (type_expr -> type_expr) -> type_desc -> type_desc
+val copy_row :
+  (type_expr -> type_expr) ->
+    bool -> row_desc -> bool -> type_expr -> row_desc
+val copy_kind : field_kind -> field_kind
+val save_desc : type_expr -> type_desc -> unit
+val dup_kind : field_kind option ref -> unit
+val cleanup_types : unit -> unit
+val lowest_level : int
+val pivot_level : int
+val mark_type : type_expr -> unit
+val mark_type_node : type_expr -> unit
+val mark_type_params : type_expr -> unit
+val unmark_type : type_expr -> unit
+val unmark_type_decl : type_declaration -> unit
+val unmark_extension_constructor : extension_constructor -> unit
+val unmark_class_type : class_type -> unit
+val unmark_class_signature : class_signature -> unit
+val find_expans : private_flag -> Path.t -> abbrev_memo -> type_expr option
+val cleanup_abbrev : unit -> unit
+val memorize_abbrev :
+  abbrev_memo ref -> private_flag -> Path.t -> type_expr -> type_expr -> unit
+val forget_abbrev : abbrev_memo ref -> Path.t -> unit
+val is_optional : arg_label -> bool
+val label_name : arg_label -> label
+val prefixed_label_name : arg_label -> label
+val extract_label :
+  label ->
+    (arg_label * 'a) list ->
+      (arg_label * 'a * (arg_label * 'a) list * (arg_label * 'a) list)
+type snapshot
+val snapshot : unit -> snapshot
+val backtrack : snapshot -> unit
+val undo_compress : snapshot -> unit
+val link_type : type_expr -> type_expr -> unit
+val set_level : type_expr -> int -> unit
+val set_scope : type_expr -> int option -> unit
+val set_name :
+  (Path.t * type_expr list) option ref ->
+    (Path.t * type_expr list) option -> unit
+val set_row_field : row_field option ref -> row_field -> unit
+val set_univar : type_expr option ref -> type_expr -> unit
+val set_kind : field_kind option ref -> field_kind -> unit
+val set_commu : commutable ref -> commutable -> unit
+val set_typeset : TypeSet.t ref -> TypeSet.t -> unit
+val log_type : type_expr -> unit
+val print_raw : (Format.formatter -> type_expr -> unit) ref
+val iter_type_expr_kind : (type_expr -> unit) -> type_kind -> unit
+val iter_type_expr_cstr_args :
+  (type_expr -> unit) -> constructor_arguments -> unit
+val map_type_expr_cstr_args :
+  (type_expr -> type_expr) -> constructor_arguments -> constructor_arguments
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Asttypes
+
+open Types
+
+module TypeSet : Set.S with type  elt =  type_expr
+
+module TypeMap : Map.S with type  key =  type_expr
+
+module TypeHash : Hashtbl.S with type  key =  type_expr
+
+val generic_level : int
+
+
+val newty2 : int -> type_desc -> type_expr
+
+
+val newgenty : type_desc -> type_expr
+
+
+val newgenvar : ?name:string -> unit -> type_expr
+
+
+val is_Tvar : type_expr -> bool
+
+
+val is_Tunivar : type_expr -> bool
+
+
+val is_Tconstr : type_expr -> bool
+
+
+val dummy_method : label
+
+
+val default_mty : module_type option -> module_type
+
+
+val repr : type_expr -> type_expr
+
+
+val field_kind_repr : field_kind -> field_kind
+
+
+val commu_repr : commutable -> commutable
+
+
+val row_repr : row_desc -> row_desc
+
+
+val row_field_repr : row_field -> row_field
+
+
+val row_field : label -> row_desc -> row_field
+
+
+val row_more : row_desc -> type_expr
+
+
+val row_fixed : row_desc -> bool
+
+
+val static_row : row_desc -> bool
+
+
+val hash_variant : label -> int
+
+
+val proxy : type_expr -> type_expr
+
+
+val row_of_type : type_expr -> type_expr
+
+
+val has_constr_row : type_expr -> bool
+
+
+val is_row_name : string -> bool
+
+
+val is_constr_row : allow_ident:bool -> type_expr -> bool
+
+
+val iter_type_expr : (type_expr -> unit) -> type_expr -> unit
+
+
+val fold_type_expr : ('a -> type_expr -> 'a) -> 'a -> type_expr -> 'a
+
+
+val iter_row : (type_expr -> unit) -> row_desc -> unit
+
+
+val fold_row : ('a -> type_expr -> 'a) -> 'a -> row_desc -> 'a
+
+
+val iter_abbrev : (type_expr -> unit) -> abbrev_memo -> unit
+
+
+type type_iterators =
+{
+it_signature: type_iterators -> signature -> unit ;
+it_signature_item: type_iterators -> signature_item -> unit ;
+it_value_description: type_iterators -> value_description -> unit ;
+it_type_declaration: type_iterators -> type_declaration -> unit ;
+it_extension_constructor: type_iterators -> extension_constructor -> unit ;
+it_module_declaration: type_iterators -> module_declaration -> unit ;
+it_modtype_declaration: type_iterators -> modtype_declaration -> unit ;
+it_class_declaration: type_iterators -> class_declaration -> unit ;
+it_class_type_declaration: type_iterators -> class_type_declaration -> unit ;
+it_module_type: type_iterators -> module_type -> unit ;
+it_class_type: type_iterators -> class_type -> unit ;
+it_type_kind: type_iterators -> type_kind -> unit ;
+it_do_type_expr: type_iterators -> type_expr -> unit ;
+it_type_expr: type_iterators -> type_expr -> unit ;
+it_path: Path.t -> unit }
+  
+
+val type_iterators : type_iterators
+
+
+val unmark_iterators : type_iterators
+
+
+val copy_type_desc :
+  ?keep_names:bool -> (type_expr -> type_expr) -> type_desc -> type_desc
+
+
+val copy_row :
+  (type_expr -> type_expr) ->
+    bool -> row_desc -> bool -> type_expr -> row_desc
+
+
+val copy_kind : field_kind -> field_kind
+
+
+val save_desc : type_expr -> type_desc -> unit
+
+
+val dup_kind : field_kind option ref -> unit
+
+
+val cleanup_types : unit -> unit
+
+
+val lowest_level : int
+
+
+val pivot_level : int
+
+
+val mark_type : type_expr -> unit
+
+
+val mark_type_node : type_expr -> unit
+
+
+val mark_type_params : type_expr -> unit
+
+
+val unmark_type : type_expr -> unit
+
+
+val unmark_type_decl : type_declaration -> unit
+
+
+val unmark_extension_constructor : extension_constructor -> unit
+
+
+val unmark_class_type : class_type -> unit
+
+
+val unmark_class_signature : class_signature -> unit
+
+
+val find_expans : private_flag -> Path.t -> abbrev_memo -> type_expr option
+
+
+val cleanup_abbrev : unit -> unit
+
+
+val memorize_abbrev :
+  abbrev_memo ref -> private_flag -> Path.t -> type_expr -> type_expr -> unit
+
+
+val forget_abbrev : abbrev_memo ref -> Path.t -> unit
+
+
+val is_optional : arg_label -> bool
+
+
+val label_name : arg_label -> label
+
+
+val prefixed_label_name : arg_label -> label
+
+
+val extract_label :
+  label ->
+    (arg_label * 'a) list ->
+      (arg_label * 'a * (arg_label * 'a) list * (arg_label * 'a) list)
+
+
+type snapshot
+  
+
+val snapshot : unit -> snapshot
+
+
+val backtrack : snapshot -> unit
+
+
+val undo_compress : snapshot -> unit
+
+
+val link_type : type_expr -> type_expr -> unit
+
+
+val set_level : type_expr -> int -> unit
+
+
+val set_scope : type_expr -> int option -> unit
+
+
+val set_name :
+  (Path.t * type_expr list) option ref ->
+    (Path.t * type_expr list) option -> unit
+
+
+val set_row_field : row_field option ref -> row_field -> unit
+
+
+val set_univar : type_expr option ref -> type_expr -> unit
+
+
+val set_kind : field_kind option ref -> field_kind -> unit
+
+
+val set_commu : commutable ref -> commutable -> unit
+
+
+val set_typeset : TypeSet.t ref -> TypeSet.t -> unit
+
+
+val log_type : type_expr -> unit
+
+
+val print_raw : (Format.formatter -> type_expr -> unit) ref
+
+
+val iter_type_expr_kind : (type_expr -> unit) -> type_kind -> unit
+
+
+val iter_type_expr_cstr_args :
+  (type_expr -> unit) -> constructor_arguments -> unit
+
+
+val map_type_expr_cstr_args :
+  (type_expr -> type_expr) -> constructor_arguments -> constructor_arguments
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

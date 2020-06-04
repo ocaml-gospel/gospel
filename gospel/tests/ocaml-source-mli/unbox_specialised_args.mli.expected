@@ -1,0 +1,77 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " When approximations of specialised arguments indicate that they are\n    closures or blocks, add more specialised arguments corresponding to\n    the projections from such blocks (with definitions of such projections\n    lifted out), such that the original specialised arguments may later be\n    eliminated.\n\n    This in particular enables elimination of closure allocations in\n    examples such as:\n\n      let rec map f = function\n        | [] -> []\n        | a::l -> let r = f a in r :: map f l\n\n      let g x =\n        map (fun y -> x + y) [1; 2; 3; 4]\n\n    Here, the specialised version of [map] initially has a specialised\n    argument [f]; and upon inlining there will be a projection of [x] from\n    the closure of [f].  This pass adds a new specialised argument to carry\n    that projection, at which point the closure of [f] is redundant.\n"]
+val rewrite_set_of_closures :
+  env:Inline_and_simplify_aux.Env.t ->
+    duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                          set_of_closures:Flambda.set_of_closures ->
+                            fun_var:Variable.t ->
+                              new_fun_var:Variable.t ->
+                                (Flambda.function_declaration *
+                                  Flambda.specialised_to Variable.Map.t))
+      ->
+      set_of_closures:Flambda.set_of_closures ->
+        (Flambda.expr * Inlining_cost.Benefit.t) option
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " When approximations of specialised arguments indicate that they are\n    closures or blocks, add more specialised arguments corresponding to\n    the projections from such blocks (with definitions of such projections\n    lifted out), such that the original specialised arguments may later be\n    eliminated.\n\n    This in particular enables elimination of closure allocations in\n    examples such as:\n\n      let rec map f = function\n        | [] -> []\n        | a::l -> let r = f a in r :: map f l\n\n      let g x =\n        map (fun y -> x + y) [1; 2; 3; 4]\n\n    Here, the specialised version of [map] initially has a specialised\n    argument [f]; and upon inlining there will be a projection of [x] from\n    the closure of [f].  This pass adds a new specialised argument to carry\n    that projection, at which point the closure of [f] is redundant.\n"]
+
+val rewrite_set_of_closures :
+  env:Inline_and_simplify_aux.Env.t ->
+    duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                          set_of_closures:Flambda.set_of_closures ->
+                            fun_var:Variable.t ->
+                              new_fun_var:Variable.t ->
+                                (Flambda.function_declaration *
+                                  Flambda.specialised_to Variable.Map.t))
+      ->
+      set_of_closures:Flambda.set_of_closures ->
+        (Flambda.expr * Inlining_cost.Benefit.t) option
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module unbox_specialised_args.mli
+
+  Namespace: unbox_specialised_args.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " When approximations of specialised arguments indicate that they are\n    closures or blocks, add more specialised arguments corresponding to\n    the projections from such blocks (with definitions of such projections\n    lifted out), such that the original specialised arguments may later be\n    eliminated.\n\n    This in particular enables elimination of closure allocations in\n    examples such as:\n\n      let rec map f = function\n        | [] -> []\n        | a::l -> let r = f a in r :: map f l\n\n      let g x =\n        map (fun y -> x + y) [1; 2; 3; 4]\n\n    Here, the specialised version of [map] initially has a specialised\n    argument [f]; and upon inlining there will be a projection of [x] from\n    the closure of [f].  This pass adds a new specialised argument to carry\n    that projection, at which point the closure of [f] is redundant.\n"]
+    
+    val rewrite_set_of_closures :
+    env:Inline_and_simplify_aux.Env.t ->
+      duplicate_function:(env:Inline_and_simplify_aux.Env.t ->
+                            set_of_closures:Flambda.set_of_closures ->
+                              fun_var:Variable.t ->
+                                new_fun_var:Variable.t ->
+                                  (Flambda.function_declaration *
+                                    Flambda.specialised_to Variable.Map.t))
+        ->
+        set_of_closures:Flambda.set_of_closures ->
+          (Flambda.expr * Inlining_cost.Benefit.t) option
+    
+
+
+*** OK ***
+

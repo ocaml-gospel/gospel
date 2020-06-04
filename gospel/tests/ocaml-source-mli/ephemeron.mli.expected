@@ -1,0 +1,444 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Ephemerons and weak hash table "]
+[@@@ocaml.text
+  " Ephemerons and weak hash table are useful when one wants to cache\n    or memorize the computation of a function, as long as the\n    arguments and the function are used, without creating memory leaks\n    by continuously keeping old computation results that are not\n    useful anymore because one argument or the function is freed. An\n    implementation using {!Hashtbl.t} is not suitable because all\n    associations would keep in memory the arguments and the result.\n\n    Ephemerons can also be used for \"adding\" a field to an arbitrary\n    boxed ocaml value: you can attach an information to a value\n    created by an external library without memory leaks.\n\n    Ephemerons hold some keys and one or no data. They are all boxed\n    ocaml values. The keys of an ephemeron have the same behavior\n    than weak pointers according to the garbage collector. In fact\n    ocaml weak pointers are implemented as ephemerons without data.\n\n    The keys and data of an ephemeron are said to be full if they\n    point to a value, empty if the value have never been set, have\n    been unset, or was erased by the GC. In the function that accesses\n    the keys or data these two states are represented by the [option]\n    type.\n\n    The data is considered by the garbage collector alive if all the\n    full keys are alive and if the ephemeron is alive. When one of the\n    keys is not considered alive anymore by the GC, the data is\n    emptied from the ephemeron. The data could be alive for another\n    reason and in that case the GC will not free it, but the ephemeron\n    will not hold the data anymore.\n\n    The ephemerons complicate the notion of liveness of values, because\n    it is not anymore an equivalence with the reachability from root\n    value by usual pointers (not weak and not ephemerons). With ephemerons\n    the notion of liveness is constructed by the least fixpoint of:\n       A value is alive if:\n        - it is a root value\n        - it is reachable from alive value by usual pointers\n        - it is the data of an alive ephemeron with all its full keys alive\n\n    Notes:\n    - All the types defined in this module cannot be marshaled\n    using {!Stdlib.output_value} or the functions of the\n    {!Marshal} module.\n\n    Ephemerons are defined in a language agnostic way in this paper:\n    B. Hayes, Ephemerons: a New Finalization Mechanism, OOPSLA'9\n\n    @since 4.03.0\n"]
+module type S  =
+  sig
+    [@@@ocaml.text
+      " Propose the same interface as usual hash table. However since\n      the bindings are weak, even if [mem h k] is true, a subsequent\n      [find h k] may raise [Not_found] because the garbage collector\n      can run between the two.\n\n      Moreover, the table shouldn't be modified during a call to [iter].\n      Use [filter_map_inplace] in this case.\n  "]
+    include Hashtbl.S
+    val clean : 'a t -> unit[@@ocaml.doc
+                              " remove all dead bindings. Done automatically during automatic resizing. "]
+    val stats_alive : 'a t -> Hashtbl.statistics[@@ocaml.doc
+                                                  " same as {!Hashtbl.SeededS.stats} but only count the alive bindings "]
+  end[@@ocaml.doc
+       " The output signature of the functor {!K1.Make} and {!K2.Make}.\n    These hash tables are weak in the keys. If all the keys of a binding are\n    alive the binding is kept, but if one of the keys of the binding\n    is dead then the binding is removed.\n"]
+module type SeededS  =
+  sig
+    include Hashtbl.SeededS
+    val clean : 'a t -> unit[@@ocaml.doc
+                              " remove all dead bindings. Done automatically during automatic resizing. "]
+    val stats_alive : 'a t -> Hashtbl.statistics[@@ocaml.doc
+                                                  " same as {!Hashtbl.SeededS.stats} but only count the alive bindings "]
+  end[@@ocaml.doc
+       " The output signature of the functor {!K1.MakeSeeded} and {!K2.MakeSeeded}.\n"]
+module K1 :
+sig
+  type ('k, 'd) t[@@ocaml.doc " an ephemeron with one key "]
+  val create : unit -> ('k, 'd) t[@@ocaml.doc
+                                   " [Ephemeron.K1.create ()] creates an ephemeron with one key. The\n      data and the key are empty "]
+  val get_key : ('k, 'd) t -> 'k option[@@ocaml.doc
+                                         " [Ephemeron.K1.get_key eph] returns [None] if the key of [eph] is\n      empty, [Some x] (where [x] is the key) if it is full. "]
+  val get_key_copy : ('k, 'd) t -> 'k option[@@ocaml.doc
+                                              " [Ephemeron.K1.get_key_copy eph] returns [None] if the key of [eph] is\n      empty, [Some x] (where [x] is a (shallow) copy of the key) if\n      it is full. This function has the same GC friendliness as {!Weak.get_copy}\n\n      If the element is a custom block it is not copied.\n  "]
+  val set_key : ('k, 'd) t -> 'k -> unit[@@ocaml.doc
+                                          " [Ephemeron.K1.set_key eph el] sets the key of [eph] to be a\n      (full) key to [el]\n  "]
+  val unset_key : ('k, 'd) t -> unit[@@ocaml.doc
+                                      " [Ephemeron.K1.unset_key eph el] sets the key of [eph] to be an\n      empty key. Since there is only one key, the ephemeron starts\n      behaving like a reference on the data. "]
+  val check_key : ('k, 'd) t -> bool[@@ocaml.doc
+                                      " [Ephemeron.K1.check_key eph] returns [true] if the key of the [eph]\n      is full, [false] if it is empty. Note that even if\n      [Ephemeron.K1.check_key eph] returns [true], a subsequent\n      {!Ephemeron.K1.get_key}[eph] can return [None].\n  "]
+  val blit_key : ('k, _) t -> ('k, _) t -> unit[@@ocaml.doc
+                                                 " [Ephemeron.K1.blit_key eph1 eph2] sets the key of [eph2] with\n      the key of [eph1]. Contrary to using {!Ephemeron.K1.get_key}\n      followed by {!Ephemeron.K1.set_key} or {!Ephemeron.K1.unset_key}\n      this function does not prevent the incremental GC from erasing\n      the value in its current cycle. "]
+  val get_data : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                          " [Ephemeron.K1.get_data eph] returns [None] if the data of [eph] is\n      empty, [Some x] (where [x] is the data) if it is full. "]
+  val get_data_copy : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                               " [Ephemeron.K1.get_data_copy eph] returns [None] if the data of [eph] is\n      empty, [Some x] (where [x] is a (shallow) copy of the data) if\n      it is full. This function has the same GC friendliness as {!Weak.get_copy}\n\n      If the element is a custom block it is not copied.\n  "]
+  val set_data : ('k, 'd) t -> 'd -> unit[@@ocaml.doc
+                                           " [Ephemeron.K1.set_data eph el] sets the data of [eph] to be a\n      (full) data to [el]\n  "]
+  val unset_data : ('k, 'd) t -> unit[@@ocaml.doc
+                                       " [Ephemeron.K1.unset_data eph el] sets the key of [eph] to be an\n      empty key. The ephemeron starts behaving like a weak pointer.\n  "]
+  val check_data : ('k, 'd) t -> bool[@@ocaml.doc
+                                       " [Ephemeron.K1.check_data eph] returns [true] if the data of the [eph]\n      is full, [false] if it is empty. Note that even if\n      [Ephemeron.K1.check_data eph] returns [true], a subsequent\n      {!Ephemeron.K1.get_data}[eph] can return [None].\n  "]
+  val blit_data : (_, 'd) t -> (_, 'd) t -> unit[@@ocaml.doc
+                                                  " [Ephemeron.K1.blit_data eph1 eph2] sets the data of [eph2] with\n      the data of [eph1]. Contrary to using {!Ephemeron.K1.get_data}\n      followed by {!Ephemeron.K1.set_data} or {!Ephemeron.K1.unset_data}\n      this function does not prevent the incremental GC from erasing\n      the value in its current cycle. "]
+  module Make : functor (H : Hashtbl.HashedType) -> S with type  key =  H.t
+  [@@ocaml.doc " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H : Hashtbl.SeededHashedType) -> SeededS with type  key =  H.t
+  [@@ocaml.doc
+    " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+module K2 :
+sig
+  type ('k1, 'k2, 'd) t[@@ocaml.doc " an ephemeron with two keys "]
+  val create : unit -> ('k1, 'k2, 'd) t[@@ocaml.doc
+                                         " Same as {!Ephemeron.K1.create} "]
+  val get_key1 : ('k1, 'k2, 'd) t -> 'k1 option[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.get_key} "]
+  val get_key1_copy : ('k1, 'k2, 'd) t -> 'k1 option[@@ocaml.doc
+                                                      " Same as {!Ephemeron.K1.get_key_copy} "]
+  val set_key1 : ('k1, 'k2, 'd) t -> 'k1 -> unit[@@ocaml.doc
+                                                  " Same as {!Ephemeron.K1.set_key} "]
+  val unset_key1 : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  val check_key1 : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  val get_key2 : ('k1, 'k2, 'd) t -> 'k2 option[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.get_key} "]
+  val get_key2_copy : ('k1, 'k2, 'd) t -> 'k2 option[@@ocaml.doc
+                                                      " Same as {!Ephemeron.K1.get_key_copy} "]
+  val set_key2 : ('k1, 'k2, 'd) t -> 'k2 -> unit[@@ocaml.doc
+                                                  " Same as {!Ephemeron.K1.set_key} "]
+  val unset_key2 : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  val check_key2 : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  val blit_key1 : ('k1, _, _) t -> ('k1, _, _) t -> unit[@@ocaml.doc
+                                                          " Same as {!Ephemeron.K1.blit_key} "]
+  val blit_key2 : (_, 'k2, _) t -> (_, 'k2, _) t -> unit[@@ocaml.doc
+                                                          " Same as {!Ephemeron.K1.blit_key} "]
+  val blit_key12 : ('k1, 'k2, _) t -> ('k1, 'k2, _) t -> unit[@@ocaml.doc
+                                                               " Same as {!Ephemeron.K1.blit_key} "]
+  val get_data : ('k1, 'k2, 'd) t -> 'd option[@@ocaml.doc
+                                                " Same as {!Ephemeron.K1.get_data} "]
+  val get_data_copy : ('k1, 'k2, 'd) t -> 'd option[@@ocaml.doc
+                                                     " Same as {!Ephemeron.K1.get_data_copy} "]
+  val set_data : ('k1, 'k2, 'd) t -> 'd -> unit[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.set_data} "]
+  val unset_data : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_data} "]
+  val check_data : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_data} "]
+  val blit_data : ('k1, 'k2, 'd) t -> ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                                                " Same as {!Ephemeron.K1.blit_data} "]
+  module Make :
+  functor (H1 : Hashtbl.HashedType) ->
+    functor (H2 : Hashtbl.HashedType) -> S with type  key =  (H1.t * H2.t)
+  [@@ocaml.doc " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H1 : Hashtbl.SeededHashedType) ->
+    functor (H2 : Hashtbl.SeededHashedType) ->
+      SeededS with type  key =  (H1.t * H2.t)[@@ocaml.doc
+                                               " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+module Kn :
+sig
+  type ('k, 'd) t[@@ocaml.doc
+                   " an ephemeron with an arbitrary number of keys\n                      of the same type "]
+  val create : int -> ('k, 'd) t[@@ocaml.doc
+                                  " Same as {!Ephemeron.K1.create} "]
+  val get_key : ('k, 'd) t -> int -> 'k option[@@ocaml.doc
+                                                " Same as {!Ephemeron.K1.get_key} "]
+  val get_key_copy : ('k, 'd) t -> int -> 'k option[@@ocaml.doc
+                                                     " Same as {!Ephemeron.K1.get_key_copy} "]
+  val set_key : ('k, 'd) t -> int -> 'k -> unit[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.set_key} "]
+  val unset_key : ('k, 'd) t -> int -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  val check_key : ('k, 'd) t -> int -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  val blit_key : ('k, _) t -> int -> ('k, _) t -> int -> int -> unit[@@ocaml.doc
+                                                                    " Same as {!Ephemeron.K1.blit_key} "]
+  val get_data : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                          " Same as {!Ephemeron.K1.get_data} "]
+  val get_data_copy : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                               " Same as {!Ephemeron.K1.get_data_copy} "]
+  val set_data : ('k, 'd) t -> 'd -> unit[@@ocaml.doc
+                                           " Same as {!Ephemeron.K1.set_data} "]
+  val unset_data : ('k, 'd) t -> unit[@@ocaml.doc
+                                       " Same as {!Ephemeron.K1.unset_data} "]
+  val check_data : ('k, 'd) t -> bool[@@ocaml.doc
+                                       " Same as {!Ephemeron.K1.check_data} "]
+  val blit_data : ('k, 'd) t -> ('k, 'd) t -> unit[@@ocaml.doc
+                                                    " Same as {!Ephemeron.K1.blit_data} "]
+  module Make :
+  functor (H : Hashtbl.HashedType) -> S with type  key =  H.t array[@@ocaml.doc
+                                                                    " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H : Hashtbl.SeededHashedType) ->
+    SeededS with type  key =  H.t array[@@ocaml.doc
+                                         " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+module GenHashTable :
+sig
+  [@@@ocaml.text
+    " Define a hash table on generic containers which have a notion of\n      \"death\" and aliveness. If a binding is dead the hash table can\n      automatically remove it. "]
+  type equal =
+    | ETrue 
+    | EFalse 
+    | EDead [@ocaml.doc " the container is dead "]
+  module MakeSeeded :
+  functor (H :
+    sig
+      type t[@@ocaml.doc " keys "]
+      type 'a container[@@ocaml.doc
+                         " contains keys and the associated data "]
+      val hash : int -> t -> int[@@ocaml.doc
+                                  " same as {!Hashtbl.SeededHashedType} "]
+      val equal : 'a container -> t -> equal[@@ocaml.doc
+                                              " equality predicate used to compare a key with the one in a\n        container. Can return [EDead] if the keys in the container are\n        dead "]
+      val create : t -> 'a -> 'a container[@@ocaml.doc
+                                            " [create key data] creates a container from\n        some initials keys and one data "]
+      val get_key : 'a container -> t option[@@ocaml.doc
+                                              " [get_key cont] returns the keys if they are all alive "]
+      val get_data : 'a container -> 'a option[@@ocaml.doc
+                                                " [get_data cont] returns the data if it is alive "]
+      val set_key_data : 'a container -> t -> 'a -> unit[@@ocaml.doc
+                                                          " [set_key_data cont] modifies the key and data "]
+      val check_key : 'a container -> bool[@@ocaml.doc
+                                            " [check_key cont] checks if all the keys contained in the data\n        are alive "]
+    end) -> SeededS with type  key =  H.t[@@ocaml.doc
+                                           " Functor building an implementation of an hash table that use the container\n      for keeping the information given "]
+end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Ephemerons and weak hash table "]
+
+[@@@ocaml.text
+  " Ephemerons and weak hash table are useful when one wants to cache\n    or memorize the computation of a function, as long as the\n    arguments and the function are used, without creating memory leaks\n    by continuously keeping old computation results that are not\n    useful anymore because one argument or the function is freed. An\n    implementation using {!Hashtbl.t} is not suitable because all\n    associations would keep in memory the arguments and the result.\n\n    Ephemerons can also be used for \"adding\" a field to an arbitrary\n    boxed ocaml value: you can attach an information to a value\n    created by an external library without memory leaks.\n\n    Ephemerons hold some keys and one or no data. They are all boxed\n    ocaml values. The keys of an ephemeron have the same behavior\n    than weak pointers according to the garbage collector. In fact\n    ocaml weak pointers are implemented as ephemerons without data.\n\n    The keys and data of an ephemeron are said to be full if they\n    point to a value, empty if the value have never been set, have\n    been unset, or was erased by the GC. In the function that accesses\n    the keys or data these two states are represented by the [option]\n    type.\n\n    The data is considered by the garbage collector alive if all the\n    full keys are alive and if the ephemeron is alive. When one of the\n    keys is not considered alive anymore by the GC, the data is\n    emptied from the ephemeron. The data could be alive for another\n    reason and in that case the GC will not free it, but the ephemeron\n    will not hold the data anymore.\n\n    The ephemerons complicate the notion of liveness of values, because\n    it is not anymore an equivalence with the reachability from root\n    value by usual pointers (not weak and not ephemerons). With ephemerons\n    the notion of liveness is constructed by the least fixpoint of:\n       A value is alive if:\n        - it is a root value\n        - it is reachable from alive value by usual pointers\n        - it is the data of an alive ephemeron with all its full keys alive\n\n    Notes:\n    - All the types defined in this module cannot be marshaled\n    using {!Stdlib.output_value} or the functions of the\n    {!Marshal} module.\n\n    Ephemerons are defined in a language agnostic way in this paper:\n    B. Hayes, Ephemerons: a New Finalization Mechanism, OOPSLA'9\n\n    @since 4.03.0\n"]
+
+module type S  =
+  sig
+    [@@@ocaml.text
+      " Propose the same interface as usual hash table. However since\n      the bindings are weak, even if [mem h k] is true, a subsequent\n      [find h k] may raise [Not_found] because the garbage collector\n      can run between the two.\n\n      Moreover, the table shouldn't be modified during a call to [iter].\n      Use [filter_map_inplace] in this case.\n  "]
+    include Hashtbl.S
+    val clean : 'a t -> unit[@@ocaml.doc
+                              " remove all dead bindings. Done automatically during automatic resizing. "]
+    
+    val stats_alive : 'a t -> Hashtbl.statistics[@@ocaml.doc
+                                                  " same as {!Hashtbl.SeededS.stats} but only count the alive bindings "]
+    
+  end[@@ocaml.doc
+       " The output signature of the functor {!K1.Make} and {!K2.Make}.\n    These hash tables are weak in the keys. If all the keys of a binding are\n    alive the binding is kept, but if one of the keys of the binding\n    is dead then the binding is removed.\n"]
+
+module type SeededS  =
+  sig
+    include Hashtbl.SeededS
+    val clean : 'a t -> unit[@@ocaml.doc
+                              " remove all dead bindings. Done automatically during automatic resizing. "]
+    
+    val stats_alive : 'a t -> Hashtbl.statistics[@@ocaml.doc
+                                                  " same as {!Hashtbl.SeededS.stats} but only count the alive bindings "]
+    
+  end[@@ocaml.doc
+       " The output signature of the functor {!K1.MakeSeeded} and {!K2.MakeSeeded}.\n"]
+
+module K1 :
+sig
+  type ('k, 'd) t[@@ocaml.doc " an ephemeron with one key "]
+    
+  val create : unit -> ('k, 'd) t[@@ocaml.doc
+                                   " [Ephemeron.K1.create ()] creates an ephemeron with one key. The\n      data and the key are empty "]
+  
+  val get_key : ('k, 'd) t -> 'k option[@@ocaml.doc
+                                         " [Ephemeron.K1.get_key eph] returns [None] if the key of [eph] is\n      empty, [Some x] (where [x] is the key) if it is full. "]
+  
+  val get_key_copy : ('k, 'd) t -> 'k option[@@ocaml.doc
+                                              " [Ephemeron.K1.get_key_copy eph] returns [None] if the key of [eph] is\n      empty, [Some x] (where [x] is a (shallow) copy of the key) if\n      it is full. This function has the same GC friendliness as {!Weak.get_copy}\n\n      If the element is a custom block it is not copied.\n  "]
+  
+  val set_key : ('k, 'd) t -> 'k -> unit[@@ocaml.doc
+                                          " [Ephemeron.K1.set_key eph el] sets the key of [eph] to be a\n      (full) key to [el]\n  "]
+  
+  val unset_key : ('k, 'd) t -> unit[@@ocaml.doc
+                                      " [Ephemeron.K1.unset_key eph el] sets the key of [eph] to be an\n      empty key. Since there is only one key, the ephemeron starts\n      behaving like a reference on the data. "]
+  
+  val check_key : ('k, 'd) t -> bool[@@ocaml.doc
+                                      " [Ephemeron.K1.check_key eph] returns [true] if the key of the [eph]\n      is full, [false] if it is empty. Note that even if\n      [Ephemeron.K1.check_key eph] returns [true], a subsequent\n      {!Ephemeron.K1.get_key}[eph] can return [None].\n  "]
+  
+  val blit_key : ('k, _) t -> ('k, _) t -> unit[@@ocaml.doc
+                                                 " [Ephemeron.K1.blit_key eph1 eph2] sets the key of [eph2] with\n      the key of [eph1]. Contrary to using {!Ephemeron.K1.get_key}\n      followed by {!Ephemeron.K1.set_key} or {!Ephemeron.K1.unset_key}\n      this function does not prevent the incremental GC from erasing\n      the value in its current cycle. "]
+  
+  val get_data : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                          " [Ephemeron.K1.get_data eph] returns [None] if the data of [eph] is\n      empty, [Some x] (where [x] is the data) if it is full. "]
+  
+  val get_data_copy : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                               " [Ephemeron.K1.get_data_copy eph] returns [None] if the data of [eph] is\n      empty, [Some x] (where [x] is a (shallow) copy of the data) if\n      it is full. This function has the same GC friendliness as {!Weak.get_copy}\n\n      If the element is a custom block it is not copied.\n  "]
+  
+  val set_data : ('k, 'd) t -> 'd -> unit[@@ocaml.doc
+                                           " [Ephemeron.K1.set_data eph el] sets the data of [eph] to be a\n      (full) data to [el]\n  "]
+  
+  val unset_data : ('k, 'd) t -> unit[@@ocaml.doc
+                                       " [Ephemeron.K1.unset_data eph el] sets the key of [eph] to be an\n      empty key. The ephemeron starts behaving like a weak pointer.\n  "]
+  
+  val check_data : ('k, 'd) t -> bool[@@ocaml.doc
+                                       " [Ephemeron.K1.check_data eph] returns [true] if the data of the [eph]\n      is full, [false] if it is empty. Note that even if\n      [Ephemeron.K1.check_data eph] returns [true], a subsequent\n      {!Ephemeron.K1.get_data}[eph] can return [None].\n  "]
+  
+  val blit_data : (_, 'd) t -> (_, 'd) t -> unit[@@ocaml.doc
+                                                  " [Ephemeron.K1.blit_data eph1 eph2] sets the data of [eph2] with\n      the data of [eph1]. Contrary to using {!Ephemeron.K1.get_data}\n      followed by {!Ephemeron.K1.set_data} or {!Ephemeron.K1.unset_data}\n      this function does not prevent the incremental GC from erasing\n      the value in its current cycle. "]
+  
+  module Make : functor (H : Hashtbl.HashedType) -> S with type  key =  H.t
+  [@@ocaml.doc " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H : Hashtbl.SeededHashedType) -> SeededS with type  key =  H.t
+  [@@ocaml.doc
+    " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+
+module K2 :
+sig
+  type ('k1, 'k2, 'd) t[@@ocaml.doc " an ephemeron with two keys "]
+    
+  val create : unit -> ('k1, 'k2, 'd) t[@@ocaml.doc
+                                         " Same as {!Ephemeron.K1.create} "]
+  
+  val get_key1 : ('k1, 'k2, 'd) t -> 'k1 option[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.get_key} "]
+  
+  val get_key1_copy : ('k1, 'k2, 'd) t -> 'k1 option[@@ocaml.doc
+                                                      " Same as {!Ephemeron.K1.get_key_copy} "]
+  
+  val set_key1 : ('k1, 'k2, 'd) t -> 'k1 -> unit[@@ocaml.doc
+                                                  " Same as {!Ephemeron.K1.set_key} "]
+  
+  val unset_key1 : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  
+  val check_key1 : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  
+  val get_key2 : ('k1, 'k2, 'd) t -> 'k2 option[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.get_key} "]
+  
+  val get_key2_copy : ('k1, 'k2, 'd) t -> 'k2 option[@@ocaml.doc
+                                                      " Same as {!Ephemeron.K1.get_key_copy} "]
+  
+  val set_key2 : ('k1, 'k2, 'd) t -> 'k2 -> unit[@@ocaml.doc
+                                                  " Same as {!Ephemeron.K1.set_key} "]
+  
+  val unset_key2 : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  
+  val check_key2 : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  
+  val blit_key1 : ('k1, _, _) t -> ('k1, _, _) t -> unit[@@ocaml.doc
+                                                          " Same as {!Ephemeron.K1.blit_key} "]
+  
+  val blit_key2 : (_, 'k2, _) t -> (_, 'k2, _) t -> unit[@@ocaml.doc
+                                                          " Same as {!Ephemeron.K1.blit_key} "]
+  
+  val blit_key12 : ('k1, 'k2, _) t -> ('k1, 'k2, _) t -> unit[@@ocaml.doc
+                                                               " Same as {!Ephemeron.K1.blit_key} "]
+  
+  val get_data : ('k1, 'k2, 'd) t -> 'd option[@@ocaml.doc
+                                                " Same as {!Ephemeron.K1.get_data} "]
+  
+  val get_data_copy : ('k1, 'k2, 'd) t -> 'd option[@@ocaml.doc
+                                                     " Same as {!Ephemeron.K1.get_data_copy} "]
+  
+  val set_data : ('k1, 'k2, 'd) t -> 'd -> unit[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.set_data} "]
+  
+  val unset_data : ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_data} "]
+  
+  val check_data : ('k1, 'k2, 'd) t -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_data} "]
+  
+  val blit_data : ('k1, 'k2, 'd) t -> ('k1, 'k2, 'd) t -> unit[@@ocaml.doc
+                                                                " Same as {!Ephemeron.K1.blit_data} "]
+  
+  module Make :
+  functor (H1 : Hashtbl.HashedType) ->
+    functor (H2 : Hashtbl.HashedType) -> S with type  key =  (H1.t * H2.t)
+  [@@ocaml.doc " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H1 : Hashtbl.SeededHashedType) ->
+    functor (H2 : Hashtbl.SeededHashedType) ->
+      SeededS with type  key =  (H1.t * H2.t)[@@ocaml.doc
+                                               " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+
+module Kn :
+sig
+  type ('k, 'd) t[@@ocaml.doc
+                   " an ephemeron with an arbitrary number of keys\n                      of the same type "]
+    
+  val create : int -> ('k, 'd) t[@@ocaml.doc
+                                  " Same as {!Ephemeron.K1.create} "]
+  
+  val get_key : ('k, 'd) t -> int -> 'k option[@@ocaml.doc
+                                                " Same as {!Ephemeron.K1.get_key} "]
+  
+  val get_key_copy : ('k, 'd) t -> int -> 'k option[@@ocaml.doc
+                                                     " Same as {!Ephemeron.K1.get_key_copy} "]
+  
+  val set_key : ('k, 'd) t -> int -> 'k -> unit[@@ocaml.doc
+                                                 " Same as {!Ephemeron.K1.set_key} "]
+  
+  val unset_key : ('k, 'd) t -> int -> unit[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.unset_key} "]
+  
+  val check_key : ('k, 'd) t -> int -> bool[@@ocaml.doc
+                                             " Same as {!Ephemeron.K1.check_key} "]
+  
+  val blit_key : ('k, _) t -> int -> ('k, _) t -> int -> int -> unit[@@ocaml.doc
+                                                                    " Same as {!Ephemeron.K1.blit_key} "]
+  
+  val get_data : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                          " Same as {!Ephemeron.K1.get_data} "]
+  
+  val get_data_copy : ('k, 'd) t -> 'd option[@@ocaml.doc
+                                               " Same as {!Ephemeron.K1.get_data_copy} "]
+  
+  val set_data : ('k, 'd) t -> 'd -> unit[@@ocaml.doc
+                                           " Same as {!Ephemeron.K1.set_data} "]
+  
+  val unset_data : ('k, 'd) t -> unit[@@ocaml.doc
+                                       " Same as {!Ephemeron.K1.unset_data} "]
+  
+  val check_data : ('k, 'd) t -> bool[@@ocaml.doc
+                                       " Same as {!Ephemeron.K1.check_data} "]
+  
+  val blit_data : ('k, 'd) t -> ('k, 'd) t -> unit[@@ocaml.doc
+                                                    " Same as {!Ephemeron.K1.blit_data} "]
+  
+  module Make :
+  functor (H : Hashtbl.HashedType) -> S with type  key =  H.t array[@@ocaml.doc
+                                                                    " Functor building an implementation of a weak hash table "]
+  module MakeSeeded :
+  functor (H : Hashtbl.SeededHashedType) ->
+    SeededS with type  key =  H.t array[@@ocaml.doc
+                                         " Functor building an implementation of a weak hash table.\n      The seed is similar to the one of {!Hashtbl.MakeSeeded}. "]
+end
+
+module GenHashTable :
+sig
+  [@@@ocaml.text
+    " Define a hash table on generic containers which have a notion of\n      \"death\" and aliveness. If a binding is dead the hash table can\n      automatically remove it. "]
+  type equal =
+  | ETrue 
+  | EFalse 
+  | EDead [@ocaml.doc " the container is dead "]
+    
+  module MakeSeeded :
+  functor (H :
+    sig
+      type t[@@ocaml.doc " keys "]
+        
+      type 'a container[@@ocaml.doc
+                         " contains keys and the associated data "]
+        
+      val hash : int -> t -> int[@@ocaml.doc
+                                  " same as {!Hashtbl.SeededHashedType} "]
+      
+      val equal : 'a container -> t -> equal[@@ocaml.doc
+                                              " equality predicate used to compare a key with the one in a\n        container. Can return [EDead] if the keys in the container are\n        dead "]
+      
+      val create : t -> 'a -> 'a container[@@ocaml.doc
+                                            " [create key data] creates a container from\n        some initials keys and one data "]
+      
+      val get_key : 'a container -> t option[@@ocaml.doc
+                                              " [get_key cont] returns the keys if they are all alive "]
+      
+      val get_data : 'a container -> 'a option[@@ocaml.doc
+                                                " [get_data cont] returns the data if it is alive "]
+      
+      val set_key_data : 'a container -> t -> 'a -> unit[@@ocaml.doc
+                                                          " [set_key_data cont] modifies the key and data "]
+      
+      val check_key : 'a container -> bool[@@ocaml.doc
+                                            " [check_key cont] checks if all the keys contained in the data\n        are alive "]
+      
+    end) -> SeededS with type  key =  H.t[@@ocaml.doc
+                                           " Functor building an implementation of an hash table that use the container\n      for keeping the information given "]
+end
+File "./hashtbl.mli", line 285, characters 9-10:
+Error: Multiple definitions of type t

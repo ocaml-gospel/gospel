@@ -1,0 +1,88 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val event_before : Typedtree.expression -> Lambda.lambda -> Lambda.lambda
+val event_after : Typedtree.expression -> Lambda.lambda -> Lambda.lambda
+val add_exception_ident : Ident.t -> unit
+val remove_exception_ident : Ident.t -> unit
+val clear_used_primitives : unit -> unit
+val get_used_primitives : unit -> Path.t list
+val check_primitive_arity : Location.t -> Primitive.description -> unit
+val transl_primitive :
+  Location.t ->
+    Primitive.description ->
+      Env.t -> Types.type_expr -> Path.t option -> Lambda.lambda
+val transl_primitive_application :
+  Location.t ->
+    Primitive.description ->
+      Env.t ->
+        Types.type_expr ->
+          Path.t ->
+            Typedtree.expression option ->
+              Lambda.lambda list ->
+                Typedtree.expression list -> Lambda.lambda
+type error =
+  | Unknown_builtin_primitive of string 
+  | Wrong_arity_builtin_primitive of string 
+exception Error of Location.t * error 
+open Format
+val report_error : formatter -> error -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val event_before : Typedtree.expression -> Lambda.lambda -> Lambda.lambda
+
+
+val event_after : Typedtree.expression -> Lambda.lambda -> Lambda.lambda
+
+
+val add_exception_ident : Ident.t -> unit
+
+
+val remove_exception_ident : Ident.t -> unit
+
+
+val clear_used_primitives : unit -> unit
+
+
+val get_used_primitives : unit -> Path.t list
+
+
+val check_primitive_arity : Location.t -> Primitive.description -> unit
+
+
+val transl_primitive :
+  Location.t ->
+    Primitive.description ->
+      Env.t -> Types.type_expr -> Path.t option -> Lambda.lambda
+
+
+val transl_primitive_application :
+  Location.t ->
+    Primitive.description ->
+      Env.t ->
+        Types.type_expr ->
+          Path.t ->
+            Typedtree.expression option ->
+              Lambda.lambda list ->
+                Typedtree.expression list -> Lambda.lambda
+
+
+type error =
+| Unknown_builtin_primitive of string 
+| Wrong_arity_builtin_primitive of string 
+  
+
+exception Error of Location.t * error 
+
+open Format
+
+val report_error : formatter -> error -> unit
+
+gospel: internal error, uncaught exception:
+        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        

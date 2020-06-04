@@ -1,0 +1,74 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a typ =
+  | Int: int typ 
+  | Int32: int32 typ 
+  | Int64: int64 typ 
+  | Nativeint: nativeint typ 
+  | Float: float typ [@ocaml.doc " coment about 'a typ "][@@ocaml.doc
+                                                           " Type of arguments/result "]
+type 'a proto =
+  | Ret: 'a typ -> 'a proto 
+  | Abs: 'a typ * 'b proto -> ('a -> 'b) proto 
+[@@@ocaml.text " UM TESTE 1\n\n UM TESTE 2\n\n UM TESTE 3\n\n"]
+val ( ** ) : 'a typ -> 'b proto -> ('a -> 'b) proto[@@ocaml.doc
+                                                     " Same as [Abs]. We choose this operator for its associativity. "]
+type test =
+  | T1: string * ('a -> 'b) * 'a typ * 'b typ -> test 
+  | T2: string * ('a -> 'b -> 'c) * 'a typ * 'b typ * 'c typ -> test 
+  | T3: string * ('a -> 'b -> 'c -> 'd) * 'a typ * 'b typ * 'c typ * 'd typ
+  -> test 
+  | T4: string * ('a -> 'b -> 'c -> 'd -> 'e) * 'a typ * 'b typ * 'c typ * 'd
+  typ * 'e typ -> test 
+  | T5: string * ('a -> 'b -> 'c -> 'd -> 'e -> 'f) * 'a typ * 'b typ * 'c
+  typ * 'd typ * 'e typ * 'f typ -> test 
+  | T6: string * ('a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'g) * 'a typ * 'b typ *
+  'c typ * 'd typ * 'e typ * 'f typ * 'g typ -> test 
+  | T: string * 'a * 'a proto -> test 
+val run_tests : test list -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type 'a typ =
+| Int: int typ 
+| Int32: int32 typ 
+| Int64: int64 typ 
+| Nativeint: nativeint typ 
+| Float: float typ [@ocaml.doc " coment about 'a typ "][@@ocaml.doc
+                                                         " Type of arguments/result "]
+  
+
+type 'a proto =
+| Ret: 'a typ -> 'a proto 
+| Abs: 'a typ * 'b proto -> ('a -> 'b) proto 
+  
+
+[@@@ocaml.text " UM TESTE 1\n\n UM TESTE 2\n\n UM TESTE 3\n\n"]
+
+val ( ** ) : 'a typ -> 'b proto -> ('a -> 'b) proto[@@ocaml.doc
+                                                     " Same as [Abs]. We choose this operator for its associativity. "]
+
+
+type test =
+| T1: string * ('a -> 'b) * 'a typ * 'b typ -> test 
+| T2: string * ('a -> 'b -> 'c) * 'a typ * 'b typ * 'c typ -> test 
+| T3: string * ('a -> 'b -> 'c -> 'd) * 'a typ * 'b typ * 'c typ * 'd typ ->
+test 
+| T4: string * ('a -> 'b -> 'c -> 'd -> 'e) * 'a typ * 'b typ * 'c typ * 'd
+typ * 'e typ -> test 
+| T5: string * ('a -> 'b -> 'c -> 'd -> 'e -> 'f) * 'a typ * 'b typ * 'c typ
+* 'd typ * 'e typ * 'f typ -> test 
+| T6: string * ('a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'g) * 'a typ * 'b typ *
+'c typ * 'd typ * 'e typ * 'f typ * 'g typ -> test 
+| T: string * 'a * 'a proto -> test 
+  
+
+val run_tests : test list -> unit
+
+File "common.mli", line 4, characters 2-29:
+Error: Not supported: type in constructors not supported

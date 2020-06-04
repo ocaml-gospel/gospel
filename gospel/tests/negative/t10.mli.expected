@@ -1,0 +1,14 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel  open T9 ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ open T9 *)
+File "./t9.mli", line 2, characters 48-49:
+Error: Type mysmatch. Cannot match int with bool

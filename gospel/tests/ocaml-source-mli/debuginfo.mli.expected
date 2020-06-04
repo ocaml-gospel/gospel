@@ -1,0 +1,139 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type item = private
+  {
+  dinfo_file: string ;
+  dinfo_line: int ;
+  dinfo_char_start: int ;
+  dinfo_char_end: int }
+type t = item list
+val none : t
+val is_none : t -> bool
+val to_string : t -> string
+val from_location : Location.t -> t
+val to_location : t -> Location.t
+val concat : t -> t -> t
+val inline : Location.t -> t -> t
+val compare : t -> t -> int
+val hash : t -> int
+val print_compact : Format.formatter -> t -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type item = private
+{
+dinfo_file: string ;
+dinfo_line: int ;
+dinfo_char_start: int ;
+dinfo_char_end: int }
+  
+
+type t = item list
+  
+
+val none : t
+
+
+val is_none : t -> bool
+
+
+val to_string : t -> string
+
+
+val from_location : Location.t -> t
+
+
+val to_location : t -> Location.t
+
+
+val concat : t -> t -> t
+
+
+val inline : Location.t -> t -> t
+
+
+val compare : t -> t -> int
+
+
+val hash : t -> int
+
+
+val print_compact : Format.formatter -> t -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module debuginfo.mli
+
+  Namespace: debuginfo.mli
+    Type symbols
+       item
+       t [=item list]
+      
+    Logic Symbols
+      function constr#item (_:string) (_:int) (_:int) (_:int) : item
+      function dinfo_char_end (_:item) : int
+      function dinfo_char_start (_:item) : int
+      function dinfo_file (_:item) : string
+      function dinfo_line (_:item) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type item = {dinfo_file:string; dinfo_line:int; dinfo_char_start:
+             int; dinfo_char_end:int}
+             function constr#item (_:string) (_:int) (_:int) (_:int) : item
+               function dinfo_file (_:item) : string
+               function dinfo_line (_:item) : int
+               function dinfo_char_start (_:item) : int
+               function dinfo_char_end (_:item) : int
+    
+    
+    type t = item list
+    
+    
+    val none : t
+    
+    
+    val is_none : t -> bool
+    
+    
+    val to_string : t -> string
+    
+    
+    val from_location : Location.t -> t
+    
+    
+    val to_location : t -> Location.t
+    
+    
+    val concat : t -> t -> t
+    
+    
+    val inline : Location.t -> t -> t
+    
+    
+    val compare : t -> t -> int
+    
+    
+    val hash : t -> int
+    
+    
+    val print_compact : Format.formatter -> t -> unit
+    
+
+
+*** OK ***
+

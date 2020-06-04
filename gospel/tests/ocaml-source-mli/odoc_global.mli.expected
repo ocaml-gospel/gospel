@@ -1,0 +1,356 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Global variables. "]
+type source_file =
+  | Impl_file of string 
+  | Intf_file of string 
+  | Text_file of string [@@ocaml.doc
+                          " The kind of source file in arguments. "]
+val include_dirs : string list ref[@@ocaml.doc
+                                    " The include_dirs in the OCaml compiler. "]
+val merge_options : Odoc_types.merge_option list ref[@@ocaml.doc
+                                                      " The merge options to be used. "]
+val classic : bool ref[@@ocaml.doc " Classic mode or not. "]
+val dump : string option ref[@@ocaml.doc
+                              " The optional file name to dump the collected information into."]
+val load : string list ref[@@ocaml.doc
+                            " The list of information files to load. "]
+val sort_modules : bool ref[@@ocaml.doc
+                             " We must sort the list of top modules or not."]
+val no_stop : bool ref[@@ocaml.doc
+                        " We must not stop at the stop special comments. Default is false (we stop)."]
+val no_custom_tags : bool ref[@@ocaml.doc
+                               " We must raise an exception when we find an unknown @-tag. "]
+val remove_stars : bool ref[@@ocaml.doc
+                             " We must remove the first characters of each comment line, until the first asterisk '*'. "]
+val keep_code : bool ref[@@ocaml.doc
+                          " To keep the code while merging, when we have both .ml and .mli files for a module. "]
+val inverse_merge_ml_mli : bool ref[@@ocaml.doc
+                                     " To inverse implementation and interface files when merging. "]
+val filter_with_module_constraints : bool ref[@@ocaml.doc
+                                               " To filter module elements according to module type constraints. "]
+val hidden_modules : string list ref[@@ocaml.doc
+                                      " The list of module names to hide. "]
+val files : source_file list ref[@@ocaml.doc " The files to be analysed. "]
+val errors : int ref[@@ocaml.doc " A counter for errors. "]
+val warn_error : bool ref[@@ocaml.doc " Indicate if a warning is an error. "]
+val show_missed_crossref : bool ref[@@ocaml.doc
+                                     " Show code fragments that could be transformed into a cross-reference. "]
+val pwarning : string -> unit[@@ocaml.doc
+                               " Print the given warning, adding it to the list of {!errors}\nif {!warn_error} is [true]. "]
+val out_file : string ref[@@ocaml.doc
+                           " The file used by the generators outputting only one file. "]
+val verbose : bool ref[@@ocaml.doc " Verbose mode or not. "]
+val intro_file : string option ref[@@ocaml.doc
+                                    " The optional file whose content can be used as intro text. "]
+val title : string option ref[@@ocaml.doc
+                               " The optional title to use in the generated documentation. "]
+val target_dir : string ref[@@ocaml.doc
+                             " The directory where files have to be generated. "]
+val with_toc : bool ref[@@ocaml.doc
+                         " The flag which indicates if we must generate a table of contents. "]
+val with_index : bool ref[@@ocaml.doc
+                           " The flag which indicates if we must generate an index. "]
+val with_header : bool ref[@@ocaml.doc
+                            " The flag which indicates if we must generate a header."]
+val with_trailer : bool ref[@@ocaml.doc
+                             " The flag which indicates if we must generate a trailer."]
+val initially_opened_module : string ref[@@ocaml.doc
+                                          " Name of the module that is initially opened. "]
+val library_namespace : string ref[@@ocaml.doc
+                                    " Name of the library namespace for a prefixed library "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Global variables. "]
+
+type source_file =
+| Impl_file of string 
+| Intf_file of string 
+| Text_file of string [@@ocaml.doc " The kind of source file in arguments. "]
+  
+
+val include_dirs : string list ref[@@ocaml.doc
+                                    " The include_dirs in the OCaml compiler. "]
+
+
+val merge_options : Odoc_types.merge_option list ref[@@ocaml.doc
+                                                      " The merge options to be used. "]
+
+
+val classic : bool ref[@@ocaml.doc " Classic mode or not. "]
+
+
+val dump : string option ref[@@ocaml.doc
+                              " The optional file name to dump the collected information into."]
+
+
+val load : string list ref[@@ocaml.doc
+                            " The list of information files to load. "]
+
+
+val sort_modules : bool ref[@@ocaml.doc
+                             " We must sort the list of top modules or not."]
+
+
+val no_stop : bool ref[@@ocaml.doc
+                        " We must not stop at the stop special comments. Default is false (we stop)."]
+
+
+val no_custom_tags : bool ref[@@ocaml.doc
+                               " We must raise an exception when we find an unknown @-tag. "]
+
+
+val remove_stars : bool ref[@@ocaml.doc
+                             " We must remove the first characters of each comment line, until the first asterisk '*'. "]
+
+
+val keep_code : bool ref[@@ocaml.doc
+                          " To keep the code while merging, when we have both .ml and .mli files for a module. "]
+
+
+val inverse_merge_ml_mli : bool ref[@@ocaml.doc
+                                     " To inverse implementation and interface files when merging. "]
+
+
+val filter_with_module_constraints : bool ref[@@ocaml.doc
+                                               " To filter module elements according to module type constraints. "]
+
+
+val hidden_modules : string list ref[@@ocaml.doc
+                                      " The list of module names to hide. "]
+
+
+val files : source_file list ref[@@ocaml.doc " The files to be analysed. "]
+
+
+val errors : int ref[@@ocaml.doc " A counter for errors. "]
+
+
+val warn_error : bool ref[@@ocaml.doc " Indicate if a warning is an error. "]
+
+
+val show_missed_crossref : bool ref[@@ocaml.doc
+                                     " Show code fragments that could be transformed into a cross-reference. "]
+
+
+val pwarning : string -> unit[@@ocaml.doc
+                               " Print the given warning, adding it to the list of {!errors}\nif {!warn_error} is [true]. "]
+
+
+val out_file : string ref[@@ocaml.doc
+                           " The file used by the generators outputting only one file. "]
+
+
+val verbose : bool ref[@@ocaml.doc " Verbose mode or not. "]
+
+
+val intro_file : string option ref[@@ocaml.doc
+                                    " The optional file whose content can be used as intro text. "]
+
+
+val title : string option ref[@@ocaml.doc
+                               " The optional title to use in the generated documentation. "]
+
+
+val target_dir : string ref[@@ocaml.doc
+                             " The directory where files have to be generated. "]
+
+
+val with_toc : bool ref[@@ocaml.doc
+                         " The flag which indicates if we must generate a table of contents. "]
+
+
+val with_index : bool ref[@@ocaml.doc
+                           " The flag which indicates if we must generate an index. "]
+
+
+val with_header : bool ref[@@ocaml.doc
+                            " The flag which indicates if we must generate a header."]
+
+
+val with_trailer : bool ref[@@ocaml.doc
+                             " The flag which indicates if we must generate a trailer."]
+
+
+val initially_opened_module : string ref[@@ocaml.doc
+                                          " Name of the module that is initially opened. "]
+
+
+val library_namespace : string ref[@@ocaml.doc
+                                    " Name of the library namespace for a prefixed library "]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_global.mli
+
+  Namespace: odoc_global.mli
+    Type symbols
+       source_file
+      
+    Logic Symbols
+      function Impl_file (_:string) : source_file
+      function Intf_file (_:string) : source_file
+      function Text_file (_:string) : source_file
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text " Global variables. "]
+    
+    type source_file = Impl_file of string
+                       function Impl_file (_:string) : source_file
+                    | Intf_file of string
+                      function Intf_file (_:string) : source_file
+                    | Text_file of string
+                      function Text_file (_:string) : source_file
+    
+    
+    val include_dirs :
+    string list ref[@@ocaml.doc " The include_dirs in the OCaml compiler. "]
+    
+    
+    val merge_options :
+    Odoc_types.merge_option list ref[@@ocaml.doc
+                                      " The merge options to be used. "]
+    
+    
+    val classic : bool ref[@@ocaml.doc " Classic mode or not. "]
+    
+    
+    val dump :
+    string option ref[@@ocaml.doc
+                       " The optional file name to dump the collected information into."]
+    
+    
+    val load :
+    string list ref[@@ocaml.doc " The list of information files to load. "]
+    
+    
+    val sort_modules :
+    bool ref[@@ocaml.doc " We must sort the list of top modules or not."]
+    
+    
+    val no_stop :
+    bool ref[@@ocaml.doc
+              " We must not stop at the stop special comments. Default is false (we stop)."]
+    
+    
+    val no_custom_tags :
+    bool ref[@@ocaml.doc
+              " We must raise an exception when we find an unknown @-tag. "]
+    
+    
+    val remove_stars :
+    bool ref[@@ocaml.doc
+              " We must remove the first characters of each comment line, until the first asterisk '*'. "]
+    
+    
+    val keep_code :
+    bool ref[@@ocaml.doc
+              " To keep the code while merging, when we have both .ml and .mli files for a module. "]
+    
+    
+    val inverse_merge_ml_mli :
+    bool ref[@@ocaml.doc
+              " To inverse implementation and interface files when merging. "]
+    
+    
+    val filter_with_module_constraints :
+    bool ref[@@ocaml.doc
+              " To filter module elements according to module type constraints. "]
+    
+    
+    val hidden_modules :
+    string list ref[@@ocaml.doc " The list of module names to hide. "]
+    
+    
+    val files :
+    source_file list ref[@@ocaml.doc " The files to be analysed. "]
+    
+    
+    val errors : int ref[@@ocaml.doc " A counter for errors. "]
+    
+    
+    val warn_error :
+    bool ref[@@ocaml.doc " Indicate if a warning is an error. "]
+    
+    
+    val show_missed_crossref :
+    bool ref[@@ocaml.doc
+              " Show code fragments that could be transformed into a cross-reference. "]
+    
+    
+    val pwarning :
+    string -> unit[@@ocaml.doc
+                    " Print the given warning, adding it to the list of {!errors}\nif {!warn_error} is [true]. "]
+    
+    
+    val out_file :
+    string ref[@@ocaml.doc
+                " The file used by the generators outputting only one file. "]
+    
+    
+    val verbose : bool ref[@@ocaml.doc " Verbose mode or not. "]
+    
+    
+    val intro_file :
+    string option ref[@@ocaml.doc
+                       " The optional file whose content can be used as intro text. "]
+    
+    
+    val title :
+    string option ref[@@ocaml.doc
+                       " The optional title to use in the generated documentation. "]
+    
+    
+    val target_dir :
+    string ref[@@ocaml.doc
+                " The directory where files have to be generated. "]
+    
+    
+    val with_toc :
+    bool ref[@@ocaml.doc
+              " The flag which indicates if we must generate a table of contents. "]
+    
+    
+    val with_index :
+    bool ref[@@ocaml.doc
+              " The flag which indicates if we must generate an index. "]
+    
+    
+    val with_header :
+    bool ref[@@ocaml.doc
+              " The flag which indicates if we must generate a header."]
+    
+    
+    val with_trailer :
+    bool ref[@@ocaml.doc
+              " The flag which indicates if we must generate a trailer."]
+    
+    
+    val initially_opened_module :
+    string ref[@@ocaml.doc " Name of the module that is initially opened. "]
+    
+    
+    val library_namespace :
+    string ref[@@ocaml.doc
+                " Name of the library namespace for a prefixed library "]
+    
+
+
+*** OK ***
+

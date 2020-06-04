@@ -1,0 +1,844 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Environments and result structures used during inlining and\n    simplification.  (See inline_and_simplify.ml.) "]
+module Env :
+sig
+  type t[@@ocaml.doc
+          " Environments follow the lexical scopes of the program. "]
+  val create :
+    never_inline:bool ->
+      backend:(module Backend_intf.S) ->
+        round:int -> ppf_dump:Format.formatter -> t[@@ocaml.doc
+                                                     " Create a new environment.  If [never_inline] is true then the returned\n      environment will prevent [Inline_and_simplify] from inlining.  The\n      [backend] parameter is used for passing information about the compiler\n      backend being used.\n      Newly-created environments have inactive [Freshening]s (see below) and do\n      not initially hold any approximation information. "]
+  val backend : t -> (module Backend_intf.S)[@@ocaml.doc
+                                              " Obtain the first-class module that gives information about the\n      compiler backend being used for compilation. "]
+  val really_import_approx :
+    t -> Simple_value_approx.t -> Simple_value_approx.t[@@ocaml.doc
+                                                         " Obtain the really_import_approx function from the backend module. "]
+  val round : t -> int[@@ocaml.doc
+                        " Which simplification round we are currently in. "]
+  val ppf_dump : t -> Format.formatter[@@ocaml.doc
+                                        " Where to print intermediate asts and similar debug information "]
+  val add : t -> Variable.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                           " Add the approximation of a variable---that is to say, some knowledge\n      about the value(s) the variable may take on at runtime---to the\n      environment. "]
+  val add_outer_scope : t -> Variable.t -> Simple_value_approx.t -> t
+  val add_mutable : t -> Mutable_variable.t -> Simple_value_approx.t -> t
+  [@@ocaml.doc " Like [add], but for mutable variables. "]
+  val find_exn : t -> Variable.t -> Simple_value_approx.t[@@ocaml.doc
+                                                           " Find the approximation of a given variable, raising a fatal error if\n      the environment does not know about the variable.  Use [find_opt]\n      instead if you need to catch the failure case. "]
+  val find_mutable_exn : t -> Mutable_variable.t -> Simple_value_approx.t
+  [@@ocaml.doc " Like [find_exn], but for mutable variables. "]
+  type scope =
+    | Current 
+    | Outer 
+  val find_with_scope_exn :
+    t -> Variable.t -> (scope * Simple_value_approx.t)
+  val find_opt : t -> Variable.t -> Simple_value_approx.t option[@@ocaml.doc
+                                                                  " Like [find_exn], but intended for use where the \"not present in\n      environment\" case is to be handled by the caller. "]
+  val find_list_exn : t -> Variable.t list -> Simple_value_approx.t list
+  [@@ocaml.doc " Like [find_exn], but for a list of variables. "]
+  val does_not_bind : t -> Variable.t list -> bool
+  val does_not_freshen : t -> Variable.t list -> bool
+  val add_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+  val redefine_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+  val find_symbol_exn : t -> Symbol.t -> Simple_value_approx.t
+  val find_symbol_opt : t -> Symbol.t -> Simple_value_approx.t option
+  val find_symbol_fatal : t -> Symbol.t -> Simple_value_approx.t
+  val find_or_load_symbol : t -> Symbol.t -> Simple_value_approx.t
+  val add_projection :
+    t -> projection:Projection.t -> bound_to:Variable.t -> t[@@ocaml.doc
+                                                              " Note that the given [bound_to] holds the given [projection]. "]
+  val find_projection : t -> projection:Projection.t -> Variable.t option
+  [@@ocaml.doc
+    " Determine if the environment knows about a variable that is bound\n      to the given [projection]. "]
+  val mem : t -> Variable.t -> bool[@@ocaml.doc
+                                     " Whether the environment has an approximation for the given variable. "]
+  val freshening : t -> Freshening.t[@@ocaml.doc
+                                      " Return the freshening that should be applied to variables when\n      rewriting code (in [Inline_and_simplify], etc.) using the given\n      environment. "]
+  val set_freshening : t -> Freshening.t -> t[@@ocaml.doc
+                                               " Set the freshening that should be used as per [freshening], above. "]
+  val activate_freshening : t -> t[@@ocaml.doc
+                                    " Causes every bound variable in code rewritten during inlining and\n      simplification, using the given environment, to be freshened.  This is\n      used when descending into subexpressions substituted into existing\n      expressions. "]
+  val local : t -> t[@@ocaml.doc
+                      " Erase all variable approximation information and freshening information\n      from the given environment.  However, the freshening activation state\n      is preserved.  This function is used when rewriting inside a function\n      declaration, to avoid (due to a compiler bug) accidental use of\n      variables from outer scopes that are not accessible. "]
+  val inside_set_of_closures_declaration :
+    Set_of_closures_origin.t -> t -> bool[@@ocaml.doc
+                                           " Determine whether the inliner is currently inside a function body from\n      the given set of closures.  This is used to detect whether a given\n      function call refers to a function which exists somewhere on the current\n      inlining stack. "]
+  val at_toplevel : t -> bool[@@ocaml.doc
+                               " Not inside a closure declaration.\n      Toplevel code is the one evaluated when the compilation unit is\n      loaded "]
+  val is_inside_branch : t -> bool
+  val branch_depth : t -> int
+  val inside_branch : t -> t
+  val increase_closure_depth : t -> t
+  val set_never_inline : t -> t[@@ocaml.doc
+                                 " Mark that call sites contained within code rewritten using the given\n      environment should never be replaced by inlined (or unrolled) versions\n      of the callee(s). "]
+  val set_never_inline_inside_closures : t -> t[@@ocaml.doc
+                                                 " Equivalent to [set_never_inline] but only applies to code inside\n      a set of closures. "]
+  val unset_never_inline_inside_closures : t -> t[@@ocaml.doc
+                                                   " Unset the restriction from [set_never_inline_inside_closures] "]
+  val set_never_inline_outside_closures : t -> t[@@ocaml.doc
+                                                  " Equivalent to [set_never_inline] but does not apply to code inside\n      a set of closures. "]
+  val unset_never_inline_outside_closures : t -> t[@@ocaml.doc
+                                                    " Unset the restriction from [set_never_inline_outside_closures] "]
+  val never_inline : t -> bool[@@ocaml.doc
+                                " Return whether [set_never_inline] is currently in effect on the given\n      environment. "]
+  val inlining_level : t -> int
+  val inlining_level_up : t -> t[@@ocaml.doc
+                                  " Mark that this environment is used to rewrite code for inlining. This is\n      used by the inlining heuristics to decide whether to continue.\n      Unconditionally inlined does not take this into account. "]
+  val actively_unrolling : t -> Set_of_closures_origin.t -> int option
+  [@@ocaml.doc " Whether we are actively unrolling a given function. "]
+  val start_actively_unrolling : t -> Set_of_closures_origin.t -> int -> t
+  [@@ocaml.doc " Start actively unrolling a given function [n] times. "]
+  val continue_actively_unrolling : t -> Set_of_closures_origin.t -> t
+  [@@ocaml.doc " Unroll a function currently actively being unrolled. "]
+  val unrolling_allowed : t -> Set_of_closures_origin.t -> bool[@@ocaml.doc
+                                                                 " Whether it is permissible to unroll a call to a recursive function\n      in the given environment. "]
+  val inside_unrolled_function : t -> Set_of_closures_origin.t -> t[@@ocaml.doc
+                                                                    " Whether the given environment is currently being used to rewrite the\n      body of an unrolled recursive function. "]
+  val inlining_allowed : t -> Closure_origin.t -> bool[@@ocaml.doc
+                                                        " Whether it is permissible to inline a call to a function in the given\n      environment. "]
+  val inside_inlined_function : t -> Closure_origin.t -> t[@@ocaml.doc
+                                                            " Whether the given environment is currently being used to rewrite the\n      body of an inlined function. "]
+  val note_entering_closure :
+    t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                          " If collecting inlining statistics, record that the inliner is about to\n      descend into [closure_id].  This information enables us to produce a\n      stack of closures that form a kind of context around an inlining\n      decision point. "]
+  val note_entering_call :
+    t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                          " If collecting inlining statistics, record that the inliner is about to\n       descend into a call to [closure_id].  This information enables us to\n       produce a stack of closures that form a kind of context around an\n       inlining decision point. "]
+  val note_entering_inlined : t -> t[@@ocaml.doc
+                                      " If collecting inlining statistics, record that the inliner is about to\n       descend into an inlined function call.  This requires that the inliner\n       has already entered the call with [note_entering_call]. "]
+  val note_entering_specialised : t -> closure_ids:Closure_id.Set.t -> t
+  [@@ocaml.doc
+    " If collecting inlining statistics, record that the inliner is about to\n       descend into a specialised function definition.  This requires that the\n       inliner has already entered the call with [note_entering_call]. "]
+  val enter_closure :
+    t ->
+      closure_id:Closure_id.t ->
+        inline_inside:bool -> dbg:Debuginfo.t -> f:(t -> 'a) -> 'a[@@ocaml.doc
+                                                                    " Update a given environment to record that the inliner is about to\n      descend into [closure_id] and pass the resulting environment to [f].\n      If [inline_inside] is [false] then the environment passed to [f] will be\n      marked as [never_inline] (see above). "]
+  val record_decision : t -> Inlining_stats_types.Decision.t -> unit[@@ocaml.doc
+                                                                    " If collecting inlining statistics, record an inlining decision for the\n       call at the top of the closure stack stored inside the given\n       environment. "]
+  val print : Format.formatter -> t -> unit[@@ocaml.doc
+                                             " Print a human-readable version of the given environment. "]
+  val set_inline_debuginfo : t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                        " The environment stores the call-site being inlined to produce\n      precise location information. This function sets the current\n      call-site being inlined.  "]
+  val add_inlined_debuginfo : t -> dbg:Debuginfo.t -> Debuginfo.t[@@ocaml.doc
+                                                                   " Appends the locations of inlined call-sites to the [~dbg] argument "]
+end
+module Result :
+sig
+  type t[@@ocaml.doc
+          " Result structures approximately follow the evaluation order of the\n      program.  They are returned by the simplification algorithm acting on\n      an Flambda subexpression. "]
+  val create : unit -> t
+  val approx : t -> Simple_value_approx.t[@@ocaml.doc
+                                           " The approximation of the subexpression that has just been\n      simplified. "]
+  val set_approx : t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                    " Set the approximation of the subexpression that has just been\n      simplified.  Typically used just before returning from a case of the\n      simplification algorithm. "]
+  val meet_approx : t -> Env.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                              " Set the approximation of the subexpression to the meet of the\n      current return approximation and the provided one. Typically\n      used just before returning from a branch case of the\n      simplification algorithm. "]
+  val used_static_exceptions : t -> Static_exception.Set.t[@@ocaml.doc
+                                                            " All static exceptions for which [use_staticfail] has been called on\n      the given result structure. "]
+  val use_static_exception : t -> Static_exception.t -> t[@@ocaml.doc
+                                                           " Mark that the given static exception has been used. "]
+  val exit_scope_catch : t -> Static_exception.t -> t[@@ocaml.doc
+                                                       " Mark that we are moving up out of the scope of a static-catch block\n      that catches the given static exception identifier.  This has the effect\n      of removing the identifier from the [used_staticfail] set. "]
+  val benefit : t -> Inlining_cost.Benefit.t[@@ocaml.doc
+                                              " The benefit to be gained by inlining the subexpression whose\n      simplification yielded the given result structure. "]
+  val map_benefit :
+    t -> (Inlining_cost.Benefit.t -> Inlining_cost.Benefit.t) -> t[@@ocaml.doc
+                                                                    " Apply a transformation to the inlining benefit stored within the\n      given result structure. "]
+  val add_benefit : t -> Inlining_cost.Benefit.t -> t[@@ocaml.doc
+                                                       " Add some benefit to the inlining benefit stored within the\n      given result structure. "]
+  val reset_benefit : t -> t[@@ocaml.doc
+                              " Set the benefit of inlining the subexpression corresponding to the\n      given result structure to zero. "]
+  val set_inlining_threshold : t -> Inlining_cost.Threshold.t option -> t
+  val add_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+  val sub_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+  val inlining_threshold : t -> Inlining_cost.Threshold.t option
+  val seen_direct_application : t -> t
+  val num_direct_applications : t -> int
+end
+val initial_inlining_threshold : round:int -> Inlining_cost.Threshold.t
+[@@ocaml.doc " Command line argument -inline "]
+val initial_inlining_toplevel_threshold :
+  round:int -> Inlining_cost.Threshold.t[@@ocaml.doc
+                                          " Command line argument -inline-toplevel "]
+val prepare_to_simplify_set_of_closures :
+  env:Env.t ->
+    set_of_closures:Flambda.set_of_closures ->
+      function_decls:Flambda.function_declarations ->
+        freshen:bool ->
+          only_for_function_decl:Flambda.function_declaration option ->
+            ((Flambda.specialised_to * Simple_value_approx.t) Variable.Map.t
+              * Flambda.specialised_to Variable.Map.t *
+              Flambda.function_declarations * Simple_value_approx.t
+              Variable.Map.t * Simple_value_approx.value_set_of_closures *
+              Env.t)
+val prepare_to_simplify_closure :
+  function_decl:Flambda.function_declaration ->
+    free_vars:(Flambda.specialised_to * Simple_value_approx.t) Variable.Map.t
+      ->
+      specialised_args:Flambda.specialised_to Variable.Map.t ->
+        parameter_approximations:Simple_value_approx.t Variable.Map.t ->
+          set_of_closures_env:Env.t -> Env.t
+val keep_body_check :
+  is_classic_mode:bool ->
+    recursive:Variable.Set.t Lazy.t ->
+      Variable.t -> Flambda.function_declaration -> bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Environments and result structures used during inlining and\n    simplification.  (See inline_and_simplify.ml.) "]
+
+module Env :
+sig
+  type t[@@ocaml.doc
+          " Environments follow the lexical scopes of the program. "]
+    
+  val create :
+    never_inline:bool ->
+      backend:(module Backend_intf.S) ->
+        round:int -> ppf_dump:Format.formatter -> t[@@ocaml.doc
+                                                     " Create a new environment.  If [never_inline] is true then the returned\n      environment will prevent [Inline_and_simplify] from inlining.  The\n      [backend] parameter is used for passing information about the compiler\n      backend being used.\n      Newly-created environments have inactive [Freshening]s (see below) and do\n      not initially hold any approximation information. "]
+  
+  val backend : t -> (module Backend_intf.S)[@@ocaml.doc
+                                              " Obtain the first-class module that gives information about the\n      compiler backend being used for compilation. "]
+  
+  val really_import_approx :
+    t -> Simple_value_approx.t -> Simple_value_approx.t[@@ocaml.doc
+                                                         " Obtain the really_import_approx function from the backend module. "]
+  
+  val round : t -> int[@@ocaml.doc
+                        " Which simplification round we are currently in. "]
+  
+  val ppf_dump : t -> Format.formatter[@@ocaml.doc
+                                        " Where to print intermediate asts and similar debug information "]
+  
+  val add : t -> Variable.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                           " Add the approximation of a variable---that is to say, some knowledge\n      about the value(s) the variable may take on at runtime---to the\n      environment. "]
+  
+  val add_outer_scope : t -> Variable.t -> Simple_value_approx.t -> t
+  
+  val add_mutable : t -> Mutable_variable.t -> Simple_value_approx.t -> t
+  [@@ocaml.doc " Like [add], but for mutable variables. "]
+  
+  val find_exn : t -> Variable.t -> Simple_value_approx.t[@@ocaml.doc
+                                                           " Find the approximation of a given variable, raising a fatal error if\n      the environment does not know about the variable.  Use [find_opt]\n      instead if you need to catch the failure case. "]
+  
+  val find_mutable_exn : t -> Mutable_variable.t -> Simple_value_approx.t
+  [@@ocaml.doc " Like [find_exn], but for mutable variables. "]
+  
+  type scope =
+  | Current 
+  | Outer 
+    
+  val find_with_scope_exn :
+    t -> Variable.t -> (scope * Simple_value_approx.t)
+  
+  val find_opt : t -> Variable.t -> Simple_value_approx.t option[@@ocaml.doc
+                                                                  " Like [find_exn], but intended for use where the \"not present in\n      environment\" case is to be handled by the caller. "]
+  
+  val find_list_exn : t -> Variable.t list -> Simple_value_approx.t list
+  [@@ocaml.doc " Like [find_exn], but for a list of variables. "]
+  
+  val does_not_bind : t -> Variable.t list -> bool
+  
+  val does_not_freshen : t -> Variable.t list -> bool
+  
+  val add_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+  
+  val redefine_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+  
+  val find_symbol_exn : t -> Symbol.t -> Simple_value_approx.t
+  
+  val find_symbol_opt : t -> Symbol.t -> Simple_value_approx.t option
+  
+  val find_symbol_fatal : t -> Symbol.t -> Simple_value_approx.t
+  
+  val find_or_load_symbol : t -> Symbol.t -> Simple_value_approx.t
+  
+  val add_projection :
+    t -> projection:Projection.t -> bound_to:Variable.t -> t[@@ocaml.doc
+                                                              " Note that the given [bound_to] holds the given [projection]. "]
+  
+  val find_projection : t -> projection:Projection.t -> Variable.t option
+  [@@ocaml.doc
+    " Determine if the environment knows about a variable that is bound\n      to the given [projection]. "]
+  
+  val mem : t -> Variable.t -> bool[@@ocaml.doc
+                                     " Whether the environment has an approximation for the given variable. "]
+  
+  val freshening : t -> Freshening.t[@@ocaml.doc
+                                      " Return the freshening that should be applied to variables when\n      rewriting code (in [Inline_and_simplify], etc.) using the given\n      environment. "]
+  
+  val set_freshening : t -> Freshening.t -> t[@@ocaml.doc
+                                               " Set the freshening that should be used as per [freshening], above. "]
+  
+  val activate_freshening : t -> t[@@ocaml.doc
+                                    " Causes every bound variable in code rewritten during inlining and\n      simplification, using the given environment, to be freshened.  This is\n      used when descending into subexpressions substituted into existing\n      expressions. "]
+  
+  val local : t -> t[@@ocaml.doc
+                      " Erase all variable approximation information and freshening information\n      from the given environment.  However, the freshening activation state\n      is preserved.  This function is used when rewriting inside a function\n      declaration, to avoid (due to a compiler bug) accidental use of\n      variables from outer scopes that are not accessible. "]
+  
+  val inside_set_of_closures_declaration :
+    Set_of_closures_origin.t -> t -> bool[@@ocaml.doc
+                                           " Determine whether the inliner is currently inside a function body from\n      the given set of closures.  This is used to detect whether a given\n      function call refers to a function which exists somewhere on the current\n      inlining stack. "]
+  
+  val at_toplevel : t -> bool[@@ocaml.doc
+                               " Not inside a closure declaration.\n      Toplevel code is the one evaluated when the compilation unit is\n      loaded "]
+  
+  val is_inside_branch : t -> bool
+  
+  val branch_depth : t -> int
+  
+  val inside_branch : t -> t
+  
+  val increase_closure_depth : t -> t
+  
+  val set_never_inline : t -> t[@@ocaml.doc
+                                 " Mark that call sites contained within code rewritten using the given\n      environment should never be replaced by inlined (or unrolled) versions\n      of the callee(s). "]
+  
+  val set_never_inline_inside_closures : t -> t[@@ocaml.doc
+                                                 " Equivalent to [set_never_inline] but only applies to code inside\n      a set of closures. "]
+  
+  val unset_never_inline_inside_closures : t -> t[@@ocaml.doc
+                                                   " Unset the restriction from [set_never_inline_inside_closures] "]
+  
+  val set_never_inline_outside_closures : t -> t[@@ocaml.doc
+                                                  " Equivalent to [set_never_inline] but does not apply to code inside\n      a set of closures. "]
+  
+  val unset_never_inline_outside_closures : t -> t[@@ocaml.doc
+                                                    " Unset the restriction from [set_never_inline_outside_closures] "]
+  
+  val never_inline : t -> bool[@@ocaml.doc
+                                " Return whether [set_never_inline] is currently in effect on the given\n      environment. "]
+  
+  val inlining_level : t -> int
+  
+  val inlining_level_up : t -> t[@@ocaml.doc
+                                  " Mark that this environment is used to rewrite code for inlining. This is\n      used by the inlining heuristics to decide whether to continue.\n      Unconditionally inlined does not take this into account. "]
+  
+  val actively_unrolling : t -> Set_of_closures_origin.t -> int option
+  [@@ocaml.doc " Whether we are actively unrolling a given function. "]
+  
+  val start_actively_unrolling : t -> Set_of_closures_origin.t -> int -> t
+  [@@ocaml.doc " Start actively unrolling a given function [n] times. "]
+  
+  val continue_actively_unrolling : t -> Set_of_closures_origin.t -> t
+  [@@ocaml.doc " Unroll a function currently actively being unrolled. "]
+  
+  val unrolling_allowed : t -> Set_of_closures_origin.t -> bool[@@ocaml.doc
+                                                                 " Whether it is permissible to unroll a call to a recursive function\n      in the given environment. "]
+  
+  val inside_unrolled_function : t -> Set_of_closures_origin.t -> t[@@ocaml.doc
+                                                                    " Whether the given environment is currently being used to rewrite the\n      body of an unrolled recursive function. "]
+  
+  val inlining_allowed : t -> Closure_origin.t -> bool[@@ocaml.doc
+                                                        " Whether it is permissible to inline a call to a function in the given\n      environment. "]
+  
+  val inside_inlined_function : t -> Closure_origin.t -> t[@@ocaml.doc
+                                                            " Whether the given environment is currently being used to rewrite the\n      body of an inlined function. "]
+  
+  val note_entering_closure :
+    t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                          " If collecting inlining statistics, record that the inliner is about to\n      descend into [closure_id].  This information enables us to produce a\n      stack of closures that form a kind of context around an inlining\n      decision point. "]
+  
+  val note_entering_call :
+    t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                          " If collecting inlining statistics, record that the inliner is about to\n       descend into a call to [closure_id].  This information enables us to\n       produce a stack of closures that form a kind of context around an\n       inlining decision point. "]
+  
+  val note_entering_inlined : t -> t[@@ocaml.doc
+                                      " If collecting inlining statistics, record that the inliner is about to\n       descend into an inlined function call.  This requires that the inliner\n       has already entered the call with [note_entering_call]. "]
+  
+  val note_entering_specialised : t -> closure_ids:Closure_id.Set.t -> t
+  [@@ocaml.doc
+    " If collecting inlining statistics, record that the inliner is about to\n       descend into a specialised function definition.  This requires that the\n       inliner has already entered the call with [note_entering_call]. "]
+  
+  val enter_closure :
+    t ->
+      closure_id:Closure_id.t ->
+        inline_inside:bool -> dbg:Debuginfo.t -> f:(t -> 'a) -> 'a[@@ocaml.doc
+                                                                    " Update a given environment to record that the inliner is about to\n      descend into [closure_id] and pass the resulting environment to [f].\n      If [inline_inside] is [false] then the environment passed to [f] will be\n      marked as [never_inline] (see above). "]
+  
+  val record_decision : t -> Inlining_stats_types.Decision.t -> unit[@@ocaml.doc
+                                                                    " If collecting inlining statistics, record an inlining decision for the\n       call at the top of the closure stack stored inside the given\n       environment. "]
+  
+  val print : Format.formatter -> t -> unit[@@ocaml.doc
+                                             " Print a human-readable version of the given environment. "]
+  
+  val set_inline_debuginfo : t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                        " The environment stores the call-site being inlined to produce\n      precise location information. This function sets the current\n      call-site being inlined.  "]
+  
+  val add_inlined_debuginfo : t -> dbg:Debuginfo.t -> Debuginfo.t[@@ocaml.doc
+                                                                   " Appends the locations of inlined call-sites to the [~dbg] argument "]
+  
+end
+
+module Result :
+sig
+  type t[@@ocaml.doc
+          " Result structures approximately follow the evaluation order of the\n      program.  They are returned by the simplification algorithm acting on\n      an Flambda subexpression. "]
+    
+  val create : unit -> t
+  
+  val approx : t -> Simple_value_approx.t[@@ocaml.doc
+                                           " The approximation of the subexpression that has just been\n      simplified. "]
+  
+  val set_approx : t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                    " Set the approximation of the subexpression that has just been\n      simplified.  Typically used just before returning from a case of the\n      simplification algorithm. "]
+  
+  val meet_approx : t -> Env.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                              " Set the approximation of the subexpression to the meet of the\n      current return approximation and the provided one. Typically\n      used just before returning from a branch case of the\n      simplification algorithm. "]
+  
+  val used_static_exceptions : t -> Static_exception.Set.t[@@ocaml.doc
+                                                            " All static exceptions for which [use_staticfail] has been called on\n      the given result structure. "]
+  
+  val use_static_exception : t -> Static_exception.t -> t[@@ocaml.doc
+                                                           " Mark that the given static exception has been used. "]
+  
+  val exit_scope_catch : t -> Static_exception.t -> t[@@ocaml.doc
+                                                       " Mark that we are moving up out of the scope of a static-catch block\n      that catches the given static exception identifier.  This has the effect\n      of removing the identifier from the [used_staticfail] set. "]
+  
+  val benefit : t -> Inlining_cost.Benefit.t[@@ocaml.doc
+                                              " The benefit to be gained by inlining the subexpression whose\n      simplification yielded the given result structure. "]
+  
+  val map_benefit :
+    t -> (Inlining_cost.Benefit.t -> Inlining_cost.Benefit.t) -> t[@@ocaml.doc
+                                                                    " Apply a transformation to the inlining benefit stored within the\n      given result structure. "]
+  
+  val add_benefit : t -> Inlining_cost.Benefit.t -> t[@@ocaml.doc
+                                                       " Add some benefit to the inlining benefit stored within the\n      given result structure. "]
+  
+  val reset_benefit : t -> t[@@ocaml.doc
+                              " Set the benefit of inlining the subexpression corresponding to the\n      given result structure to zero. "]
+  
+  val set_inlining_threshold : t -> Inlining_cost.Threshold.t option -> t
+  
+  val add_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+  
+  val sub_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+  
+  val inlining_threshold : t -> Inlining_cost.Threshold.t option
+  
+  val seen_direct_application : t -> t
+  
+  val num_direct_applications : t -> int
+  
+end
+
+val initial_inlining_threshold : round:int -> Inlining_cost.Threshold.t
+[@@ocaml.doc " Command line argument -inline "]
+
+
+val initial_inlining_toplevel_threshold :
+  round:int -> Inlining_cost.Threshold.t[@@ocaml.doc
+                                          " Command line argument -inline-toplevel "]
+
+
+val prepare_to_simplify_set_of_closures :
+  env:Env.t ->
+    set_of_closures:Flambda.set_of_closures ->
+      function_decls:Flambda.function_declarations ->
+        freshen:bool ->
+          only_for_function_decl:Flambda.function_declaration option ->
+            ((Flambda.specialised_to * Simple_value_approx.t) Variable.Map.t
+              * Flambda.specialised_to Variable.Map.t *
+              Flambda.function_declarations * Simple_value_approx.t
+              Variable.Map.t * Simple_value_approx.value_set_of_closures *
+              Env.t)
+
+
+val prepare_to_simplify_closure :
+  function_decl:Flambda.function_declaration ->
+    free_vars:(Flambda.specialised_to * Simple_value_approx.t) Variable.Map.t
+      ->
+      specialised_args:Flambda.specialised_to Variable.Map.t ->
+        parameter_approximations:Simple_value_approx.t Variable.Map.t ->
+          set_of_closures_env:Env.t -> Env.t
+
+
+val keep_body_check :
+  is_classic_mode:bool ->
+    recursive:Variable.Set.t Lazy.t ->
+      Variable.t -> Flambda.function_declaration -> bool
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module inline_and_simplify_aux.mli
+
+  Namespace: inline_and_simplify_aux.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Env
+        Type symbols
+           scope
+           t
+          
+        Logic Symbols
+          function Current  : scope
+          function Outer  : scope
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: Result
+        Type symbols
+           t#1
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " Environments and result structures used during inlining and\n    simplification.  (See inline_and_simplify.ml.) "]
+    
+    module Env :
+    sig
+      type t
+      
+      val create :
+      never_inline:bool ->
+        backend:(module Backend_intf.S) ->
+          round:int -> ppf_dump:Format.formatter -> t[@@ocaml.doc
+                                                       " Create a new environment.  If [never_inline] is true then the returned\n      environment will prevent [Inline_and_simplify] from inlining.  The\n      [backend] parameter is used for passing information about the compiler\n      backend being used.\n      Newly-created environments have inactive [Freshening]s (see below) and do\n      not initially hold any approximation information. "]
+      
+      val backend :
+      t -> (module Backend_intf.S)[@@ocaml.doc
+                                    " Obtain the first-class module that gives information about the\n      compiler backend being used for compilation. "]
+      
+      val really_import_approx :
+      t -> Simple_value_approx.t -> Simple_value_approx.t[@@ocaml.doc
+                                                           " Obtain the really_import_approx function from the backend module. "]
+      
+      val round :
+      t -> int[@@ocaml.doc
+                " Which simplification round we are currently in. "]
+      
+      val ppf_dump :
+      t -> Format.formatter[@@ocaml.doc
+                             " Where to print intermediate asts and similar debug information "]
+      
+      val add :
+      t -> Variable.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                     " Add the approximation of a variable---that is to say, some knowledge\n      about the value(s) the variable may take on at runtime---to the\n      environment. "]
+      
+      val add_outer_scope : t -> Variable.t -> Simple_value_approx.t -> t
+      
+      val add_mutable :
+      t -> Mutable_variable.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                             " Like [add], but for mutable variables. "]
+      
+      val find_exn :
+      t -> Variable.t -> Simple_value_approx.t[@@ocaml.doc
+                                                " Find the approximation of a given variable, raising a fatal error if\n      the environment does not know about the variable.  Use [find_opt]\n      instead if you need to catch the failure case. "]
+      
+      val find_mutable_exn :
+      t -> Mutable_variable.t -> Simple_value_approx.t[@@ocaml.doc
+                                                        " Like [find_exn], but for mutable variables. "]
+      
+      type scope = Current of 
+                   function Current  : scope
+                | Outer of 
+                  function Outer  : scope
+      
+      val find_with_scope_exn :
+      t -> Variable.t -> (scope * Simple_value_approx.t)
+      
+      val find_opt :
+      t -> Variable.t -> Simple_value_approx.t option[@@ocaml.doc
+                                                       " Like [find_exn], but intended for use where the \"not present in\n      environment\" case is to be handled by the caller. "]
+      
+      val find_list_exn :
+      t -> Variable.t list -> Simple_value_approx.t list[@@ocaml.doc
+                                                          " Like [find_exn], but for a list of variables. "]
+      
+      val does_not_bind : t -> Variable.t list -> bool
+      
+      val does_not_freshen : t -> Variable.t list -> bool
+      
+      val add_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+      
+      val redefine_symbol : t -> Symbol.t -> Simple_value_approx.t -> t
+      
+      val find_symbol_exn : t -> Symbol.t -> Simple_value_approx.t
+      
+      val find_symbol_opt : t -> Symbol.t -> Simple_value_approx.t option
+      
+      val find_symbol_fatal : t -> Symbol.t -> Simple_value_approx.t
+      
+      val find_or_load_symbol : t -> Symbol.t -> Simple_value_approx.t
+      
+      val add_projection :
+      t -> projection:Projection.t -> bound_to:Variable.t -> t[@@ocaml.doc
+                                                                " Note that the given [bound_to] holds the given [projection]. "]
+      
+      val find_projection :
+      t -> projection:Projection.t -> Variable.t option[@@ocaml.doc
+                                                         " Determine if the environment knows about a variable that is bound\n      to the given [projection]. "]
+      
+      val mem :
+      t -> Variable.t -> bool[@@ocaml.doc
+                               " Whether the environment has an approximation for the given variable. "]
+      
+      val freshening :
+      t -> Freshening.t[@@ocaml.doc
+                         " Return the freshening that should be applied to variables when\n      rewriting code (in [Inline_and_simplify], etc.) using the given\n      environment. "]
+      
+      val set_freshening :
+      t -> Freshening.t -> t[@@ocaml.doc
+                              " Set the freshening that should be used as per [freshening], above. "]
+      
+      val activate_freshening :
+      t -> t[@@ocaml.doc
+              " Causes every bound variable in code rewritten during inlining and\n      simplification, using the given environment, to be freshened.  This is\n      used when descending into subexpressions substituted into existing\n      expressions. "]
+      
+      val local :
+      t -> t[@@ocaml.doc
+              " Erase all variable approximation information and freshening information\n      from the given environment.  However, the freshening activation state\n      is preserved.  This function is used when rewriting inside a function\n      declaration, to avoid (due to a compiler bug) accidental use of\n      variables from outer scopes that are not accessible. "]
+      
+      val inside_set_of_closures_declaration :
+      Set_of_closures_origin.t -> t -> bool[@@ocaml.doc
+                                             " Determine whether the inliner is currently inside a function body from\n      the given set of closures.  This is used to detect whether a given\n      function call refers to a function which exists somewhere on the current\n      inlining stack. "]
+      
+      val at_toplevel :
+      t -> bool[@@ocaml.doc
+                 " Not inside a closure declaration.\n      Toplevel code is the one evaluated when the compilation unit is\n      loaded "]
+      
+      val is_inside_branch : t -> bool
+      
+      val branch_depth : t -> int
+      
+      val inside_branch : t -> t
+      
+      val increase_closure_depth : t -> t
+      
+      val set_never_inline :
+      t -> t[@@ocaml.doc
+              " Mark that call sites contained within code rewritten using the given\n      environment should never be replaced by inlined (or unrolled) versions\n      of the callee(s). "]
+      
+      val set_never_inline_inside_closures :
+      t -> t[@@ocaml.doc
+              " Equivalent to [set_never_inline] but only applies to code inside\n      a set of closures. "]
+      
+      val unset_never_inline_inside_closures :
+      t -> t[@@ocaml.doc
+              " Unset the restriction from [set_never_inline_inside_closures] "]
+      
+      val set_never_inline_outside_closures :
+      t -> t[@@ocaml.doc
+              " Equivalent to [set_never_inline] but does not apply to code inside\n      a set of closures. "]
+      
+      val unset_never_inline_outside_closures :
+      t -> t[@@ocaml.doc
+              " Unset the restriction from [set_never_inline_outside_closures] "]
+      
+      val never_inline :
+      t -> bool[@@ocaml.doc
+                 " Return whether [set_never_inline] is currently in effect on the given\n      environment. "]
+      
+      val inlining_level : t -> int
+      
+      val inlining_level_up :
+      t -> t[@@ocaml.doc
+              " Mark that this environment is used to rewrite code for inlining. This is\n      used by the inlining heuristics to decide whether to continue.\n      Unconditionally inlined does not take this into account. "]
+      
+      val actively_unrolling :
+      t -> Set_of_closures_origin.t -> int option[@@ocaml.doc
+                                                   " Whether we are actively unrolling a given function. "]
+      
+      val start_actively_unrolling :
+      t -> Set_of_closures_origin.t -> int -> t[@@ocaml.doc
+                                                 " Start actively unrolling a given function [n] times. "]
+      
+      val continue_actively_unrolling :
+      t -> Set_of_closures_origin.t -> t[@@ocaml.doc
+                                          " Unroll a function currently actively being unrolled. "]
+      
+      val unrolling_allowed :
+      t -> Set_of_closures_origin.t -> bool[@@ocaml.doc
+                                             " Whether it is permissible to unroll a call to a recursive function\n      in the given environment. "]
+      
+      val inside_unrolled_function :
+      t -> Set_of_closures_origin.t -> t[@@ocaml.doc
+                                          " Whether the given environment is currently being used to rewrite the\n      body of an unrolled recursive function. "]
+      
+      val inlining_allowed :
+      t -> Closure_origin.t -> bool[@@ocaml.doc
+                                     " Whether it is permissible to inline a call to a function in the given\n      environment. "]
+      
+      val inside_inlined_function :
+      t -> Closure_origin.t -> t[@@ocaml.doc
+                                  " Whether the given environment is currently being used to rewrite the\n      body of an inlined function. "]
+      
+      val note_entering_closure :
+      t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                            " If collecting inlining statistics, record that the inliner is about to\n      descend into [closure_id].  This information enables us to produce a\n      stack of closures that form a kind of context around an inlining\n      decision point. "]
+      
+      val note_entering_call :
+      t -> closure_id:Closure_id.t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                                            " If collecting inlining statistics, record that the inliner is about to\n       descend into a call to [closure_id].  This information enables us to\n       produce a stack of closures that form a kind of context around an\n       inlining decision point. "]
+      
+      val note_entering_inlined :
+      t -> t[@@ocaml.doc
+              " If collecting inlining statistics, record that the inliner is about to\n       descend into an inlined function call.  This requires that the inliner\n       has already entered the call with [note_entering_call]. "]
+      
+      val note_entering_specialised :
+      t -> closure_ids:Closure_id.Set.t -> t[@@ocaml.doc
+                                              " If collecting inlining statistics, record that the inliner is about to\n       descend into a specialised function definition.  This requires that the\n       inliner has already entered the call with [note_entering_call]. "]
+      
+      val enter_closure :
+      t ->
+        closure_id:Closure_id.t ->
+          inline_inside:bool -> dbg:Debuginfo.t -> f:(t -> 'a) -> 'a[@@ocaml.doc
+                                                                    " Update a given environment to record that the inliner is about to\n      descend into [closure_id] and pass the resulting environment to [f].\n      If [inline_inside] is [false] then the environment passed to [f] will be\n      marked as [never_inline] (see above). "]
+      
+      val record_decision :
+      t -> Inlining_stats_types.Decision.t -> unit[@@ocaml.doc
+                                                    " If collecting inlining statistics, record an inlining decision for the\n       call at the top of the closure stack stored inside the given\n       environment. "]
+      
+      val print :
+      Format.formatter -> t -> unit[@@ocaml.doc
+                                     " Print a human-readable version of the given environment. "]
+      
+      val set_inline_debuginfo :
+      t -> dbg:Debuginfo.t -> t[@@ocaml.doc
+                                 " The environment stores the call-site being inlined to produce\n      precise location information. This function sets the current\n      call-site being inlined.  "]
+      
+      val add_inlined_debuginfo :
+      t -> dbg:Debuginfo.t -> Debuginfo.t[@@ocaml.doc
+                                           " Appends the locations of inlined call-sites to the [~dbg] argument "]
+      
+    end
+    
+    module Result :
+    sig
+      type t#1
+      
+      val create#1 : unit -> t
+      
+      val approx :
+      t -> Simple_value_approx.t[@@ocaml.doc
+                                  " The approximation of the subexpression that has just been\n      simplified. "]
+      
+      val set_approx :
+      t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                       " Set the approximation of the subexpression that has just been\n      simplified.  Typically used just before returning from a case of the\n      simplification algorithm. "]
+      
+      val meet_approx :
+      t -> Env.t -> Simple_value_approx.t -> t[@@ocaml.doc
+                                                " Set the approximation of the subexpression to the meet of the\n      current return approximation and the provided one. Typically\n      used just before returning from a branch case of the\n      simplification algorithm. "]
+      
+      val used_static_exceptions :
+      t -> Static_exception.Set.t[@@ocaml.doc
+                                   " All static exceptions for which [use_staticfail] has been called on\n      the given result structure. "]
+      
+      val use_static_exception :
+      t -> Static_exception.t -> t[@@ocaml.doc
+                                    " Mark that the given static exception has been used. "]
+      
+      val exit_scope_catch :
+      t -> Static_exception.t -> t[@@ocaml.doc
+                                    " Mark that we are moving up out of the scope of a static-catch block\n      that catches the given static exception identifier.  This has the effect\n      of removing the identifier from the [used_staticfail] set. "]
+      
+      val benefit :
+      t -> Inlining_cost.Benefit.t[@@ocaml.doc
+                                    " The benefit to be gained by inlining the subexpression whose\n      simplification yielded the given result structure. "]
+      
+      val map_benefit :
+      t -> (Inlining_cost.Benefit.t -> Inlining_cost.Benefit.t) -> t[@@ocaml.doc
+                                                                    " Apply a transformation to the inlining benefit stored within the\n      given result structure. "]
+      
+      val add_benefit :
+      t -> Inlining_cost.Benefit.t -> t[@@ocaml.doc
+                                         " Add some benefit to the inlining benefit stored within the\n      given result structure. "]
+      
+      val reset_benefit :
+      t -> t[@@ocaml.doc
+              " Set the benefit of inlining the subexpression corresponding to the\n      given result structure to zero. "]
+      
+      val set_inlining_threshold : t -> Inlining_cost.Threshold.t option -> t
+      
+      val add_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+      
+      val sub_inlining_threshold : t -> Inlining_cost.Threshold.t -> t
+      
+      val inlining_threshold : t -> Inlining_cost.Threshold.t option
+      
+      val seen_direct_application : t -> t
+      
+      val num_direct_applications : t -> int
+      
+    end
+    
+    val initial_inlining_threshold :
+    round:int -> Inlining_cost.Threshold.t[@@ocaml.doc
+                                            " Command line argument -inline "]
+    
+    
+    val initial_inlining_toplevel_threshold :
+    round:int -> Inlining_cost.Threshold.t[@@ocaml.doc
+                                            " Command line argument -inline-toplevel "]
+    
+    
+    val prepare_to_simplify_set_of_closures :
+    env:Env.t ->
+      set_of_closures:Flambda.set_of_closures ->
+        function_decls:Flambda.function_declarations ->
+          freshen:bool ->
+            only_for_function_decl:Flambda.function_declaration option ->
+              ((Flambda.specialised_to * Simple_value_approx.t)
+                Variable.Map.t * Flambda.specialised_to Variable.Map.t *
+                Flambda.function_declarations * Simple_value_approx.t
+                Variable.Map.t * Simple_value_approx.value_set_of_closures *
+                Env.t)
+    
+    
+    val prepare_to_simplify_closure :
+    function_decl:Flambda.function_declaration ->
+      free_vars:(Flambda.specialised_to * Simple_value_approx.t)
+        Variable.Map.t ->
+        specialised_args:Flambda.specialised_to Variable.Map.t ->
+          parameter_approximations:Simple_value_approx.t Variable.Map.t ->
+            set_of_closures_env:Env.t -> Env.t
+    
+    
+    val keep_body_check :
+    is_classic_mode:bool ->
+      recursive:Variable.Set.t Lazy.t ->
+        Variable.t -> Flambda.function_declaration -> bool
+    
+
+
+*** OK ***
+

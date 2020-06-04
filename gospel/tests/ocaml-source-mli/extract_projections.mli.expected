@@ -1,0 +1,60 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Identify projections from variables used in function bodies (free\n    variables or specialised args, for example, according to [which_variables]\n    below).  Projections from variables that are also used boxed are not\n    returned. "]
+val from_function_decl :
+  env:Inline_and_simplify_aux.Env.t ->
+    which_variables:Flambda.specialised_to Variable.Map.t ->
+      function_decl:Flambda.function_declaration -> Projection.Set.t[@@ocaml.doc
+                                                                    " [which_variables] maps (existing) inner variables to (existing) outer\n    variables in the manner of [free_vars] and [specialised_args] in\n    [Flambda.set_of_closures].\n\n    The returned projections are [projecting_from] (cf. projection.mli)\n    the \"existing inner vars\".\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Identify projections from variables used in function bodies (free\n    variables or specialised args, for example, according to [which_variables]\n    below).  Projections from variables that are also used boxed are not\n    returned. "]
+
+val from_function_decl :
+  env:Inline_and_simplify_aux.Env.t ->
+    which_variables:Flambda.specialised_to Variable.Map.t ->
+      function_decl:Flambda.function_declaration -> Projection.Set.t[@@ocaml.doc
+                                                                    " [which_variables] maps (existing) inner variables to (existing) outer\n    variables in the manner of [free_vars] and [specialised_args] in\n    [Flambda.set_of_closures].\n\n    The returned projections are [projecting_from] (cf. projection.mli)\n    the \"existing inner vars\".\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module extract_projections.mli
+
+  Namespace: extract_projections.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Identify projections from variables used in function bodies (free\n    variables or specialised args, for example, according to [which_variables]\n    below).  Projections from variables that are also used boxed are not\n    returned. "]
+    
+    val from_function_decl :
+    env:Inline_and_simplify_aux.Env.t ->
+      which_variables:Flambda.specialised_to Variable.Map.t ->
+        function_decl:Flambda.function_declaration -> Projection.Set.t
+    [@@ocaml.doc
+      " [which_variables] maps (existing) inner variables to (existing) outer\n    variables in the manner of [free_vars] and [specialised_args] in\n    [Flambda.set_of_closures].\n\n    The returned projections are [projecting_from] (cf. projection.mli)\n    the \"existing inner vars\".\n"]
+    
+
+
+*** OK ***
+

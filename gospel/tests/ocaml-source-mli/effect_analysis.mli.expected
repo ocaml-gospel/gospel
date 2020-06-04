@@ -1,0 +1,60 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text " Simple side effect analysis. "]
+val no_effects : Flambda.t -> bool[@@ocaml.doc
+                                    " Conservative approximation as to whether a given Flambda expression may\n    have any side effects. "]
+val no_effects_named : Flambda.named -> bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text " Simple side effect analysis. "]
+
+val no_effects : Flambda.t -> bool[@@ocaml.doc
+                                    " Conservative approximation as to whether a given Flambda expression may\n    have any side effects. "]
+
+
+val no_effects_named : Flambda.named -> bool
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module effect_analysis.mli
+
+  Namespace: effect_analysis.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text " Simple side effect analysis. "]
+    
+    val no_effects :
+    Flambda.t -> bool[@@ocaml.doc
+                       " Conservative approximation as to whether a given Flambda expression may\n    have any side effects. "]
+    
+    
+    val no_effects_named : Flambda.named -> bool
+    
+
+
+*** OK ***
+

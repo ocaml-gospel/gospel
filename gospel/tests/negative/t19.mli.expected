@@ -1,0 +1,16 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : y:int -> int -> int[@@gospel  r = f ~y y]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : y:int -> int -> int
+(*@ r  = f  ~y  y 
+     *)
+File "t19.mli", line 12, characters 13-14:
+Error: Variable y is duplicated in pattern

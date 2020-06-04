@@ -1,0 +1,179 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type result =
+  | Same 
+  | Different 
+  | Unexpected_output 
+  | Error of string * int 
+type tool
+type ignore = {
+  bytes: int ;
+  lines: int }
+val make_cmp_tool : ignore:ignore -> tool
+val make_comparison_tool :
+  ?result_of_exitcode:(string -> int -> result) -> string -> string -> tool
+val default_comparison_tool : tool
+type filetype =
+  | Binary 
+  | Text 
+type files =
+  {
+  filetype: filetype ;
+  reference_filename: string ;
+  output_filename: string }
+val compare_files : ?tool:tool -> files -> result
+val check_file : ?tool:tool -> files -> result
+val cmp_result_of_exitcode : string -> int -> result
+val diff : files -> (string, string) Stdlib.result
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type result =
+| Same 
+| Different 
+| Unexpected_output 
+| Error of string * int 
+  
+
+type tool
+  
+
+type ignore = {
+bytes: int ;
+lines: int }
+  
+
+val make_cmp_tool : ignore:ignore -> tool
+
+
+val make_comparison_tool :
+  ?result_of_exitcode:(string -> int -> result) -> string -> string -> tool
+
+
+val default_comparison_tool : tool
+
+
+type filetype =
+| Binary 
+| Text 
+  
+
+type files =
+{
+filetype: filetype ;
+reference_filename: string ;
+output_filename: string }
+  
+
+val compare_files : ?tool:tool -> files -> result
+
+
+val check_file : ?tool:tool -> files -> result
+
+
+val cmp_result_of_exitcode : string -> int -> result
+
+
+val diff : files -> (string, string) Stdlib.result
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module filecompare.mli
+
+  Namespace: filecompare.mli
+    Type symbols
+       files
+       filetype
+       ignore
+       result
+       tool
+      
+    Logic Symbols
+      function Binary  : filetype
+      function Different  : result
+      function Error (_:string * int) : result
+      function Same  : result
+      function Text  : filetype
+      function Unexpected_output  : result
+      function bytes (_:ignore) : int
+      function constr#files (_:filetype) (_:string) (_:string) : files
+      function constr#ignore (_:int) (_:int) : ignore
+      function filetype#1 (_:files) : filetype
+      function lines (_:ignore) : int
+      function output_filename (_:files) : string
+      function reference_filename (_:files) : string
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type result = Same of 
+                  function Same  : result
+               | Different of 
+                 function Different  : result
+               | Unexpected_output of 
+                 function Unexpected_output  : result
+               | Error of string * int
+                 function Error (_:string * int) : result
+    
+    
+    type tool
+    
+    
+    type ignore = {bytes:int; lines:int}
+               function constr#ignore (_:int) (_:int) : ignore
+                 function bytes (_:ignore) : int
+                 function lines (_:ignore) : int
+    
+    
+    val make_cmp_tool : ignore:ignore -> tool
+    
+    
+    val make_comparison_tool :
+    ?result_of_exitcode:(string -> int -> result) -> string -> string -> tool
+    
+    
+    val default_comparison_tool : tool
+    
+    
+    type filetype = Binary of 
+                    function Binary  : filetype
+                 | Text of 
+                   function Text  : filetype
+    
+    
+    type files = {filetype#1:filetype; reference_filename:string; output_filename:
+              string}
+              function constr#files (_:filetype) (_:string) (_:string) : files
+                function filetype#1 (_:files) : filetype
+                function reference_filename (_:files) : string
+                function output_filename (_:files) : string
+    
+    
+    val compare_files : ?tool:tool -> files -> result
+    
+    
+    val check_file : ?tool:tool -> files -> result
+    
+    
+    val cmp_result_of_exitcode : string -> int -> result
+    
+    
+    val diff : files -> (string, string) Stdlib.result
+    
+
+
+*** OK ***
+

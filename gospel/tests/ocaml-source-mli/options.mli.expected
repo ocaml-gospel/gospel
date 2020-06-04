@@ -1,0 +1,60 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val log_to_stderr : bool ref
+val files_to_test : string list ref
+val promote : bool ref
+val usage : string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val log_to_stderr : bool ref
+
+
+val files_to_test : string list ref
+
+
+val promote : bool ref
+
+
+val usage : string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module options.mli
+
+  Namespace: options.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val log_to_stderr : bool ref
+    
+    
+    val files_to_test : string list ref
+    
+    
+    val promote : bool ref
+    
+    
+    val usage : string
+    
+
+
+*** OK ***
+

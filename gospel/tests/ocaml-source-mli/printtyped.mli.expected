@@ -1,0 +1,31 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Typedtree
+open Format
+val interface : formatter -> signature -> unit
+val implementation : formatter -> structure -> unit
+val implementation_with_coercion :
+  formatter -> (structure * module_coercion) -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Typedtree
+
+open Format
+
+val interface : formatter -> signature -> unit
+
+
+val implementation : formatter -> structure -> unit
+
+
+val implementation_with_coercion :
+  formatter -> (structure * module_coercion) -> unit
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

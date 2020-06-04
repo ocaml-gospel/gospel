@@ -1,0 +1,34 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+type result =
+  {
+  expr: Clambda.ulambda ;
+  preallocated_blocks: Clambda.preallocated_block list ;
+  structured_constants: Clambda.ustructured_constant Symbol.Map.t ;
+  exported: Export_info.t }
+val convert : (Flambda.program * Export_info.transient) -> result[@@ocaml.doc
+                                                                   " Convert an Flambda program, with associated proto-export information,\n    to Clambda.\n    This yields a Clambda expression together with augmented export\n    information and details about required statically-allocated values\n    (preallocated blocks, for [Initialize_symbol], and structured\n    constants).\n\n    It is during this process that accesses to variables within\n    closures are transformed to field accesses within closure values.\n    For direct calls, the hidden closure parameter is added.  Switch\n    tables are also built.\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+type result =
+{
+expr: Clambda.ulambda ;
+preallocated_blocks: Clambda.preallocated_block list ;
+structured_constants: Clambda.ustructured_constant Symbol.Map.t ;
+exported: Export_info.t }
+  
+
+val convert : (Flambda.program * Export_info.transient) -> result[@@ocaml.doc
+                                                                   " Convert an Flambda program, with associated proto-export information,\n    to Clambda.\n    This yields a Clambda expression together with augmented export\n    information and details about required statically-allocated values\n    (preallocated blocks, for [Initialize_symbol], and structured\n    constants).\n\n    It is during this process that accesses to variables within\n    closures are transformed to field accesses within closure values.\n    For direct calls, the hidden closure parameter is added.  Switch\n    tables are also built.\n"]
+
+File "./asttypes.mli", line 28, characters 19-24:
+Error: Symbol int32 not found

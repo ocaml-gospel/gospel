@@ -1,0 +1,143 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+module type S  =
+  sig
+    type t
+    val simplify_unop :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              (Flambda.named * Simple_value_approx.t *
+                Inlining_cost.Benefit.t)
+    val simplify_binop :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              t ->
+                (Flambda.named * Simple_value_approx.t *
+                  Inlining_cost.Benefit.t)
+    val simplify_binop_int :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              int ->
+                size_int:int ->
+                  (Flambda.named * Simple_value_approx.t *
+                    Inlining_cost.Benefit.t)
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+module type S  =
+  sig
+    type t
+      
+    val simplify_unop :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              (Flambda.named * Simple_value_approx.t *
+                Inlining_cost.Benefit.t)
+    
+    val simplify_binop :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              t ->
+                (Flambda.named * Simple_value_approx.t *
+                  Inlining_cost.Benefit.t)
+    
+    val simplify_binop_int :
+      Lambda.primitive ->
+        t Simple_value_approx.boxed_int ->
+          Flambda.named ->
+            t ->
+              int ->
+                size_int:int ->
+                  (Flambda.named * Simple_value_approx.t *
+                    Inlining_cost.Benefit.t)
+    
+  end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module simplify_boxed_integer_ops_intf.mli
+
+  Namespace: simplify_boxed_integer_ops_intf.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      Namespace: S
+        Type symbols
+           t
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    module type S  =
+      sig
+        type t
+        
+        val simplify_unop :
+        Lambda.primitive ->
+          t Simple_value_approx.boxed_int ->
+            Flambda.named ->
+              t ->
+                (Flambda.named * Simple_value_approx.t *
+                  Inlining_cost.Benefit.t)
+        
+        val simplify_binop :
+        Lambda.primitive ->
+          t Simple_value_approx.boxed_int ->
+            Flambda.named ->
+              t ->
+                t ->
+                  (Flambda.named * Simple_value_approx.t *
+                    Inlining_cost.Benefit.t)
+        
+        val simplify_binop_int :
+        Lambda.primitive ->
+          t Simple_value_approx.boxed_int ->
+            Flambda.named ->
+              t ->
+                int ->
+                  size_int:int ->
+                    (Flambda.named * Simple_value_approx.t *
+                      Inlining_cost.Benefit.t)
+        
+      end
+
+
+*** OK ***
+

@@ -1,0 +1,80 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " A module with a function to parse strings to obtain a [Odoc_types.text] value. "]
+exception Text_syntax of int * int * string
+  [@ocaml.doc " Syntax error in a text. "]
+module Texter :
+sig
+  val text_of_string : string -> Odoc_types.text
+  val string_of_text : Odoc_types.text -> string
+end[@@ocaml.doc " Transformation of strings to text structures. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " A module with a function to parse strings to obtain a [Odoc_types.text] value. "]
+
+exception Text_syntax of int * int * string
+  [@ocaml.doc " Syntax error in a text. "]
+
+module Texter :
+sig
+  val text_of_string : string -> Odoc_types.text
+  
+  val string_of_text : Odoc_types.text -> string
+  
+end[@@ocaml.doc " Transformation of strings to text structures. "]
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module odoc_text.mli
+
+  Namespace: odoc_text.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      Text_syntax
+      
+    Namespaces
+      Namespace: Texter
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " A module with a function to parse strings to obtain a [Odoc_types.text] value. "]
+    
+    exception Text_syntax
+    
+    module Texter :
+    sig
+      val text_of_string : string -> Odoc_types.text
+      
+      val string_of_text : Odoc_types.text -> string
+      
+    end[@@ocaml.doc " Transformation of strings to text structures. "]
+
+
+*** OK ***
+

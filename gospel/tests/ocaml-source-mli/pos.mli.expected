@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val get_desc : Instruct.debug_event -> string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val get_desc : Instruct.debug_event -> string
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module pos.mli
+
+  Namespace: pos.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val get_desc : Instruct.debug_event -> string
+    
+
+
+*** OK ***
+

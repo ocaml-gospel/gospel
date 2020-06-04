@@ -1,0 +1,61 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " \"Recursive functions\" are those functions [f] that might call either:\n    - themselves, or\n    - another function that in turn might call [f].\n\n    For example in the following simultaneous definition of [f] [g] and [h],\n    [f] and [g] are recursive functions, but not [h]:\n      [let rec f x = g x\n       and g x = f x\n       and h x = g x]\n"]
+val in_function_declarations :
+  Flambda.function_declarations ->
+    backend:(module Backend_intf.S) -> Variable.Set.t[@@ocaml.doc
+                                                       " Determine the recursive functions, if any, bound by the given set of\n    function declarations.\n    This is only intended to be used by [Flambda.create_function_declarations].\n"]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " \"Recursive functions\" are those functions [f] that might call either:\n    - themselves, or\n    - another function that in turn might call [f].\n\n    For example in the following simultaneous definition of [f] [g] and [h],\n    [f] and [g] are recursive functions, but not [h]:\n      [let rec f x = g x\n       and g x = f x\n       and h x = g x]\n"]
+
+val in_function_declarations :
+  Flambda.function_declarations ->
+    backend:(module Backend_intf.S) -> Variable.Set.t[@@ocaml.doc
+                                                       " Determine the recursive functions, if any, bound by the given set of\n    function declarations.\n    This is only intended to be used by [Flambda.create_function_declarations].\n"]
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module find_recursive_functions.mli
+
+  Namespace: find_recursive_functions.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.warning "+a-4-9-30-40-41-42"]
+    
+    [@@@ocaml.text
+      " \"Recursive functions\" are those functions [f] that might call either:\n    - themselves, or\n    - another function that in turn might call [f].\n\n    For example in the following simultaneous definition of [f] [g] and [h],\n    [f] and [g] are recursive functions, but not [h]:\n      [let rec f x = g x\n       and g x = f x\n       and h x = g x]\n"]
+    
+    val in_function_declarations :
+    Flambda.function_declarations ->
+      backend:(module Backend_intf.S) -> Variable.Set.t[@@ocaml.doc
+                                                         " Determine the recursive functions, if any, bound by the given set of\n    function declarations.\n    This is only intended to be used by [Flambda.create_function_declarations].\n"]
+    
+
+
+*** OK ***
+

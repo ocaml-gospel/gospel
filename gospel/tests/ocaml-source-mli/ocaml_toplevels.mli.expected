@@ -1,0 +1,90 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+class toplevel :
+  name:(string -> string) ->
+    flags:string ->
+      directory:string ->
+        exit_status_variable:Variables.t ->
+          reference_variable:Variables.t ->
+            output_variable:Variables.t ->
+              backend:Ocaml_backends.t ->
+                compiler:Ocaml_compilers.compiler ->
+                  object
+                    inherit Ocaml_tools.tool
+                    method  backend : Ocaml_backends.t
+                    method  compiler : Ocaml_compilers.compiler
+                  end
+val ocaml : toplevel
+val ocamlnat : toplevel
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+class toplevel :
+  name:(string -> string) ->
+    flags:string ->
+      directory:string ->
+        exit_status_variable:Variables.t ->
+          reference_variable:Variables.t ->
+            output_variable:Variables.t ->
+              backend:Ocaml_backends.t ->
+                compiler:Ocaml_compilers.compiler ->
+                  object
+                    inherit Ocaml_tools.tool
+                    method  backend : Ocaml_backends.t
+                    method  compiler : Ocaml_compilers.compiler
+                  end
+
+val ocaml : toplevel
+
+
+val ocamlnat : toplevel
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ocaml_toplevels.mli
+
+  Namespace: ocaml_toplevels.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    class toplevel :
+      name:(string -> string) ->
+        flags:string ->
+          directory:string ->
+            exit_status_variable:Variables.t ->
+              reference_variable:Variables.t ->
+                output_variable:Variables.t ->
+                  backend:Ocaml_backends.t ->
+                    compiler:Ocaml_compilers.compiler ->
+                      object
+                        inherit Ocaml_tools.tool
+                        method  backend : Ocaml_backends.t
+                        method  compiler : Ocaml_compilers.compiler
+                      end
+    
+    val ocaml : toplevel
+    
+    
+    val ocamlnat : toplevel
+    
+
+
+*** OK ***
+

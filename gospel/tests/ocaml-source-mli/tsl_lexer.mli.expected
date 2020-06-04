@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val token : Lexing.lexbuf -> Tsl_parser.token
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val token : Lexing.lexbuf -> Tsl_parser.token
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module tsl_lexer.mli
+
+  Namespace: tsl_lexer.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val token : Lexing.lexbuf -> Tsl_parser.token
+    
+
+
+*** OK ***
+

@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val yes_or_no : string -> bool
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val yes_or_no : string -> bool
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module question.mli
+
+  Namespace: question.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val yes_or_no : string -> bool
+    
+
+
+*** OK ***
+

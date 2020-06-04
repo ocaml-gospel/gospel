@@ -1,0 +1,45 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Insertion of instrumentation code for Spacetime profiling. "]
+class virtual instruction_selection : Selectgen.selector_generic
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Insertion of instrumentation code for Spacetime profiling. "]
+
+class virtual instruction_selection : Selectgen.selector_generic
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module spacetime_profiling.mli
+
+  Namespace: spacetime_profiling.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Insertion of instrumentation code for Spacetime profiling. "]
+    
+    class virtual instruction_selection : Selectgen.selector_generic
+
+
+*** OK ***
+

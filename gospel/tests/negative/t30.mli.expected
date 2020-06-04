@@ -1,0 +1,28 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+exception E of int * int [@@gospel
+                            function integer_of_int (x:int): integer ]
+[@@gospel  function fst (x: 'a * 'a): 'a ]
+val f : 'a -> 'a[@@gospel
+                   x = f y
+    raises E x -> integer_of_int (fst x) = 1 ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+exception E of int * int 
+
+(*@ function integer_of_int  ... *)
+
+(*@ function fst  ... *)
+
+val f : 'a -> 'a
+(*@ x  = f  y 
+    with ...
+     *)
+File "t30.mli", line 18, characters 11-44:
+Error: Type checking error: exception pattern doesn't match its type

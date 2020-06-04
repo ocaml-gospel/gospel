@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val allocate_registers : unit -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val allocate_registers : unit -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module linscan.mli
+
+  Namespace: linscan.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val allocate_registers : unit -> unit
+    
+
+
+*** OK ***
+

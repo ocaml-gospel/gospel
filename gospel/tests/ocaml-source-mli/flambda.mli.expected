@@ -1,0 +1,883 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+[@@@ocaml.text
+  " Intermediate language used for tree-based analysis and optimization. "]
+type call_kind =
+  | Indirect 
+  | Direct of Closure_id.t [@@ocaml.doc
+                             " Whether the callee in a function application is known at compile time. "]
+type const =
+  | Int of int 
+  | Char of char
+  [@ocaml.doc " [Char] is kept separate from [Int] to improve printing "]
+  | Const_pointer of int
+  [@ocaml.doc
+    " [Const_pointer] is an immediate value of a type whose values may be\n     boxed (typically a variant type with both constant and non-constant\n     constructors). "]
+[@@ocaml.doc
+  " Simple constants.  (\"Structured constants\" are rewritten to invocations\n    of [Pmakeblock] so that they easily take part in optimizations.) "]
+type apply =
+  {
+  func: Variable.t ;
+  args: Variable.t list ;
+  kind: call_kind ;
+  dbg: Debuginfo.t ;
+  inline: Lambda.inline_attribute
+    [@ocaml.doc
+      " Instructions from the source code as to whether the callee should\n      be inlined. "];
+  specialise: Lambda.specialise_attribute
+    [@ocaml.doc
+      " Instructions from the source code as to whether the callee should\n      be specialised. "]}
+[@@ocaml.doc " The application of a function to a list of arguments. "]
+type assign = {
+  being_assigned: Mutable_variable.t ;
+  new_value: Variable.t }[@@ocaml.doc
+                           " The update of a mutable variable.  Mutable variables are distinct from\n    immutable variables in Flambda. "]
+type send =
+  {
+  kind: Lambda.meth_kind ;
+  meth: Variable.t ;
+  obj: Variable.t ;
+  args: Variable.t list ;
+  dbg: Debuginfo.t }[@@ocaml.doc " The invocation of a method. "]
+type project_closure = Projection.project_closure[@@ocaml.doc
+                                                   " For details on these types, see projection.mli. "]
+type move_within_set_of_closures = Projection.move_within_set_of_closures
+type project_var = Projection.project_var
+type specialised_to =
+  {
+  var: Variable.t [@ocaml.doc " The \"outer variable\". "];
+  projection: Projection.t option
+    [@ocaml.doc
+      " The [projecting_from] value (see projection.mli) of any [projection]\n      must be another free variable or specialised argument (depending on\n      whether this record type is involved in [free_vars] or\n      [specialised_args] respectively) in the same set of closures.\n      As such, this field describes a relation of projections between\n      either the [free_vars] or the [specialised_args]. "]}
+[@@ocaml.doc " See [free_vars] and [specialised_args], below. "]
+type t =
+  | Var of Variable.t 
+  | Let of let_expr 
+  | Let_mutable of let_mutable 
+  | Let_rec of (Variable.t * named) list * t
+  [@ocaml.doc " CR-someday lwhite: give Let_rec the same fields as Let. "]
+  | Apply of apply 
+  | Send of send 
+  | Assign of assign 
+  | If_then_else of Variable.t * t * t 
+  | Switch of Variable.t * switch 
+  | String_switch of Variable.t * (string * t) list * t option
+  [@ocaml.doc
+    " Restrictions on [Lambda.Lstringswitch] also apply to [String_switch]. "]
+  | Static_raise of Static_exception.t * Variable.t list 
+  | Static_catch of Static_exception.t * Variable.t list * t * t 
+  | Try_with of t * Variable.t * t 
+  | While of t * t 
+  | For of for_loop 
+  | Proved_unreachable [@@ocaml.doc
+                         " Flambda terms are partitioned in a pseudo-ANF manner; many terms are\n    required to be [let]-bound.  This in particular ensures there is always\n    a variable name for an expression that may be lifted out (for example\n    if it is found to be constant).\n    Note: All bound variables in Flambda terms must be distinct.\n    [Flambda_invariants] verifies this. "]
+and named =
+  | Symbol of Symbol.t 
+  | Const of const 
+  | Allocated_const of Allocated_const.t 
+  | Read_mutable of Mutable_variable.t 
+  | Read_symbol_field of Symbol.t * int
+  [@ocaml.doc
+    " During the lifting of [let] bindings to [program] constructions after\n      closure conversion, we generate symbols and their corresponding\n      definitions (which may or may not be constant), together with field\n      accesses to such symbols.  We would like it to be the case that such\n      field accesses are simplified to the relevant component of the\n      symbol concerned.  (The rationale is to generate efficient code and\n      share constants as expected: see e.g. tests/asmcomp/staticalloc.ml.)\n      The components of the symbol would be identified by other symbols.\n      This sort of access pattern is feasible because the top-level structure\n      of symbols is statically allocated and fixed at compile time.\n      It may seem that [Prim (Pfield, ...)] expressions could be used to\n      perform the field accesses.  However for simplicity, to avoid having to\n      keep track of properties of individual fields of blocks,\n      [Inconstant_idents] never deems a [Prim (Pfield, ...)] expression to be\n      constant.  This would in general prevent field accesses to symbols from\n      being simplified in the way we would like, since [Lift_constants] would\n      not assign new symbols (i.e. the things we would like to simplify to)\n      to the various projections from the symbols in question.\n      To circumvent this problem we use [Read_symbol_field] when generating\n      projections from the top level of symbols.  Owing to the properties of\n      symbols described above, such expressions may be eligible for declaration\n      as constant by [Inconstant_idents] (and thus themselves lifted to another\n      symbol), without any further complication.\n      [Read_symbol_field] may only be used when the definition of the symbol\n      is in scope in the [program].  For external unresolved symbols, [Pfield]\n      may still be used; it will be changed to [Read_symbol_field] by\n      [Inline_and_simplify] when (and if) the symbol is imported. "]
+  | Set_of_closures of set_of_closures 
+  | Project_closure of project_closure 
+  | Move_within_set_of_closures of move_within_set_of_closures 
+  | Project_var of project_var 
+  | Prim of Lambda.primitive * Variable.t list * Debuginfo.t 
+  | Expr of t [@ocaml.doc " ANF escape hatch. "][@@ocaml.doc
+                                                  " Values of type [named] will always be [let]-bound to a [Variable.t]. "]
+and let_expr = private
+  {
+  var: Variable.t ;
+  defining_expr: named ;
+  body: t ;
+  free_vars_of_defining_expr: Variable.Set.t
+    [@ocaml.doc
+      " A cache of the free variables in the defining expression of the [let]. "];
+  free_vars_of_body: Variable.Set.t
+    [@ocaml.doc
+      " A cache of the free variables of the body of the [let].  This is an\n      important optimization. "]}
+and let_mutable =
+  {
+  var: Mutable_variable.t ;
+  initial_value: Variable.t ;
+  contents_kind: Lambda.value_kind ;
+  body: t }
+and set_of_closures = private
+  {
+  function_decls: function_declarations ;
+  free_vars: specialised_to Variable.Map.t
+    [@ocaml.doc
+      " Mapping from all variables free in the body of the [function_decls] to\n      variables in scope at the definition point of the [set_of_closures].\n      The domain of this map is sometimes known as the \"variables bound by\n      the closure\". "];
+  specialised_args: specialised_to Variable.Map.t
+    [@ocaml.doc
+      " Parameters whose corresponding arguments are known to always alias a\n      particular value.  These are the only parameters that may, during\n      [Inline_and_simplify], have non-unknown approximations.\n\n      An argument may only be specialised to a variable in the scope of the\n      corresponding set of closures declaration.  Usually, that variable\n      itself also appears in the position of the specialised argument at\n      all call sites of the function.  However it may also be the case (for\n      example in code generated as a result of [Augment_specialised_args])\n      that the various call sites of such a function have differing\n      variables in the position of the specialised argument.  This is\n      permissible *so long as it is certain they all alias the same value*.\n      Great care must be taken in transformations that result in this\n      situation since there are no invariant checks for correctness.\n\n      As an example, supposing all call sites of f are represented here:\n        [let x = ... in\n         let f a b c = ... in\n         let y = ... in\n         f x y 1;\n         f x y 1]\n      the specialised arguments of f can (but does not necessarily) contain\n      the association [a] -> [x], but cannot contain [b] -> [y] because [f]\n      is not in the scope of [y]. If f were the recursive function\n      [let rec f a b c = f a 1 2 in], [a] -> [x] would still be a valid\n      specialised argument because all recursive calls maintain the invariant.\n\n      This information is used for optimization purposes, if such a binding is\n      known, it is possible to specialise the body of the function according\n      to its parameter. This is usually introduced when specialising a\n      recursive function, for instance.\n        [let rec map f = function\n           | [] -> []\n           | h :: t -> f h :: map f t\n         let map_succ l =\n           let succ x = x + 1 in\n           map succ l]\n      [map] can be duplicated in [map_succ] to be specialised for the argument\n      [f]. This will result in\n        [let map_succ l =\n           let succ x = x + 1 in\n           let rec map f = function\n             | [] -> []\n             | h :: t -> f h :: map f t in\n           map succ l]\n      with map having [f] -> [succ] in its [specialised_args] field.\n\n      Specialised argument information for arguments that are used must\n      never be erased.  This ensures that specialised arguments whose\n      approximations describe closures maintain those approximations, which\n      is essential to transport the closure freshening information to the\n      point of use (e.g. a [Project_var] from such an argument).\n  "];
+  direct_call_surrogates: Variable.t Variable.Map.t
+    [@ocaml.doc
+      " If [direct_call_surrogates] maps [fun_var1] to [fun_var2] then direct\n      calls to [fun_var1] should be redirected to [fun_var2].  This is used\n      to reduce the overhead of transformations that introduce wrapper\n      functions (which will be inlined at direct call sites, but will\n      penalise indirect call sites).\n      [direct_call_surrogates] may not be transitively closed. "]}
+[@@ocaml.doc
+  " The representation of a set of function declarations (possibly mutually\n    recursive).  Such a set encapsulates the declarations themselves,\n    information about their defining environment, and information used\n    specifically for optimization.\n    Before a function can be applied it must be \"projected\" from a set of\n    closures to yield a \"closure\".  This is done using [Project_closure]\n    (see above).  Given a closure, not only can it be applied, but information\n    about its defining environment can be retrieved (using [Project_var],\n    see above).\n    At runtime, a [set_of_closures] corresponds to an OCaml value with tag\n    [Closure_tag] (possibly with inline [Infix_tag](s)).  As an optimization,\n    an operation ([Move_within_set_of_closures]) is provided (see above)\n    which enables one closure within a set to be located given another\n    closure in the same set.  This avoids keeping a pointer to the whole set\n    of closures alive when compiling, for example, mutually-recursive\n    functions.\n"]
+and function_declarations = private
+  {
+  is_classic_mode: bool
+    [@ocaml.doc
+      " Indicates whether this [function_declarations] was compiled\n      with -Oclassic. "];
+  set_of_closures_id: Set_of_closures_id.t
+    [@ocaml.doc
+      " An identifier (unique across all Flambda trees currently in memory)\n      of the set of closures associated with this set of function\n      declarations. "];
+  set_of_closures_origin: Set_of_closures_origin.t
+    [@ocaml.doc
+      " An identifier of the original set of closures on which this set of\n      function declarations is based.  Used to prevent different\n      specialisations of the same functions from being inlined/specialised\n      within each other. "];
+  funs: function_declaration Variable.Map.t
+    [@ocaml.doc
+      " The function(s) defined by the set of function declarations.  The\n      keys of this map are often referred to in the code as \"fun_var\"s. "]}
+and function_declaration = private
+  {
+  closure_origin: Closure_origin.t ;
+  params: Parameter.t list ;
+  body: t ;
+  free_variables: Variable.Set.t
+    [@ocaml.doc
+      " All variables free in the *body* of the function.  For example, a\n      variable that is bound as one of the function's parameters will still\n      be included in this set.  This field is present as an optimization. "];
+  free_symbols: Symbol.Set.t
+    [@ocaml.doc
+      " All symbols that occur in the function's body.  (Symbols can never be\n      bound in a function's body; the only thing that binds symbols is the\n      [program] constructions below.) "];
+  stub: bool
+    [@ocaml.doc
+      " A stub function is a generated function used to prepare arguments or\n      return values to allow indirect calls to functions with a special calling\n      convention.  For instance indirect calls to tuplified functions must go\n      through a stub.  Stubs will be unconditionally inlined. "];
+  dbg: Debuginfo.t [@ocaml.doc " Debug info for the function declaration. "];
+  inline: Lambda.inline_attribute
+    [@ocaml.doc " Inlining requirements from the source code. "];
+  specialise: Lambda.specialise_attribute
+    [@ocaml.doc " Specialising requirements from the source code. "];
+  is_a_functor: bool
+    [@ocaml.doc
+      " Whether the function is known definitively to be a functor. "]}
+and switch =
+  {
+  numconsts: Numbers.Int.Set.t [@ocaml.doc " Integer cases "];
+  consts: (int * t) list [@ocaml.doc " Integer cases "];
+  numblocks: Numbers.Int.Set.t [@ocaml.doc " Number of tag block cases "];
+  blocks: (int * t) list [@ocaml.doc " Tag block cases "];
+  failaction: t option [@ocaml.doc " Action to take if none matched "]}
+[@@ocaml.doc " Equivalent to the similar type in [Lambda]. "]
+and for_loop =
+  {
+  bound_var: Variable.t ;
+  from_value: Variable.t ;
+  to_value: Variable.t ;
+  direction: Asttypes.direction_flag ;
+  body: t }[@@ocaml.doc " Equivalent to the similar type in [Lambda]. "]
+and constant_defining_value =
+  | Allocated_const of Allocated_const.t
+  [@ocaml.doc
+    " A single constant.  These are never \"simple constants\" (type [const])\n        but instead more complicated constructions. "]
+  | Block of Tag.t * constant_defining_value_block_field list
+  [@ocaml.doc
+    " A pre-allocated block full of constants (either simple constants\n        or references to other constants, see below). "]
+  | Set_of_closures of set_of_closures
+  [@ocaml.doc
+    " A closed (and thus constant) set of closures.  (That is to say,\n        [free_vars] must be empty.) "]
+  | Project_closure of Symbol.t * Closure_id.t
+  [@ocaml.doc
+    " Selection of one closure from a constant set of closures.\n        Analogous to the equivalent operation on expressions. "]
+[@@ocaml.doc
+  " Like a subset of [Flambda.named], except that instead of [Variable.t]s we\n    have [Symbol.t]s, and everything is a constant (i.e. with a fixed value\n    known at compile time).  Values of this type describe constants that will\n    be directly assigned to symbols in the object file (see below). "]
+and constant_defining_value_block_field =
+  | Symbol of Symbol.t 
+  | Const of const 
+module Constant_defining_value :
+Identifiable.S with type  t =  constant_defining_value
+type expr = t
+type program_body =
+  | Let_symbol of Symbol.t * constant_defining_value * program_body
+  [@ocaml.doc " Define the given symbol to have the given constant value. "]
+  | Let_rec_symbol of (Symbol.t * constant_defining_value) list *
+  program_body
+  [@ocaml.doc
+    " As for [Let_symbol], but recursive.  This is needed to treat examples\n      like this, where a constant set of closures is lifted to toplevel:\n\n        let rec f x = f x\n\n      After lifting this produces (in pseudo-Flambda):\n\n        Let_rec_symbol set_of_closures_symbol =\n          (Set_of_closures { f x ->\n            let applied_function = Symbol f_closure in\n            Apply (applied_function, x) })\n        and f_closure = Project_closure (set_of_closures_symbol, f)\n\n      Use of [Let_rec_symbol], by virtue of the special handling in\n      [Inline_and_simplify.define_let_rec_symbol_approx], enables the\n      approximation of the set of closures to be present in order to\n      correctly simplify the [Project_closure] construction.  (See\n      [Inline_and_simplify.simplify_project_closure] for that part.) "]
+  | Initialize_symbol of Symbol.t * Tag.t * t list * program_body
+  [@ocaml.doc
+    " Define the given symbol as a constant block of the given size and\n      tag; but with a possibly non-constant initializer.  The initializer\n      will be executed at most once (from the entry point of the compilation\n      unit). "]
+  | Effect of t * program_body
+  [@ocaml.doc
+    " Cause the given expression, which may have a side effect, to be\n      executed.  The resulting value is discarded.  [Effect] constructions\n      are never re-ordered. "]
+  | End of Symbol.t
+  [@ocaml.doc
+    " [End] accepts the root symbol: the only symbol that can never be\n      eliminated. "]
+[@@ocaml.doc
+  " A \"program\" is the contents of one compilation unit.  It describes the\n    various values that are assigned to symbols (and in some cases fields of\n    such symbols) in the object file.  As such, it is closely related to\n    the compilation of toplevel modules. "]
+type program = {
+  imported_symbols: Symbol.Set.t ;
+  program_body: program_body }
+val free_variables :
+  ?ignore_uses_as_callee:unit ->
+    ?ignore_uses_as_argument:unit ->
+      ?ignore_uses_in_project_var:unit -> t -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute the free variables of a term.  (This is O(1) for [Let]s).\n    If [ignore_uses_as_callee], all free variables inside [Apply] expressions\n    are ignored.  Likewise [ignore_uses_in_project_var] for [Project_var]\n    expressions.\n"]
+val free_variables_named :
+  ?ignore_uses_in_project_var:unit -> named -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute the free variables of a named expression. "]
+val used_variables :
+  ?ignore_uses_as_callee:unit ->
+    ?ignore_uses_as_argument:unit ->
+      ?ignore_uses_in_project_var:unit -> t -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute _all_ variables occurring inside an expression. "]
+val used_variables_named :
+  ?ignore_uses_in_project_var:unit -> named -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute _all_ variables occurring inside a named expression. "]
+val free_symbols : expr -> Symbol.Set.t
+val free_symbols_named : named -> Symbol.Set.t
+val free_symbols_program : program -> Symbol.Set.t
+val fold_lets_option :
+  t ->
+    init:'a ->
+      for_defining_expr:('a ->
+                           Variable.t -> named -> ('a * Variable.t * named))
+        ->
+        for_last_body:('a -> t -> (t * 'b)) ->
+          filter_defining_expr:('b ->
+                                  Variable.t ->
+                                    named ->
+                                      Variable.Set.t ->
+                                        ('b * Variable.t * named option))
+            -> (t * 'b)[@@ocaml.doc
+                         " Used to avoid exceeding the stack limit when handling expressions with\n    multiple consecutive nested [Let]-expressions.  This saves rewriting large\n    simplification functions in CPS.  This function provides for the\n    rewriting or elimination of expressions during the fold. "]
+val map_lets :
+  t ->
+    for_defining_expr:(Variable.t -> named -> named) ->
+      for_last_body:(t -> t) -> after_rebuild:(t -> t) -> t[@@ocaml.doc
+                                                             " Like [fold_lets_option], but just a map. "]
+val iter_lets :
+  t ->
+    for_defining_expr:(Variable.t -> named -> unit) ->
+      for_last_body:(t -> unit) -> for_each_let:(t -> unit) -> unit[@@ocaml.doc
+                                                                    " Like [map_lets], but just an iterator. "]
+val create_let : Variable.t -> named -> t -> t[@@ocaml.doc
+                                                " Creates a [Let] expression.  (This computes the free variables of the\n    defining expression and the body.) "]
+val map_defining_expr_of_let : let_expr -> f:(named -> named) -> t[@@ocaml.doc
+                                                                    " Apply the specified function [f] to the defining expression of the given\n    [Let]-expression, returning a new [Let]. "]
+module With_free_variables :
+sig
+  type 'a t
+  val of_defining_expr_of_let : let_expr -> named t[@@ocaml.doc
+                                                     " O(1) time. "]
+  val of_body_of_let : let_expr -> expr t[@@ocaml.doc " O(1) time. "]
+  val of_expr : expr -> expr t[@@ocaml.doc
+                                " Takes the time required to calculate the free variables of the given\n      term (proportional to the size of the term, except that the calculation\n      for [Let] is O(1)). "]
+  val of_named : named -> named t
+  val create_let_reusing_defining_expr :
+    Variable.t -> named t -> expr -> expr[@@ocaml.doc
+                                           " Takes the time required to calculate the free variables of the given\n      [expr]. "]
+  val create_let_reusing_body : Variable.t -> named -> expr t -> expr
+  [@@ocaml.doc
+    " Takes the time required to calculate the free variables of the given\n      [named]. "]
+  val create_let_reusing_both : Variable.t -> named t -> expr t -> expr
+  [@@ocaml.doc " O(1) time. "]
+  val expr : expr t -> named t[@@ocaml.doc
+                                " The equivalent of the [Expr] constructor. "]
+  val contents : 'a t -> 'a
+  val free_variables : _ t -> Variable.Set.t[@@ocaml.doc " O(1) time. "]
+end[@@ocaml.doc
+     " A module for the manipulation of terms where the recomputation of free\n    variable sets is to be kept to a minimum. "]
+val create_function_declaration :
+  params:Parameter.t list ->
+    body:t ->
+      stub:bool ->
+        dbg:Debuginfo.t ->
+          inline:Lambda.inline_attribute ->
+            specialise:Lambda.specialise_attribute ->
+              is_a_functor:bool ->
+                closure_origin:Closure_origin.t -> function_declaration
+[@@ocaml.doc
+  " Create a function declaration.  This calculates the free variables and\n    symbols occurring in the specified [body]. "]
+val update_function_declaration :
+  function_declaration ->
+    params:Parameter.t list -> body:t -> function_declaration[@@ocaml.doc
+                                                               " Create a function declaration based on another function declaration "]
+val create_function_declarations :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations given the individual declarations. "]
+val create_function_declarations_with_origin :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t ->
+      set_of_closures_origin:Set_of_closures_origin.t ->
+        function_declarations[@@ocaml.doc
+                               " Create a set of function declarations with a given set of closures\n    origin. "]
+val update_body_of_function_declaration :
+  function_declaration -> body:expr -> function_declaration[@@ocaml.doc
+                                                             " Change only the code of a function declaration. "]
+val update_function_decl's_params_and_body :
+  function_declaration ->
+    params:Parameter.t list -> body:expr -> function_declaration[@@ocaml.doc
+                                                                  " Change only the code and parameters of a function declaration. "]
+val update_function_declarations :
+  function_declarations ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations based on another set of function\n    declarations. "]
+val create_function_declarations_with_closures_origin :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t ->
+      set_of_closures_origin:Set_of_closures_origin.t ->
+        function_declarations
+val import_function_declarations_for_pack :
+  function_declarations ->
+    (Set_of_closures_id.t -> Set_of_closures_id.t) ->
+      (Set_of_closures_origin.t -> Set_of_closures_origin.t) ->
+        function_declarations
+val create_set_of_closures :
+  function_decls:function_declarations ->
+    free_vars:specialised_to Variable.Map.t ->
+      specialised_args:specialised_to Variable.Map.t ->
+        direct_call_surrogates:Variable.t Variable.Map.t -> set_of_closures
+[@@ocaml.doc
+  " Create a set of closures.  Checks are made to ensure that [free_vars]\n    and [specialised_args] are reasonable. "]
+val used_params : function_declaration -> Variable.Set.t[@@ocaml.doc
+                                                          " Given a function declaration, find which of its parameters (if any)\n    are used in the body. "]
+type maybe_named =
+  | Is_expr of t 
+  | Is_named of named 
+val iter_general :
+  toplevel:bool -> (t -> unit) -> (named -> unit) -> maybe_named -> unit
+[@@ocaml.doc
+  " This function is designed for the internal use of [Flambda_iterators].\n    See that module for iterators to be used over Flambda terms. "]
+val print : Format.formatter -> t -> unit
+val print_named : Format.formatter -> named -> unit
+val print_program : Format.formatter -> program -> unit
+val print_const : Format.formatter -> const -> unit
+val print_constant_defining_value :
+  Format.formatter -> constant_defining_value -> unit
+val print_function_declaration :
+  Format.formatter -> (Variable.t * function_declaration) -> unit
+val print_function_declarations :
+  Format.formatter -> function_declarations -> unit
+val print_project_closure : Format.formatter -> project_closure -> unit
+val print_move_within_set_of_closures :
+  Format.formatter -> move_within_set_of_closures -> unit
+val print_project_var : Format.formatter -> project_var -> unit
+val print_set_of_closures : Format.formatter -> set_of_closures -> unit
+val print_specialised_to : Format.formatter -> specialised_to -> unit
+val equal_call_kind : call_kind -> call_kind -> bool
+val equal_specialised_to : specialised_to -> specialised_to -> bool
+val compare_const : const -> const -> int
+val compare_project_var : project_var -> project_var -> int
+val compare_move_within_set_of_closures :
+  move_within_set_of_closures -> move_within_set_of_closures -> int
+val compare_project_closure : project_closure -> project_closure -> int
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.warning "+a-4-9-30-40-41-42"]
+
+[@@@ocaml.text
+  " Intermediate language used for tree-based analysis and optimization. "]
+
+type call_kind =
+| Indirect 
+| Direct of Closure_id.t [@@ocaml.doc
+                           " Whether the callee in a function application is known at compile time. "]
+  
+
+type const =
+| Int of int 
+| Char of char
+[@ocaml.doc " [Char] is kept separate from [Int] to improve printing "]
+| Const_pointer of int
+[@ocaml.doc
+  " [Const_pointer] is an immediate value of a type whose values may be\n     boxed (typically a variant type with both constant and non-constant\n     constructors). "]
+[@@ocaml.doc
+  " Simple constants.  (\"Structured constants\" are rewritten to invocations\n    of [Pmakeblock] so that they easily take part in optimizations.) "]
+  
+
+type apply =
+{
+func: Variable.t ;
+args: Variable.t list ;
+kind: call_kind ;
+dbg: Debuginfo.t ;
+inline: Lambda.inline_attribute
+  [@ocaml.doc
+    " Instructions from the source code as to whether the callee should\n      be inlined. "];
+specialise: Lambda.specialise_attribute
+  [@ocaml.doc
+    " Instructions from the source code as to whether the callee should\n      be specialised. "]}
+[@@ocaml.doc " The application of a function to a list of arguments. "]
+  
+
+type assign = {
+being_assigned: Mutable_variable.t ;
+new_value: Variable.t }[@@ocaml.doc
+                         " The update of a mutable variable.  Mutable variables are distinct from\n    immutable variables in Flambda. "]
+  
+
+type send =
+{
+kind: Lambda.meth_kind ;
+meth: Variable.t ;
+obj: Variable.t ;
+args: Variable.t list ;
+dbg: Debuginfo.t }[@@ocaml.doc " The invocation of a method. "]
+  
+
+type project_closure = Projection.project_closure[@@ocaml.doc
+                                                   " For details on these types, see projection.mli. "]
+  
+
+type move_within_set_of_closures = Projection.move_within_set_of_closures
+  
+
+type project_var = Projection.project_var
+  
+
+type specialised_to =
+{
+var: Variable.t [@ocaml.doc " The \"outer variable\". "];
+projection: Projection.t option
+  [@ocaml.doc
+    " The [projecting_from] value (see projection.mli) of any [projection]\n      must be another free variable or specialised argument (depending on\n      whether this record type is involved in [free_vars] or\n      [specialised_args] respectively) in the same set of closures.\n      As such, this field describes a relation of projections between\n      either the [free_vars] or the [specialised_args]. "]}
+[@@ocaml.doc " See [free_vars] and [specialised_args], below. "]
+  
+
+type t =
+| Var of Variable.t 
+| Let of let_expr 
+| Let_mutable of let_mutable 
+| Let_rec of (Variable.t * named) list * t
+[@ocaml.doc " CR-someday lwhite: give Let_rec the same fields as Let. "]
+| Apply of apply 
+| Send of send 
+| Assign of assign 
+| If_then_else of Variable.t * t * t 
+| Switch of Variable.t * switch 
+| String_switch of Variable.t * (string * t) list * t option
+[@ocaml.doc
+  " Restrictions on [Lambda.Lstringswitch] also apply to [String_switch]. "]
+| Static_raise of Static_exception.t * Variable.t list 
+| Static_catch of Static_exception.t * Variable.t list * t * t 
+| Try_with of t * Variable.t * t 
+| While of t * t 
+| For of for_loop 
+| Proved_unreachable [@@ocaml.doc
+                       " Flambda terms are partitioned in a pseudo-ANF manner; many terms are\n    required to be [let]-bound.  This in particular ensures there is always\n    a variable name for an expression that may be lifted out (for example\n    if it is found to be constant).\n    Note: All bound variables in Flambda terms must be distinct.\n    [Flambda_invariants] verifies this. "]
+  
+and named =
+| Symbol of Symbol.t 
+| Const of const 
+| Allocated_const of Allocated_const.t 
+| Read_mutable of Mutable_variable.t 
+| Read_symbol_field of Symbol.t * int
+[@ocaml.doc
+  " During the lifting of [let] bindings to [program] constructions after\n      closure conversion, we generate symbols and their corresponding\n      definitions (which may or may not be constant), together with field\n      accesses to such symbols.  We would like it to be the case that such\n      field accesses are simplified to the relevant component of the\n      symbol concerned.  (The rationale is to generate efficient code and\n      share constants as expected: see e.g. tests/asmcomp/staticalloc.ml.)\n      The components of the symbol would be identified by other symbols.\n      This sort of access pattern is feasible because the top-level structure\n      of symbols is statically allocated and fixed at compile time.\n      It may seem that [Prim (Pfield, ...)] expressions could be used to\n      perform the field accesses.  However for simplicity, to avoid having to\n      keep track of properties of individual fields of blocks,\n      [Inconstant_idents] never deems a [Prim (Pfield, ...)] expression to be\n      constant.  This would in general prevent field accesses to symbols from\n      being simplified in the way we would like, since [Lift_constants] would\n      not assign new symbols (i.e. the things we would like to simplify to)\n      to the various projections from the symbols in question.\n      To circumvent this problem we use [Read_symbol_field] when generating\n      projections from the top level of symbols.  Owing to the properties of\n      symbols described above, such expressions may be eligible for declaration\n      as constant by [Inconstant_idents] (and thus themselves lifted to another\n      symbol), without any further complication.\n      [Read_symbol_field] may only be used when the definition of the symbol\n      is in scope in the [program].  For external unresolved symbols, [Pfield]\n      may still be used; it will be changed to [Read_symbol_field] by\n      [Inline_and_simplify] when (and if) the symbol is imported. "]
+| Set_of_closures of set_of_closures 
+| Project_closure of project_closure 
+| Move_within_set_of_closures of move_within_set_of_closures 
+| Project_var of project_var 
+| Prim of Lambda.primitive * Variable.t list * Debuginfo.t 
+| Expr of t [@ocaml.doc " ANF escape hatch. "][@@ocaml.doc
+                                                " Values of type [named] will always be [let]-bound to a [Variable.t]. "]
+  
+and let_expr = private
+{
+var: Variable.t ;
+defining_expr: named ;
+body: t ;
+free_vars_of_defining_expr: Variable.Set.t
+  [@ocaml.doc
+    " A cache of the free variables in the defining expression of the [let]. "];
+free_vars_of_body: Variable.Set.t
+  [@ocaml.doc
+    " A cache of the free variables of the body of the [let].  This is an\n      important optimization. "]}
+  
+and let_mutable =
+{
+var: Mutable_variable.t ;
+initial_value: Variable.t ;
+contents_kind: Lambda.value_kind ;
+body: t }
+  
+and set_of_closures = private
+{
+function_decls: function_declarations ;
+free_vars: specialised_to Variable.Map.t
+  [@ocaml.doc
+    " Mapping from all variables free in the body of the [function_decls] to\n      variables in scope at the definition point of the [set_of_closures].\n      The domain of this map is sometimes known as the \"variables bound by\n      the closure\". "];
+specialised_args: specialised_to Variable.Map.t
+  [@ocaml.doc
+    " Parameters whose corresponding arguments are known to always alias a\n      particular value.  These are the only parameters that may, during\n      [Inline_and_simplify], have non-unknown approximations.\n\n      An argument may only be specialised to a variable in the scope of the\n      corresponding set of closures declaration.  Usually, that variable\n      itself also appears in the position of the specialised argument at\n      all call sites of the function.  However it may also be the case (for\n      example in code generated as a result of [Augment_specialised_args])\n      that the various call sites of such a function have differing\n      variables in the position of the specialised argument.  This is\n      permissible *so long as it is certain they all alias the same value*.\n      Great care must be taken in transformations that result in this\n      situation since there are no invariant checks for correctness.\n\n      As an example, supposing all call sites of f are represented here:\n        [let x = ... in\n         let f a b c = ... in\n         let y = ... in\n         f x y 1;\n         f x y 1]\n      the specialised arguments of f can (but does not necessarily) contain\n      the association [a] -> [x], but cannot contain [b] -> [y] because [f]\n      is not in the scope of [y]. If f were the recursive function\n      [let rec f a b c = f a 1 2 in], [a] -> [x] would still be a valid\n      specialised argument because all recursive calls maintain the invariant.\n\n      This information is used for optimization purposes, if such a binding is\n      known, it is possible to specialise the body of the function according\n      to its parameter. This is usually introduced when specialising a\n      recursive function, for instance.\n        [let rec map f = function\n           | [] -> []\n           | h :: t -> f h :: map f t\n         let map_succ l =\n           let succ x = x + 1 in\n           map succ l]\n      [map] can be duplicated in [map_succ] to be specialised for the argument\n      [f]. This will result in\n        [let map_succ l =\n           let succ x = x + 1 in\n           let rec map f = function\n             | [] -> []\n             | h :: t -> f h :: map f t in\n           map succ l]\n      with map having [f] -> [succ] in its [specialised_args] field.\n\n      Specialised argument information for arguments that are used must\n      never be erased.  This ensures that specialised arguments whose\n      approximations describe closures maintain those approximations, which\n      is essential to transport the closure freshening information to the\n      point of use (e.g. a [Project_var] from such an argument).\n  "];
+direct_call_surrogates: Variable.t Variable.Map.t
+  [@ocaml.doc
+    " If [direct_call_surrogates] maps [fun_var1] to [fun_var2] then direct\n      calls to [fun_var1] should be redirected to [fun_var2].  This is used\n      to reduce the overhead of transformations that introduce wrapper\n      functions (which will be inlined at direct call sites, but will\n      penalise indirect call sites).\n      [direct_call_surrogates] may not be transitively closed. "]}
+[@@ocaml.doc
+  " The representation of a set of function declarations (possibly mutually\n    recursive).  Such a set encapsulates the declarations themselves,\n    information about their defining environment, and information used\n    specifically for optimization.\n    Before a function can be applied it must be \"projected\" from a set of\n    closures to yield a \"closure\".  This is done using [Project_closure]\n    (see above).  Given a closure, not only can it be applied, but information\n    about its defining environment can be retrieved (using [Project_var],\n    see above).\n    At runtime, a [set_of_closures] corresponds to an OCaml value with tag\n    [Closure_tag] (possibly with inline [Infix_tag](s)).  As an optimization,\n    an operation ([Move_within_set_of_closures]) is provided (see above)\n    which enables one closure within a set to be located given another\n    closure in the same set.  This avoids keeping a pointer to the whole set\n    of closures alive when compiling, for example, mutually-recursive\n    functions.\n"]
+  
+and function_declarations = private
+{
+is_classic_mode: bool
+  [@ocaml.doc
+    " Indicates whether this [function_declarations] was compiled\n      with -Oclassic. "];
+set_of_closures_id: Set_of_closures_id.t
+  [@ocaml.doc
+    " An identifier (unique across all Flambda trees currently in memory)\n      of the set of closures associated with this set of function\n      declarations. "];
+set_of_closures_origin: Set_of_closures_origin.t
+  [@ocaml.doc
+    " An identifier of the original set of closures on which this set of\n      function declarations is based.  Used to prevent different\n      specialisations of the same functions from being inlined/specialised\n      within each other. "];
+funs: function_declaration Variable.Map.t
+  [@ocaml.doc
+    " The function(s) defined by the set of function declarations.  The\n      keys of this map are often referred to in the code as \"fun_var\"s. "]}
+  
+and function_declaration = private
+{
+closure_origin: Closure_origin.t ;
+params: Parameter.t list ;
+body: t ;
+free_variables: Variable.Set.t
+  [@ocaml.doc
+    " All variables free in the *body* of the function.  For example, a\n      variable that is bound as one of the function's parameters will still\n      be included in this set.  This field is present as an optimization. "];
+free_symbols: Symbol.Set.t
+  [@ocaml.doc
+    " All symbols that occur in the function's body.  (Symbols can never be\n      bound in a function's body; the only thing that binds symbols is the\n      [program] constructions below.) "];
+stub: bool
+  [@ocaml.doc
+    " A stub function is a generated function used to prepare arguments or\n      return values to allow indirect calls to functions with a special calling\n      convention.  For instance indirect calls to tuplified functions must go\n      through a stub.  Stubs will be unconditionally inlined. "];
+dbg: Debuginfo.t [@ocaml.doc " Debug info for the function declaration. "];
+inline: Lambda.inline_attribute
+  [@ocaml.doc " Inlining requirements from the source code. "];
+specialise: Lambda.specialise_attribute
+  [@ocaml.doc " Specialising requirements from the source code. "];
+is_a_functor: bool
+  [@ocaml.doc
+    " Whether the function is known definitively to be a functor. "]}
+  
+and switch =
+{
+numconsts: Numbers.Int.Set.t [@ocaml.doc " Integer cases "];
+consts: (int * t) list [@ocaml.doc " Integer cases "];
+numblocks: Numbers.Int.Set.t [@ocaml.doc " Number of tag block cases "];
+blocks: (int * t) list [@ocaml.doc " Tag block cases "];
+failaction: t option [@ocaml.doc " Action to take if none matched "]}
+[@@ocaml.doc " Equivalent to the similar type in [Lambda]. "]
+  
+and for_loop =
+{
+bound_var: Variable.t ;
+from_value: Variable.t ;
+to_value: Variable.t ;
+direction: Asttypes.direction_flag ;
+body: t }[@@ocaml.doc " Equivalent to the similar type in [Lambda]. "]
+  
+and constant_defining_value =
+| Allocated_const of Allocated_const.t
+[@ocaml.doc
+  " A single constant.  These are never \"simple constants\" (type [const])\n        but instead more complicated constructions. "]
+| Block of Tag.t * constant_defining_value_block_field list
+[@ocaml.doc
+  " A pre-allocated block full of constants (either simple constants\n        or references to other constants, see below). "]
+| Set_of_closures of set_of_closures
+[@ocaml.doc
+  " A closed (and thus constant) set of closures.  (That is to say,\n        [free_vars] must be empty.) "]
+| Project_closure of Symbol.t * Closure_id.t
+[@ocaml.doc
+  " Selection of one closure from a constant set of closures.\n        Analogous to the equivalent operation on expressions. "]
+[@@ocaml.doc
+  " Like a subset of [Flambda.named], except that instead of [Variable.t]s we\n    have [Symbol.t]s, and everything is a constant (i.e. with a fixed value\n    known at compile time).  Values of this type describe constants that will\n    be directly assigned to symbols in the object file (see below). "]
+  
+and constant_defining_value_block_field =
+| Symbol of Symbol.t 
+| Const of const 
+  
+
+module Constant_defining_value :
+Identifiable.S with type  t =  constant_defining_value
+
+type expr = t
+  
+
+type program_body =
+| Let_symbol of Symbol.t * constant_defining_value * program_body
+[@ocaml.doc " Define the given symbol to have the given constant value. "]
+| Let_rec_symbol of (Symbol.t * constant_defining_value) list * program_body
+[@ocaml.doc
+  " As for [Let_symbol], but recursive.  This is needed to treat examples\n      like this, where a constant set of closures is lifted to toplevel:\n\n        let rec f x = f x\n\n      After lifting this produces (in pseudo-Flambda):\n\n        Let_rec_symbol set_of_closures_symbol =\n          (Set_of_closures { f x ->\n            let applied_function = Symbol f_closure in\n            Apply (applied_function, x) })\n        and f_closure = Project_closure (set_of_closures_symbol, f)\n\n      Use of [Let_rec_symbol], by virtue of the special handling in\n      [Inline_and_simplify.define_let_rec_symbol_approx], enables the\n      approximation of the set of closures to be present in order to\n      correctly simplify the [Project_closure] construction.  (See\n      [Inline_and_simplify.simplify_project_closure] for that part.) "]
+| Initialize_symbol of Symbol.t * Tag.t * t list * program_body
+[@ocaml.doc
+  " Define the given symbol as a constant block of the given size and\n      tag; but with a possibly non-constant initializer.  The initializer\n      will be executed at most once (from the entry point of the compilation\n      unit). "]
+| Effect of t * program_body
+[@ocaml.doc
+  " Cause the given expression, which may have a side effect, to be\n      executed.  The resulting value is discarded.  [Effect] constructions\n      are never re-ordered. "]
+| End of Symbol.t
+[@ocaml.doc
+  " [End] accepts the root symbol: the only symbol that can never be\n      eliminated. "]
+[@@ocaml.doc
+  " A \"program\" is the contents of one compilation unit.  It describes the\n    various values that are assigned to symbols (and in some cases fields of\n    such symbols) in the object file.  As such, it is closely related to\n    the compilation of toplevel modules. "]
+  
+
+type program = {
+imported_symbols: Symbol.Set.t ;
+program_body: program_body }
+  
+
+val free_variables :
+  ?ignore_uses_as_callee:unit ->
+    ?ignore_uses_as_argument:unit ->
+      ?ignore_uses_in_project_var:unit -> t -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute the free variables of a term.  (This is O(1) for [Let]s).\n    If [ignore_uses_as_callee], all free variables inside [Apply] expressions\n    are ignored.  Likewise [ignore_uses_in_project_var] for [Project_var]\n    expressions.\n"]
+
+
+val free_variables_named :
+  ?ignore_uses_in_project_var:unit -> named -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute the free variables of a named expression. "]
+
+
+val used_variables :
+  ?ignore_uses_as_callee:unit ->
+    ?ignore_uses_as_argument:unit ->
+      ?ignore_uses_in_project_var:unit -> t -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute _all_ variables occurring inside an expression. "]
+
+
+val used_variables_named :
+  ?ignore_uses_in_project_var:unit -> named -> Variable.Set.t[@@ocaml.doc
+                                                               " Compute _all_ variables occurring inside a named expression. "]
+
+
+val free_symbols : expr -> Symbol.Set.t
+
+
+val free_symbols_named : named -> Symbol.Set.t
+
+
+val free_symbols_program : program -> Symbol.Set.t
+
+
+val fold_lets_option :
+  t ->
+    init:'a ->
+      for_defining_expr:('a ->
+                           Variable.t -> named -> ('a * Variable.t * named))
+        ->
+        for_last_body:('a -> t -> (t * 'b)) ->
+          filter_defining_expr:('b ->
+                                  Variable.t ->
+                                    named ->
+                                      Variable.Set.t ->
+                                        ('b * Variable.t * named option))
+            -> (t * 'b)[@@ocaml.doc
+                         " Used to avoid exceeding the stack limit when handling expressions with\n    multiple consecutive nested [Let]-expressions.  This saves rewriting large\n    simplification functions in CPS.  This function provides for the\n    rewriting or elimination of expressions during the fold. "]
+
+
+val map_lets :
+  t ->
+    for_defining_expr:(Variable.t -> named -> named) ->
+      for_last_body:(t -> t) -> after_rebuild:(t -> t) -> t[@@ocaml.doc
+                                                             " Like [fold_lets_option], but just a map. "]
+
+
+val iter_lets :
+  t ->
+    for_defining_expr:(Variable.t -> named -> unit) ->
+      for_last_body:(t -> unit) -> for_each_let:(t -> unit) -> unit[@@ocaml.doc
+                                                                    " Like [map_lets], but just an iterator. "]
+
+
+val create_let : Variable.t -> named -> t -> t[@@ocaml.doc
+                                                " Creates a [Let] expression.  (This computes the free variables of the\n    defining expression and the body.) "]
+
+
+val map_defining_expr_of_let : let_expr -> f:(named -> named) -> t[@@ocaml.doc
+                                                                    " Apply the specified function [f] to the defining expression of the given\n    [Let]-expression, returning a new [Let]. "]
+
+
+module With_free_variables :
+sig
+  type 'a t
+    
+  val of_defining_expr_of_let : let_expr -> named t[@@ocaml.doc
+                                                     " O(1) time. "]
+  
+  val of_body_of_let : let_expr -> expr t[@@ocaml.doc " O(1) time. "]
+  
+  val of_expr : expr -> expr t[@@ocaml.doc
+                                " Takes the time required to calculate the free variables of the given\n      term (proportional to the size of the term, except that the calculation\n      for [Let] is O(1)). "]
+  
+  val of_named : named -> named t
+  
+  val create_let_reusing_defining_expr :
+    Variable.t -> named t -> expr -> expr[@@ocaml.doc
+                                           " Takes the time required to calculate the free variables of the given\n      [expr]. "]
+  
+  val create_let_reusing_body : Variable.t -> named -> expr t -> expr
+  [@@ocaml.doc
+    " Takes the time required to calculate the free variables of the given\n      [named]. "]
+  
+  val create_let_reusing_both : Variable.t -> named t -> expr t -> expr
+  [@@ocaml.doc " O(1) time. "]
+  
+  val expr : expr t -> named t[@@ocaml.doc
+                                " The equivalent of the [Expr] constructor. "]
+  
+  val contents : 'a t -> 'a
+  
+  val free_variables : _ t -> Variable.Set.t[@@ocaml.doc " O(1) time. "]
+  
+end[@@ocaml.doc
+     " A module for the manipulation of terms where the recomputation of free\n    variable sets is to be kept to a minimum. "]
+
+val create_function_declaration :
+  params:Parameter.t list ->
+    body:t ->
+      stub:bool ->
+        dbg:Debuginfo.t ->
+          inline:Lambda.inline_attribute ->
+            specialise:Lambda.specialise_attribute ->
+              is_a_functor:bool ->
+                closure_origin:Closure_origin.t -> function_declaration
+[@@ocaml.doc
+  " Create a function declaration.  This calculates the free variables and\n    symbols occurring in the specified [body]. "]
+
+
+val update_function_declaration :
+  function_declaration ->
+    params:Parameter.t list -> body:t -> function_declaration[@@ocaml.doc
+                                                               " Create a function declaration based on another function declaration "]
+
+
+val create_function_declarations :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations given the individual declarations. "]
+
+
+val create_function_declarations_with_origin :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t ->
+      set_of_closures_origin:Set_of_closures_origin.t ->
+        function_declarations[@@ocaml.doc
+                               " Create a set of function declarations with a given set of closures\n    origin. "]
+
+
+val update_body_of_function_declaration :
+  function_declaration -> body:expr -> function_declaration[@@ocaml.doc
+                                                             " Change only the code of a function declaration. "]
+
+
+val update_function_decl's_params_and_body :
+  function_declaration ->
+    params:Parameter.t list -> body:expr -> function_declaration[@@ocaml.doc
+                                                                  " Change only the code and parameters of a function declaration. "]
+
+
+val update_function_declarations :
+  function_declarations ->
+    funs:function_declaration Variable.Map.t -> function_declarations
+[@@ocaml.doc
+  " Create a set of function declarations based on another set of function\n    declarations. "]
+
+
+val create_function_declarations_with_closures_origin :
+  is_classic_mode:bool ->
+    funs:function_declaration Variable.Map.t ->
+      set_of_closures_origin:Set_of_closures_origin.t ->
+        function_declarations
+
+
+val import_function_declarations_for_pack :
+  function_declarations ->
+    (Set_of_closures_id.t -> Set_of_closures_id.t) ->
+      (Set_of_closures_origin.t -> Set_of_closures_origin.t) ->
+        function_declarations
+
+
+val create_set_of_closures :
+  function_decls:function_declarations ->
+    free_vars:specialised_to Variable.Map.t ->
+      specialised_args:specialised_to Variable.Map.t ->
+        direct_call_surrogates:Variable.t Variable.Map.t -> set_of_closures
+[@@ocaml.doc
+  " Create a set of closures.  Checks are made to ensure that [free_vars]\n    and [specialised_args] are reasonable. "]
+
+
+val used_params : function_declaration -> Variable.Set.t[@@ocaml.doc
+                                                          " Given a function declaration, find which of its parameters (if any)\n    are used in the body. "]
+
+
+type maybe_named =
+| Is_expr of t 
+| Is_named of named 
+  
+
+val iter_general :
+  toplevel:bool -> (t -> unit) -> (named -> unit) -> maybe_named -> unit
+[@@ocaml.doc
+  " This function is designed for the internal use of [Flambda_iterators].\n    See that module for iterators to be used over Flambda terms. "]
+
+
+val print : Format.formatter -> t -> unit
+
+
+val print_named : Format.formatter -> named -> unit
+
+
+val print_program : Format.formatter -> program -> unit
+
+
+val print_const : Format.formatter -> const -> unit
+
+
+val print_constant_defining_value :
+  Format.formatter -> constant_defining_value -> unit
+
+
+val print_function_declaration :
+  Format.formatter -> (Variable.t * function_declaration) -> unit
+
+
+val print_function_declarations :
+  Format.formatter -> function_declarations -> unit
+
+
+val print_project_closure : Format.formatter -> project_closure -> unit
+
+
+val print_move_within_set_of_closures :
+  Format.formatter -> move_within_set_of_closures -> unit
+
+
+val print_project_var : Format.formatter -> project_var -> unit
+
+
+val print_set_of_closures : Format.formatter -> set_of_closures -> unit
+
+
+val print_specialised_to : Format.formatter -> specialised_to -> unit
+
+
+val equal_call_kind : call_kind -> call_kind -> bool
+
+
+val equal_specialised_to : specialised_to -> specialised_to -> bool
+
+
+val compare_const : const -> const -> int
+
+
+val compare_project_var : project_var -> project_var -> int
+
+
+val compare_move_within_set_of_closures :
+  move_within_set_of_closures -> move_within_set_of_closures -> int
+
+
+val compare_project_closure : project_closure -> project_closure -> int
+
+File "flambda.mli", line 24, characters 14-26:
+Error: Symbol Closure_id.t not found

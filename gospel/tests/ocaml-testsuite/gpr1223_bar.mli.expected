@@ -1,0 +1,90 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+module M : Gpr1223_foo.S
+module N : sig module O : sig type t =
+                                | T  end end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+module M : Gpr1223_foo.S
+
+module N : sig module O : sig type t =
+                              | T 
+                               end end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module gpr1223_bar.mli
+
+  Namespace: gpr1223_bar.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: M
+        Type symbols
+           t
+          
+        Logic Symbols
+          function T  : t
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      Namespace: N
+        Type symbols
+          
+        Logic Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          Namespace: O
+            Type symbols
+               t#1
+              
+            Logic Symbols
+              function T#1  : t#1
+              
+            Exception Symbols
+              
+            Namespaces
+              
+            Type Namespaces
+              
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ use Gpr1223_foo *)
+    
+    module M : Gpr1223_foo.S
+    
+    module N : sig
+                 module O : sig
+                              type t#1 = T#1 of 
+                                         function T#1  : t#1
+                              
+                            end
+               end
+
+
+*** OK ***
+

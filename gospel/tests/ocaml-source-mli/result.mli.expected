@@ -1,0 +1,163 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Result values.\n\n    Result values handle computation results and errors in an explicit\n    and declarative manner without resorting to exceptions.\n\n    @since 4.08 "]
+[@@@ocaml.text " {1:results Results} "]
+type ('a, 'e) t = ('a, 'e) result =
+  | Ok of 'a 
+  | Error of 'e
+  [@ocaml.doc
+    " The type for result values. Either a value [Ok v] or an error [Error e]. "]
+val ok : 'a -> ('a, 'e) result[@@ocaml.doc " [ok v] is [Ok v]. "]
+val error : 'e -> ('a, 'e) result[@@ocaml.doc " [error e] is [Error e]. "]
+val value : ('a, 'e) result -> default:'a -> 'a[@@ocaml.doc
+                                                 " [value r ~default] is [v] if [r] is [Ok v] and [default] otherwise. "]
+val get_ok : ('a, 'e) result -> 'a[@@ocaml.doc
+                                    " [get_ok r] is [v] if [r] is [Ok v] and @raise Invalid_argument\n    otherwise. "]
+val get_error : ('a, 'e) result -> 'e[@@ocaml.doc
+                                       " [get_error r] is [e] if [r] is [Error e] and @raise Invalid_argument\n    otherwise. "]
+val bind : ('a, 'e) result -> ('a -> ('b, 'e) result) -> ('b, 'e) result
+[@@ocaml.doc
+  " [bind r f] is [Ok (f v)] if [r] is [Ok v] and [r] if [r] is [Error _]. "]
+val join : (('a, 'e) result, 'e) result -> ('a, 'e) result[@@ocaml.doc
+                                                            " [join rr] is [r] if [rr] is [Ok r] and [rr] if [rr] is [Error _]. "]
+val map : ('a -> 'b) -> ('a, 'e) result -> ('b, 'e) result[@@ocaml.doc
+                                                            " [map f r] is [Ok (f v)] if [r] is [Ok v] and [r] if [r] is [Error _]. "]
+val map_error : ('e -> 'f) -> ('a, 'e) result -> ('a, 'f) result[@@ocaml.doc
+                                                                  " [map_error f r] is [Error (f e)] if [r] is [Error e] and [r] if\n    [r] is [Ok _]. "]
+val fold : ok:('a -> 'c) -> error:('e -> 'c) -> ('a, 'e) result -> 'c
+[@@ocaml.doc
+  " [fold ~ok ~error r] is [ok v] if [r] is [Ok v] and [error e] if [r]\n    is [Error e]. "]
+val iter : ('a -> unit) -> ('a, 'e) result -> unit[@@ocaml.doc
+                                                    " [iter f r] is [f v] if [r] is [Ok v] and [()] otherwise. "]
+val iter_error : ('e -> unit) -> ('a, 'e) result -> unit[@@ocaml.doc
+                                                          " [iter_error f r] is [f e] if [r] is [Error e] and [()] otherwise. "]
+[@@@ocaml.text " {1:preds Predicates and comparisons} "]
+val is_ok : ('a, 'e) result -> bool[@@ocaml.doc
+                                     " [is_ok r] is [true] iff [r] is [Ok _]. "]
+val is_error : ('a, 'e) result -> bool[@@ocaml.doc
+                                        " [is_error r] is [true] iff [r] is [Error _]. "]
+val equal :
+  ok:('a -> 'a -> bool) ->
+    error:('e -> 'e -> bool) -> ('a, 'e) result -> ('a, 'e) result -> bool
+[@@ocaml.doc
+  " [equal ~ok ~error r0 r1] tests equality of [r0] and [r1] using [ok]\n    and [error] to respectively compare values wrapped by [Ok _] and\n    [Error _]. "]
+val compare :
+  ok:('a -> 'a -> int) ->
+    error:('e -> 'e -> int) -> ('a, 'e) result -> ('a, 'e) result -> int
+[@@ocaml.doc
+  " [compare ~ok ~error r0 r1] totally orders [r0] and [r1] using [ok] and\n    [error] to respectively compare values wrapped by [Ok _ ] and [Error _].\n    [Ok _] values are smaller than [Error _] values. "]
+[@@@ocaml.text " {1:convert Converting} "]
+val to_option : ('a, 'e) result -> 'a option[@@ocaml.doc
+                                              " [to_option r] is [r] as an option, mapping [Ok v] to [Some v] and\n    [Error _] to [None]. "]
+val to_list : ('a, 'e) result -> 'a list[@@ocaml.doc
+                                          " [to_list r] is [[v]] if [r] is [Ok v] and [[]] otherwise. "]
+val to_seq : ('a, 'e) result -> 'a Seq.t[@@ocaml.doc
+                                          " [to_seq r] is [r] as a sequence. [Ok v] is the singleton sequence\n    containing [v] and [Error _] is the empty sequence. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Result values.\n\n    Result values handle computation results and errors in an explicit\n    and declarative manner without resorting to exceptions.\n\n    @since 4.08 "]
+
+[@@@ocaml.text " {1:results Results} "]
+
+type ('a, 'e) t = ('a, 'e) result =
+| Ok of 'a 
+| Error of 'e
+[@ocaml.doc
+  " The type for result values. Either a value [Ok v] or an error [Error e]. "]
+  
+
+val ok : 'a -> ('a, 'e) result[@@ocaml.doc " [ok v] is [Ok v]. "]
+
+
+val error : 'e -> ('a, 'e) result[@@ocaml.doc " [error e] is [Error e]. "]
+
+
+val value : ('a, 'e) result -> default:'a -> 'a[@@ocaml.doc
+                                                 " [value r ~default] is [v] if [r] is [Ok v] and [default] otherwise. "]
+
+
+val get_ok : ('a, 'e) result -> 'a[@@ocaml.doc
+                                    " [get_ok r] is [v] if [r] is [Ok v] and @raise Invalid_argument\n    otherwise. "]
+
+
+val get_error : ('a, 'e) result -> 'e[@@ocaml.doc
+                                       " [get_error r] is [e] if [r] is [Error e] and @raise Invalid_argument\n    otherwise. "]
+
+
+val bind : ('a, 'e) result -> ('a -> ('b, 'e) result) -> ('b, 'e) result
+[@@ocaml.doc
+  " [bind r f] is [Ok (f v)] if [r] is [Ok v] and [r] if [r] is [Error _]. "]
+
+
+val join : (('a, 'e) result, 'e) result -> ('a, 'e) result[@@ocaml.doc
+                                                            " [join rr] is [r] if [rr] is [Ok r] and [rr] if [rr] is [Error _]. "]
+
+
+val map : ('a -> 'b) -> ('a, 'e) result -> ('b, 'e) result[@@ocaml.doc
+                                                            " [map f r] is [Ok (f v)] if [r] is [Ok v] and [r] if [r] is [Error _]. "]
+
+
+val map_error : ('e -> 'f) -> ('a, 'e) result -> ('a, 'f) result[@@ocaml.doc
+                                                                  " [map_error f r] is [Error (f e)] if [r] is [Error e] and [r] if\n    [r] is [Ok _]. "]
+
+
+val fold : ok:('a -> 'c) -> error:('e -> 'c) -> ('a, 'e) result -> 'c
+[@@ocaml.doc
+  " [fold ~ok ~error r] is [ok v] if [r] is [Ok v] and [error e] if [r]\n    is [Error e]. "]
+
+
+val iter : ('a -> unit) -> ('a, 'e) result -> unit[@@ocaml.doc
+                                                    " [iter f r] is [f v] if [r] is [Ok v] and [()] otherwise. "]
+
+
+val iter_error : ('e -> unit) -> ('a, 'e) result -> unit[@@ocaml.doc
+                                                          " [iter_error f r] is [f e] if [r] is [Error e] and [()] otherwise. "]
+
+
+[@@@ocaml.text " {1:preds Predicates and comparisons} "]
+
+val is_ok : ('a, 'e) result -> bool[@@ocaml.doc
+                                     " [is_ok r] is [true] iff [r] is [Ok _]. "]
+
+
+val is_error : ('a, 'e) result -> bool[@@ocaml.doc
+                                        " [is_error r] is [true] iff [r] is [Error _]. "]
+
+
+val equal :
+  ok:('a -> 'a -> bool) ->
+    error:('e -> 'e -> bool) -> ('a, 'e) result -> ('a, 'e) result -> bool
+[@@ocaml.doc
+  " [equal ~ok ~error r0 r1] tests equality of [r0] and [r1] using [ok]\n    and [error] to respectively compare values wrapped by [Ok _] and\n    [Error _]. "]
+
+
+val compare :
+  ok:('a -> 'a -> int) ->
+    error:('e -> 'e -> int) -> ('a, 'e) result -> ('a, 'e) result -> int
+[@@ocaml.doc
+  " [compare ~ok ~error r0 r1] totally orders [r0] and [r1] using [ok] and\n    [error] to respectively compare values wrapped by [Ok _ ] and [Error _].\n    [Ok _] values are smaller than [Error _] values. "]
+
+
+[@@@ocaml.text " {1:convert Converting} "]
+
+val to_option : ('a, 'e) result -> 'a option[@@ocaml.doc
+                                              " [to_option r] is [r] as an option, mapping [Ok v] to [Some v] and\n    [Error _] to [None]. "]
+
+
+val to_list : ('a, 'e) result -> 'a list[@@ocaml.doc
+                                          " [to_list r] is [[v]] if [r] is [Ok v] and [[]] otherwise. "]
+
+
+val to_seq : ('a, 'e) result -> 'a Seq.t[@@ocaml.doc
+                                          " [to_seq r] is [r] as a sequence. [Ok v] is the singleton sequence\n    containing [v] and [Error _] is the empty sequence. "]
+
+File "result.mli", line 25, characters 27-33:
+Error: Symbol result not found
