@@ -13,34 +13,12 @@
   open Uast
   open Uast_utils
 
-  let rev_fspec s = {
-      fun_req     = List.rev s.fun_req;
-      fun_ens     = List.rev s.fun_ens;
-      fun_variant = List.rev s.fun_variant;
-      fun_coer    = s.fun_coer;
-    }
-
   let empty_fspec = {
       fun_req     = [];
       fun_ens     = [];
       fun_variant = [];
       fun_coer    = false;
     }
-
-  let rev_vspec s = {
-    sp_hd_ret  = s.sp_hd_ret;
-    sp_hd_nm  = s.sp_hd_nm;
-    sp_hd_args = s.sp_hd_args;
-    sp_pre     = List.rev s.sp_pre;
-    sp_post    = List.rev s.sp_post;
-    sp_xpost   = List.rev s.sp_xpost;
-    sp_reads   = List.rev s.sp_reads;
-    sp_writes  = List.rev s.sp_writes;
-    sp_consumes= List.rev s.sp_consumes;
-    sp_alias   = List.rev s.sp_alias;
-    sp_diverge = s.sp_diverge;
-    sp_equiv   = List.rev s.sp_equiv;
-  }
 
   let empty_vspec = {
     sp_hd_ret  = [];
@@ -56,12 +34,6 @@
     sp_diverge = false;
     sp_equiv   = [];
   }
-
-  let rev_tspec s = {
-      ty_ephemeral = s.ty_ephemeral;
-      ty_field     = List.rev s.ty_field;
-      ty_invariant = List.rev s.ty_invariant;
-    }
 
   let empty_tspec = {
       ty_ephemeral = false;
@@ -140,170 +112,139 @@
 %%
 
 spec_init:
-| type_spec EOF      { Stype (rev_tspec $1, mk_loc $startpos $endpos) }
-| val_spec EOF       { Sval ($1, mk_loc $startpos $endpos) }
-| func EOF           { Sfunction ($1, mk_loc $startpos $endpos)}
-| func_spec EOF      { Sfunc_spec (rev_fspec $1, mk_loc $startpos $endpos)}
-| axiom EOF          { Saxiom ($1, mk_loc $startpos $endpos)}
-| VAL                { raise Ghost_decl }
-| TYPE               { raise Ghost_decl }
-| OPEN               { raise Ghost_decl }
+| nonempty_type_spec EOF { Stype ($1, mk_loc $startpos $endpos) }
+| val_spec EOF           { Sval ($1, mk_loc $startpos $endpos) }
+| func EOF               { Sfunction ($1, mk_loc $startpos $endpos)}
+| nonempty_func_spec EOF { Sfunc_spec ($1, mk_loc $startpos $endpos)}
+| axiom EOF              { Saxiom ($1, mk_loc $startpos $endpos)}
+| VAL                    { raise Ghost_decl }
+| TYPE                   { raise Ghost_decl }
+| OPEN                   { raise Ghost_decl }
 ;
 
 axiom:
 | AXIOM id=lident COLON t=term
-  { {ax_name = id; ax_term = t;
-     ax_loc = mk_loc $startpos $endpos} }
+  { {ax_name = id; ax_term = t; ax_loc = mk_loc $startpos $endpos} }
 ;
 
 func:
-| FUNCTION r=REC? fname=func_name ps=params? COLON ty=typ
-    def=preceded(EQUAL, term)? spec=func_spec?
-  { let ps = match ps with | None -> [] | Some ps -> ps in
-    let spec = match spec with
-        None -> empty_fspec | Some spec -> rev_fspec spec in
-    { fun_name = fname; fun_rec = Utils.Option.is_some r; fun_type = Some ty;
-      fun_params = ps; fun_def = def; fun_spec = spec;
-      fun_loc = mk_loc $startpos $endpos} }
-| PREDICATE r=REC? fname=func_name ps=params
-    def=preceded(EQUAL, term)? spec=func_spec?
-  { let spec = match spec with
-        None -> empty_fspec | Some spec -> rev_fspec spec in
-    { fun_name = fname; fun_rec = Utils.Option.is_some r; fun_type = None;
-      fun_params = ps; fun_def = def; fun_spec = spec ;
-      fun_loc = mk_loc $startpos $endpos} }
+| FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
+    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=func_spec
+  { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec;
+      fun_loc = mk_loc $startpos $endpos } }
+| PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
+    fun_def=preceded(EQUAL, term)? fun_spec=func_spec
+  { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec;
+      fun_loc = mk_loc $startpos $endpos } }
 ;
 
 func_name:
 | lident_rich {$1}
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
-    { mk_pid (mixfix "{}") $startpos $endpos }
+  { mk_pid (mixfix "{}") $startpos $endpos }
 | LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
-    { mk_pid (mixfix "{:_:}") $startpos $endpos }
+  { mk_pid (mixfix "{:_:}") $startpos $endpos }
 
 func_spec:
-| t=requires { {empty_fspec with fun_req = [t]} }
-| t=ensures  { {empty_fspec with fun_ens = [t]} }
-| t=variant  { {empty_fspec with fun_variant = [t]} }
-| COERCION   { {empty_fspec with fun_coer = true}}
-| bd=func_spec t=requires
-    { {bd with fun_req = t :: bd.fun_req} }
-| bd=func_spec t=ensures
-    { {bd with fun_ens = t :: bd.fun_ens} }
-| bd=func_spec t=variant
-    { {bd with fun_variant = t :: bd.fun_variant} }
-| bd=func_spec COERCION
-    { {bd with fun_coer = true} }
-;
+| (* Empty spec *)   { empty_fspec }
+| nonempty_func_spec { $1 }
 
-variant:
-| VARIANT t=term {t}
-;
-
-requires:
-| REQUIRES t=term {t}
-;
-
-ensures:
-| ENSURES t=term {t}
+nonempty_func_spec:
+| REQUIRES t=term bd=func_spec
+  { { bd with fun_req = t :: bd.fun_req } }
+| ENSURES t=term bd=func_spec
+  { { bd with fun_ens = t :: bd.fun_ens } }
+| VARIANT t=term bd=func_spec
+  { { bd with fun_variant = t :: bd.fun_variant } }
+| COERCION bd=func_spec
+  { { bd with fun_coer = true } }
 ;
 
 type_spec:
-| EPHEMERAL
-    { {empty_tspec with ty_ephemeral = true} }
-| field=type_spec_model
-    { {empty_tspec with ty_field = [field]} }
-| inv=type_spec_invariant
-    { {empty_tspec with ty_invariant = [inv]} }
-| ts=type_spec EPHEMERAL
-  { {ts with ty_ephemeral = true} }
-| ts=type_spec field=type_spec_model
-  { {ts with ty_field = field :: ts.ty_field} }
-| ts=type_spec inv=type_spec_invariant
-  { {ts with ty_invariant = inv :: ts.ty_invariant} }
+| (* Empty spec *)   { empty_tspec }
+| nonempty_type_spec { $1 }
+
+nonempty_type_spec:
+| EPHEMERAL ts=type_spec
+  { { ts with ty_ephemeral = true } }
+| field=type_spec_model ts=type_spec
+  { { ts with ty_field = field :: ts.ty_field } }
+| INVARIANT inv=term ts=type_spec
+  { { ts with ty_invariant = inv :: ts.ty_invariant } }
 ;
 
 type_spec_model:
-| mut = boption(MUTABLE) MODEL id = lident_rich COLON ty=typ
-  { { f_preid = id; f_mutable = mut;
-      f_pty = ty; f_loc = mk_loc $startpos(mut) $endpos(ty) }}
-
-type_spec_invariant:
-| INVARIANT inv=term
-  { inv }
+| f_mutable=boption(MUTABLE) MODEL f_preid=lident_rich COLON f_pty=typ
+  { { f_preid; f_mutable; f_pty;
+      f_loc = mk_loc $startpos(f_mutable) $endpos(f_pty) } }
 
 val_spec:
 | hd=val_spec_header bd=val_spec_body
-  { let bd = rev_vspec bd in
-    let (r,f,a) = hd in
-    { bd with sp_hd_ret  = r;
-      sp_hd_nm  = f; sp_hd_args = a;}
-  }
+  { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
+    { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
 ;
 
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*
-    { ret, nm, args }
+  { ret, nm, args }
 | nm=lident_rich args=fun_arg*
-    { [], nm, args }
+  { [], nm, args }
 ;
 
 val_spec_body:
-| (* epsilon *)
-  { empty_vspec }
-| bd=val_spec_body DIVERGES
+| (* Empty spec *) { empty_vspec }
+| DIVERGES bd=val_spec_body
   { {bd with sp_diverge = true} }
-| bd=val_spec_body MODIFIES wr=separated_list(COMMA, term)
-    { { bd with sp_writes = wr @ bd.sp_writes } }
-| bd=val_spec_body CONSUMES cs=separated_list(COMMA, term)
-    { { bd with sp_consumes = cs @ bd.sp_consumes } }
-| bd=val_spec_body t=requires
-    { { bd with sp_pre = (t,false) :: bd.sp_pre } }
-| bd=val_spec_body CHECKS t = term
-    { { bd with sp_pre = (t,true) :: bd.sp_pre } }
-| bd=val_spec_body t=ensures
-    { { bd with sp_post = t :: bd.sp_post} }
-| bd=val_spec_body RAISES r=bar_list1(raises) (* raises_list *)
-    { let xp = mk_loc $startpos(r) $endpos(r), r in
-      { bd with sp_xpost = xp :: bd.sp_xpost } }
-| bd=val_spec_body EQUIVALENT e=STRING
-    { { bd with sp_equiv = e :: bd.sp_equiv} }
+| MODIFIES wr=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_writes = wr @ bd.sp_writes } }
+| CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_consumes = cs @ bd.sp_consumes } }
+| REQUIRES t=term bd=val_spec_body
+  { { bd with sp_pre = (t,false) :: bd.sp_pre } }
+| CHECKS t=term bd=val_spec_body
+  { { bd with sp_pre = (t,true) :: bd.sp_pre } }
+| ENSURES t=term bd=val_spec_body
+  { { bd with sp_post = t :: bd.sp_post} }
+| RAISES r=bar_list1(raises) bd=val_spec_body
+  { let xp = mk_loc $startpos(r) $endpos(r), r in
+    { bd with sp_xpost = xp :: bd.sp_xpost } }
+| EQUIVALENT e=STRING bd=val_spec_body
+  { { bd with sp_equiv = e :: bd.sp_equiv} }
 ;
-
 
 fun_arg:
 | LEFTPAR RIGHTPAR
-   { Lnone (create_pid "()" []  (mk_loc $startpos $endpos)) }
+  { Lnone (create_pid "()" []  (mk_loc $startpos $endpos)) }
 | lident
-   { Lnone $1 }
+  { Lnone $1 }
 | TILDA lident
-   { Lnamed $2 }
+  { Lnamed $2 }
 | QUESTION lident
-   { Lquestion $2 }
+  { Lquestion $2 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
-   { Lghost (id, ty) }
+  { Lghost (id, ty) }
 ;
 
 ret_value:
 | lident
-   { Lnone $1 }
+  { Lnone $1 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
-   { Lghost (id, ty) }
+  { Lghost (id, ty) }
 
 ret_name:
-| LEFTPAR comma_list(ret_value)  RIGHTPAR EQUAL
-    { $2 }
-| comma_list(ret_value)  EQUAL
-    { $1 }
+| LEFTPAR comma_list(ret_value) RIGHTPAR EQUAL
+  { $2 }
+| comma_list(ret_value) EQUAL
+  { $1 }
 ;
 
 raises:
 | q=uqualid ARROW t=term
-    { q, Some (mk_pat (Ptuple []) $startpos(q) $endpos(q), t) }
+  { q, Some (mk_pat (Ptuple []) $startpos(q) $endpos(q), t) }
 | q=uqualid p=pat_arg ARROW t=term
-    { q, Some (p, t) }
+  { q, Some (p, t) }
 | q=uqualid
-    { q, None}
+  { q, None}
 ;
 
 params:
@@ -313,7 +254,7 @@ params:
 
 param:
 | LEFTPAR params=lident+ COLON t=ty RIGHTPAR
-    { List.map (fun x -> mk_loc $startpos $endpos, x, t) params }
+  { List.map (fun x -> mk_loc $startpos $endpos, x, t) params }
 ;
 
 cast:
