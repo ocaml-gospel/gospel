@@ -1921,5 +1921,5 @@ val load_modules : string -> Odoc_module.t_module list[@@ocaml.doc
                                                         " Load of a list of modules from a file.\n   @raise Failure if an error occurs."]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

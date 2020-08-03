@@ -375,5 +375,5 @@ external opaque_identity : 'a -> 'a = "%opaque"[@@ocaml.doc
                                                  " For the purposes of optimization, [opaque_identity] behaves like an\n    unknown (and thus possibly side-effecting) function.\n\n    At runtime, [opaque_identity] disappears altogether.\n\n    A typical use of this function is to prevent pure computations from being\n    optimized away in benchmarking loops.  For example:\n    {[\n      for _round = 1 to 100_000 do\n        ignore (Sys.opaque_identity (my_pure_computation ()))\n      done\n    ]}\n\n    @since 4.03.0\n"]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

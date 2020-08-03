@@ -107,5 +107,5 @@ module ImplementationHooks : Misc.HookSig with type  t =  Parsetree.structure
 
 module InterfaceHooks : Misc.HookSig with type  t =  Parsetree.signature
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

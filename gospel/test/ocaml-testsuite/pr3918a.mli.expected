@@ -12,5 +12,5 @@ type 'a voption = [ `None  | `Some of 'a ]
 type 'a voption = [ `None  | `Some of 'a ]
   
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 447, characters 11-17: Assertion failed
+        File "gospel/src/typing.ml", line 447, characters 11-17: Assertion failed
         

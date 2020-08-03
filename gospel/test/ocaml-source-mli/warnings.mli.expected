@@ -232,5 +232,5 @@ val mk_lazy : (unit -> 'a) -> 'a Lazy.t[@@ocaml.doc
                                          " Like [Lazy.of_fun], but the function is applied with\n        the warning settings at the time [mk_lazy] is called. "]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

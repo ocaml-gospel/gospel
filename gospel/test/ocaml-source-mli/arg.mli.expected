@@ -216,5 +216,5 @@ val write_arg0 : string -> string array -> unit[@@ocaml.doc
                                                  " Identical to {!Arg.write_arg} but uses the null character for terminator\n    instead of newline.\n    @since 4.05.0 "]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

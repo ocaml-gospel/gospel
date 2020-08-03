@@ -275,5 +275,5 @@ val open_dump : 'a dump -> 'a[@@ocaml.doc
                                " Verify that a dump has the correct magic number\n   and return its content. "]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

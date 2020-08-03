@@ -51,5 +51,5 @@ val test_of_action : Actions.t -> t
 
 module TestSet : Set.S with type  elt =  t
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

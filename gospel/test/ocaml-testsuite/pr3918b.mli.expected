@@ -12,5 +12,5 @@ type 'a vlist = ('a * 'b) Pr3918a.voption as 'b
 type 'a vlist = ('a * 'b) Pr3918a.voption as 'b
   
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 447, characters 11-17: Assertion failed
+        File "gospel/src/typing.ml", line 447, characters 11-17: Assertion failed
         

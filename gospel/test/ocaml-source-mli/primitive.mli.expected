@@ -103,5 +103,5 @@ type error =
 
 exception Error of Location.t * error 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

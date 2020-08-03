@@ -150,5 +150,5 @@ val is_current_lookahead : 'a -> bool
 val parse_error : string -> unit
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

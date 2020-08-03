@@ -23,5 +23,5 @@ val show_current_frame : formatter -> bool -> unit
 val show_one_frame : int -> formatter -> Instruct.debug_event -> unit
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

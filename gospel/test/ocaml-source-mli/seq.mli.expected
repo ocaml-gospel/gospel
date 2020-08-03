@@ -82,5 +82,5 @@ val iter : ('a -> unit) -> 'a t -> unit[@@ocaml.doc
                                          " Iterate on the sequence, calling the (imperative) function on every element.\n    The traversal happens immediately and will not terminate on infinite\n    sequences. "]
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         

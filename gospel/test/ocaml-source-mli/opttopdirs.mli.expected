@@ -55,5 +55,5 @@ type 'a printer_type_old = 'a -> unit
 val load_file : formatter -> string -> bool
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 515, characters 22-28: Assertion failed
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
         

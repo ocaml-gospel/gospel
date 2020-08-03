@@ -22,5 +22,5 @@ val interprete_line : formatter -> string -> bool
 val line_loop : formatter -> lexbuf -> unit
 
 gospel: internal error, uncaught exception:
-        File "gospel/ocaml-lib/typing.ml", line 425, characters 7-13: Assertion failed
+        File "gospel/src/typing.ml", line 425, characters 7-13: Assertion failed
         
