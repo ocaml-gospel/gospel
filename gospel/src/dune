@@ -17,7 +17,6 @@
 
 (rule
  (targets gospelstdlib.ml)
- (deps
-  (:file ../stdlib/gospelstdlib.mli))
+ (deps stdlib/gospelstdlib.mli)
  (action
-  (run ../misc/file_to_string.exe ../stdlib/gospelstdlib.mli %{targets})))
+  (run stdlib/file_to_string.exe %{deps} %{targets})))
