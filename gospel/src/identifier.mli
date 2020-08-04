@@ -8,64 +8,83 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(* pre-dentifiers *)
+(** Pre-identifiers: these are not unique identifier; they come out of the
+    parser and are used in the untyped AST. *)
+module Preid : sig
+  type t = private {
+    pid_str : string;  (** The identifier name. *)
+    pid_attrs : string list;  (** The attributes of the identifier. *)
+    pid_loc : Location.t;  (** The location of the identifier. *)
+  }
+  (** The type for pre-identifiers. *)
 
-type attr = string
+  val pp : Format.formatter -> t -> unit
+  (** Pretty printer for pre-identifiers. *)
 
-module Sattr : Set.S with type elt = attr
+  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
+      attributes [attrs] and location [loc]. Default attributes are empty, and
+      default location is [Location.none]. *)
 
-type preid = private {
-  pid_str : string;
-  pid_ats : attr list;
-  pid_loc : Location.t;
-}
+  val add_attr : t -> string -> t
+  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
+end
 
-module Hpid : Hashtbl.S with type key = preid
+(** Identifiers: uniquely tagged identifiers produced by the typing. *)
+module Ident : sig
+  type t = private {
+    id_str : string;  (** The identifier name. *)
+    id_attrs : string list;  (** The attributes of the identifier. *)
+    id_loc : Location.t;  (** The location of the identifier. *)
+    id_tag : int;  (** The unique tag of the identifier. *)
+  }
+  (** The type for identifiers. *)
 
-val create_pid    : string -> attr list -> Location.t -> preid
-val pid_of_string : string -> preid
-val pid_add_lab   : preid -> attr list -> preid
+  val pp : Format.formatter -> t -> unit
+  (** Pretty printer for identifiers. *)
 
-(* identifiers *)
+  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
+      attributes [attrs] and location [loc]. A unique tag is automatically
+      affected to the new identifier Default attributes are empty, and default
+      location is [Location.none]. *)
 
-type ident = private {
-  id_str : string;
-  id_ats : Sattr.t;
-  id_loc : Location.t;
-  id_tag : int;
-}
+  val of_preid : Preid.t -> t
+  (** [of_preid pid] is a fresh identifier using the same name, attributes and
+      location as [pid]. A unique tag is automatically affected to the new
+      identifier *)
 
-module Hid : Hashtbl.S with type key = ident
-module Mid : Map.S with type key = ident
+  val set_loc : t -> Location.t -> t
+  (** [set_loc t loc] is [t] with [loc] as its location. *)
 
-val create_id   : string -> Sattr.t -> Location.t -> ident
-val id_register : preid -> ident
+  val add_attr : t -> string -> t
+  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
+end
 
-val fresh_id : ?loc:Location.t -> ?ats:Sattr.t -> string -> ident
+(** Hard-coded identifiers *)
 
-val id_add_loc : Location.t -> ident -> ident
-val id_add_lab : ident -> Sattr.elt -> ident
+val eq : Ident.t
 
-(* hard-coded ids *)
+val neq : Ident.t
 
-val eq   : ident
-val neq  : ident
-val none : ident
-val some : ident
-val nil  : ident
-val cons : ident
+val none : Ident.t
 
-(* utils *)
+val some : Ident.t
+
+val nil : Ident.t
+
+val cons : Ident.t
+
+(* Utils *)
 
 val prefix : string -> string
-val infix  : string -> string
+
+val infix : string -> string
+
 val mixfix : string -> string
 
 val is_prefix : string -> bool
-val is_infix  : string -> bool
+
+val is_infix : string -> bool
+
 val is_mixfix : string -> bool
-
-(* pretty-printer *)
-
-val print_pid   : Format.formatter -> preid -> unit
-val print_ident : Format.formatter -> ident -> unit

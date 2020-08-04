@@ -8,19 +8,20 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Identifier
 open Ttypes
 open Utils
+
+module Ident = Identifier.Ident
 
 (* Variable Symbols *)
 
 type vsymbol = {
-  vs_name : ident;
+  vs_name : Ident.t;
   vs_ty   : ty;
 }
 
 let create_vsymbol pid ty = {
-    vs_name = id_register pid;
+    vs_name = Ident.of_preid pid;
     vs_ty = ty;
 }
 
@@ -34,7 +35,7 @@ module Svs = Set.Make(Vs)
 (* Function and predicate symbols *)
 
 type lsymbol = {
-  ls_name   : ident;
+  ls_name   : Ident.t;
   ls_args   : ty list;
   ls_value  : ty option;
   ls_constr : bool; (* true if it is a construct, false otherwise*)
@@ -78,35 +79,35 @@ let ls_subst_ty old_ts new_ts new_ty ls =
 
 let ps_equ =
   let tv = fresh_ty_var "a" in
-  psymbol eq [tv; tv]
+  psymbol Identifier.eq [tv; tv]
 
-let fs_unit = fsymbol ~constr:true (fresh_id "unit") [] ty_unit
+let fs_unit = fsymbol ~constr:true (Ident.create "unit") [] ty_unit
 
-let fs_bool_true  = fsymbol ~constr:true (fresh_id "True")  [] ty_bool
-let fs_bool_false = fsymbol ~constr:true (fresh_id "False") [] ty_bool
+let fs_bool_true  = fsymbol ~constr:true (Ident.create "True")  [] ty_bool
+let fs_bool_false = fsymbol ~constr:true (Ident.create "False") [] ty_bool
 
 let fs_apply =
   let ty_a, ty_b = fresh_ty_var "a", fresh_ty_var "b" in
   let ty_a_to_b = ty_app ts_arrow [ty_a;ty_b] in
-  fsymbol (fresh_id "apply") [ty_a_to_b; ty_a] ty_b
+  fsymbol (Ident.create "apply") [ty_a_to_b; ty_a] ty_b
 
 (* CHECK do we need two hash tables? *)
-let fs_tuple_ids = Hid.create 17
+let fs_tuple_ids = Hashtbl.create 17
 
 let fs_tuple =
   let ls_tuples = Hashtbl.create 17 in
   fun n ->
     try Hashtbl.find ls_tuples n
     with Not_found ->
-      let id = fresh_id ("tuple" ^ string_of_int n) in
+      let id = Ident.create ("tuple" ^ string_of_int n) in
       let tyl = List.init n (fun _ -> fresh_ty_var "a") in
       let ty = ty_app (ts_tuple n) tyl in
       let ls = fsymbol  ~constr:true id tyl ty in
-      Hid.add fs_tuple_ids id ls;
+      Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls; ls
 
 let is_fs_tuple fs =
-  fs.ls_constr = true && Hid.mem fs_tuple_ids fs.ls_name
+  fs.ls_constr = true && Hashtbl.mem fs_tuple_ids fs.ls_name
 
 (** terms *)
 
@@ -132,7 +133,7 @@ type quant = Tforall | Texists | Tlambda
 type term = {
   t_node  : term_node;
   t_ty    : ty option;
-  t_attrs : Sattr.t;
+  t_attrs : string list;
   t_loc   : Location.t option;
 }
 
@@ -220,7 +221,7 @@ exception FunctionSymbolExpected of lsymbol
 let mk_term n ty = {
     t_node  = n;
     t_ty    = ty;
-    t_attrs = Sattr.empty;
+    t_attrs = [];
     t_loc   = None;
 }
 
@@ -319,20 +320,20 @@ let f_iff      = f_binop Tiff
 open Opprintast
 
 let print_vs fmt {vs_name; vs_ty} =
-  pp fmt "@[%a:%a@]" print_ident vs_name print_ty vs_ty
+  pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
 
 let print_ls_decl fmt {ls_name;ls_args;ls_value} =
   let is_func = Option.is_some ls_value in
   let print_unnamed_arg fmt ty = pp fmt "(_:%a)" print_ty ty in
   pp fmt "%s %a %a%s%a"
     (if is_func then "function" else "predicate")
-    print_ident ls_name
+    Ident.pp ls_name
     (list ~sep:" " print_unnamed_arg) ls_args
     (if is_func then " : " else "")
     (pp_print_option print_ty) ls_value
 
 let print_ls_nm fmt {ls_name} =
-  pp fmt "%a" print_ident ls_name
+  pp fmt "%a" Ident.pp ls_name
 
 let protect_on x s = if x then "(" ^^ s ^^ ")" else s
 
@@ -384,7 +385,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
     | Tvar vs ->
        pp fmt "%a" print_vs vs;
        assert (vs.vs_ty = Option.get t_ty ) (* TODO remove this *)
-    | Tapp (ls,[x1;x2]) when is_infix ls.ls_name.id_str ->
+    | Tapp (ls,[x1;x2]) when Identifier.is_infix ls.ls_name.id_str ->
        let op_nm =
          match String.split_on_char ' ' ls.ls_name.id_str with 
            | [x] | [_; x] -> x
@@ -397,7 +398,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
          print_ty t_ty
     | Tapp (ls,tl) ->
        pp fmt "(%a %a)%a"
-         print_ident ls.ls_name
+         Ident.pp ls.ls_name
          (list ~first:" " ~sep:" " print_term) tl
          print_ty t_ty
     | Tnot t -> pp fmt "not %a" print_term t
@@ -426,7 +427,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
     | Told t ->
        pp fmt "old (%a)" print_term t
   in
-  let print_attrs fmt = Sattr.iter (pp fmt "[%@ %s]") in
+  let print_attrs fmt = List.iter (pp fmt "[%@ %s]") in
   pp fmt "%a%a" print_attrs t_attrs print_t_node t_node
 
 (** register exceptions *)

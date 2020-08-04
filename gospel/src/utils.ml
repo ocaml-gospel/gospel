@@ -44,6 +44,8 @@ module Option = struct
   let is_some = function
     | Some _ -> true
     | None-> false
+
+  let fold ~none ~some = function Some v -> some v | None -> none
 end
 
 let pp_print_option ?(none = fun _ () -> ()) pp_v ppf = function

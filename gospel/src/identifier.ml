@@ -8,77 +8,72 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Utils
+let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr
 
-(** Attributes  *)
-
-type attr = string
-
-module Sattr = Set.Make(String)
-
-(** Pre identifiers - not unique - used by parsetree and untyped AST *)
-
-type preid = {
-  pid_str : string;
-  pid_ats : attr list;
-  pid_loc : Location.t;
-}
+let pp_attrs = Format.pp_print_list pp_attr
 
 module Preid = struct
-  type t = preid
-  let equal = (=)
-  let hash = (Hashtbl.hash : preid -> int)
+  type t = {
+    pid_str: string;
+    pid_attrs: string list;
+    pid_loc: Location.t;
+  }
+
+  let pp ppf pid =
+    Format.fprintf ppf "%s%a" pid.pid_str pp_attrs pid.pid_attrs
+
+  let create ?(attrs=[]) ?(loc=Location.none) str =
+    { pid_str=str; pid_attrs=attrs; pid_loc=loc }
+
+  let add_attr t attr = { t with pid_attrs = attr :: t.pid_attrs }
 end
-
-module Hpid  = Hashtbl.Make(Preid)
-
-let create_pid s a l = {pid_str = s; pid_ats = a; pid_loc = l}
-
-let pid_of_string s = create_pid s [] Location.none
-
-let pid_add_lab pid l = { pid with pid_ats =  pid.pid_ats @ l }
-
-(** Identifiers *)
-
-type ident = {
-  id_str : string;
-  id_ats : Sattr.t;
-  id_loc : Location.t;
-  id_tag : int;
-}
 
 module Ident = struct
-  type t = ident
-  let compare = Stdlib.compare
-  let equal = (=)
-  let hash = (Hashtbl.hash : ident -> int)
+  type t = {
+    id_str: string;
+    id_attrs: string list;
+    id_loc: Location.t;
+    id_tag: int;
+  }
+
+  let pp =
+    let current = Hashtbl.create 0 in
+    let output  = Hashtbl.create 0 in
+    let current s =
+      let x =
+        Hashtbl.find_opt current s
+        |> Utils.Option.fold ~none:0 ~some:succ
+      in
+      Hashtbl.replace current s x; x
+    in
+    let str_of_id id =
+      try Hashtbl.find output id.id_tag with
+      | Not_found ->
+          let x = current id.id_str in
+          let str = if x = 0 then id.id_str else
+              id.id_str ^ "#" ^ string_of_int x in
+          Hashtbl.replace output id.id_tag str; str in
+    fun ppf t ->
+      Format.fprintf ppf "%s%a" (str_of_id t) pp_attrs t.id_attrs
+
+  let create =
+    let tag = ref 0 in
+    fun ?(attrs=[]) ?(loc=Location.none) str ->
+      incr tag;
+      {
+        id_str = str;
+        id_attrs = attrs;
+        id_loc = loc;
+        id_tag = !tag
+      }
+
+  let of_preid (pid: Preid.t) =
+    create pid.pid_str ~attrs:pid.pid_attrs ~loc:pid.pid_loc
+
+  let set_loc t loc = { t with id_loc = loc }
+
+  let add_attr t attr = { t with id_attrs = attr :: t.id_attrs }
 end
-
-module Hid = Hashtbl.Make(Ident)
-module Mid = Map.Make(Ident)
-
-let create_id =
-  let r = ref 0 in
-  fun s a l -> {
-      id_str = s;
-      id_ats = a;
-      id_loc = l;
-      id_tag = (incr r; !r)
-    }
-
-let id_register pid =
-  create_id pid.pid_str (Sattr.of_list pid.pid_ats) pid.pid_loc
-
-let fresh_id ?loc ?ats s =
-  let loc = Option.value loc ~default:Location.none in
-  let ats = Option.value ats ~default:Sattr.empty in
-  create_id s ats loc
-
-let id_add_loc l id = {id with id_loc = l}
-
-let id_add_lab id l = { id with id_ats = Sattr.add l id.id_ats }
-
-(* utils *)
 
 let prefix s = "prefix " ^ s
 let infix  s = "infix "  ^ s
@@ -92,41 +87,9 @@ let is_prefix = is_somefix "prefix"
 let is_infix  = is_somefix "infix"
 let is_mixfix = is_somefix "mixfix"
 
-(* hard-coded ids *)
-
-let eq    = fresh_id (infix "=")
-let neq   = fresh_id (infix "<>")
-let none  = fresh_id ("None")
-let some  = fresh_id ("Some")
-let nil   = fresh_id ("[]")
-let cons  = fresh_id (infix "::")
-
-(* pretty-printer *)
-
-open Opprintast
-
-let print_attr fmt a = pp fmt "[@%s]" a
-let print_attrs = list ~sep:" " print_attr
-
-let print_pid fmt pid = pp fmt "%s@ %a" pid.pid_str
-                            print_attrs pid.pid_ats
-
-let print_ident =
-  let current = Hashtbl.create 0 in
-  let output  = Hashtbl.create 0 in
-  let current s =
-    let x = match Hashtbl.find_opt current s with
-      | Some x -> x + 1
-      | None -> 0
-    in
-    Hashtbl.replace current s x; x
-  in
-  let str_of_id id =
-    try Hashtbl.find output id.id_tag with
-    | Not_found ->
-       let x = current id.id_str in
-       let str = if x = 0 then id.id_str else
-                   id.id_str ^ "#" ^ string_of_int x in
-       Hashtbl.replace output id.id_tag str; str in
-  fun fmt id -> pp fmt "%s%a" (str_of_id id)
-                  print_attrs (Sattr.elements id.id_ats)
+let eq    = Ident.create (infix "=")
+let neq   = Ident.create (infix "<>")
+let none  = Ident.create ("None")
+let some  = Ident.create ("Some")
+let nil   = Ident.create ("[]")
+let cons  = Ident.create (infix "::")

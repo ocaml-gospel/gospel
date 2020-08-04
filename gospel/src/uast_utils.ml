@@ -21,7 +21,7 @@ let mk_loc s e = {
   Location.loc_ghost = false;
 }
 
-let mk_pid pid s e = create_pid pid [] (mk_loc s e )
+let mk_pid pid s e = Preid.create pid ~attrs:[] ~loc:(mk_loc s e )
 let mk_term d s e = { term_desc = d; term_loc = mk_loc s e }
 let mk_pat  d s e = { pat_desc  = d; pat_loc  = mk_loc s e }
 
@@ -31,7 +31,7 @@ let sub_op   s e = Qpreid (mk_pid (mixfix "[_.._]") s e)
 let above_op s e = Qpreid (mk_pid (mixfix "[_..]") s e)
 let below_op s e = Qpreid (mk_pid (mixfix "[.._]") s e)
 
-let id_anonymous loc = create_pid "_" [] loc
+let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 let array_get s e =
   Qdot (Qpreid (mk_pid "Array" s e), mk_pid (mixfix "[_]") s e)
 

@@ -214,7 +214,7 @@ val_spec_body:
 
 fun_arg:
 | LEFTPAR RIGHTPAR
-  { Lnone (create_pid "()" []  (mk_loc $startpos $endpos)) }
+  { Lnone (Preid.create "()" ~attrs:[]  ~loc:(mk_loc $startpos $endpos)) }
 | lident
   { Lnone $1 }
 | TILDA lident
@@ -340,7 +340,7 @@ triggers:
 | LEFTSQ separated_nonempty_list(BAR,comma_list1(term)) RIGHTSQ { $2 }
 ;
 
-attrs(X): X attr* { pid_add_lab $1 $2 }
+attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }
 ;
 
 attr:

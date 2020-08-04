@@ -8,13 +8,14 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Identifier
 open Utils
+
+module Ident = Identifier.Ident
 
 (** type variables *)
 
 type tvsymbol = {
-    tv_name : ident;
+  tv_name : Ident.t;
 }
 
 let tv_equal: tvsymbol -> tvsymbol -> bool = (==)
@@ -31,14 +32,14 @@ module Mtv = Map.Make(Tvar)
 
 let create_tv id = { tv_name = id }
 
-let fresh_tv s = { tv_name = fresh_id s }
+let fresh_tv s = { tv_name = Ident.create s }
 
 let tv_of_string =
   let hs = Hashtbl.create 0 in
   fun s ->
     try Hashtbl.find hs s
     with Not_found ->
-      let tv = create_tv (fresh_id s) in
+      let tv = create_tv (Ident.create s) in
       Hashtbl.add hs s tv; tv
 
 (** types *)
@@ -52,7 +53,7 @@ and ty_node =
   | Tyapp of tysymbol * ty list
 
 and tysymbol = {
-  ts_ident : ident;
+  ts_ident : Ident.t;
   ts_args  : tvsymbol list;
   (* we need to keep variables to do things like
      type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
@@ -80,7 +81,7 @@ let ts_args  ts = ts.ts_args
 let ts_alias ts = ts.ts_alias
 let ts_arity ts = List.length ts.ts_args
 
-let fresh_ty_var s = {ty_node = Tyvar {tv_name = fresh_id s}}
+let fresh_ty_var s = {ty_node = Tyvar {tv_name = Ident.create s}}
 
 let ty_of_var tv = {ty_node = Tyvar tv}
 
@@ -162,21 +163,21 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
-let ts_unit    = ts (fresh_id "unit")    []
-let ts_integer = ts (fresh_id "integer") []
-let ts_bool    = ts (fresh_id "bool"   ) []
-let ts_float   = ts (fresh_id "float"  ) []
-let ts_char    = ts (fresh_id "char"   ) []
-let ts_string  = ts (fresh_id "string" ) []
-let ts_option  = ts (fresh_id "option" ) [fresh_tv "a"]
-let ts_list    = ts (fresh_id "list"   ) [fresh_tv "a"]
+let ts_unit    = ts (Ident.create "unit")    []
+let ts_integer = ts (Ident.create "integer") []
+let ts_bool    = ts (Ident.create "bool"   ) []
+let ts_float   = ts (Ident.create "float"  ) []
+let ts_char    = ts (Ident.create "char"   ) []
+let ts_string  = ts (Ident.create "string" ) []
+let ts_option  = ts (Ident.create "option" ) [fresh_tv "a"]
+let ts_list    = ts (Ident.create "list"   ) [fresh_tv "a"]
 
 let ts_tuple =
   let ts_tuples = Hashtbl.create 0 in
   fun n ->
     try Hashtbl.find ts_tuples n
     with Not_found ->
-      let ts_id = fresh_id ("tuple" ^ string_of_int n) in
+      let ts_id = Ident.create ("tuple" ^ string_of_int n) in
       let ts_args = List.init n (fun x -> fresh_tv ("a" ^ string_of_int x)) in
       let ts = ts ts_id ts_args in
       Hashtbl.add ts_tuples n ts;
@@ -185,7 +186,7 @@ let ts_tuple =
 let ts_arrow =
   let ta = fresh_tv "a"  in
   let tb = fresh_tv "b"  in
-  let id = fresh_id "->" in
+  let id = Ident.create "->" in
   ts id [ta;tb]
 
 let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
@@ -206,10 +207,10 @@ type exn_type =
        -> Exn_tuple [int_ty;int_ty]
      exception E of (int*int)
        -> Exn_tuple [Tyapp (ts_tuple 2) [ty_int;ty_int]] *)
-  | Exn_record of (ident * ty) list
+  | Exn_record of (Ident.t * ty) list
 
 type xsymbol = {
-    xs_ident : ident;
+    xs_ident : Ident.t;
     xs_type  : exn_type
 }
 
@@ -249,11 +250,11 @@ open Opprintast
 
 let print_tv fmt tv =
   pp fmt (if tv.tv_name.id_str = "_" then "%a" else "'%a")
-    print_ident tv.tv_name
+    Ident.pp tv.tv_name
 
 let print_ts_name fmt ts =
   pp fmt "@[%a@]"
-    print_ident (ts_ident ts)
+    Ident.pp (ts_ident ts)
 
 let rec print_ty fmt {ty_node} = print_ty_node fmt ty_node
 
@@ -274,18 +275,18 @@ and print_ty_node fmt = function
 let print_ts fmt ts =
   pp fmt "@[%a %a%a@]"
     (list ~sep:"," ~first:"(" ~last:")" print_tv) ts.ts_args
-    print_ident (ts_ident ts)
+    Ident.pp(ts_ident ts)
     (fun fmt alias -> match alias with None -> ()
      | Some ty -> pp fmt " [=%a]" print_ty ty) ts.ts_alias
 
 let print_exn_type f = function
   | Exn_tuple tyl -> list ~sep:" * " print_ty f tyl
   | Exn_record args ->
-     let print_arg f (id,ty) = pp f "%a:%a" print_ident id print_ty ty in
+     let print_arg f (id,ty) = pp f "%a:%a" Ident.pp id print_ty ty in
      list_with_first_last ~sep:";" ~first:"{" ~last:"}" print_arg f args
 
 let print_xs f x =
-  pp f "%a" print_ident x.xs_ident
+  pp f "%a" Ident.pp x.xs_ident
 
 (* register exceptions *)
 

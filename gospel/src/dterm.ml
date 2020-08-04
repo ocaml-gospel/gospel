@@ -93,13 +93,13 @@ type dpattern = {
 
 and dpattern_node =
   | DPwild
-  | DPvar of preid
+  | DPvar of Preid.t
   | DPapp of lsymbol * dpattern list
   | DPor of dpattern * dpattern
-  | DPas of dpattern * preid
+  | DPas of dpattern * Preid.t
   | DPcast of dpattern * dty
 
-type dbinder = preid * dty
+type dbinder = Preid.t * dty
 
 type dterm = {
   dt_node  : dterm_node;
@@ -109,15 +109,15 @@ type dterm = {
 
 and dterm_node =
   (*
-   * | Trecord of (preid * term) list
-   * | Tupdate of term * (preid * term) list
+   * | Trecord of (Preid.t * term) list
+   * | Tupdate of term * (Preid.t * term) list
    *)
-  | DTattr  of dterm * Sattr.t
-  | DTvar   of preid
+  | DTattr  of dterm * string list
+  | DTvar   of Preid.t
   | DTconst of Oasttypes.constant
   | DTapp   of lsymbol * dterm list
   | DTif    of dterm * dterm * dterm
-  | DTlet   of preid * dterm * dterm
+  | DTlet   of Preid.t * dterm * dterm
   | DTcase  of dterm * (dpattern * dterm) list
   | DTquant of quant * dbinder list * dterm list list * dterm
   | DTbinop of binop * dterm * dterm
@@ -226,7 +226,7 @@ let denv_add_var denv s dty = Mstr.add s dty denv
 
 let denv_add_var_quant denv vl =
   let add acc (pid,dty) =
-    if Mstr.mem pid.pid_str acc
+    if Mstr.mem pid.Preid.pid_str acc
     then error ~loc:pid.pid_loc (DuplicatedVar pid.pid_str)
     else Mstr.add pid.pid_str dty acc  in
   let vl = List.fold_left add Mstr.empty vl in
@@ -330,7 +330,7 @@ let dterm_expected crcmap dt dty =
 let pattern dp =
   let vars = ref Mstr.empty in
   let get_var pid ty =
-    try Mstr.find pid.pid_str !vars with Not_found ->
+    try Mstr.find pid.Preid.pid_str !vars with Not_found ->
       let vs = create_vsymbol pid ty in (* TODO the variable found is of type ty *)
       vars := Mstr.add pid.pid_str vs !vars; vs in
   let rec pattern_node dp =
@@ -447,7 +447,7 @@ let rec print_dty fmt dty = match flatten dty with
 
 let rec print_dpattern fmt {dp_node;dp_dty} = match dp_node with
   | DPwild -> pp fmt "_"
-  | DPvar pid -> pp fmt "%a:%a" print_pid pid print_dty dp_dty
+  | DPvar pid -> pp fmt "%a:%a" Preid.pp pid print_dty dp_dty
   | DPapp (ls,dpl) when is_fs_tuple ls ->
      pp fmt "(%a)" (list ~sep:"," print_dpattern) dpl
 
@@ -459,7 +459,7 @@ let rec print_dpattern fmt {dp_node;dp_dty} = match dp_node with
        print_dpattern dp2
   | DPas (dp,pid) ->
      pp fmt "(%a as %a):%a" print_dpattern dp
-       print_pid pid print_dty dp_dty
+       Preid.pp pid print_dty dp_dty
   | DPcast (dp,dty) ->
      pp fmt "(%a:%a):%a" print_dpattern dp print_dty dty
        print_dty dp_dty
@@ -472,21 +472,21 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
   | DTconst c -> pp fmt "%a%a" constant c print_dty dt_dty
   | DTtrue -> pp fmt "true%a" print_dty dt_dty
   | DTfalse -> pp fmt "false%a" print_dty dt_dty
-  | DTvar v -> pp fmt "%a%a" print_pid v print_dty dt_dty
+  | DTvar v -> pp fmt "%a%a" Preid.pp v print_dty dt_dty
   | DTapp (ls,dtl) -> pp fmt "(%a %a)%a"
-                        print_ident ls.ls_name
+                        Ident.pp ls.ls_name
                         (list ~sep:" " print_dterm) dtl
                         print_dty dt_dty
   | DTnot t -> pp fmt "not %a" print_dterm t
   | DTif (t1,t2,t3) -> pp fmt "if %a then %a else %a" print_dterm t1
                          print_dterm t2 print_dterm t3
-  | DTlet (pid,t1,t2) -> pp fmt "let %a = %a in %a" print_pid pid
+  | DTlet (pid,t1,t2) -> pp fmt "let %a = %a in %a" Preid.pp pid
                           print_dterm t1 print_dterm t2
   | DTbinop (op,t1,t2) -> pp fmt "%a %a %a" print_binop op
                             print_dterm t1 print_dterm t2
   | DTquant (q,vl,trl,dt) ->
      let print_quant_v fmt (pid,dty) =
-       pp fmt "%a%a" print_pid pid print_dty (Some dty) in
+       pp fmt "%a%a" Preid.pp pid print_dty (Some dty) in
      pp fmt "%a %a %a. %a"
        print_quantifier q
        (list ~sep:" " print_quant_v) vl

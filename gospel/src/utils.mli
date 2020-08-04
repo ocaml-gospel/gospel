@@ -13,6 +13,10 @@ module Option : sig
 
   val is_some : 'a option -> bool
   (** [is_some o] is [true] iff [o] is [Some o]. *)
+
+  val fold : none:'a -> some:('b -> 'a) -> 'b option -> 'a
+  (** [fold ~none ~some o] is [none] if [o] is [None] and [some v] if [o] is
+      [Some v]. *)
 end
 
 val split_at_f : ('a -> bool) -> 'a list -> 'a list * 'a list

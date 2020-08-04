@@ -142,16 +142,18 @@ let ns_with_primitives =
 
 (** Modules *)
 
+module Mid = Map.Make(struct type t = Ident.t let compare = compare end)
+
 type known_ids = signature_item Mid.t
 
 type file = {
-    fl_nm     : ident;
+    fl_nm     : Ident.t;
     fl_sigs   : signature;
     fl_export : namespace;
   }
 
 type module_uc = {
-    muc_nm     : ident;
+    muc_nm     : Ident.t;
     muc_sigs   : signature list;
     muc_prefix : string    list; (* essential when closing namespaces *)
     muc_import : namespace list;
@@ -239,7 +241,7 @@ let open_empty_module muc s =
 let close_module_file muc =
   match muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs with
   | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, s0 :: sl ->
-     let file = { fl_nm = fresh_id p0;
+     let file = { fl_nm = Ident.create p0;
                   fl_sigs   = List.rev s0; fl_export = e0 } in
      {muc with  muc_prefix = pl;
                 muc_import = ns_add_ns i1 p0 e0 :: il;
@@ -340,7 +342,7 @@ let add_sig_contents muc sig_ =
 (** Module under construction with primitive types and functions *)
 
 let init_muc s = {
-    muc_nm      = fresh_id s;
+    muc_nm      = Ident.create s;
     muc_sigs    = [[]];
     muc_prefix  = [s];
     muc_import  = [ns_with_primitives];
@@ -397,7 +399,7 @@ and print_ns nm fmt {ns_ts;ns_ls;ns_xs;ns_ns;ns_tns} =
 
 let print_file fmt {fl_nm;fl_sigs;fl_export} =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
-    print_ident fl_nm
+    Ident.pp fl_nm
     (print_ns fl_nm.id_str) fl_export
     print_signature fl_sigs
 

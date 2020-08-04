@@ -8,7 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Identifier
 open Oparsetree
 open Uast
 open Opprintast
@@ -16,14 +15,14 @@ open Opprintast
 let const_hole s fmt _ = pp fmt "%s" s
 
 let rec qualid fmt (q:qualid) = match q with
-  | Qpreid pid -> print_pid fmt pid
-  | Qdot (q,pid) -> pp fmt "@[%a.%a@]" qualid q print_pid pid
+  | Qpreid pid -> Preid.pp fmt pid
+  | Qdot (q,pid) -> pp fmt "@[%a.%a@]" qualid q Preid.pp pid
 
 let labelled_arg fmt (l:labelled_arg) = match l with
-  | Lnone pid -> print_pid fmt pid
-  | Lquestion pid -> pp fmt "@[?%a@]" print_pid pid
-  | Lnamed pid -> pp fmt "@[~%a@]" print_pid pid
-  | Lghost (pid,_) -> pp fmt "@[[%a : TY]@]" print_pid pid
+  | Lnone pid -> Preid.pp fmt pid
+  | Lquestion pid -> pp fmt "@[?%a@]" Preid.pp pid
+  | Lnamed pid -> pp fmt "@[~%a@]" Preid.pp pid
+  | Lghost (pid,_) -> pp fmt "@[[%a : TY]@]" Preid.pp pid
 
 let spec f fmt x =
   pp fmt "@[(*@@ %a@ *)@]" f x
@@ -57,7 +56,7 @@ let val_spec fmt vspec =
        pp fmt "@[@[<h>%a%s %a %a@]@\n%a%a%a%a%a%a%a%a%a@]"
          (list ~sep:"," labelled_arg) s.sp_hd_ret
          (if s.sp_hd_ret = [] then "" else " =")
-         print_pid s.sp_hd_nm
+         Preid.pp s.sp_hd_nm
          (list ~sep:" " labelled_arg) s.sp_hd_args
          (list_keyword "requires ...") s.sp_pre
          (list_keyword "ensures ...") s.sp_post
@@ -157,7 +156,7 @@ let function_ f x =
     pp f "@[%s %s%a ...%a%a%a%a%a@]"
       keyword
       (if x.fun_rec then "rec " else "")
-      print_pid x.fun_name
+      Preid.pp x.fun_name
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
       sep ()
       (list_keyword "variant ...") x.fun_spec.fun_variant

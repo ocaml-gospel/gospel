@@ -8,27 +8,28 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Identifier
 open Oasttypes
 open Oparsetree
+
+module Preid = Identifier.Preid
 
 (* Types *)
 
 type qualid =
-  | Qpreid of preid
-  | Qdot   of qualid * preid
+  | Qpreid of Preid.t
+  | Qdot   of qualid * Preid.t
 
 type pty =
-  | PTtyvar  of preid
+  | PTtyvar  of Preid.t
   | PTtyapp  of qualid * pty list
   | PTtuple  of pty list
   | PTarrow  of labelled_arg * pty * pty
 
 and labelled_arg =
-  | Lnone     of preid
-  | Lquestion of preid
-  | Lnamed    of preid
-  | Lghost    of preid * pty
+  | Lnone     of Preid.t
+  | Lquestion of Preid.t
+  | Lnamed    of Preid.t
+  | Lghost    of Preid.t * pty
 
 (* Patterns *)
 
@@ -41,19 +42,19 @@ type pattern = {
 
 and pat_desc =
   | Pwild
-  | Pvar   of preid
+  | Pvar   of Preid.t
   | Papp   of qualid * pattern list
   | Prec   of (qualid * pattern) list
   | Ptuple of pattern list
-  | Pas    of pattern * preid
+  | Pas    of pattern * Preid.t
   | Por    of pattern * pattern
   | Pcast  of pattern * pty
   (* | Pscope of qualid * pattern TODO: think about *)
 
 (* Logical terms and formulas *)
 
-type binder = preid * pty option
-type param  = Location.t * preid * pty
+type binder = Preid.t * pty option
+type param  = Location.t * Preid.t * pty
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
   (* TODO: think about 'by' and 'so' *)
@@ -71,13 +72,13 @@ and term_desc =
   | Tpreid  of qualid
   | Tidapp  of qualid * term list
   | Tapply  of term * term
-  | Tinfix  of term * preid * term
+  | Tinfix  of term * Preid.t * term
   | Tbinop  of term * binop * term
   | Tnot    of term
   | Tif     of term  * term * term
   | Tquant  of quant * binder list * term list list * term
-  | Tattr   of attr  * term
-  | Tlet    of preid * term * term
+  | Tattr   of string * term
+  | Tlet    of Preid.t * term * term
   | Tcase   of term  * (pattern * term) list
   | Tcast   of term  * pty
   | Ttuple  of term list
@@ -95,7 +96,7 @@ type post = term
 type xpost = Location.t * (qualid * (pattern * term) option) list
 
 type val_spec = {
-    sp_hd_nm   : preid;             (* header name *)
+    sp_hd_nm   : Preid.t;             (* header name *)
     sp_hd_ret  : labelled_arg list; (* Can only be LNone or LGhost *)
     sp_hd_args : labelled_arg list; (* header arguments' names *)
     sp_pre     : pre list;
@@ -122,7 +123,7 @@ type val_spec = {
 
 type field = {
   f_loc     : Location.t;
-  f_preid   : preid;
+  f_preid   : Preid.t;
   f_pty     : pty;
   f_mutable : bool;
 }
@@ -140,9 +141,9 @@ type fun_spec = {
   fun_coer    : bool;
 }
 
-(* type param  = Location.t * preid * pty *)
+(* type param  = Location.t * Preid.t * pty *)
 type function_ = {
-  fun_name    : preid;
+  fun_name    : Preid.t;
   fun_rec     : bool;
   fun_type    : pty option;
   fun_params  : param list;
@@ -152,7 +153,7 @@ type function_ = {
 }
 
 type axiom = {
-  ax_name : preid;
+  ax_name : Preid.t;
   ax_term : term;
   ax_loc  : Location.t
 }

@@ -9,9 +9,10 @@
 (**************************************************************************)
 
 open Utils
-open Identifier
 open Ttypes
 open Tterm
+
+module Ident = Identifier.Ident
 
 (** signatures / top level declarations *)
 
@@ -80,7 +81,7 @@ let mk_val_spec args ret pre post wr cs dv equiv =
   val_spec args ret pre post wr cs dv equiv
 
 type val_description = {
-    vd_name  : ident;
+    vd_name  : Ident.t;
     vd_type  : Oparsetree.core_type;
     vd_prim  : string list; (* primitive declaration *)
     vd_attrs : Oparsetree.attributes;
@@ -138,7 +139,7 @@ type rec_declaration = {
 type constructor_decl = {
     cd_cs    : lsymbol;                (* constructor *)
     (* cd_ld is empty if defined through a tuple *)
-    cd_ld    : (ident * ty) label_declaration list;
+    cd_ld    : (Ident.t * ty) label_declaration list;
     cd_loc   : Location.t;
     cd_attrs : Oparsetree.attributes; (* C of ... [@id1] [@id2] *)
 }
@@ -181,7 +182,7 @@ let type_declaration td_ts td_params td_cstrs td_kind td_private
    td_manifest; td_attrs; td_spec; td_loc}
 
 type axiom = {
-    ax_name : ident;
+    ax_name : Ident.t;
     ax_term : term;
     ax_loc  : Location.t;
 }
@@ -234,7 +235,7 @@ let function_ ls rec_ params def spec loc =
        coercion
    *)
    we check the following
-   1 - no duplicate arguments (identifiers may have the same
+   1 - no duplicate arguments (Ident.tifiers may have the same
    string but still be different)
    2 - types or params match the type of lsymbol
    3 - free variables of t, treq, v come from the arguments;
@@ -272,7 +273,7 @@ let mk_function ?result ls r params def spec loc =
 
 type extension_constructor =
     {
-     ext_ident     : ident;
+     ext_ident     : Ident.t;
      ext_xs        : xsymbol;
      ext_kind      : Oparsetree.extension_constructor_kind;
      ext_loc       : Location.t;
@@ -297,16 +298,16 @@ type rec_flag = Nonrecursive | Recursive
 type ghost    = bool
 
 type with_constraint =
-  | Wty of ident * type_declaration
+  | Wty of Ident.t * type_declaration
         (* with type X.t = ...
 
-           Note: the last component of the longident must match
+           Note: the last component of the longIdent.t must match
            the name of the type_declaration. *)
-  | Wmod of ident * ident
+  | Wmod of Ident.t * Ident.t
         (* with module X.Y = Z *)
-  | Wtysubs of ident * type_declaration
+  | Wtysubs of Ident.t * type_declaration
         (* with type X.t := ..., same format as [Pwith_type] *)
-  | Wmodsubs of ident * ident
+  | Wmodsubs of Ident.t * Ident.t
         (* with module X.Y := Z *)
 
 type open_description =
@@ -358,14 +359,14 @@ and signature_item_desc =
   | Sig_axiom of axiom
 
 and module_declaration = {
-    md_name  : ident;
+    md_name  : Ident.t;
     md_type  : module_type;
     md_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
     md_loc   : Location.t;
   }
 
 and module_type_declaration = {
-     mtd_name  : ident;
+     mtd_name  : Ident.t;
      mtd_type  : module_type option;
      mtd_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
      mtd_loc   : Location.t;
@@ -383,7 +384,7 @@ and module_type_desc =
         (* S *)
   | Mod_signature of signature
         (* sig ... end *)
-  | Mod_functor of ident * module_type option * module_type
+  | Mod_functor of Ident.t * module_type option * module_type
         (* functor(X : MT1) -> MT2 *)
   | Mod_with of module_type * with_constraint list
         (* MT with ... *)
@@ -405,19 +406,19 @@ open Opprintast
 let print_variant_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
-    print_ident (fst ld.ld_field) print_ty (snd ld.ld_field)
+    Ident.pp (fst ld.ld_field) print_ty (snd ld.ld_field)
 
 let print_rec_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
-    print_ident (ld.ld_field.ls_name)
+    Ident.pp (ld.ld_field.ls_name)
     print_ty (Option.get ld.ld_field.ls_value)
 
 let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}"
     (list ~sep:"; " print_field) fields
 
-    (* cd_ld    : (ident * ty) label_declaration list; *)
+    (* cd_ld    : (Ident.t * ty) label_declaration list; *)
 
 let print_type_kind fmt = function
   | Pty_abstract -> ()
@@ -427,7 +428,7 @@ let print_type_kind fmt = function
        | ld -> print_label_decl_list print_variant_field fmt ld in
      let print_constructor fmt {cd_cs;cd_ld} =
        pp fmt "@[%a of %a@\n@[<h 2>%a@]@]"
-         print_ident cd_cs.ls_name
+         Ident.pp cd_cs.ls_name
          (print_args cd_cs) cd_ld
          print_ls_decl cd_cs in
      pp fmt "@[ = %a@]"
@@ -474,7 +475,7 @@ let print_type_declaration fmt td =
     pp fmt "%a = %a" print_ty ty1 print_ty ty2 in
   pp fmt "@[%a%a%a%a%s%a@]@\n@[%a@]"
     print_params td.td_params
-    print_ident (ts_ident td.td_ts)
+    Ident.pp (ts_ident td.td_ts)
     print_manifest td.td_manifest
     print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
@@ -510,7 +511,7 @@ let print_vd_spec val_id fmt spec =
      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
        (list ~sep:", " print_lb_arg) vs.sp_ret
        (if vs.sp_ret = [] then "" else " =")
-       print_ident val_id
+       Ident.pp val_id
        (list ~sep:" " print_lb_arg) vs.sp_args
        print_diverges vs.sp_diverge
        (list_with_first_last ~first:"@\n@[requires "
@@ -534,7 +535,7 @@ let print_vd_spec val_id fmt spec =
           constant_string) vs.sp_equiv
 
 let print_param f p =
-  pp f "(%a:%a)" print_ident p.vs_name print_ty p.vs_ty
+  pp f "(%a:%a)" Ident.pp p.vs_name print_ty p.vs_ty
 
 let print_function f x =
   let func_pred = if x.fun_ls.ls_value = None then "predicate" else "function" in
@@ -544,7 +545,7 @@ let print_function f x =
     pp f "@[%s %s%a %a%a%a%a%a%a%a@]"
       func_pred
       (if x.fun_rec then "rec " else "")
-      print_ident x.fun_ls.ls_name
+      Ident.pp x.fun_ls.ls_name
       (list ~sep:" " print_param) x.fun_params
       (pp_print_option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
       (pp_print_option
@@ -569,7 +570,7 @@ let print_extension_constructor ctxt f x =
   | Pext_decl (_, _) ->
      print_xs f x.ext_xs
   | Pext_rebind li ->
-      pp f "%a%a@;=@;%a" print_ident x.ext_xs.xs_ident
+      pp f "%a%a@;=@;%a" Ident.pp x.ext_xs.xs_ident
         (attributes ctxt) x.ext_attributes
         longident_loc li
 
@@ -583,7 +584,7 @@ let rec print_signature_item f x =
     let intro = if vd.vd_prim = [] then "val" else "external" in
     pp f "@[%s@ %a@ :@ %a%a%a@]@\n@[<h4>%a@]"
       intro
-      print_ident vd.vd_name
+      Ident.pp vd.vd_name
       core_type vd.vd_type
       (fun f x ->
         if x.vd_prim <> []
@@ -620,12 +621,12 @@ let rec print_signature_item f x =
       end
   | Sig_module ({md_type={mt_desc=Mod_alias alias;
                             mt_attrs=[]; _};_} as pmd) ->
-      pp f "@[<hov>module@ %a@ =@ %a@]%a" print_ident pmd.md_name
+      pp f "@[<hov>module@ %a@ =@ %a@]%a" Ident.pp pmd.md_name
         (list ~sep:"." Format.pp_print_string) alias
         (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_module pmd ->
       pp f "@[<hov>module@ %a@ :@ %a@]%a"
-        print_ident pmd.md_name
+        Ident.pp pmd.md_name
         print_module_type pmd.md_type
         (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_open (od,ghost) ->
@@ -641,7 +642,7 @@ let rec print_signature_item f x =
         (item_attributes reset_ctxt) incl.pincl_attributes
   | Sig_modtype {mtd_name=s; mtd_type=md; mtd_attrs=attrs} ->
       pp f "@[<hov2>module@ type@ %a%a@]%a"
-        print_ident s
+        Ident.pp s
         (fun f md -> match md with
            | None -> ()
            | Some mt ->
@@ -656,11 +657,11 @@ let rec print_signature_item f x =
    *       | [] -> () ;
    *       | pmd :: tl ->
    *           if not first then
-   *             pp f "@ @[<hov2>and@ %a:@ %a@]%a" print_ident pmd.mdname
+   *             pp f "@ @[<hov2>and@ %a:@ %a@]%a" Ident.pp pmd.mdname
    *               print_modyle_type1 pmd.mdtype
    *               (item_attributes reset_ctxt) pmd.mdattributes
    *           else
-   *             pp f "@[<hov2>module@ rec@ %a:@ %a@]%a" print_ident pmd.mdname
+   *             pp f "@[<hov2>module@ rec@ %a:@ %a@]%a" Ident.pp pmd.mdname
    *               print_modyle_type1 pmd.mdtype
    *               (item_attributes reset_ctxt) pmd.mdattributes;
    *           string_x_module_type_list f ~first:false tl
@@ -672,7 +673,7 @@ let rec print_signature_item f x =
       item_attributes reset_ctxt f a
   | Sig_function x -> print_function f x
   | Sig_axiom x -> pp f "(*@@ axiom %a: %a *)"
-                     print_ident x.ax_name print_term x.ax_term
+                     Ident.pp x.ax_name print_term x.ax_term
   | Sig_use s -> pp f "(*@@ use %s *)" s
   | _ -> assert false
 
@@ -691,7 +692,7 @@ and print_module_type f x =
           pp f "@[<hov2>%a@ ->@ %a@]"
             print_modyle_type1 mt1 print_module_type mt2
         else
-          pp f "@[<hov2>functor@ (%a@ :@ %a)@ ->@ %a@]" print_ident s
+          pp f "@[<hov2>functor@ (%a@ :@ %a)@ ->@ %a@]" Ident.pp s
             print_module_type mt1 print_module_type mt2
     | Mod_with (mt, []) -> print_module_type f mt
     | Mod_with (mt, l) ->
@@ -703,20 +704,20 @@ and print_module_type f x =
              let td = {td with td_ts = ts } in
               pp f "type@ %a"
                 (* (list print_tv ~sep:"," ~first:"(" ~last:")") ls
-                 * print_ident li *)
+                 * Ident.pp li *)
                 print_type_declaration td
           | Wmod (li, li2) ->
-              pp f "module %a =@ %a" print_ident li print_ident li2;
+              pp f "module %a =@ %a" Ident.pp li Ident.pp li2;
           | Wtysubs (li, ({td_params=ls;_} as td)) ->
               let ls = List.map fst ls in
               let ts = {td.td_ts with ts_ident = li } in
               let td = {td with td_ts = ts } in
               pp f "type@ %a %a :=@ %a"
                 (list print_tv ~sep:"," ~first:"(" ~last:")")
-                ls print_ident li
+                ls Ident.pp li
                 print_type_declaration td
           | Wmodsubs (li, li2) ->
-             pp f "module %a :=@ %a" print_ident li print_ident li2 in
+             pp f "module %a :=@ %a" Ident.pp li Ident.pp li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
           print_modyle_type1 mt (list with_constraint ~sep:"@ and@ ") l
     | _ -> print_modyle_type1 f x

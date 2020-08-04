@@ -73,7 +73,7 @@ let rec ty_of_core ns cty =
   let open Oparsetree in
   match cty.ptyp_desc with
   | Ptyp_any ->
-     {ty_node = Tyvar (create_tv (fresh_id "_"))}
+     {ty_node = Tyvar (create_tv (Ident.create "_"))}
   | Ptyp_var s ->
      {ty_node = Tyvar (tv_of_string s)}
   | Ptyp_tuple ctl ->
@@ -272,7 +272,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
   | Uast.Tinfix (t1,op1,t23) ->
      let apply de1 op de2 =
        let symbol =
-         if op.pid_str = neq.id_str then eq.id_str else op.pid_str in
+         if op.Preid.pid_str = neq.id_str then eq.id_str else op.pid_str in
        let ls = find_ls ~loc:op1.pid_loc ns [symbol] in
        let dtyl, dty = specialize_ls ls in
        if ls_equal ls ps_equ then begin
@@ -342,7 +342,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
      dterm kid crcm ns denv t
   | Uast.Tattr (at,t) ->
      let dt = dterm kid crcm ns denv t in
-     mk_dterm (DTattr (dt,Sattr.singleton at)) dt.dt_dty
+     mk_dterm (DTattr (dt, [at])) dt.dt_dty
   | Uast.Told t ->
      let dt = dterm kid crcm ns denv t in
      mk_dterm (DTold dt) dt.dt_dty
@@ -392,8 +392,8 @@ let mutable_flag = function
 let process_type_spec kid crcm ns ty (spec:Uast.type_spec) =
   let field (ns,fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
-    let ls = fsymbol (id_register f.f_preid) [ty] f_ty in
-    let ls_inv = fsymbol (id_register f.f_preid) [] f_ty in
+    let ls = fsymbol (Ident.of_preid f.f_preid) [ty] f_ty in
+    let ls_inv = fsymbol (Ident.of_preid f.f_preid) [] f_ty in
     (ns_add_ls ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
@@ -461,16 +461,16 @@ let type_type_declaration kid crcm ns tdl =
       List.fold_right parse_params td.tparams (Mstr.empty,[],[]) in
 
     let manifest = Option.map (parse_core (Sstr.add s alias) tvl) td.tmanifest in
-    let td_ts = mk_ts (fresh_id ~loc:td.tname.loc s) params manifest in
+    let td_ts = mk_ts (Ident.create ~loc:td.tname.loc s) params manifest in
     Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
-      let cs_id = fresh_id ("constr#" ^ s) in
+      let cs_id = Ident.create ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
       let rd_cs = fsymbol ~constr:true cs_id fields_ty ty in
       let mk_ld ld =
-        let id = fresh_id ld.pld_name.txt in
+        let id = Ident.create ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
         let field = fsymbol id [ty] ty_res in
         let mut = mutable_flag ld.pld_mutable in
@@ -481,7 +481,7 @@ let type_type_declaration kid crcm ns tdl =
     let process_variant ty alias cd =
       if cd.pcd_res != None then
         not_supported ~loc:cd.pcd_loc "type in constructors not supported";
-      let cs_id = fresh_id cd.pcd_name.txt in
+      let cs_id = Ident.create cd.pcd_name.txt in
       let cd_cs,cd_ld = match cd.pcd_args with
         | Pcstr_tuple ctl ->
            let tyl = List.map (parse_core alias tvl) ctl in
@@ -491,7 +491,7 @@ let type_type_declaration kid crcm ns tdl =
            fsymbol ~constr:true cs_id arg ty, []
         | Pcstr_record ldl ->
            let add ld (ldl,tyl) =
-             let id = fresh_id ld.pld_name.txt in
+             let id = Ident.create ld.pld_name.txt in
              let ty = parse_core alias tvl ld.pld_type in
              let field = id,ty in
              let mut = mutable_flag ld.pld_mutable in
@@ -552,7 +552,7 @@ let rec val_parse_core_type ns cty =
 *)
 let process_val_spec kid crcm ns id cty vs =
   check_report ~loc:vs.sp_hd_nm.pid_loc
-    (id.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
+    (id.Ident.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
 
   let args, ret = val_parse_core_type ns cty in
@@ -646,7 +646,7 @@ let process_val_spec kid crcm ns id cty vs =
   mk_val_spec args ret pre post xpost wr cs vs.sp_diverge vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
-  let id = id_add_loc vd.vname.loc (fresh_id vd.vname.txt) in
+  let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
   let spec = Option.map (process_val_spec kid crcm ns id vd.vtype) vd.vspec in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
@@ -663,7 +663,7 @@ let process_function kid crcm ns f =
     create_vsymbol pid (ty_of_pty ns pty)) f.fun_params in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
-  let ls = lsymbol (id_register f.fun_name) tyl f_ty in
+  let ls = lsymbol (Ident.of_preid f.fun_name) tyl f_ty in
   let ns = if f.fun_rec then ns_add_ls ns f.fun_name.pid_str ls else ns in
 
   (* check that there is no duplicated parameters; we must do this
@@ -677,7 +677,7 @@ let process_function kid crcm ns f =
   let env, result = match f_ty with
     | None -> env, None
     | Some ty ->
-       let result = create_vsymbol (pid_of_string "result") ty in
+       let result = create_vsymbol (Preid.create "result") ty in
        Mstr.add "result" result env, Some result in
 
   let def = match f_ty with
@@ -695,14 +695,14 @@ let process_function kid crcm ns f =
   mk_sig_item (Sig_function f) f.fun_loc
 
 let process_axiom loc kid crcm ns a =
-  let id = id_register a.Uast.ax_name in
+  let id = Ident.of_preid a.Uast.ax_name in
   let t  = fmla kid crcm ns Mstr.empty a.Uast.ax_term in
   let ax = mk_axiom id t a.ax_loc in
   mk_sig_item (Sig_axiom ax) loc
 
 let process_exception_sig loc ns te =
   let ec = te.Oparsetree.ptyexn_constructor in
-  let id = id_add_loc ec.pext_name.loc (fresh_id ec.pext_name.txt) in
+  let id = Ident.set_loc (Ident.create ec.pext_name.txt) ec.pext_name.loc in
   let xs = match ec.pext_kind with
     | Pext_rebind lid ->
        find_xs ~loc:lid.loc ns (Longident.flatten lid.txt)
@@ -712,7 +712,7 @@ let process_exception_sig loc ns te =
             Exn_tuple (List.map (ty_of_core ns) ctyl)
          | Pcstr_record ldl ->
             let get Oparsetree.{pld_name;pld_type; _} =
-              fresh_id ~loc:pld_name.loc pld_name.txt,
+              Ident.create ~loc:pld_name.loc pld_name.txt,
               ty_of_core ns pld_type in
             Exn_record (List.map get ldl) in
        xsymbol id args
@@ -863,7 +863,7 @@ and process_modtype penv muc umty = match umty.mdesc with
      let muc = close_module_functor muc in
      let muc, tmty = process_modtype penv muc mt in
      let tmty =
-       {mt_desc = Mod_functor (fresh_id nm.txt, Some tmty_arg, tmty);
+       {mt_desc = Mod_functor (Ident.create nm.txt, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
      muc, tmty
   | Mod_typeof _ ->
@@ -876,7 +876,7 @@ and process_mod penv loc m muc =
   let nm = m.mdname.txt in
   let muc = open_module muc nm in
   let muc, mty = process_modtype penv muc m.mdtype in
-  let decl = { md_name = fresh_id nm; md_type = mty;
+  let decl = { md_name = Ident.create nm; md_type = mty;
                md_attrs = m.mdattributes; md_loc = m.mdloc } in
   close_module muc, mk_sig_item (Sig_module decl) loc
 
@@ -887,7 +887,7 @@ and process_modtype_decl penv loc decl muc =
   let muc, mty = match md_mty with
     | None -> muc, None
     | Some (muc,mty) -> muc, Some mty in
-  let decl = {mtd_name = fresh_id nm; mtd_type = mty;
+  let decl = {mtd_name = Ident.create nm; mtd_type = mty;
               mtd_attrs = decl.mtdattributes; mtd_loc = decl.mtdloc} in
   close_module_type muc, mk_sig_item (Sig_modtype decl) loc
 
