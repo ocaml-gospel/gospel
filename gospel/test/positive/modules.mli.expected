@@ -57,23 +57,23 @@ sig
   type ta =
   | C of int 
     
-  (*@ function int_of_integer  ... *)
-  (*@ function integer_of_int  ... *)
+  (*@ function int_of_integer ... *)
+  (*@ function integer_of_int ... *)
   module MB :
   sig
-    (*@ function fb  ... *)
-    (*@ function int_of_float  ... *)
-    (*@ function float_of_int  ... *)
+    (*@ function fb ... *)
+    (*@ function int_of_float ... *)
+    (*@ function float_of_int ... *)
     module MC :
     sig
       type tc = {
       x: int ;
       y: float }
         
-      (*@ function fc  ... *)
-      (*@ function fcc  ... *)
+      (*@ function fc ... *)
+      (*@ function fcc ... *)
     end
-    module MD : sig (*@ function td  ... *) end
+    module MD : sig (*@ function td ... *) end
   end
 end
 
@@ -85,15 +85,15 @@ module type MTF  =
       
     val f : ft -> ft
     
-    (*@ function ff  ... *)
-    (*@ predicate fp1  ... *)
-    (*@ predicate fp2  ... *)
+    (*@ function ff ... *)
+    (*@ predicate fp1 ... *)
+    (*@ predicate fp2 ... *)
   end
 
 module MF : MTF
 
 val default : MF.ft -> MF.ft
-(*@ x  = default  y 
+(*@ x = default y
     requires ...
     ensures ...
      *)

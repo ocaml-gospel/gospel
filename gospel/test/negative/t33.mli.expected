@@ -17,6 +17,6 @@ type t = {
 x: int }
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t33.mli", line 14, characters 4-33:
 Error: Type mysmatch. Cannot match t with int

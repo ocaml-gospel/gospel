@@ -25,10 +25,10 @@ type 'a t2 =
 | C4 of int * 'a 
   
 
-(*@ function gnr  ... *)
+(*@ function gnr ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t15.mli", line 23, characters 18-25:
 Error: Type mysmatch. Cannot match 'a with bool

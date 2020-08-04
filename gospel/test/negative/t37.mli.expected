@@ -19,6 +19,6 @@ x: int ;
 y: 'a }
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t37.mli", line 15, characters 6-15:
 Error: Variable x is duplicated in pattern

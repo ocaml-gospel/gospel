@@ -86,30 +86,30 @@ type 'a t
        *)
 
 val push : 'a -> 'a t -> unit
-(*@  push  v  q 
+(*@  push v q
     ensures ...
     modifies ...
      *)
 
 val pop : 'a t -> 'a
-(*@ v  = pop  q 
+(*@ v = pop q
     requires ...
     ensures ...
     modifies ...
      *)
 
 val is_empty : 'a t -> bool
-(*@ b  = is_empty  q 
+(*@ b = is_empty q
     ensures ...
      *)
 
 val create : unit -> 'a t
-(*@ q  = create  () 
+(*@ q = create ()
     ensures ...
      *)
 
 val in_place_concat : 'a t -> 'a t -> unit
-(*@  in_place_concat  q1  q2 
+(*@  in_place_concat q1 q2
     ensures ...
     ensures ...
     modifies ...
@@ -117,27 +117,27 @@ val in_place_concat : 'a t -> 'a t -> unit
      *)
 
 val in_place_destructive_concat : 'a t -> 'a t -> unit
-(*@  in_place_destructive_concat  q1  q2 
+(*@  in_place_destructive_concat q1 q2
     ensures ...
     modifies ...
     consumes ...
      *)
 
 val nondestructive_concat : 'a t -> 'a t -> 'a t
-(*@ q3  = nondestructive_concat  q1  q2 
+(*@ q3 = nondestructive_concat q1 q2
     ensures ...
      *)
 
 val map : ('a -> 'b) -> 'a t -> 'b t
-(*@ r  = map  f  q 
+(*@ r = map f q
     ensures ...
     ensures ...
      *)
 
-(*@ function power  ... *)
+(*@ function power ... *)
 
 val power_2_below : int -> int
-(*@ r ,[k  : TY] = power_2_below  n 
+(*@ r,[k : TY] = power_2_below n
     requires ...
     ensures ...
      *)
@@ -150,7 +150,7 @@ val random_init : int -> rand_state
 
 
 val random_int : rand_state -> int -> int
-(*@ n  = random_int  s  m 
+(*@ n = random_int s m
     requires ...
     ensures ...
     modifies ...
@@ -173,20 +173,20 @@ type elem
 *)
 
 val equiv : elem -> elem -> bool
-(*@ b  = equiv  [uf  : TY] e1  e2 
+(*@ b = equiv [uf : TY] e1 e2
     requires ...
     ensures ...
     modifies ...
      *)
 
 (*@ val create_instance : unit -> uf_instance
-(*@ uf  = create_instance  () 
+(*@ uf = create_instance ()
     ensures ...
      *)
 *)
 
 val make : unit -> elem
-(*@ e  = make  [uf  : TY] () 
+(*@ e = make [uf : TY] ()
     ensures ...
     ensures ...
     ensures ...
@@ -205,7 +205,7 @@ type tt
        *)
 
 val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
-(*@ p5 ,p6 ,m ,[h  : TY] = f  p1  p2  p3  p4  n  [g  : TY]
+(*@ p5,p6,m,[h : TY] = f p1 p2 p3 p4 n [g : TY]
     requires ...
     ensures ...
     modifies ...

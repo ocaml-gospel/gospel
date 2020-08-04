@@ -71,12 +71,12 @@ exception E10 of {
 (*@ val id : 'a -> 'a
  *)
 
-(*@ function integer_of_int  ... *)
+(*@ function integer_of_int ... *)
 
-(*@ function int_of_integer  ... *)
+(*@ function int_of_integer ... *)
 
 val f : 'a -> 'a
-(*@ x  = f  y 
+(*@ x = f y
     with ...
     with ...
     with ...

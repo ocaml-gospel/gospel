@@ -104,19 +104,19 @@ type 'a t6 = {
 
 (*@ axiom ... *)
 
-(*@ function f1  ... *)
+(*@ function f1 ... *)
 
-(*@ function f2  ... *)
+(*@ function f2 ... *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 
-(*@ predicate pred  ... *)
+(*@ predicate pred ... *)
 
-(*@ function p  ...
+(*@ function p ...
     variant ...
     requires ...
     ensures ...
@@ -124,27 +124,27 @@ type 'a t6 = {
     ensures ...
      *)
 
-(*@ function rec f  ... *)
+(*@ function rec f ... *)
 
-(*@ function rec f  ... *)
+(*@ function rec f ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
-(*@ function int_of_integer  ... *)
+(*@ function int_of_integer ... *)
 
-(*@ function h  ... *)
+(*@ function h ... *)
 
-(*@ function h  ... *)
+(*@ function h ... *)
 
-(*@ function h  ... *)
+(*@ function h ... *)
 
-(*@ function h  ... *)
+(*@ function h ... *)
 
-(*@ function to_integer  ... *)
+(*@ function to_integer ... *)
 
-(*@ function i  ... *)
+(*@ function i ... *)
 
-(*@ function i  ...
+(*@ function i ...
     requires ...
     ensures ...
      *)
@@ -153,7 +153,7 @@ type 'a t1 =
 | C of 'a * int 
   
 
-(*@ function i  ... *)
+(*@ function i ... *)
 
 type 'a t2 =
 | C2 of 'a 
@@ -161,16 +161,16 @@ type 'a t2 =
 | C4 of int * 'a 
   
 
-(*@ function gnr  ... *)
+(*@ function gnr ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 
 (*@ axiom ... *)
 
 val f : int -> int -> int
-(*@ r  = f  x  y 
+(*@ r = f x y
     requires ...
     requires ...
     ensures ...
@@ -180,9 +180,9 @@ type 'a t3 =
 | A 
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 
-(*@ function integer_of_int  ... *)
+(*@ function integer_of_int ... *)
 
 type t4 =
 | A 
@@ -199,9 +199,9 @@ xx: 'a ;
 yy: int }
   
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
 *******************************
 ********* Typed GOSPEL ********

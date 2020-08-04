@@ -17,6 +17,6 @@ type t = {
 x: int }
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t34.mli", line 15, characters 7-8:
 Error: Symbol y not found

@@ -16,12 +16,12 @@ val f : 'a -> 'a[@@gospel
 
 exception E of int * int 
 
-(*@ function integer_of_int  ... *)
+(*@ function integer_of_int ... *)
 
-(*@ function fst  ... *)
+(*@ function fst ... *)
 
 val f : 'a -> 'a
-(*@ x  = f  y 
+(*@ x = f y
     with ...
      *)
 File "t30.mli", line 18, characters 11-44:

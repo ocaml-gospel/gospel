@@ -19,6 +19,6 @@ x: int ;
 y: 'a }
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "_none_", line 1:
 Error: Type t expects 1 arguments as opposed to 0

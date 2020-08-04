@@ -35,53 +35,53 @@
 
 (*@ open Type_decl *)
 
-(*@ function f1  ... *)
+(*@ function f1 ... *)
 
-(*@ function f2  ... *)
+(*@ function f2 ... *)
 
-(*@ function f3  ... *)
+(*@ function f3 ... *)
 
-(*@ function f4  ... *)
+(*@ function f4 ... *)
 
-(*@ function f5  ... *)
+(*@ function f5 ... *)
 
-(*@ function f6  ... *)
+(*@ function f6 ... *)
 
-(*@ function h1  ... *)
+(*@ function h1 ... *)
 
-(*@ function h2  ... *)
+(*@ function h2 ... *)
 
-(*@ function h3  ... *)
+(*@ function h3 ... *)
 
-(*@ function h4  ... *)
+(*@ function h4 ... *)
 
-(*@ predicate h5  ... *)
+(*@ predicate h5 ... *)
 
-(*@ predicate h6  ... *)
+(*@ predicate h6 ... *)
 
-(*@ predicate h7  ... *)
+(*@ predicate h7 ... *)
 
-(*@ predicate h8  ... *)
+(*@ predicate h8 ... *)
 
-(*@ function prefix !!  ... *)
+(*@ function prefix !! ... *)
 
-(*@ function prefix ??  ... *)
+(*@ function prefix ?? ... *)
 
-(*@ function prefix !?  ... *)
+(*@ function prefix !? ... *)
 
-(*@ function h9  ... *)
+(*@ function h9 ... *)
 
-(*@ function h10  ... *)
+(*@ function h10 ... *)
 
-(*@ predicate h11  ... *)
+(*@ predicate h11 ... *)
 
-(*@ function h12  ... *)
+(*@ function h12 ... *)
 
-(*@ function h13  ... *)
+(*@ function h13 ... *)
 
-(*@ function h14  ... *)
+(*@ function h14 ... *)
 
-(*@ function h15  ... *)
+(*@ function h15 ... *)
 
 *******************************
 ********* Typed GOSPEL ********

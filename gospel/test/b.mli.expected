@@ -19,6 +19,6 @@ open A
 type t3 = (t1 * int t2)
   
 
-(*@ function f4  ... *)
+(*@ function f4 ... *)
 File "b.mli", line 2, characters 9-20:
 Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

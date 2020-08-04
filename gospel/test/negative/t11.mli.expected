@@ -12,8 +12,8 @@
 *******************************
 (*@ open Gospelstdlib *)
 
-(*@ function rec f  ... *)
+(*@ function rec f ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 File "t11.mli", line 5, characters 17-18:
 Error: Type mysmatch. Cannot match integer with int

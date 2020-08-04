@@ -27,55 +27,55 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
 (*@ open Gospelstdlib *)
 
 val f : int -> int -> int
-(*@ r  = f  y  x 
+(*@ r = f y x
      *)
 
 val f : y:int -> int -> int
-(*@ r  = f  ~y  x 
+(*@ r = f ~y x
      *)
 
 val f : ?y:int -> int -> int
-(*@ r  = f  ?y  x 
+(*@ r = f ?y x
      *)
 
 val f : y:int -> ?x:int -> int
-(*@ r  = f  ~y  ?x 
+(*@ r = f ~y ?x
      *)
 
 val f : ?y:int -> x:int -> int
-(*@ r  = f  ?y  ~x 
+(*@ r = f ?y ~x
      *)
 
 val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-(*@ r  = f  x  y  z 
+(*@ r = f x y z
      *)
 
 val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-(*@ r  = f  ~x  y  z 
+(*@ r = f ~x y z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ r  = f  ~x  ~y  z 
+(*@ r = f ~x ~y z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ r  = f  ~x  [w  : TY] ~y  z 
+(*@ r = f ~x [w : TY] ~y z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ r  = f  ~x  [w  : TY] ~y  [p  : TY] z 
+(*@ r = f ~x [w : TY] ~y [p : TY] z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+(*@ r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ [b  : TY],r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+(*@ [b : TY],r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ [b  : TY],r ,[a  : TY] = f  ~x  [w  : TY] ~y  [p  : TY] z 
+(*@ [b : TY],r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 *******************************

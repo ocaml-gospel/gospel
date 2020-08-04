@@ -9,6 +9,6 @@
 *******************************
 (*@ open Gospelstdlib *)
 
-(*@ function rec f  ... *)
+(*@ function rec f ... *)
 File "t9.mli", line 2, characters 48-49:
 Error: Type mysmatch. Cannot match int with bool

@@ -19,12 +19,12 @@
 *******************************
 (*@ open Gospelstdlib *)
 
-(*@ function rec f  ... *)
+(*@ function rec f ... *)
 
-(*@ function g  ... *)
+(*@ function g ... *)
 
-(*@ function int_of_integer  ... *)
+(*@ function int_of_integer ... *)
 
-(*@ function h  ... *)
+(*@ function h ... *)
 File "t12.mli", line 21, characters 11-31:
 Error: Type mysmatch. Cannot match float with int

@@ -23,6 +23,6 @@ y: 'a }
 type ('a, 'b) t2 = 'a t1
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t38.mli", line 16, characters 4-37:
 Error: Type mysmatch. Cannot match 'a t1 with 'b t1

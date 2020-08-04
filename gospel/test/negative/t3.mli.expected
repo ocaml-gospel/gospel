@@ -9,6 +9,6 @@
 *******************************
 (*@ open Gospelstdlib *)
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t3.mli", line 11, characters 33-34:
 Error: Type mysmatch. Cannot match float with integer

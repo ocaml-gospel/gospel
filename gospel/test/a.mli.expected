@@ -21,10 +21,10 @@ type t1
 type 'a t2
   
 
-(*@ function f1  ... *)
+(*@ function f1 ... *)
 
-(*@ function f2  ... *)
+(*@ function f2 ... *)
 
-(*@ function f3  ... *)
+(*@ function f3 ... *)
 File "a.mli", line 2, characters 9-20:
 Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

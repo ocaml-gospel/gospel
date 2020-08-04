@@ -17,6 +17,6 @@ type t = {
 x: int }
   
 
-(*@ function f  ... *)
+(*@ function f ... *)
 File "t35.mli", line 15, characters 9-10:
 Error: Symbol z not found

@@ -9,6 +9,6 @@
 *******************************
 (*@ open Gospelstdlib *)
 
-(*@ predicate pred  ... *)
+(*@ predicate pred ... *)
 File "t4.mli", line 11, characters 29-30:
 Error: Type mysmatch. Cannot match int with bool

@@ -10,7 +10,7 @@ val f : x:int -> int -> int[@@gospel  r = f x y]
 (*@ open Gospelstdlib *)
 
 val f : x:int -> int -> int
-(*@ r  = f  x  y 
+(*@ r = f x y
      *)
 File "t16.mli", line 12, characters 10-11:
 Error: Type checking error: parameter do not match with val type
