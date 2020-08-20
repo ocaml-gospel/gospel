@@ -1,0 +1,38 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val create_archive : string list -> string -> unit
+type error =
+  | File_not_found of string 
+  | Not_an_object_file of string 
+exception Error of error 
+open Format
+val report_error : formatter -> error -> unit
+val reset : unit -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val create_archive : string list -> string -> unit
+
+
+type error =
+| File_not_found of string 
+| Not_an_object_file of string 
+  
+
+exception Error of error 
+
+open Format
+
+val report_error : formatter -> error -> unit
+
+
+val reset : unit -> unit
+
+gospel: internal error, uncaught exception:
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
+        

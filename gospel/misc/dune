@@ -1,2 +1,0 @@
-(executable
- (name file_to_string))

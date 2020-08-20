@@ -1,0 +1,77 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Compiler performance recording\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+type file = string
+val reset : unit -> unit[@@ocaml.doc
+                          " erase all recorded profile information "]
+val record_call : ?accumulate:bool -> string -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                                    " [record_call pass f] calls [f] and records its profile information. "]
+val record : ?accumulate:bool -> string -> ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                                                   " [record pass f arg] records the profile information of [f arg] "]
+type column = [ `Time  | `Alloc  | `Top_heap  | `Abs_top_heap ]
+val print : Format.formatter -> column list -> unit[@@ocaml.doc
+                                                     " Prints the selected recorded profiling information to the formatter. "]
+[@@@ocaml.text " Command line flags "]
+val options_doc : string
+val all_columns : column list
+[@@@ocaml.text
+  " A few pass names that are needed in several places, and shared to\n    avoid typos. "]
+val generate : string
+val transl : string
+val typing : string
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Compiler performance recording\n\n  {b Warning:} this module is unstable and part of\n  {{!Compiler_libs}compiler-libs}.\n\n"]
+
+type file = string
+  
+
+val reset : unit -> unit[@@ocaml.doc
+                          " erase all recorded profile information "]
+
+
+val record_call : ?accumulate:bool -> string -> (unit -> 'a) -> 'a[@@ocaml.doc
+                                                                    " [record_call pass f] calls [f] and records its profile information. "]
+
+
+val record : ?accumulate:bool -> string -> ('a -> 'b) -> 'a -> 'b[@@ocaml.doc
+                                                                   " [record pass f arg] records the profile information of [f arg] "]
+
+
+type column = [ `Time  | `Alloc  | `Top_heap  | `Abs_top_heap ]
+  
+
+val print : Format.formatter -> column list -> unit[@@ocaml.doc
+                                                     " Prints the selected recorded profiling information to the formatter. "]
+
+
+[@@@ocaml.text " Command line flags "]
+
+val options_doc : string
+
+
+val all_columns : column list
+
+
+[@@@ocaml.text
+  " A few pass names that are needed in several places, and shared to\n    avoid typos. "]
+
+val generate : string
+
+
+val transl : string
+
+
+val typing : string
+
+gospel: internal error, uncaught exception:
+        File "gospel/src/typing.ml", line 447, characters 11-17: Assertion failed
+        

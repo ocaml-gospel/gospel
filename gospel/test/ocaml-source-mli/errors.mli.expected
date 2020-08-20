@@ -1,0 +1,19 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+open Format
+val report_error : formatter -> exn -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+open Format
+
+val report_error : formatter -> exn -> unit
+
+gospel: internal error, uncaught exception:
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
+        

@@ -1,0 +1,16 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : z:int -> int -> int[@@gospel  r = f ~x y]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : z:int -> int -> int
+(*@ r = f ~x y
+     *)
+File "t18.mli", line 12, characters 11-12:
+Error: Type checking error: parameter do not match with val type

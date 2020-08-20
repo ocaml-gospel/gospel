@@ -1,0 +1,24 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a t = {
+  x: int ;
+  y: 'a }[@@gospel
+            function f (x: 'a t): int =
+    match x with
+    | {x=x;y=x} -> x ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type 'a t = {
+x: int ;
+y: 'a }
+  
+
+(*@ function f ... *)
+File "t37.mli", line 15, characters 6-15:
+Error: Variable x is duplicated in pattern

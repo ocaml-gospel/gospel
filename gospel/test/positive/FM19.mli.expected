@@ -1,0 +1,397 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a t[@@gospel  mutable model view: 'a seq ]
+val push : 'a -> 'a t -> unit[@@gospel
+                                push v q
+    modifies q
+    ensures  q.view = Seq.cons v (old q.view) ]
+val pop : 'a t -> 'a[@@gospel
+                       v = pop q
+    requires q.view <> empty
+    modifies q
+    ensures  old q.view = q.view ++ (Seq.cons v empty) ]
+val is_empty : 'a t -> bool[@@gospel
+                              b = is_empty q
+    ensures b <-> q.view = empty ]
+val create : unit -> 'a t[@@gospel
+                            q = create ()
+    ensures q.view = empty ]
+val in_place_concat : 'a t -> 'a t -> unit[@@gospel
+                                             in_place_concat q1 q2
+    modifies q1, q2
+    ensures  q1.view = empty
+    ensures  q2.view = old q1.view ++ old q2.view ]
+val in_place_destructive_concat : 'a t -> 'a t -> unit[@@gospel
+                                                         in_place_destructive_concat q1 q2
+    consumes q1  modifies q2
+    ensures  q2.view = old q1.view ++ old q2.view ]
+val nondestructive_concat : 'a t -> 'a t -> 'a t[@@gospel
+                                                   q3 = nondestructive_concat q1 q2
+    ensures q3.view = q1.view ++ q2.view ]
+val map : ('a -> 'b) -> 'a t -> 'b t[@@gospel
+                                       r = map f q
+    ensures length r.view = length q.view
+    ensures forall i. 0 <= i < length q.view ->
+                      r.view[i] = f q.view[i] ]
+[@@gospel  function power (x y: integer): integer ]
+val power_2_below : int -> int[@@gospel
+                                 r, [k: integer] = power_2_below n
+    requires n >= 1
+    ensures  r = power 2 k && r <= n < 2 * r ]
+type rand_state[@@gospel  mutable model internal: unit ]
+val random_init : int -> rand_state
+val random_int : rand_state -> int -> int[@@gospel
+                                            n = random_int s m
+    requires m > 0  modifies s  ensures  0 <= n < m ]
+[@@gospel  open Set ][@@gospel  open Map ]
+type elem[@@gospel  type uf_instance ][@@gospel
+                                         mutable model dom: elem set ]
+[@@gospel  mutable model rep: elem -> elem ][@@gospel
+                                               mutable model internal: unit ]
+[@@gospel  invariant forall x. mem x dom -> mem (rep x) dom ][@@gospel
+                                                                invariant forall x. mem x dom -> rep (rep x) = rep x ]
+val equiv : elem -> elem -> bool[@@gospel
+                                   b = equiv [uf: uf_instance] e1 e2
+    requires mem e1 uf.dom && mem e2 uf.dom
+    modifies uf.internal
+    ensures  b <-> uf.rep e1 = uf.rep e2 ]
+[@@gospel  val create_instance: unit -> uf_instance ][@@gospel
+                                                        uf = create_instance ()
+    ensures uf.dom = {} ]
+val make : unit -> elem[@@gospel
+                          e = make [uf: uf_instance] ()
+    modifies uf
+    ensures  not (mem e (old uf.dom))
+    ensures  uf.dom = union (old uf.dom) {:e:}
+    ensures  uf.rep = (old uf.rep)[e <- e] ]
+type type1
+type type2
+type tt[@@gospel  mutable model left:  type1 ][@@gospel
+                                                 mutable model right: type2 ]
+val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)[@@gospel
+                                                         p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]
+    requires true (* P in the paper *)
+    modifies p1, p2.left  consumes p3
+    ensures  true (* Q in the paper *) ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type 'a t
+  (*@ model ...
+       *)
+
+val push : 'a -> 'a t -> unit
+(*@  push v q
+    ensures ...
+    modifies ...
+     *)
+
+val pop : 'a t -> 'a
+(*@ v = pop q
+    requires ...
+    ensures ...
+    modifies ...
+     *)
+
+val is_empty : 'a t -> bool
+(*@ b = is_empty q
+    ensures ...
+     *)
+
+val create : unit -> 'a t
+(*@ q = create ()
+    ensures ...
+     *)
+
+val in_place_concat : 'a t -> 'a t -> unit
+(*@  in_place_concat q1 q2
+    ensures ...
+    ensures ...
+    modifies ...
+    modifies ...
+     *)
+
+val in_place_destructive_concat : 'a t -> 'a t -> unit
+(*@  in_place_destructive_concat q1 q2
+    ensures ...
+    modifies ...
+    consumes ...
+     *)
+
+val nondestructive_concat : 'a t -> 'a t -> 'a t
+(*@ q3 = nondestructive_concat q1 q2
+    ensures ...
+     *)
+
+val map : ('a -> 'b) -> 'a t -> 'b t
+(*@ r = map f q
+    ensures ...
+    ensures ...
+     *)
+
+(*@ function power ... *)
+
+val power_2_below : int -> int
+(*@ r,[k : TY] = power_2_below n
+    requires ...
+    ensures ...
+     *)
+
+type rand_state
+  (*@ model ...
+       *)
+
+val random_init : int -> rand_state
+
+
+val random_int : rand_state -> int -> int
+(*@ n = random_int s m
+    requires ...
+    ensures ...
+    modifies ...
+     *)
+
+(*@ open Set *)
+
+(*@ open Map *)
+
+type elem
+  
+
+(*@ type uf_instance
+  (*@ model ...
+      model ...
+      model ...
+      invariant ...
+      invariant ...
+       *)
+*)
+
+val equiv : elem -> elem -> bool
+(*@ b = equiv [uf : TY] e1 e2
+    requires ...
+    ensures ...
+    modifies ...
+     *)
+
+(*@ val create_instance : unit -> uf_instance
+(*@ uf = create_instance ()
+    ensures ...
+     *)
+*)
+
+val make : unit -> elem
+(*@ e = make [uf : TY] ()
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+type type1
+  
+
+type type2
+  
+
+type tt
+  (*@ model ...
+      model ...
+       *)
+
+val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
+(*@ p5,p6,m,[h : TY] = f p1 p2 p3 p4 n [g : TY]
+    requires ...
+    ensures ...
+    modifies ...
+    modifies ...
+    consumes ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module FM19.mli
+
+  Namespace: FM19.mli
+    Type symbols
+       elem
+       rand_state
+      'a t
+       tt
+       type1
+       type2
+       uf_instance
+      
+    Logic Symbols
+      function dom (_:uf_instance) : elem set
+      function internal (_:uf_instance) : unit
+      function left (_:tt) : type1
+      function power (_:integer) (_:integer) : integer
+      function rep (_:uf_instance) : elem -> elem
+      function right (_:tt) : type2
+      function view (_:'a t) : 'a seq
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type 'a t
+    (*@ 
+        mutable model view : 'a seq *)
+    
+    val push : 'a -> 'a t -> unit
+    (*@  push v:'a q:'a t
+        ensures ((view q:'a t):'a seq = (cons  v:'a old ((view q:'a t):'a 
+                seq)):'a seq):prop
+        writes q:'a t*)
+    
+    val pop : 'a t -> 'a
+    (*@ v#1:'a = pop q#1:'a t
+        requires not ((view q#1:'a t):'a seq = (empty ):'a seq):prop
+        ensures (old ((view q#1:'a t):'a seq) = ((view q#1:'a t):'a seq ++ (cons  
+                v#1:'a (empty ):'a seq):'a seq):'a seq):prop
+        writes q#1:'a t*)
+    
+    val is_empty : 'a t -> bool
+    (*@ b:bool = is_empty q#2:'a t
+        ensures (b:bool = (True ):bool):prop <-> ((view q#2:'a t):'a 
+                seq = (empty ):'a seq):prop*)
+    
+    val create : unit -> 'a t
+    (*@ q#3:'a t = create ():unit
+        ensures ((view q#3:'a t):'a seq = (empty ):'a seq):prop*)
+    
+    val in_place_concat : 'a t -> 'a t -> unit
+    (*@  in_place_concat q1:'a t q2:'a t
+        ensures ((view q1:'a t):'a seq = (empty ):'a seq):prop
+        ensures ((view q2:'a t):'a seq = old (((view q1:'a t):'a seq ++ old ((view 
+                q2:'a t):'a seq)):'a seq)):prop
+        writes q1:'a t
+        writes q2:'a t*)
+    
+    val in_place_destructive_concat : 'a t -> 'a t -> unit
+    (*@  in_place_destructive_concat q1#1:'a t q2#1:'a t
+        ensures ((view q2#1:'a t):'a seq = old (((view q1#1:'a t):'a 
+                seq ++ old ((view q2#1:'a t):'a seq)):'a seq)):prop
+        writes q2#1:'a t
+        consumes q1#1:'a t*)
+    
+    val nondestructive_concat : 'a t -> 'a t -> 'a t
+    (*@ q3:'a t = nondestructive_concat q1#2:'a t q2#2:'a t
+        ensures ((view q3:'a t):'a seq = ((view q1#2:'a t):'a seq ++ (view 
+                q2#2:'a t):'a seq):'a seq):prop*)
+    
+    val map : ('a -> 'b) -> 'a t -> 'b t
+    (*@ r:'b#1 t = map f:'a -> 'b#1 q#4:'a t
+        ensures ((length (view r:'b#1 t):'b#1 seq):integer = (length (view 
+                q#4:'a t):'a seq):integer):prop
+        ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                i:integer < (length (view q#4:'a t):'a seq):integer):prop -> ((mixfix [_]  (view 
+                r:'b#1 t):'b#1 seq i:integer):'b#1 = (apply  f:'a -> 'b#1 (mixfix [_]  (view 
+                q#4:'a t):'a seq i:integer):'a):'b#1):prop*)
+    
+    (*@ function power (x:integer) (y:integer): integer *)
+    
+    val power_2_below : int -> int
+    (*@ r#1:int, [k:integer: integer] = power_2_below n:int
+        requires ((integer_of_int n:int):integer >= 1:integer):prop
+        ensures ((integer_of_int r#1:int):integer = (power  2:integer 
+                k:integer):integer):prop && ((integer_of_int r#1:int):
+                integer <= (integer_of_int n:int):integer):prop /\ ((integer_of_int 
+                n:int):integer < (2:integer * (integer_of_int r#1:int):
+                integer):integer):prop*)
+    
+    type rand_state
+    (*@ 
+        mutable model internal#1 : unit *)
+    
+    val random_init : int -> rand_state
+    
+    
+    val random_int : rand_state -> int -> int
+    (*@ n#1:int = random_int s:rand_state m:int
+        requires ((integer_of_int m:int):integer > 0:integer):prop
+        ensures (0:integer <= (integer_of_int n#1:int):integer):prop /\ ((integer_of_int 
+                n#1:int):integer < (integer_of_int m:int):integer):prop
+        writes s:rand_state*)
+    
+    (*@ open Set *)
+    
+    (*@ open Map *)
+    
+    type elem
+    
+    
+    (*@ type uf_instance
+    (*@ 
+        mutable model dom : elem set
+        mutable model rep : elem -> elem
+        mutable model internal : unit
+        invariant forall x#1:elem . (mem  x#1:elem (dom#1 ):elem set):prop -> (mem  (apply  (rep#1 ):
+                  elem -> elem x#1:elem):elem (dom#1 ):elem set):prop
+        invariant forall x#2:elem . (mem  x#2:elem (dom#1 ):elem set):prop -> ((apply  (rep#1 ):
+                  elem -> elem (apply  (rep#1 ):elem -> elem x#2:elem):
+                  elem):elem = (apply  (rep#1 ):elem -> elem x#2:elem):
+                  elem):prop *) *)
+    
+    val equiv : elem -> elem -> bool
+    (*@ b#2:bool = equiv [uf:uf_instance: uf_instance] e1:elem e2:elem
+        requires (mem  e1:elem (dom uf:uf_instance):elem set):prop && (mem  
+                 e2:elem (dom uf:uf_instance):elem set):prop
+        ensures (b#2:bool = (True ):bool):prop <-> ((apply  (rep uf:uf_instance):
+                elem -> elem e1:elem):elem = (apply  (rep uf:uf_instance):
+                elem -> elem e2:elem):elem):prop
+        writes (internal uf:uf_instance):unit*)
+    
+    (*@
+    val create_instance : unit -> uf_instance
+    (*@ uf#1:uf_instance = create_instance ()#1:unit
+        ensures ((dom uf#1:uf_instance):elem set = (mixfix {} ):elem 
+                set):prop*)
+    *)
+    
+    val make : unit -> elem
+    (*@ e:elem = make [uf#2:uf_instance: uf_instance] ()#2:unit
+        ensures not (mem  e:elem old ((dom uf#2:uf_instance):elem set)):prop
+        ensures ((dom uf#2:uf_instance):elem set = (union  old ((dom 
+                uf#2:uf_instance):elem set) (mixfix {:_:} e:elem):elem 
+                set):elem set):prop
+        ensures ((rep uf#2:uf_instance):elem -> elem = (mixfix [<-]  old ((rep 
+                uf#2:uf_instance):elem -> elem) e:elem e:elem):elem -> 
+                elem):prop
+        writes uf#2:uf_instance*)
+    
+    type type1
+    
+    
+    type type2
+    
+    
+    type tt
+    (*@ 
+        mutable model left : type1
+        mutable model right : type2 *)
+    
+    val f#1 : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
+    (*@ p5:tt, p6:tt, m#1:int, [h:integer: integer] = f#1
+        p1:tt p2:tt p3:tt p4:tt n#2:int [g:integer: integer]
+        requires true:prop
+        ensures true:prop
+        writes p1:tt
+        writes (left p2:tt):type1
+        consumes p3:tt*)
+
+
+*** OK ***
+

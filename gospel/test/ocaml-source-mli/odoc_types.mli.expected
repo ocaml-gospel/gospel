@@ -1,0 +1,279 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text " Types for the information collected in comments. "]
+type ref_kind =
+  | RK_module 
+  | RK_module_type 
+  | RK_class 
+  | RK_class_type 
+  | RK_value 
+  | RK_type 
+  | RK_extension 
+  | RK_exception 
+  | RK_attribute 
+  | RK_method 
+  | RK_section of text 
+  | RK_recfield 
+  | RK_const [@@ocaml.doc " The different kinds of element references. "]
+and text_element =
+  | Raw of string [@ocaml.doc " Raw text. "]
+  | Code of string [@ocaml.doc " The string is source code. "]
+  | CodePre of string
+  [@ocaml.doc " The string is pre-formatted source code. "]
+  | Verbatim of string [@ocaml.doc " String 'as is'. "]
+  | Bold of text [@ocaml.doc " Text in bold style. "]
+  | Italic of text [@ocaml.doc " Text in italic. "]
+  | Emphasize of text [@ocaml.doc " Emphasized text. "]
+  | Center of text [@ocaml.doc " Centered text. "]
+  | Left of text [@ocaml.doc " Left alignment. "]
+  | Right of text [@ocaml.doc " Right alignment. "]
+  | List of text list [@ocaml.doc " A list. "]
+  | Enum of text list [@ocaml.doc " An enumerated list. "]
+  | Newline [@ocaml.doc " To force a line break. "]
+  | Block of text [@ocaml.doc " Like html's block quote. "]
+  | Title of int * string option * text
+  [@ocaml.doc " Style number, optional label, and text. "]
+  | Latex of string [@ocaml.doc " A string for latex. "]
+  | Link of string * text
+  [@ocaml.doc " A reference string and the link text. "]
+  | Ref of string * ref_kind option * text option
+  [@ocaml.doc
+    " A reference to an element. Complete name and kind. An optional\n        text can be given to display this text instead of the element name."]
+  | Superscript of text [@ocaml.doc " Superscripts. "]
+  | Subscript of text [@ocaml.doc " Subscripts. "]
+  | Module_list of string list
+  [@ocaml.doc " The table of the given modules with their abstracts. "]
+  | Index_list
+  [@ocaml.doc " The links to the various indexes (values, types, ...) "]
+  | Custom of string * text [@ocaml.doc " to extend \\{foo syntax "]
+  | Target of string * string
+  [@ocaml.doc
+    " (target, code) : to specify code for a specific target format "]
+and text = text_element list[@@ocaml.doc
+                              " [text] is a list of text_elements. The order matters. "]
+type see_ref =
+  | See_url of string 
+  | See_file of string 
+  | See_doc of string [@@ocaml.doc
+                        " The different forms of references in \\@see tags. "]
+type see = (see_ref * text)[@@ocaml.doc " The information in a \\@see tag. "]
+type param = (string * text)[@@ocaml.doc " Parameter name and description. "]
+type raised_exception = (string * text)[@@ocaml.doc
+                                         " Raised exception name and description. "]
+type info =
+  {
+  i_desc: text option [@ocaml.doc " The description text. "];
+  i_authors: string list
+    [@ocaml.doc " The list of authors in \\@author tags. "];
+  i_version: string option [@ocaml.doc " The string in the \\@version tag. "];
+  i_sees: see list [@ocaml.doc " The list of \\@see tags. "];
+  i_since: string option [@ocaml.doc " The string in the \\@since tag. "];
+  i_before: (string * text) list
+    [@ocaml.doc " the version number and text in \\@before tag "];
+  i_deprecated: text option
+    [@ocaml.doc " The textual description of the \\@deprecated tag. "];
+  i_params: param list [@ocaml.doc " The list of parameter descriptions. "];
+  i_raised_exceptions: raised_exception list
+    [@ocaml.doc " The list of raised exceptions. "];
+  i_return_value: text option
+    [@ocaml.doc " The description text of the return value. "];
+  i_custom: (string * text) list
+    [@ocaml.doc " A text associated to a custom @-tag. "]}[@@ocaml.doc
+                                                            " Information in a special comment. "]
+val dummy_info : info[@@ocaml.doc " An empty info structure. "]
+type location =
+  {
+  loc_impl: Location.t option [@ocaml.doc " implementation location "];
+  loc_inter: Location.t option [@ocaml.doc " interface location "]}[@@ocaml.doc
+                                                                    " Location of elements in implementation and interface files. "]
+val dummy_loc : location[@@ocaml.doc " A dummy location. "]
+type merge_option =
+  | Merge_description [@ocaml.doc " Descriptions are concatenated. "]
+  | Merge_author [@ocaml.doc " Lists of authors are concatenated. "]
+  | Merge_version [@ocaml.doc " Versions are concatenated. "]
+  | Merge_see [@ocaml.doc " See references are concatenated. "]
+  | Merge_since [@ocaml.doc " Since information are concatenated. "]
+  | Merge_before [@ocaml.doc " Before information are concatenated. "]
+  | Merge_deprecated
+  [@ocaml.doc " Deprecated information are concatenated. "]
+  | Merge_param
+  [@ocaml.doc
+    " Information on each parameter is concatenated,\n                    and all parameters are kept. "]
+  | Merge_raised_exception
+  [@ocaml.doc
+    " Information on each raised_exception is concatenated,\n                               and all raised exceptions are kept. "]
+  | Merge_return_value
+  [@ocaml.doc " Information on return value are concatenated. "]
+  | Merge_custom
+  [@ocaml.doc " Merge custom tags (all pairs (tag, text) are kept). "]
+[@@ocaml.doc
+  " The information to merge from two elements when they both have some information. "]
+val all_merge_options : merge_option list[@@ocaml.doc
+                                           " The list with all merge options. "]
+type magic[@@ocaml.doc " Type of magic numbers. "]
+val magic : magic[@@ocaml.doc
+                   " The magic number for the dumps of this version of ocamldoc. "]
+type 'a dump[@@ocaml.doc " A dump of a structure. "]
+val make_dump : 'a -> 'a dump[@@ocaml.doc " Create a dump structure. "]
+val open_dump : 'a dump -> 'a[@@ocaml.doc
+                               " Verify that a dump has the correct magic number\n   and return its content. "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text " Types for the information collected in comments. "]
+
+type ref_kind =
+| RK_module 
+| RK_module_type 
+| RK_class 
+| RK_class_type 
+| RK_value 
+| RK_type 
+| RK_extension 
+| RK_exception 
+| RK_attribute 
+| RK_method 
+| RK_section of text 
+| RK_recfield 
+| RK_const [@@ocaml.doc " The different kinds of element references. "]
+  
+and text_element =
+| Raw of string [@ocaml.doc " Raw text. "]
+| Code of string [@ocaml.doc " The string is source code. "]
+| CodePre of string
+[@ocaml.doc " The string is pre-formatted source code. "]
+| Verbatim of string [@ocaml.doc " String 'as is'. "]
+| Bold of text [@ocaml.doc " Text in bold style. "]
+| Italic of text [@ocaml.doc " Text in italic. "]
+| Emphasize of text [@ocaml.doc " Emphasized text. "]
+| Center of text [@ocaml.doc " Centered text. "]
+| Left of text [@ocaml.doc " Left alignment. "]
+| Right of text [@ocaml.doc " Right alignment. "]
+| List of text list [@ocaml.doc " A list. "]
+| Enum of text list [@ocaml.doc " An enumerated list. "]
+| Newline [@ocaml.doc " To force a line break. "]
+| Block of text [@ocaml.doc " Like html's block quote. "]
+| Title of int * string option * text
+[@ocaml.doc " Style number, optional label, and text. "]
+| Latex of string [@ocaml.doc " A string for latex. "]
+| Link of string * text
+[@ocaml.doc " A reference string and the link text. "]
+| Ref of string * ref_kind option * text option
+[@ocaml.doc
+  " A reference to an element. Complete name and kind. An optional\n        text can be given to display this text instead of the element name."]
+| Superscript of text [@ocaml.doc " Superscripts. "]
+| Subscript of text [@ocaml.doc " Subscripts. "]
+| Module_list of string list
+[@ocaml.doc " The table of the given modules with their abstracts. "]
+| Index_list
+[@ocaml.doc " The links to the various indexes (values, types, ...) "]
+| Custom of string * text [@ocaml.doc " to extend \\{foo syntax "]
+| Target of string * string
+[@ocaml.doc
+  " (target, code) : to specify code for a specific target format "]
+  
+and text = text_element list[@@ocaml.doc
+                              " [text] is a list of text_elements. The order matters. "]
+  
+
+type see_ref =
+| See_url of string 
+| See_file of string 
+| See_doc of string [@@ocaml.doc
+                      " The different forms of references in \\@see tags. "]
+  
+
+type see = (see_ref * text)[@@ocaml.doc " The information in a \\@see tag. "]
+  
+
+type param = (string * text)[@@ocaml.doc " Parameter name and description. "]
+  
+
+type raised_exception = (string * text)[@@ocaml.doc
+                                         " Raised exception name and description. "]
+  
+
+type info =
+{
+i_desc: text option [@ocaml.doc " The description text. "];
+i_authors: string list
+  [@ocaml.doc " The list of authors in \\@author tags. "];
+i_version: string option [@ocaml.doc " The string in the \\@version tag. "];
+i_sees: see list [@ocaml.doc " The list of \\@see tags. "];
+i_since: string option [@ocaml.doc " The string in the \\@since tag. "];
+i_before: (string * text) list
+  [@ocaml.doc " the version number and text in \\@before tag "];
+i_deprecated: text option
+  [@ocaml.doc " The textual description of the \\@deprecated tag. "];
+i_params: param list [@ocaml.doc " The list of parameter descriptions. "];
+i_raised_exceptions: raised_exception list
+  [@ocaml.doc " The list of raised exceptions. "];
+i_return_value: text option
+  [@ocaml.doc " The description text of the return value. "];
+i_custom: (string * text) list
+  [@ocaml.doc " A text associated to a custom @-tag. "]}[@@ocaml.doc
+                                                          " Information in a special comment. "]
+  
+
+val dummy_info : info[@@ocaml.doc " An empty info structure. "]
+
+
+type location =
+{
+loc_impl: Location.t option [@ocaml.doc " implementation location "];
+loc_inter: Location.t option [@ocaml.doc " interface location "]}[@@ocaml.doc
+                                                                   " Location of elements in implementation and interface files. "]
+  
+
+val dummy_loc : location[@@ocaml.doc " A dummy location. "]
+
+
+type merge_option =
+| Merge_description [@ocaml.doc " Descriptions are concatenated. "]
+| Merge_author [@ocaml.doc " Lists of authors are concatenated. "]
+| Merge_version [@ocaml.doc " Versions are concatenated. "]
+| Merge_see [@ocaml.doc " See references are concatenated. "]
+| Merge_since [@ocaml.doc " Since information are concatenated. "]
+| Merge_before [@ocaml.doc " Before information are concatenated. "]
+| Merge_deprecated [@ocaml.doc " Deprecated information are concatenated. "]
+| Merge_param
+[@ocaml.doc
+  " Information on each parameter is concatenated,\n                    and all parameters are kept. "]
+| Merge_raised_exception
+[@ocaml.doc
+  " Information on each raised_exception is concatenated,\n                               and all raised exceptions are kept. "]
+| Merge_return_value
+[@ocaml.doc " Information on return value are concatenated. "]
+| Merge_custom
+[@ocaml.doc " Merge custom tags (all pairs (tag, text) are kept). "][@@ocaml.doc
+                                                                    " The information to merge from two elements when they both have some information. "]
+  
+
+val all_merge_options : merge_option list[@@ocaml.doc
+                                           " The list with all merge options. "]
+
+
+type magic[@@ocaml.doc " Type of magic numbers. "]
+  
+
+val magic : magic[@@ocaml.doc
+                   " The magic number for the dumps of this version of ocamldoc. "]
+
+
+type 'a dump[@@ocaml.doc " A dump of a structure. "]
+  
+
+val make_dump : 'a -> 'a dump[@@ocaml.doc " Create a dump structure. "]
+
+
+val open_dump : 'a dump -> 'a[@@ocaml.doc
+                               " Verify that a dump has the correct magic number\n   and return its content. "]
+
+gospel: internal error, uncaught exception:
+        File "gospel/src/typing.ml", line 515, characters 22-28: Assertion failed
+        

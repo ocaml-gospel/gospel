@@ -1,0 +1,3 @@
+(executable
+ (modules_without_implementation gospelstdlib)
+ (name file_to_string))

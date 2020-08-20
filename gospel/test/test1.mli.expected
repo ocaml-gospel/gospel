@@ -1,0 +1,40 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel  function f (x : Test.t) : integer ]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ function f ... *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module test1.mli
+
+  Namespace: test1.mli
+    Type symbols
+      
+    Logic Symbols
+      function f (_:t) : integer
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ use Test *)
+    
+    (*@ function f (x:t): integer *)
+
+
+*** OK ***
+
