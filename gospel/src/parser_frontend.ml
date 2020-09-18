@@ -67,5 +67,10 @@ let parse_gospel sign nm =
   if nm = gospelstdlib then signature sign else
     default_open :: signature sign
 
-let parse_ocaml_gospel file =
-  parse_ocaml file |> parse_gospel
+let path2module p =
+  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
+
+let parse_ocaml_gospel path =
+  let module_name = path2module path in
+  let ocaml = parse_ocaml path in
+  parse_gospel ocaml module_name
