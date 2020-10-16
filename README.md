@@ -21,7 +21,7 @@ Have a look in proofs/ if you are curious.
 ## OCaml Interface Specification Language
 
 We briefly describe the specification language using an example,
-taken from [Vector.mli](/src/Vector.mli).
+taken from [Vector.mli](/vocal/src/Vector.mli).
 
 The abstract type `t` of vectors below is identified as `ephemeral` (elements
 can be mutated in-place) and is modeled using a polymorphic sequence, introduced
