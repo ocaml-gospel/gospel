@@ -168,7 +168,9 @@ nonempty_type_spec:
 | EPHEMERAL ts=type_spec
   { { ts with ty_ephemeral = true } }
 | field=type_spec_model ts=type_spec
-  { { ts with ty_field = field :: ts.ty_field } }
+  { { ts with
+      ty_field = field :: ts.ty_field;
+      ty_ephemeral = ts.ty_ephemeral || field.f_mutable } }
 | INVARIANT inv=term ts=type_spec
   { { ts with ty_invariant = inv :: ts.ty_invariant } }
 ;
