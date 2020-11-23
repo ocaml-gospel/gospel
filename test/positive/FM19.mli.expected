@@ -82,7 +82,8 @@ val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)[@@gospel
 (*@ open Gospelstdlib *)
 
 type 'a t
-  (*@ model ...
+  (*@ ephemeral
+      model ...
        *)
 
 val push : 'a -> 'a t -> unit
@@ -143,7 +144,8 @@ val power_2_below : int -> int
      *)
 
 type rand_state
-  (*@ model ...
+  (*@ ephemeral
+      model ...
        *)
 
 val random_init : int -> rand_state
@@ -164,7 +166,8 @@ type elem
   
 
 (*@ type uf_instance
-  (*@ model ...
+  (*@ ephemeral
+      model ...
       model ...
       model ...
       invariant ...
@@ -200,7 +203,8 @@ type type2
   
 
 type tt
-  (*@ model ...
+  (*@ ephemeral
+      model ...
       model ...
        *)
 
@@ -247,7 +251,7 @@ module FM19.mli
     (*@ open Gospelstdlib *)
     
     type 'a t
-    (*@ 
+    (*@ ephemeral
         mutable model view : 'a seq *)
     
     val push : 'a -> 'a t -> unit
@@ -313,7 +317,7 @@ module FM19.mli
                 integer):integer):prop*)
     
     type rand_state
-    (*@ 
+    (*@ ephemeral
         mutable model internal#1 : unit *)
     
     val random_init : int -> rand_state
@@ -334,7 +338,7 @@ module FM19.mli
     
     
     (*@ type uf_instance
-    (*@ 
+    (*@ ephemeral
         mutable model dom : elem set
         mutable model rep : elem -> elem
         mutable model internal : unit
@@ -379,7 +383,7 @@ module FM19.mli
     
     
     type tt
-    (*@ 
+    (*@ ephemeral
         mutable model left : type1
         mutable model right : type2 *)
     
