@@ -9,7 +9,6 @@
 (**************************************************************************)
 
 open Oparser
-open Uattr2spec
 
 exception Ocaml_syntax_error of Location.t
 
@@ -64,8 +63,8 @@ let default_open =
 
 (** Parse the attributes as GOSPEL specification. *)
 let parse_gospel sign nm =
-  if nm = gospelstdlib then signature sign else
-    default_open :: signature sign
+  let s = Uattr2spec.signature sign in
+  if nm = gospelstdlib then s else default_open :: s
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
