@@ -1,8 +1,0 @@
-(ocamllex
- (modules wc))
-
-(executable
- (name cli)
- (public_name gospel)
- (package gospel)
- (libraries cmdliner gospel))

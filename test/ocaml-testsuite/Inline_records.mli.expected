@@ -1,0 +1,129 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  "\n  This test focuses on the printing of documentation for inline record\n  within the latex generator.\n"]
+exception Simple [@ocaml.doc " A nice exception "]
+exception Less of int [@ocaml.doc " A less simple exception "]
+type ext = ..[@@ocaml.doc " An open sum type "]
+type r =
+  {
+  lbl: int [@ocaml.doc " Field documentation for non-inline, [lbl : int] "];
+  more: int list [@ocaml.doc " More documentation for r, [more : int list] "]}
+[@@ocaml.doc " A simple record type for reference "]
+type t =
+  | A of
+  {
+  lbl: int [@ocaml.doc " [A] field documentation "];
+  more: int list [@ocaml.doc " More [A] field documentation "]}
+  [@ocaml.doc " Constructor documentation "][@@ocaml.doc
+                                              " A sum type with one inline record "]
+type s =
+  | B of
+  {
+  a_label_for_B: int [@ocaml.doc " [B] field documentation "];
+  more_label_for_B: int list [@ocaml.doc " More [B] field documentation "]}
+  [@ocaml.doc " Constructor B documentation "]
+  | C of
+  {
+  c_has_label_too: float [@ocaml.doc " [C] field documentation"];
+  more_than_one: unit [@ocaml.doc " ... documentations "]}
+  [@ocaml.doc " Constructor C documentation "][@@ocaml.doc
+                                                " A sum type with two inline records "]
+type any =
+  | D: {
+  any: 'a [@ocaml.doc " [A] field [any:'a] for [D] in [any]. "]} -> any
+  [@ocaml.doc " Constructor D documentation "][@@ocaml.doc
+                                                " A gadt constructor "]
+exception Error of
+  {
+  name: string [@ocaml.doc " Error field documentation [name:string] "]} 
+type ext +=  
+  | E of
+  {
+  yet_another_field: unit [@ocaml.doc " Field documentation for [E] in ext "]}
+  [@ocaml.doc " Constructor E documentation "]
+  | F of
+  {
+  even_more: int -> int [@ocaml.doc " Some field documentations for [F] "]}
+  [@ocaml.doc " Constructor F documentation "]
+  | G of
+  {
+  last: int -> int [@ocaml.doc " The last and least field documentation "]}
+  [@ocaml.doc " Constructor G documentation "][@@ocaml.doc
+                                                " Two new constructors for ext "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  "\n  This test focuses on the printing of documentation for inline record\n  within the latex generator.\n"]
+
+exception Simple [@ocaml.doc " A nice exception "]
+
+exception Less of int [@ocaml.doc " A less simple exception "]
+
+type ext = ..[@@ocaml.doc " An open sum type "]
+  
+
+type r =
+{
+lbl: int [@ocaml.doc " Field documentation for non-inline, [lbl : int] "];
+more: int list [@ocaml.doc " More documentation for r, [more : int list] "]}
+[@@ocaml.doc " A simple record type for reference "]
+  
+
+type t =
+| A of
+{
+lbl: int [@ocaml.doc " [A] field documentation "];
+more: int list [@ocaml.doc " More [A] field documentation "]}
+[@ocaml.doc " Constructor documentation "][@@ocaml.doc
+                                            " A sum type with one inline record "]
+  
+
+type s =
+| B of
+{
+a_label_for_B: int [@ocaml.doc " [B] field documentation "];
+more_label_for_B: int list [@ocaml.doc " More [B] field documentation "]}
+[@ocaml.doc " Constructor B documentation "]
+| C of
+{
+c_has_label_too: float [@ocaml.doc " [C] field documentation"];
+more_than_one: unit [@ocaml.doc " ... documentations "]}
+[@ocaml.doc " Constructor C documentation "][@@ocaml.doc
+                                              " A sum type with two inline records "]
+  
+
+type any =
+| D: {
+any: 'a [@ocaml.doc " [A] field [any:'a] for [D] in [any]. "]} -> any
+[@ocaml.doc " Constructor D documentation "][@@ocaml.doc
+                                              " A gadt constructor "]
+  
+
+exception Error of
+  {
+  name: string [@ocaml.doc " Error field documentation [name:string] "]} 
+
+type ext +=  
+  | E of
+  {
+  yet_another_field: unit [@ocaml.doc " Field documentation for [E] in ext "]}
+  [@ocaml.doc " Constructor E documentation "]
+  | F of
+  {
+  even_more: int -> int [@ocaml.doc " Some field documentations for [F] "]}
+  [@ocaml.doc " Constructor F documentation "]
+  | G of
+  {
+  last: int -> int [@ocaml.doc " The last and least field documentation "]}
+  [@ocaml.doc " Constructor G documentation "][@@ocaml.doc
+                                                " Two new constructors for ext "]
+gospel: internal error, uncaught exception:
+        File "src/typing.ml", line 515, characters 22-28: Assertion failed
+        

@@ -1,0 +1,16 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a vlist = ('a * 'b) Pr3918a.voption as 'b
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type 'a vlist = ('a * 'b) Pr3918a.voption as 'b
+  
+gospel: internal error, uncaught exception:
+        File "src/typing.ml", line 447, characters 11-17: Assertion failed
+        

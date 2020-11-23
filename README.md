@@ -1,27 +1,16 @@
-# VOCaL
+# Gospel
 
-VOCaL -- a Verified OCaml Library
+[![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-gospel%2Fgospel%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml-gospel/gospel)
 
-VOCaL is a general-purpose data structure and algorithm OCaml library.
+**Disclamer:** This project is still experimental. No support will be provided
+at this point, and its behaviour is still unstable.
 
-What distinguishes this library from many other is the fact that its
-implementation has been formally verified.  The verification includes
-absence of run-time errors and functional correctness. The latter uses
-formal specifications inserted in .mli files with special comments
-starting with ``(*@``. The specification language for OCaml is still
-under development and a quick documentation is given below.
-The .mli files also contain traditional, informal documentation,
-similar to that of any other OCaml library.
+Gospel is a tool-agnostic formal specification language for OCaml.
 
-The github repository also contains some of the source files for the
-proofs of correctness (eventually, it will contain all of them). Yet
-these proofs are not needed to compile and use the VOCaL library.
-Have a look in proofs/ if you are curious.
+## Syntax example
 
-## OCaml Interface Specification Language
-
-We briefly describe the specification language using an example,
-taken from [Vector.mli](/vocal/src/Vector.mli).
+We briefly describe the specification language using an example, taken from a
+vector interface.
 
 The abstract type `t` of vectors below is identified as `ephemeral` (elements
 can be mutated in-place) and is modeled using a polymorphic sequence, introduced
@@ -50,10 +39,9 @@ val create: ?capacity:int -> dummy:'a -> 'a t
       ensures  length a.view = 0 *)
 ```
 
-Whenever type `int` is mentioned, it refers to the OCaml type `int`
-of native machine integer (e.g. 63-bit signed integers on a 64-bit
-platform). A type `integer` for mathematical integers is also
-provided. Here is an example:
+Whenever type `int` is mentioned, it refers to the OCaml type `int` of native
+machine integer (e.g. 63-bit signed integers on a 64-bit platform). A type
+`integer` for mathematical integers is also provided. Here is an example:
 
 ```OCaml
 val make: ?dummy:'a -> int -> 'a -> 'a t
@@ -63,8 +51,8 @@ val make: ?dummy:'a -> int -> 'a -> 'a t
       ensures  forall i: integer. 0 <= i < n -> a.view[i] = x *)
 ```
 
-Whenever a function has side effects, this is indicated using a
-`modifies` clause. Here is an example:
+Whenever a function has side effects, this is indicated using a `modifies`
+clause. Here is an example:
 
 ```OCaml
 val resize: 'a t -> int -> unit
@@ -76,14 +64,12 @@ val resize: 'a t -> int -> unit
                  a.view[i] = (old a.view)[i] *)
 ```
 
-This last example also features the `checks` clause. This is an
-alternative to `requires`. Contrary to the latter, a `checks` clause
-is checked at run-time, and raises an `Invalid_argument` exception
-when it is not satisfied.
+This last example also features the `checks` clause. This is an alternative to
+`requires`. Contrary to the latter, a `checks` clause is checked at run-time,
+and raises an `Invalid_argument` exception when it is not satisfied.
 
-Last, an `equivalent` clause is sometimes used to describe the
-behavior of an OCaml function using an equivalent piece of OCaml
-code. Here is an example:
+Last, an `equivalent` clause is sometimes used to describe the behavior of an
+OCaml function using an equivalent piece of OCaml code. Here is an example:
 
 ```OCaml
 val iter : ('a -> unit) -> 'a t -> unit
@@ -91,14 +77,5 @@ val iter : ('a -> unit) -> 'a t -> unit
       equivalent "for i = 0 to length a - 1 do f (get a i) done" *)
 ```
 
-A forthcoming documentation of this specification language (work in
-progress) will hopefully provide more details and clarify the semantics.
-
-## Copyright
-
-See the enclosed file LICENSE.
-
-## Bugs report
-
-Please use the [github issues](https://github.com/vocal-project/vocal/issues)
-to report bugs.
+A forthcoming documentation of this specification language will hopefully
+provide more details and clarify the semantics.

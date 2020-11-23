@@ -1,0 +1,7 @@
+(ocamllex
+ (modules wc))
+
+(executable
+ (name cli)
+ (public_name gospel)
+ (libraries cmdliner gospel))
