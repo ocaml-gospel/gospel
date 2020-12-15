@@ -15,6 +15,9 @@ Welcome to GOSPEL's documentation!
    :maxdepth: 2
 
    starting
+   tools
+   language
+   api
 
 Indices and tables
 ==================
