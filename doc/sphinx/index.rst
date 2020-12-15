@@ -7,40 +7,14 @@ Welcome to GOSPEL's documentation!
 ==================================
 
 :Authors:
-  ...
-  ...
+  Jean-Christophe Filliâtre,
+  Clément Pascutto,
+  Mário Pereira
 
 .. toctree::
    :maxdepth: 2
 
-   starting example, tutorial-like
-     which example? queue (cf FM'19 paper)
-     quick demo of one or two tools
-
-   language specification
-     lexical conventions
-     terms and predicates
-     type annotations
-       (mutable) model
-       invariant
-     function contracts
-       requires/ensures/etc.
-       ghost arguments and returned values
-     ghost declarations
-       (*@ type
-       (*@ val
-     function/predicate/axiom
-     modules and functors
-       (*@ with ... *)
-
-     future work: annotating an OCaml implementation
-       contract for toplevel let
-       ghost arguments and returned values
-       assertions
-       loop invariants
-       contracts for local functions
-       ghost code
-
+   starting
 
 Indices and tables
 ==================
