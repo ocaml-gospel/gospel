@@ -1,30 +1,19 @@
+# Minimal makefile for Sphinx documentation
+#
 
-OCAMLC    = ocamlc.opt
-OCAMLLEX  = ocamllex.opt
-RUBBER    = rubber
-MKDIR_P   = mkdir -p
+# You can set these variables from the command line.
+SPHINXOPTS    =
+SPHINXBUILD   = sphinx-build
+SOURCEDIR     = .
+BUILDDIR      = _build
 
-REFMANUAL = ref-manual
+# Put it first so that "make" without argument is like "make help".
+help:
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-BNF = ident qualid operator type attribute term1 term2 term3 \
-			spec val-spec type-spec logic-spec ghost-spec
-BNFTEX = $(BNF:%=generated/%_bnf.tex)
+.PHONY: help Makefile
 
-
-doc: $(BNFTEX) $(REFMANUAL).tex
-	rubber --warn all --pdf $(REFMANUAL).tex
-
-generated/%_bnf.tex: %.bnf bnf
-	$(MKDIR_P) generated
-	./bnf $< > $@
-
-bnf: bnf.mll
-	$(OCAMLLEX)	$<
-	$(OCAMLC) -o $@ bnf.ml
-
-clean:
-	rm -rf generated 
-	rm -rf bnf bnf.cmo bnf.cmi bnf.ml
-	rm -rf $(REFMANUAL).pdf $(REFMANUAL).log $(REFMANUAL).aux \
-	       $(REFMANUAL).out $(REFMANUAL).ind $(REFMANUAL).idx \
-				 $(REFMANUAL).ilg $(REFMANUAL).toc
+# Catch-all target: route all unknown targets to Sphinx using the new
+# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+%: Makefile
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
