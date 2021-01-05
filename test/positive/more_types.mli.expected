@@ -91,14 +91,14 @@ module more_types.mli
     type 'a t2 = t1
     
     
-    (*@ function f#1 (x#1:t1): t1 =
-        x#1:t1 *)
+    (*@ function f_1 (x_1:t1): t1 =
+        x_1:t1 *)
     
     type 'c t3 = t1
     
     
-    (*@ function f#2 (x#2:t1): t1 =
-        x#2:t1 *)
+    (*@ function f_2 (x_2:t1): t1 =
+        x_2:t1 *)
     
     type ('a,'b) t4
     
@@ -106,11 +106,11 @@ module more_types.mli
     type 'a t5 = ('a,'a) t4
     
     
-    (*@ function f#3 (x#3:('a,'a) t4): ('a,'a) t4 =
-        x#3:('a,'a) t4 *)
+    (*@ function f_3 (x_3:('a,'a) t4): ('a,'a) t4 =
+        x_3:('a,'a) t4 *)
     
-    (*@ function f#4 (x#4:('a,'a) t4): ('a,'a) t4 =
-        x#4:('a,'a) t4 *)
+    (*@ function f_4 (x_4:('a,'a) t4): ('a,'a) t4 =
+        x_4:('a,'a) t4 *)
     
     type 'a t6 = {x:int; y:'a}
               function constr#t6 (_:int) (_:'a) : 'a t6
@@ -121,9 +121,9 @@ module more_types.mli
     type ('a,'b) t7 = 'a t6
     
     
-    (*@ function f (x#5:'a t6): 'a t6 =
-        match x#5:'a t6 with
-        | constr#t6 x#6:int y#1:'a -> (constr#t6  x#6:int y#1:'a):'a t6
+    (*@ function f (x_5:'a t6): 'a t6 =
+        match x_5:'a t6 with
+        | constr#t6 x_6:int y_1:'a -> (constr#t6  x_6:int y_1:'a):'a t6
         end::'a t6
     *)
 

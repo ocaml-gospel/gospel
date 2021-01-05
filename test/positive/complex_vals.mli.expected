@@ -91,22 +91,22 @@ module complex_vals.mli
     
     exception Y
     
-    val f#1 : int -> int -> int
-    (*@ r#1:int = f#1 x#1:int y#1:int
-        requires (((integer_of_int x#1:int):integer + 1:integer):integer < 0:
+    val f_1 : int -> int -> int
+    (*@ r_1:int = f_1 x_1:int y_1:int
+        requires (((integer_of_int x_1:int):integer + 1:integer):integer < 0:
                  integer):prop
-        requires (((integer_of_int y#1:int):integer + 2:integer):integer < 0:
+        requires (((integer_of_int y_1:int):integer + 2:integer):integer < 0:
                  integer):prop
-        requires ((integer_of_int x#1:int):integer > 0:integer):prop
-        ensures ((integer_of_int r#1:int):integer = ((integer_of_int 
-                x#1:int):integer + (integer_of_int y#1:int):integer):
+        requires ((integer_of_int x_1:int):integer > 0:integer):prop
+        ensures ((integer_of_int r_1:int):integer = ((integer_of_int 
+                x_1:int):integer + (integer_of_int y_1:int):integer):
                 integer):prop
-        ensures ((integer_of_int r#1:int):integer > 2:integer):prop
-        ensures ((integer_of_int r#1:int):integer = 3:integer):prop
-        raises X  -> ((integer_of_int x#1:int):integer = 2:integer):prop
+        ensures ((integer_of_int r_1:int):integer > 2:integer):prop
+        ensures ((integer_of_int r_1:int):integer = 3:integer):prop
+        raises X  -> ((integer_of_int x_1:int):integer = 2:integer):prop
         raises Y i:int -> ((integer_of_int i:int):integer = (((integer_of_int 
-          y#1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
-          x#1:int):integer):integer):integer):prop*)
+          y_1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
+          x_1:int):integer):integer):integer):prop*)
 
 
 *** OK ***

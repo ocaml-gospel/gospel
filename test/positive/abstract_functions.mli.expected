@@ -142,39 +142,39 @@ module abstract_functions.mli
     
     (*@ function h1 (x:integer): integer *)
     
-    (*@ function h2 (x#1:integer) (y:integer): integer *)
+    (*@ function h2 (x_1:integer) (y:integer): integer *)
     
-    (*@ function h3 (x#2:t1) (y#1:integer t2): integer *)
+    (*@ function h3 (x_2:t1) (y_1:integer t2): integer *)
     
-    (*@ function h4 (x#3:(integer,'a) t3) (y#2:integer t2): integer *)
+    (*@ function h4 (x_3:(integer,'a) t3) (y_2:integer t2): integer *)
     
-    (*@ predicate h5 (x#4:integer) *)
+    (*@ predicate h5 (x_4:integer) *)
     
-    (*@ predicate h6 (x#5:integer) (y#3:integer) *)
+    (*@ predicate h6 (x_5:integer) (y_3:integer) *)
     
-    (*@ predicate h7 (x#6:t1) (y#4:integer t2) *)
+    (*@ predicate h7 (x_6:t1) (y_4:integer t2) *)
     
-    (*@ predicate h8 (x#7:(integer,'a) t3) (y#5:integer t2) *)
+    (*@ predicate h8 (x_7:(integer,'a) t3) (y_5:integer t2) *)
     
-    (*@ function prefix !! (x#8:integer): integer *)
+    (*@ function prefix !! (x_8:integer): integer *)
     
-    (*@ function prefix ?? (x#9:'a): 'a *)
+    (*@ function prefix ?? (x_9:'a): 'a *)
     
-    (*@ function prefix !? (x#10:'a): 'a * 'b *)
+    (*@ function prefix !? (x_10:'a): 'a * 'b *)
     
-    (*@ function h9 (x#11:'a): 'a * 'b *)
+    (*@ function h9 (x_11:'a): 'a * 'b *)
     
-    (*@ function h10 (x#12:'a) (y#6:'b): 'a * 'b *)
+    (*@ function h10 (x_12:'a) (y_6:'b): 'a * 'b *)
     
-    (*@ predicate h11 (x#13:'a) (y#7:'b) (z:'c) *)
+    (*@ predicate h11 (x_13:'a) (y_7:'b) (z:'c) *)
     
-    (*@ function h12 (x#14:'a): 'b -> 'c *)
+    (*@ function h12 (x_14:'a): 'b -> 'c *)
     
-    (*@ function h13 (x#15:'a * 'b) (y#8:'b * 'a): 'a * 'b *)
+    (*@ function h13 (x_15:'a * 'b) (y_8:'b * 'a): 'a * 'b *)
     
-    (*@ function h14 (x#16:'a): test *)
+    (*@ function h14 (x_16:'a): test *)
     
-    (*@ function h15 (x#17:test): integer *)
+    (*@ function h15 (x_17:test): integer *)
 
 
 *** OK ***

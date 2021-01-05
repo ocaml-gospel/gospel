@@ -141,23 +141,23 @@ module exceptions.mli
     
     (*@ function integer_of_int (x:int): integer *)
     
-    (*@ function int_of_integer (x#1:integer): int *)
+    (*@ function int_of_integer (x_1:integer): int *)
     
     val f : 'a -> 'a
-    (*@ x#2:'a = f y:'a
-        raises E1 x#3:int -> ((integer_of_int x#3:int):integer = 1:integer):prop
+    (*@ x_2:'a = f y:'a
+        raises E1 x_3:int -> ((integer_of_int x_3:int):integer = 1:integer):prop
         raises E3 l:int list -> (match l:int list with
           | [] -> (False ):bool
-          | infix :: y#1:int ys:int list -> if ((integer_of_int y#1:int):
+          | infix :: y_1:int ys:int list -> if ((integer_of_int y_1:int):
                                             integer = 2:integer):prop then (True ):
                                             bool else (False ):bool
           end::bool = (True ):bool):prop
-        raises E4 i:int, l#1:int list -> (match l#1:int list with
+        raises E4 i:int, l_1:int list -> (match l_1:int list with
           | [] -> (True ):bool
-          | infix :: y#2:int ys#1:int list -> if (y#2:int = i:int):prop then (True ):
+          | infix :: y_2:int ys_1:int list -> if (y_2:int = i:int):prop then (True ):
                                               bool else (False ):bool
           end::bool = (True ):bool):prop
-        raises E5 f#1:int -> int -> ((integer_of_int (apply  f#1:int -> int (int_of_integer 3:
+        raises E5 f_1:int -> int -> ((integer_of_int (apply  f_1:int -> int (int_of_integer 3:
           integer):int):int):integer = 4:integer):prop*)
 
 

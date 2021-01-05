@@ -211,7 +211,7 @@ module type_decl.mli
       'a t2
       'b t20 [='b t19]
       'a t21 [='a t22]
-      'b t22#1
+      'b t22_1
        t23 [=u]
       ('a,'b) t3
        test
@@ -221,11 +221,11 @@ module type_decl.mli
       'a test5
       ('a,'b) test6
       ('x,'g) test7
-       u#1
+       u_1
        v [=u]
       
     Logic Symbols
-      function C (_:u) : u#1
+      function C (_:u) : u_1
       function C1 (_:'a * 'b) : ('a,'b,'c) t18
       function C2 (_:int) (_:'a) : ('a,'b,'c) t18
       function C3  : ('a,'b,'c) t18
@@ -250,7 +250,7 @@ module type_decl.mli
       function constr#t10 (_:int) : t10
       function constr#t11 (_:int) (_:float) : t11
       function constr#t12 (_:'a) (_:'a * int) : 'a t12
-      function x#1 (_:'a t12) : 'a
+      function x_1 (_:'a t12) : 'a
       function y (_:'a t12) : 'a * int
       
     Exception Symbols
@@ -309,32 +309,32 @@ module type_decl.mli
                          function T12 (_:'g * int) : ('x,'g) test7
     
     
-    type t10 = {x#2:int}
+    type t10 = {x_2:int}
             function constr#t10 (_:int) : t10
-              function x#2 (_:t10) : int
+              function x_2 (_:t10) : int
     
     
-    type t11 = {x#3:int; mutable y#1:float}
+    type t11 = {x_3:int; mutable y_1:float}
             function constr#t11 (_:int) (_:float) : t11
-              function x#3 (_:t11) : int
-              function y#1 (_:t11) : float
+              function x_3 (_:t11) : int
+              function y_1 (_:t11) : float
     
     
-    type 'a t12 = {x#1:'a; y:'a * int}
+    type 'a t12 = {x_1:'a; y:'a * int}
                function constr#t12 (_:'a) (_:'a * int) : 'a t12
-                 function x#1 (_:'a t12) : 'a
+                 function x_1 (_:'a t12) : 'a
                  function y (_:'a t12) : 'a * int
     
     
-    type t13 = T13 of {x#4:int}
+    type t13 = T13 of {x_4:int}
                function T13 (_:int) : t13
     
     
-    type 'a t14 = T14 of {x#5:'a; y#2:int}
+    type 'a t14 = T14 of {x_5:'a; y_2:int}
                   function T14 (_:'a) (_:int) : 'a t14
     
     
-    type 'a t15 = T151 of {x#6:'a; y#3:int}
+    type 'a t15 = T151 of {x_6:'a; y_3:int}
                   function T151 (_:'a) (_:int) : 'a t15
                | T152 of int * 'a
                  function T152 (_:int * 'a) : 'a t15
@@ -348,34 +348,34 @@ module type_decl.mli
     
     type ('a,'b,'c) t18 = C1 of 'a * 'b
                           function C1 (_:'a * 'b) : ('a,'b,'c) t18
-                       | C2 of {i:int; a#1:'a}
+                       | C2 of {i:int; a_1:'a}
                          function C2 (_:int) (_:'a) : ('a,'b,'c) t18
                        | C3 of 
                          function C3  : ('a,'b,'c) t18
-                       | C4 of {i#1:int; a#2:'a}
+                       | C4 of {i_1:int; a_2:'a}
                          function C4 (_:int) (_:'a) : ('a,'b,'c) t18
-                       | C5 of {c#1:'c}
+                       | C5 of {c_1:'c}
                          function C5 (_:'c) : ('a,'b,'c) t18
     
     
-    type 'a t19 = C#1 of 'a
-                  function C#1 (_:'a) : 'a t19
+    type 'a t19 = C_1 of 'a
+                  function C_1 (_:'a) : 'a t19
     
-    and 'b t20 = 'b t19 = C#2 of 'b
-                          function C#2 (_:'b) : 'b t19
+    and 'b t20 = 'b t19 = C_2 of 'b
+                          function C_2 (_:'b) : 'b t19
     
     
-    type 'a t21 = 'a t22 = C#3 of 'a
-                           function C#3 (_:'a) : 'a t22
+    type 'a t21 = 'a t22 = C_3 of 'a
+                           function C_3 (_:'a) : 'a t22
     
-    and 'b t22#1 = C#4 of 'b
-                   function C#4 (_:'b) : 'b t22#1
+    and 'b t22_1 = C_4 of 'b
+                   function C_4 (_:'b) : 'b t22_1
     
     
     type t23 = u
     
-    and u#1 = C of u
-              function C (_:u) : u#1
+    and u_1 = C of u
+              function C (_:u) : u_1
     
     and v = u
     

@@ -51,7 +51,7 @@ module Ident = struct
       | Not_found ->
           let x = current id.id_str in
           let str = if x = 0 then id.id_str else
-              id.id_str ^ "#" ^ string_of_int x in
+              id.id_str ^ "_" ^ string_of_int x in
           Hashtbl.replace output id.id_tag str; str in
     fun ppf t ->
       Format.fprintf ppf "%s%a" (str_of_id t) pp_attrs t.id_attrs
