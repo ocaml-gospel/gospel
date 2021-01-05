@@ -268,15 +268,15 @@ module modules.mli
       type ta = C of int
                 function C (_:int) : ta
       
-      (*@ function int_of_integer (x#1:integer): int *)
-      (*@ function integer_of_int (x#2:int): integer *)
+      (*@ function int_of_integer (x_1:integer): int *)
+      (*@ function integer_of_int (x_2:int): integer *)
       module MB :
       sig
-        (*@ function fb (x#3:integer) (y#1:integer): ta =
-            (C (int_of_integer (x#3:integer + y#1:integer):integer):int):ta
+        (*@ function fb (x_3:integer) (y_1:integer): ta =
+            (C (int_of_integer (x_3:integer + y_1:integer):integer):int):ta
         *)
-        (*@ function int_of_float (x#4:float): int *)
-        (*@ function float_of_int (x#5:int): float *)
+        (*@ function int_of_float (x_4:float): int *)
+        (*@ function float_of_int (x_5:int): float *)
         module MC :
         sig
           type tc = {x:int; y:float}
@@ -284,8 +284,8 @@ module modules.mli
                    function x (_:tc) : int
                    function y (_:tc) : float
           
-          (*@ function fc (y#2:tc): ta =
-              (C (x y#2:tc):int):ta *)
+          (*@ function fc (y_2:tc): ta =
+              (C (x y_2:tc):int):ta *)
           (*@ function fcc (a:ta): tc =
               match a:ta with
               | C b:int -> (constr#tc  b:int (float_of_int b:int):float):tc
@@ -294,10 +294,10 @@ module modules.mli
         end
         module MD :
         sig
-          (*@ function td (a#1:ta) (b#1:tc): integer =
-              match a#1:ta with
+          (*@ function td (a_1:ta) (b_1:tc): integer =
+              match a_1:ta with
               | C c:int -> ((integer_of_int c:int):integer + (integer_of_int (x 
-                           b#1:tc):int):integer):integer
+                           b_1:tc):int):integer):integer
               end::integer
           *)
         end
@@ -312,17 +312,17 @@ module modules.mli
         
         val f : ft -> ft
         
-        (*@ function ff (x#6:ft): ft *)
-        (*@ predicate fp1 (x#7:ft) *)
-        (*@ predicate fp2 (x#8:ft) *)
+        (*@ function ff (x_6:ft): ft *)
+        (*@ predicate fp1 (x_7:ft) *)
+        (*@ predicate fp2 (x_8:ft) *)
       end
     
     module MF : MTF
     
     val default : MF.ft -> MF.ft
-    (*@ x#9:ft = default y#3:ft
-        requires (fp1 y#3:ft):prop
-        ensures (fp2 x#9:ft):prop*)
+    (*@ x_9:ft = default y_3:ft
+        requires (fp1 y_3:ft):prop
+        ensures (fp2 x_9:ft):prop*)
 
 
 *** OK ***

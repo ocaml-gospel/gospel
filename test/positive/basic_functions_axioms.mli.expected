@@ -256,82 +256,82 @@ module basic_functions_axioms.mli
     
     (*@ axiom a2: (1:integer = 0:integer):prop *)
     
-    (*@ function f1 (x#1:int): int *)
+    (*@ function f1 (x_1:int): int *)
     
-    (*@ function f2 (x#2:int): int =
-        x#2:int *)
+    (*@ function f2 (x_2:int): int =
+        x_2:int *)
     
-    (*@ function f#1 (x#3:integer): bool =
-        if (x#3:integer = 2:integer):prop then (True ):bool else (False ):
+    (*@ function f_1 (x_3:integer): bool =
+        if (x_3:integer = 2:integer):prop then (True ):bool else (False ):
         bool
     *)
     
-    (*@ function f#2 (x#4:integer): bool =
+    (*@ function f_2 (x_4:integer): bool =
         (True ):bool *)
     
-    (*@ function f#3 (x#5:bool): bool =
-        x#5:bool *)
+    (*@ function f_3 (x_5:bool): bool =
+        x_5:bool *)
     
-    (*@ predicate pred (x#6:bool) =
-        (x#6:bool = (True ):bool):prop *)
+    (*@ predicate pred (x_6:bool) =
+        (x_6:bool = (True ):bool):prop *)
     
-    (*@ function p (x#7:integer): integer =
-        x#7:integer
-        variant x#7:integer
-        requires (x#7:integer = 1:integer):prop
-        ensures (x#7:integer = 2:integer):prop
-        ensures (x#7:integer > 2:integer):prop
-        ensures (x#7:integer > 1:integer):prop
+    (*@ function p (x_7:integer): integer =
+        x_7:integer
+        variant x_7:integer
+        requires (x_7:integer = 1:integer):prop
+        ensures (x_7:integer = 2:integer):prop
+        ensures (x_7:integer > 2:integer):prop
+        ensures (x_7:integer > 1:integer):prop
     *)
     
-    (*@ function rec f#4 (x#8:bool): bool =
-        (f#4 x#8:bool):bool *)
+    (*@ function rec f_4 (x_8:bool): bool =
+        (f_4 x_8:bool):bool *)
     
-    (*@ function rec f#5 (x#9:bool) (y#1:int): bool =
-        (f#5  x#9:bool y#1:int):bool
+    (*@ function rec f_5 (x_9:bool) (y_1:int): bool =
+        (f_5  x_9:bool y_1:int):bool
     *)
     
-    (*@ function g#1 (a#1:int): integer =
-        if ((f#5  (True ):bool a#1:int):bool = (True ):bool):prop then 1:
+    (*@ function g_1 (a_1:int): integer =
+        if ((f_5  (True ):bool a_1:int):bool = (True ):bool):prop then 1:
         integer else 2:integer
     *)
     
-    (*@ function int_of_integer (x#10:integer): int *)
+    (*@ function int_of_integer (x_10:integer): int *)
     
-    (*@ function h#1 (a#2:int) (b:bool) (c:'a): bool =
-        if (a#2:int = (int_of_integer 2:integer):int):prop then (f#5  
-        b:bool (int_of_integer 3:integer):int):bool else if ((g#1 (int_of_integer 4:
+    (*@ function h_1 (a_2:int) (b:bool) (c:'a): bool =
+        if (a_2:int = (int_of_integer 2:integer):int):prop then (f_5  
+        b:bool (int_of_integer 3:integer):int):bool else if ((g_1 (int_of_integer 4:
         integer):int):integer = 5:integer):prop then (True ):bool else (False ):
         bool
     *)
     
-    (*@ function h#2 (a#3:int) (b#1:bool) (c#1:'a): bool =
-        if (a#3:int = (int_of_integer 2:integer):int):prop then (f#5  if (pred 
-        b#1:bool):prop then (True ):bool else (False ):bool (int_of_integer 3:
-        integer):int):bool else if ((g#1 (int_of_integer 4:integer):int):
+    (*@ function h_2 (a_3:int) (b_1:bool) (c_1:'a): bool =
+        if (a_3:int = (int_of_integer 2:integer):int):prop then (f_5  if (pred 
+        b_1:bool):prop then (True ):bool else (False ):bool (int_of_integer 3:
+        integer):int):bool else if ((g_1 (int_of_integer 4:integer):int):
         integer = 5:integer):prop then (True ):bool else (False ):bool
     *)
     
-    (*@ function h#3 (b#2:bool): bool =
-        if (pred b#2:bool):prop then (True ):bool else (False ):bool
+    (*@ function h_3 (b_2:bool): bool =
+        if (pred b_2:bool):prop then (True ):bool else (False ):bool
     *)
     
     (*@ function h : bool =
         [@ athing](True ):bool *)
     
-    (*@ function to_integer (i#1:int): integer *)
+    (*@ function to_integer (i_1:int): integer *)
     
-    (*@ function i#2 (a#4:int): int =
-        (int_of_integer ((to_integer a#4:int):integer + 1:integer):integer):
+    (*@ function i_2 (a_4:int): int =
+        (int_of_integer ((to_integer a_4:int):integer + 1:integer):integer):
         int
     *)
     
-    (*@ function i#3 (a#5:int): int =
-        (int_of_integer ((to_integer a#5:int):integer + 1:integer):integer):
+    (*@ function i_3 (a_5:int): int =
+        (int_of_integer ((to_integer a_5:int):integer + 1:integer):integer):
         int
-        requires ((to_integer a#5:int):integer > 0:integer):prop
-        ensures let old_a[@athing]:integer = (to_integer old (a#5:int)):
-                integer in ((to_integer a#5:int):integer = (old_a[@athing]:
+        requires ((to_integer a_5:int):integer > 0:integer):prop
+        ensures let old_a[@athing]:integer = (to_integer old (a_5:int)):
+                integer in ((to_integer a_5:int):integer = (old_a[@athing]:
                                                             integer + 1:
                 integer):integer):prop
     *)
@@ -340,9 +340,9 @@ module basic_functions_axioms.mli
                  function C (_:'a * int) : 'a t1
     
     
-    (*@ function i (a#6:'a t1): int =
-        match a#6:'a t1 with
-        | C (_, y#2:int) -> y#2:int
+    (*@ function i (a_6:'a t1): int =
+        match a_6:'a t1 with
+        | C (_, y_2:int) -> y_2:int
         end::int
     *)
     
@@ -356,36 +356,36 @@ module basic_functions_axioms.mli
     
     (*@ function gnr : 'a *)
     
-    (*@ function g#2 (x#11:'a) (y#3:'a) (i#4:int): 'a *)
+    (*@ function g_2 (x_11:'a) (y_3:'a) (i_4:int): 'a *)
     
-    (*@ function f#6 (x#12:'a t2): 'a =
-        match x#12:'a t2 with
-        | C2 x#13:'a -> x#13:'a
-        | C3 b#3:bool -> (gnr ):'a
-        | C4 (i#5:int, x#14:'a) -> (g#2  x#14:'a x#14:'a i#5:int):'a
+    (*@ function f_6 (x_12:'a t2): 'a =
+        match x_12:'a t2 with
+        | C2 x_13:'a -> x_13:'a
+        | C3 b_3:bool -> (gnr ):'a
+        | C4 (i_5:int, x_14:'a) -> (g_2  x_14:'a x_14:'a i_5:int):'a
         end::'a
     *)
     
-    (*@ axiom ax1: forall x#15:'a214 t2 y#4:'a214 . (y#4:'a214 = (f#6 
-    x#15:'a214 t2):'a214):prop *)
+    (*@ axiom ax1: forall x_15:'a214 t2 y_4:'a214 . (y_4:'a214 = (f_6 
+    x_15:'a214 t2):'a214):prop *)
     
-    val f#7 : int -> int -> int
-    (*@ r:int = f#7 x#16:int y#5:int
-        requires (((integer_of_int#1 y#5:int):integer + 2:integer):integer < 0:
+    val f_7 : int -> int -> int
+    (*@ r:int = f_7 x_16:int y_5:int
+        requires (((integer_of_int_1 y_5:int):integer + 2:integer):integer < 0:
                  integer):prop
-        requires ((integer_of_int#1 x#16:int):integer > 0:integer):prop
-        ensures ((integer_of_int#1 r:int):integer = ((integer_of_int#1 
-                x#16:int):integer + (integer_of_int#1 y#5:int):integer):
+        requires ((integer_of_int_1 x_16:int):integer > 0:integer):prop
+        ensures ((integer_of_int_1 r:int):integer = ((integer_of_int_1 
+                x_16:int):integer + (integer_of_int_1 y_5:int):integer):
                 integer):prop*)
     
-    type 'a t3 = A#1 of 
-                 function A#1  : 'a t3
+    type 'a t3 = A_1 of 
+                 function A_1  : 'a t3
     
     
-    (*@ function f (x#17:int): int t3 =
-        (A#1 ):int t3 *)
+    (*@ function f (x_17:int): int t3 =
+        (A_1 ):int t3 *)
     
-    (*@ function integer_of_int (x#18:int): integer *)
+    (*@ function integer_of_int (x_18:int): integer *)
     
     type t4 = A of 
               function A  : t4
@@ -405,18 +405,18 @@ module basic_functions_axioms.mli
                 function yy (_:'a t6) : int
     
     
-    (*@ function g#3 (a#7:t4) (b#4:t4 t5): t4 t6 =
-        match b#4:t4 t5 with
-        | constr#t5 x#19:int A -> (constr#t6  (B ):t4 x#19:int):t4 t6
-        | constr#t5 x#20:int B -> (constr#t6  (y b#4:t4 t5):t4 (int_of_integer 10:
+    (*@ function g_3 (a_7:t4) (b_4:t4 t5): t4 t6 =
+        match b_4:t4 t5 with
+        | constr#t5 x_19:int A -> (constr#t6  (B ):t4 x_19:int):t4 t6
+        | constr#t5 x_20:int B -> (constr#t6  (y b_4:t4 t5):t4 (int_of_integer 10:
                                   integer):int):t4 t6
         end::t4 t6
     *)
     
-    (*@ function g (a#8:t4) (b#5:t4 t5): t4 t6 =
-        match b#5:t4 t5 with
-        | constr#t5 x#21:int y#6:t4 -> (constr#t6  y#6:t4 x#21:int):t4 t6
-        | constr#t5 x#22:int B -> (constr#t6  (y b#5:t4 t5):t4 (int_of_integer 10:
+    (*@ function g (a_8:t4) (b_5:t4 t5): t4 t6 =
+        match b_5:t4 t5 with
+        | constr#t5 x_21:int y_6:t4 -> (constr#t6  y_6:t4 x_21:int):t4 t6
+        | constr#t5 x_22:int B -> (constr#t6  (y b_5:t4 t5):t4 (int_of_integer 10:
                                   integer):int):t4 t6
         end::t4 t6
     *)

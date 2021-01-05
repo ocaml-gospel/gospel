@@ -100,49 +100,49 @@ module vals.mli
     val f : int -> int -> int
     (*@ r:int = f y:int x:int*)
     
-    val f#1 : y:int -> int -> int
-    (*@ r#1:int = f#1 ~y#1:int x#1:int*)
+    val f_1 : y:int -> int -> int
+    (*@ r_1:int = f_1 ~y_1:int x_1:int*)
     
-    val f#2 : ?y:int -> int -> int
-    (*@ r#2:int = f#2 ?y#2:int option x#2:int*)
+    val f_2 : ?y:int -> int -> int
+    (*@ r_2:int = f_2 ?y_2:int option x_2:int*)
     
-    val f#3 : y:int -> ?x:int -> int
-    (*@ r#3:int = f#3 ~y#3:int ?x#3:int option*)
+    val f_3 : y:int -> ?x:int -> int
+    (*@ r_3:int = f_3 ~y_3:int ?x_3:int option*)
     
-    val f#4 : ?y:int -> x:int -> int
-    (*@ r#4:int = f#4 ?y#4:int option ~x#4:int*)
+    val f_4 : ?y:int -> x:int -> int
+    (*@ r_4:int = f_4 ?y_4:int option ~x_4:int*)
     
-    val f#5 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-    (*@ r#5:'c = f#5 x#5:'a -> 'b -> 'c y#5:'a z:'b*)
+    val f_5 : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+    (*@ r_5:'c = f_5 x_5:'a -> 'b -> 'c y_5:'a z:'b*)
     
-    val f#6 : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
-    (*@ r#6:'c = f#6 ~x#6:'a -> 'b -> 'c y#6:'a z#1:'b*)
+    val f_6 : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
+    (*@ r_6:'c = f_6 ~x_6:'a -> 'b -> 'c y_6:'a z_1:'b*)
     
-    val f#7 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ r#7:'c = f#7 ~x#7:'a -> 'b -> 'c ~y#7:'a z#2:'b*)
+    val f_7 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r_7:'c = f_7 ~x_7:'a -> 'b -> 'c ~y_7:'a z_2:'b*)
     
-    val f#8 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ r#8:'c = f#8 ~x#8:'a -> 'b -> 'c [w:int: int] ~y#8:'a z#3:'b*)
+    val f_8 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r_8:'c = f_8 ~x_8:'a -> 'b -> 'c [w:int: int] ~y_8:'a z_3:'b*)
     
-    val f#9 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ r#9:'c = f#9
-        ~x#9:'a -> 'b -> 'c [w#1:int: int] ~y#9:'a [p:integer: integer] 
-        z#4:'b*)
+    val f_9 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r_9:'c = f_9
+        ~x_9:'a -> 'b -> 'c [w_1:int: int] ~y_9:'a [p:integer: integer] 
+        z_4:'b*)
     
-    val f#10 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ r#10:'c, [a#1:'a: 'a] = f#10
-        ~x#10:'a -> 'b -> 'c [w#2:int: int] ~y#10:'a [p#1:integer: integer] 
-        z#5:'b*)
+    val f_10 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ r_10:'c, [a_1:'a: 'a] = f_10
+        ~x_10:'a -> 'b -> 'c [w_2:int: int] ~y_10:'a [p_1:integer: integer] 
+        z_5:'b*)
     
-    val f#11 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ [b#1:integer: integer], r#11:'c, [a#2:'a: 'a] = f#11
-        ~x#11:'a -> 'b -> 'c [w#3:int: int] ~y#11:'a [p#2:integer: integer] 
-        z#6:'b*)
+    val f_11 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ [b_1:integer: integer], r_11:'c, [a_2:'a: 'a] = f_11
+        ~x_11:'a -> 'b -> 'c [w_3:int: int] ~y_11:'a [p_2:integer: integer] 
+        z_6:'b*)
     
-    val f#12 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-    (*@ [b#2:integer: integer], r#12:'c, [a#3:'a: 'a] = f#12
-        ~x#12:'a -> 'b -> 'c [w#4:int: int] ~y#12:'a [p#3:integer: integer] 
-        z#7:'b*)
+    val f_12 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
+    (*@ [b_2:integer: integer], r_12:'c, [a_3:'a: 'a] = f_12
+        ~x_12:'a -> 'b -> 'c [w_4:int: int] ~y_12:'a [p_3:integer: integer] 
+        z_7:'b*)
 
 
 *** OK ***

@@ -92,8 +92,8 @@ module a3.mli
                 Type symbols
                   
                 Logic Symbols
-                  function length#1 (_:'a array) : integer
-                  function mixfix [_]#1 (_:'a array) (_:integer) : 'a
+                  function length_1 (_:'a array) : integer
+                  function mixfix [_]_1 (_:'a array) (_:integer) : 'a
                   
                 Exception Symbols
                   
@@ -142,7 +142,7 @@ module a3.mli
                   
                 Logic Symbols
                   function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
-                  function mixfix [_]#2 (_:'a -> 'b) (_:'a) : 'b
+                  function mixfix [_]_2 (_:'a -> 'b) (_:'a) : 'b
                   
                 Exception Symbols
                   
@@ -164,11 +164,11 @@ module a3.mli
                   
               Namespace: Peano
                 Type symbols
-                   t#1
+                   t_1
                   
                 Logic Symbols
-                  function int_of_peano (_:t#1) : integer
-                  function v (_:t#1) : integer
+                  function int_of_peano (_:t_1) : integer
+                  function v (_:t_1) : integer
                   
                 Exception Symbols
                   
@@ -190,8 +190,8 @@ module a3.mli
                   function hd (_:'a seq) : 'a
                   function len (_:'a seq) : integer
                   function map (_:'a -> 'b) (_:'a seq) : 'b seq
-                  predicate mem#1 (_:'a seq) (_:'a)
-                  function mixfix [<-]#1 (_:'a seq) (_:integer) (_:'a) : 'a 
+                  predicate mem_1 (_:'a seq) (_:'a)
+                  function mixfix [<-]_1 (_:'a seq) (_:integer) (_:'a) : 'a 
                   seq
                   function rev (_:'a seq) : 'a seq
                   function snoc (_:'a seq) (_:'a) : 'a seq
@@ -213,7 +213,7 @@ module a3.mli
                   integer
                   predicate permut (_:'a seq) (_:'a seq) (_:integer) (_:
                   integer)
-                  predicate permut_all#1 (_:'a seq) (_:'a seq)
+                  predicate permut_all_1 (_:'a seq) (_:'a seq)
                   
                 Exception Symbols
                   
@@ -226,11 +226,11 @@ module a3.mli
                   'a set
                   
                 Logic Symbols
-                  predicate mem#2 (_:'a) (_:'a set)
+                  predicate mem_2 (_:'a) (_:'a set)
                   function mixfix {:_:} (_:'a) : 'a set
                   function mixfix {}  : 'a set
                   function sum (_:'a -> integer) (_:'a set) : integer
-                  function union#1 (_:'a set) (_:'a set) : 'a set
+                  function union_1 (_:'a set) (_:'a set) : 'a set
                   
                 Exception Symbols
                   
