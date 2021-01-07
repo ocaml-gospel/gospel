@@ -11,6 +11,7 @@
  (name gospel)
  (public_name gospel)
  (flags :standard -w -9 -linkall)
+ (libraries fmt)
  (modules_without_implementation oasttypes oparsetree uast))
 
 (rule

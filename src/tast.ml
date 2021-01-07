@@ -547,8 +547,8 @@ let print_function f x =
       (if x.fun_rec then "rec " else "")
       Ident.pp x.fun_ls.ls_name
       (list ~sep:" " print_param) x.fun_params
-      (pp_print_option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
-      (pp_print_option
+      (Fmt.option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
+      (Fmt.option
          (fun f -> pp f " =@\n@[<hov2>@[%a@]@]" print_term))
       x.fun_def
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()

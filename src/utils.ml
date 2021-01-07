@@ -48,10 +48,6 @@ module Option = struct
   let fold ~none ~some = function Some v -> some v | None -> none
 end
 
-let pp_print_option ?(none = fun _ () -> ()) pp_v ppf = function
-  | None -> none ppf ()
-  | Some v -> pp_v ppf v
-
 let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
   ?first:Opprintast.space_formatter -> ?last:Opprintast.space_formatter ->
   (Format.formatter -> 'a -> unit) ->
