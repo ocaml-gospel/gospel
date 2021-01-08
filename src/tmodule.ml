@@ -359,7 +359,7 @@ let wrap_up_muc muc =
 
 (** Pretty printing *)
 
-open Opprintast
+open Utils.Fmt
 
 let rec tree_ns f fmt ns =
   Mstr.iter (fun s ns ->

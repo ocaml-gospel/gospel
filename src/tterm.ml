@@ -317,6 +317,7 @@ let f_iff      = f_binop Tiff
 
 (** Pretty printing *)
 
+(* XXX(@pascutto): This one is only useful for [constant]. *)
 open Opprintast
 open Fmt
 
@@ -331,7 +332,7 @@ let print_ls_decl fmt {ls_name;ls_args;ls_value} =
     Ident.pp ls_name
     (list ~sep:sp print_unnamed_arg) ls_args
     (if is_func then " : " else "")
-    (Fmt.option print_ty) ls_value
+    (option print_ty) ls_value
 
 let print_ls_nm fmt {ls_name} =
   pp fmt "%a" Ident.pp ls_name

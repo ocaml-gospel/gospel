@@ -34,8 +34,7 @@ let invariant fmt _ = pp fmt "@[INVARIANT ... @]"
 
 let list_keyword s fmt x = match x with
   | [] -> ()
-  | _ -> pp fmt "%a@\n"
-           (list ~sep:newline (const_hole s)) x
+  | _ -> pp fmt "%a@\n" (list ~sep:newline (const_hole s)) x
 
 let type_spec f ts =
   let ephemeral f e =

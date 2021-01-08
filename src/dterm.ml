@@ -423,6 +423,7 @@ let term env dt =
 
 (* Pretty printing *)
 
+(* XXX(@pascutto): This one is only useful for [constant]. *)
 open Opprintast
 open Fmt
 

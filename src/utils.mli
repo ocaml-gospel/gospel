@@ -33,6 +33,9 @@ module Fmt : sig
 
   val list : ?first:unit t -> ?last:unit t -> ?sep:unit t -> 'a t -> 'a list t
 
+  val pp : Format.formatter -> ('a, Format.formatter, unit) format -> 'a
+  (** [pp] is [pf] *)
+
   (** {1 More separators} *)
 
   val full : 'a t

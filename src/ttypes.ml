@@ -246,7 +246,6 @@ let xs_subst_ty old_ts new_ts new_ty xs =
 
 (** Pretty printers *)
 
-open Opprintast
 open Fmt
 
 let print_tv fmt tv =
