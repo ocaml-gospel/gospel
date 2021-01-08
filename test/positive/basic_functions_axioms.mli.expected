@@ -210,12 +210,12 @@ module basic_functions_axioms.mli
 
   Namespace: basic_functions_axioms.mli
     Type symbols
-      'a t1
-      'a t2
-      'a t3
+      ('a) t1
+      ('a) t2
+      ('a) t3
        t4
-      'a t5
-      'a t6
+      ('a) t5
+      ('a) t6
       
     Logic Symbols
       function A  : t4
@@ -280,40 +280,42 @@ module basic_functions_axioms.mli
         variant x_7:integer
         requires (x_7:integer = 1:integer):prop
         ensures (x_7:integer = 2:integer):prop
-        ensures (x_7:integer > 2:integer):prop
-        ensures (x_7:integer > 1:integer):prop
+                ensures (x_7:integer > 2:integer):prop
+                ensures (x_7:integer > 1:integer):prop
     *)
     
     (*@ function rec f_4 (x_8:bool): bool =
-        (f_4 x_8:bool):bool *)
+        (f_4  x_8:bool):bool *)
     
     (*@ function rec f_5 (x_9:bool) (y_1:int): bool =
         (f_5  x_9:bool y_1:int):bool
     *)
     
     (*@ function g_1 (a_1:int): integer =
-        if ((f_5  (True ):bool a_1:int):bool = (True ):bool):prop then 1:
-        integer else 2:integer
+        if ((f_5 
+        (True ):bool a_1:int):bool = (True ):bool):prop then 1:integer else 2:
+        integer
     *)
     
     (*@ function int_of_integer (x_10:integer): int *)
     
     (*@ function h_1 (a_2:int) (b:bool) (c:'a): bool =
-        if (a_2:int = (int_of_integer 2:integer):int):prop then (f_5  
-        b:bool (int_of_integer 3:integer):int):bool else if ((g_1 (int_of_integer 4:
-        integer):int):integer = 5:integer):prop then (True ):bool else (False ):
-        bool
+        if (a_2:int = (int_of_integer  2:integer):int):prop then (f_5 
+        b:bool (int_of_integer  3:integer):int):bool else if ((g_1 
+        (int_of_integer  4:integer):int):integer = 5:integer):prop then (True ):
+        bool else (False ):bool
     *)
     
     (*@ function h_2 (a_3:int) (b_1:bool) (c_1:'a): bool =
-        if (a_3:int = (int_of_integer 2:integer):int):prop then (f_5  if (pred 
-        b_1:bool):prop then (True ):bool else (False ):bool (int_of_integer 3:
-        integer):int):bool else if ((g_1 (int_of_integer 4:integer):int):
-        integer = 5:integer):prop then (True ):bool else (False ):bool
+        if (a_3:int = (int_of_integer  2:integer):int):prop then (f_5 
+        if (pred  b_1:bool):prop then (True ):bool else (False ):bool
+        (int_of_integer  3:integer):int):bool else if ((g_1 
+        (int_of_integer  4:integer):int):integer = 5:integer):prop then (True ):
+        bool else (False ):bool
     *)
     
     (*@ function h_3 (b_2:bool): bool =
-        if (pred b_2:bool):prop then (True ):bool else (False ):bool
+        if (pred  b_2:bool):prop then (True ):bool else (False ):bool
     *)
     
     (*@ function h : bool =
@@ -322,23 +324,23 @@ module basic_functions_axioms.mli
     (*@ function to_integer (i_1:int): integer *)
     
     (*@ function i_2 (a_4:int): int =
-        (int_of_integer ((to_integer a_4:int):integer + 1:integer):integer):
-        int
+        (int_of_integer 
+        ((to_integer  a_4:int):integer + 1:integer):integer):int
     *)
     
     (*@ function i_3 (a_5:int): int =
-        (int_of_integer ((to_integer a_5:int):integer + 1:integer):integer):
-        int
-        requires ((to_integer a_5:int):integer > 0:integer):prop
-        ensures let old_a[@athing]:integer = (to_integer old (a_5:int)):
-                integer in ((to_integer a_5:int):integer = (old_a[@athing]:
-                                                            integer + 1:
-                integer):integer):prop
+        (int_of_integer 
+        ((to_integer  a_5:int):integer + 1:integer):integer):int
+        requires ((to_integer  a_5:int):integer > 0:integer):prop
+        ensures let old_a[@athing]:integer = (to_integer 
+                old (a_5:int)):integer in ((to_integer 
+                a_5:int):integer = (old_a[@athing]:integer + 1:integer):
+                integer):prop
     *)
     
     type 'a t1 = C of 'a * int
                  function C (_:'a * int) : 'a t1
-    
+         
     
     (*@ function i (a_6:'a t1): int =
         match a_6:'a t1 with
@@ -348,11 +350,11 @@ module basic_functions_axioms.mli
     
     type 'a t2 = C2 of 'a
                  function C2 (_:'a) : 'a t2
-              | C3 of bool
-                function C3 (_:bool) : 'a t2
-              | C4 of int * 'a
-                function C4 (_:int * 'a) : 'a t2
-    
+                 | C3 of bool
+                   function C3 (_:bool) : 'a t2
+                 | C4 of int * 'a
+                   function C4 (_:int * 'a) : 'a t2
+         
     
     (*@ function gnr : 'a *)
     
@@ -371,16 +373,17 @@ module basic_functions_axioms.mli
     
     val f_7 : int -> int -> int
     (*@ r:int = f_7 x_16:int y_5:int
-        requires (((integer_of_int_1 y_5:int):integer + 2:integer):integer < 0:
-                 integer):prop
-        requires ((integer_of_int_1 x_16:int):integer > 0:integer):prop
-        ensures ((integer_of_int_1 r:int):integer = ((integer_of_int_1 
-                x_16:int):integer + (integer_of_int_1 y_5:int):integer):
-                integer):prop*)
+        requires (((integer_of_int_1 
+                 y_5:int):integer + 2:integer):integer < 0:integer):prop
+                 requires ((integer_of_int_1 
+                          x_16:int):integer > 0:integer):prop
+        ensures ((integer_of_int_1  r:int):integer = ((integer_of_int_1 
+                x_16:int):integer + (integer_of_int_1 
+                y_5:int):integer):integer):prop*)
     
     type 'a t3 = A_1 of 
                  function A_1  : 'a t3
-    
+         
     
     (*@ function f (x_17:int): int t3 =
         (A_1 ):int t3 *)
@@ -389,35 +392,37 @@ module basic_functions_axioms.mli
     
     type t4 = A of 
               function A  : t4
-           | B of 
-             function B  : t4
-    
+              | B of 
+                function B  : t4
+         
     
     type 'a t5 = {x:int; y:'a}
               function constr#t5 (_:int) (_:'a) : 'a t5
-                function x (_:'a t5) : int
-                function y (_:'a t5) : 'a
-    
+              function x (_:'a t5) : int
+              function y (_:'a t5) : 'a
+         
     
     type 'a t6 = {xx:'a; yy:int}
               function constr#t6 (_:'a) (_:int) : 'a t6
-                function xx (_:'a t6) : 'a
-                function yy (_:'a t6) : int
-    
+              function xx (_:'a t6) : 'a
+              function yy (_:'a t6) : int
+         
     
     (*@ function g_3 (a_7:t4) (b_4:t4 t5): t4 t6 =
         match b_4:t4 t5 with
         | constr#t5 x_19:int A -> (constr#t6  (B ):t4 x_19:int):t4 t6
-        | constr#t5 x_20:int B -> (constr#t6  (y b_4:t4 t5):t4 (int_of_integer 10:
-                                  integer):int):t4 t6
+        | constr#t5 x_20:int B -> (constr#t6 
+                                  (y  b_4:t4 t5):t4 (int_of_integer 
+                                  10:integer):int):t4 t6
         end::t4 t6
     *)
     
     (*@ function g (a_8:t4) (b_5:t4 t5): t4 t6 =
         match b_5:t4 t5 with
         | constr#t5 x_21:int y_6:t4 -> (constr#t6  y_6:t4 x_21:int):t4 t6
-        | constr#t5 x_22:int B -> (constr#t6  (y b_5:t4 t5):t4 (int_of_integer 10:
-                                  integer):int):t4 t6
+        | constr#t5 x_22:int B -> (constr#t6 
+                                  (y  b_5:t4 t5):t4 (int_of_integer 
+                                  10:integer):int):t4 t6
         end::t4 t6
     *)
 

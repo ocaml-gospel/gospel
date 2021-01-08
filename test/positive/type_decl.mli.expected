@@ -155,7 +155,8 @@ type 'a t16 = int
 type 'a t17 = 'a
   
 
-type ('a, 'b, 'c) t18 =
+type ('a, 'b,
+'c) t18 =
 | C1 of 'a * 'b 
 | C2 of {
 i: int ;
@@ -186,8 +187,7 @@ type t23 = u
   
 and u =
 | C of v 
-  
-and v = t23
+  and v = t23
   
 
 *******************************
@@ -200,41 +200,41 @@ module type_decl.mli
        t1
        t10
        t11
-      'a t12
+      ('a) t12
        t13
-      'a t14
-      'a t15
-      'a t16 [=int]
-      'a t17 [='a]
-      ('a,'b,'c) t18
-      'a t19
-      'a t2
-      'b t20 [='b t19]
-      'a t21 [='a t22]
-      'b t22_1
+      ('a) t14
+      ('a) t15
+      ('a) t16 [=int]
+      ('a) t17 [='a]
+      ('a, 'b, 'c) t18
+      ('a) t19
+      ('a) t2
+      ('b) t20 [='b t19]
+      ('a) t21 [='a t22]
+      ('b) t22_1
        t23 [=u]
-      ('a,'b) t3
+      ('a, 'b) t3
        test
        test2
-      'a test3
-      'a test4
-      'a test5
-      ('a,'b) test6
-      ('x,'g) test7
+      ('a) test3
+      ('a) test4
+      ('a) test5
+      ('a, 'b) test6
+      ('x, 'g) test7
        u_1
        v [=u]
       
     Logic Symbols
       function C (_:u) : u_1
-      function C1 (_:'a * 'b) : ('a,'b,'c) t18
-      function C2 (_:int) (_:'a) : ('a,'b,'c) t18
-      function C3  : ('a,'b,'c) t18
-      function C4 (_:int) (_:'a) : ('a,'b,'c) t18
-      function C5 (_:'c) : ('a,'b,'c) t18
+      function C1 (_:'a * 'b) : ('a, 'b, 'c) t18
+      function C2 (_:int) (_:'a) : ('a, 'b, 'c) t18
+      function C3  : ('a, 'b, 'c) t18
+      function C4 (_:int) (_:'a) : ('a, 'b, 'c) t18
+      function C5 (_:'c) : ('a, 'b, 'c) t18
       function T1  : test
-      function T10 (_:int * 'a) : ('a,'b) test6
-      function T11 (_:'b * 'a) : ('a,'b) test6
-      function T12 (_:'g * int) : ('x,'g) test7
+      function T10 (_:int * 'a) : ('a, 'b) test6
+      function T11 (_:'b * 'a) : ('a, 'b) test6
+      function T12 (_:'g * int) : ('x, 'g) test7
       function T13 (_:int) : t13
       function T14 (_:'a) (_:int) : 'a t14
       function T151 (_:'a) (_:int) : 'a t15
@@ -263,122 +263,122 @@ module type_decl.mli
     (*@ open Gospelstdlib *)
     
     type t1
-    
+         
     
     type 'a t2
+         
     
-    
-    type ('a,'b) t3
-    
+    type ('a, 'b) t3
+         
     
     type test = T1 of 
                 function T1  : test
-             | T2 of 
-               function T2  : test
-             | T3 of 
-               function T3  : test
-             | T4 of 
-               function T4  : test
-    
+                | T2 of 
+                  function T2  : test
+                | T3 of 
+                  function T3  : test
+                | T4 of 
+                  function T4  : test
+         
     
     type test2 = T5 of int
                  function T5 (_:int) : test2
-    
+         
     
     type 'a test3 = T6 of 'a
                     function T6 (_:'a) : 'a test3
-    
+         
     
     type 'a test4 = T7 of 'a
                     function T7 (_:'a) : 'a test4
-                 | T8 of int
-                   function T8 (_:int) : 'a test4
-    
+                    | T8 of int
+                      function T8 (_:int) : 'a test4
+         
     
     type 'a test5 = T9 of int * 'a
                     function T9 (_:int * 'a) : 'a test5
+         
     
+    type ('a, 'b) test6 = T10 of int * 'a
+                          function T10 (_:int * 'a) : ('a, 'b) test6
+                          | T11 of 'b * 'a
+                            function T11 (_:'b * 'a) : ('a, 'b) test6
+         
     
-    type ('a,'b) test6 = T10 of int * 'a
-                         function T10 (_:int * 'a) : ('a,'b) test6
-                      | T11 of 'b * 'a
-                        function T11 (_:'b * 'a) : ('a,'b) test6
-    
-    
-    type ('x,'g) test7 = T12 of 'g * int
-                         function T12 (_:'g * int) : ('x,'g) test7
-    
+    type ('x, 'g) test7 = T12 of 'g * int
+                          function T12 (_:'g * int) : ('x, 'g) test7
+         
     
     type t10 = {x_2:int}
             function constr#t10 (_:int) : t10
-              function x_2 (_:t10) : int
-    
+            function x_2 (_:t10) : int
+         
     
     type t11 = {x_3:int; mutable y_1:float}
             function constr#t11 (_:int) (_:float) : t11
-              function x_3 (_:t11) : int
-              function y_1 (_:t11) : float
-    
+            function x_3 (_:t11) : int
+            function y_1 (_:t11) : float
+         
     
     type 'a t12 = {x_1:'a; y:'a * int}
                function constr#t12 (_:'a) (_:'a * int) : 'a t12
-                 function x_1 (_:'a t12) : 'a
-                 function y (_:'a t12) : 'a * int
-    
+               function x_1 (_:'a t12) : 'a
+               function y (_:'a t12) : 'a * int
+         
     
     type t13 = T13 of {x_4:int}
                function T13 (_:int) : t13
-    
+         
     
     type 'a t14 = T14 of {x_5:'a; y_2:int}
                   function T14 (_:'a) (_:int) : 'a t14
-    
+         
     
     type 'a t15 = T151 of {x_6:'a; y_3:int}
                   function T151 (_:'a) (_:int) : 'a t15
-               | T152 of int * 'a
-                 function T152 (_:int * 'a) : 'a t15
-    
+                  | T152 of int * 'a
+                    function T152 (_:int * 'a) : 'a t15
+         
     
     type 'a t16 = int
-    
+         
     
     type 'a t17 = 'a
+         
     
-    
-    type ('a,'b,'c) t18 = C1 of 'a * 'b
-                          function C1 (_:'a * 'b) : ('a,'b,'c) t18
-                       | C2 of {i:int; a_1:'a}
-                         function C2 (_:int) (_:'a) : ('a,'b,'c) t18
-                       | C3 of 
-                         function C3  : ('a,'b,'c) t18
-                       | C4 of {i_1:int; a_2:'a}
-                         function C4 (_:int) (_:'a) : ('a,'b,'c) t18
-                       | C5 of {c_1:'c}
-                         function C5 (_:'c) : ('a,'b,'c) t18
-    
+    type ('a, 'b, 'c) t18 = C1 of 'a * 'b
+                            function C1 (_:'a * 'b) : ('a, 'b, 'c) t18
+                            | C2 of {i:int; a_1:'a}
+                              function C2 (_:int) (_:'a) : ('a, 'b, 'c) t18
+                            | C3 of 
+                              function C3  : ('a, 'b, 'c) t18
+                            | C4 of {i_1:int; a_2:'a}
+                              function C4 (_:int) (_:'a) : ('a, 'b, 'c) t18
+                            | C5 of {c_1:'c}
+                              function C5 (_:'c) : ('a, 'b, 'c) t18
+         
     
     type 'a t19 = C_1 of 'a
                   function C_1 (_:'a) : 'a t19
-    
-    and 'b t20 = 'b t19 = C_2 of 'b
-                          function C_2 (_:'b) : 'b t19
-    
+         
+         and 'b t20 = 'b t19 = C_2 of 'b
+                               function C_2 (_:'b) : 'b t19
+         
     
     type 'a t21 = 'a t22 = C_3 of 'a
                            function C_3 (_:'a) : 'a t22
-    
-    and 'b t22_1 = C_4 of 'b
-                   function C_4 (_:'b) : 'b t22_1
-    
+         
+         and 'b t22_1 = C_4 of 'b
+                        function C_4 (_:'b) : 'b t22_1
+         
     
     type t23 = u
-    
-    and u_1 = C of u
-              function C (_:u) : u_1
-    
-    and v = u
-    
+         
+         and u_1 = C of u
+                   function C (_:u) : u_1
+         
+         and v = u
+         
 
 
 *** OK ***

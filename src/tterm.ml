@@ -318,6 +318,7 @@ let f_iff      = f_binop Tiff
 (** Pretty printing *)
 
 open Opprintast
+open Fmt
 
 let print_vs fmt {vs_name; vs_ty} =
   pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
@@ -328,7 +329,7 @@ let print_ls_decl fmt {ls_name;ls_args;ls_value} =
   pp fmt "%s %a %a%s%a"
     (if is_func then "function" else "predicate")
     Ident.pp ls_name
-    (list ~sep:" " print_unnamed_arg) ls_args
+    (list ~sep:sp print_unnamed_arg) ls_args
     (if is_func then " : " else "")
     (Fmt.option print_ty) ls_value
 
@@ -350,12 +351,12 @@ let rec print_pat_node pri fmt p = match p.p_node with
         (print_pat_node 0) p (print_pat_node 0) q
   | Papp (cs, pl) when is_fs_tuple cs ->
       pp fmt (protect_on (pri > 0) "%a")
-        (list ~sep:", " (print_pat_node 1)) pl
+        (list ~sep:comma (print_pat_node 1)) pl
   | Papp (cs, []) ->
       print_ls_nm fmt cs
   | Papp (cs, pl) ->
       pp fmt (protect_on (pri > 1) "%a@ %a")
-        print_ls_nm cs (list ~sep:" " (print_pat_node 2)) pl
+        print_ls_nm cs (list ~sep:sp (print_pat_node 2)) pl
 
 let print_pattern = print_pat_node 0
 
@@ -399,7 +400,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
     | Tapp (ls,tl) ->
        pp fmt "(%a %a)%a"
          Ident.pp ls.ls_name
-         (list ~first:" " ~sep:" " print_term) tl
+         (list ~first:sp ~sep:sp print_term) tl
          print_ty t_ty
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1,t2,t3) ->
@@ -414,7 +415,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
     | Tquant (q,vsl,trl,t) ->
        pp fmt "%a %a %a. %a"
          print_quantifier q
-         (list ~sep:" " print_vs) vsl
+         (list ~sep:sp print_vs) vsl
          (fun _ _ -> ()) trl
          print_term t
     | Tcase (t, ptl) ->
@@ -422,7 +423,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
          pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t in
        pp fmt "match %a with@\n%a@\nend:%a"
          print_term t
-         (list ~sep:"@\n" print_branch) ptl
+         (list ~sep:newline print_branch) ptl
          print_ty t_ty
     | Told t ->
        pp fmt "old (%a)" print_term t
@@ -447,6 +448,6 @@ let () =
       | FunctionSymbolExpected ls ->
          Some (errorf "Not a function symbol: %a" print_ls_nm ls)
       | FreeVariables svs ->
-         Some (errorf "Unbound variables: %a" (list ~sep:"," print_vs)
+         Some (errorf "Unbound variables: %a" (list ~sep:comma print_vs)
                  (Svs.elements svs) )
       | _ -> None)

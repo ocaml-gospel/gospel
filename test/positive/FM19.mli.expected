@@ -138,7 +138,7 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 (*@ function power ... *)
 
 val power_2_below : int -> int
-(*@ r,[k : TY] = power_2_below n
+(*@ r, [k : TY] = power_2_below n
     requires ...
     ensures ...
      *)
@@ -209,7 +209,7 @@ type tt
        *)
 
 val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
-(*@ p5,p6,m,[h : TY] = f p1 p2 p3 p4 n [g : TY]
+(*@ p5, p6, m, [h : TY] = f p1 p2 p3 p4 n [g : TY]
     requires ...
     ensures ...
     modifies ...
@@ -226,7 +226,7 @@ module FM19.mli
     Type symbols
        elem
        rand_state
-      'a t
+      ('a) t
        tt
        type1
        type2
@@ -251,83 +251,90 @@ module FM19.mli
     (*@ open Gospelstdlib *)
     
     type 'a t
-    (*@ ephemeral
-        mutable model view : 'a seq *)
+         (*@ ephemeral
+             mutable model view : 'a seq *)
     
     val push : 'a -> 'a t -> unit
     (*@  push v:'a q:'a t
-        ensures ((view q:'a t):'a seq = (cons  v:'a old ((view q:'a t):'a 
-                seq)):'a seq):prop
+        ensures ((view  q:'a t):'a seq = (cons 
+                v:'a old ((view  q:'a t):'a seq)):'a seq):prop
         writes q:'a t*)
     
     val pop : 'a t -> 'a
     (*@ v_1:'a = pop q_1:'a t
-        requires not ((view q_1:'a t):'a seq = (empty ):'a seq):prop
-        ensures (old ((view q_1:'a t):'a seq) = ((view q_1:'a t):'a seq ++ (cons  
+        requires not ((view  q_1:'a t):'a seq = (empty ):'a seq):prop
+        ensures (old ((view  q_1:'a t):'a seq) = ((view 
+                q_1:'a t):'a seq ++ (cons 
                 v_1:'a (empty ):'a seq):'a seq):'a seq):prop
         writes q_1:'a t*)
     
     val is_empty : 'a t -> bool
     (*@ b:bool = is_empty q_2:'a t
-        ensures (b:bool = (True ):bool):prop <-> ((view q_2:'a t):'a 
-                seq = (empty ):'a seq):prop*)
+        ensures (b:bool = (True ):bool):prop <-> ((view 
+                q_2:'a t):'a seq = (empty ):'a seq):prop*)
     
     val create : unit -> 'a t
     (*@ q_3:'a t = create ():unit
-        ensures ((view q_3:'a t):'a seq = (empty ):'a seq):prop*)
+        ensures ((view  q_3:'a t):'a seq = (empty ):'a seq):prop*)
     
     val in_place_concat : 'a t -> 'a t -> unit
     (*@  in_place_concat q1:'a t q2:'a t
-        ensures ((view q1:'a t):'a seq = (empty ):'a seq):prop
-        ensures ((view q2:'a t):'a seq = old (((view q1:'a t):'a seq ++ old ((view 
-                q2:'a t):'a seq)):'a seq)):prop
+        ensures ((view  q1:'a t):'a seq = (empty ):'a seq):prop
+                ensures ((view  q2:'a t):'a seq = old (((view 
+                        q1:'a t):'a seq ++ old ((view 
+                        q2:'a t):'a seq)):'a seq)):prop
         writes q1:'a t
-        writes q2:'a t*)
+               writes q2:'a t*)
     
     val in_place_destructive_concat : 'a t -> 'a t -> unit
     (*@  in_place_destructive_concat q1_1:'a t q2_1:'a t
-        ensures ((view q2_1:'a t):'a seq = old (((view q1_1:'a t):'a 
-                seq ++ old ((view q2_1:'a t):'a seq)):'a seq)):prop
+        ensures ((view  q2_1:'a t):'a seq = old (((view 
+                q1_1:'a t):'a seq ++ old ((view 
+                q2_1:'a t):'a seq)):'a seq)):prop
         writes q2_1:'a t
         consumes q1_1:'a t*)
     
     val nondestructive_concat : 'a t -> 'a t -> 'a t
     (*@ q3:'a t = nondestructive_concat q1_2:'a t q2_2:'a t
-        ensures ((view q3:'a t):'a seq = ((view q1_2:'a t):'a seq ++ (view 
+        ensures ((view  q3:'a t):'a seq = ((view  q1_2:'a t):'a seq ++ (view 
                 q2_2:'a t):'a seq):'a seq):prop*)
     
     val map : ('a -> 'b) -> 'a t -> 'b t
     (*@ r:'b_1 t = map f:'a -> 'b_1 q_4:'a t
-        ensures ((length (view r:'b_1 t):'b_1 seq):integer = (length (view 
-                q_4:'a t):'a seq):integer):prop
-        ensures forall i:integer . (0:integer <= i:integer):prop /\ (
-                i:integer < (length (view q_4:'a t):'a seq):integer):prop -> ((mixfix [_]  (view 
-                r:'b_1 t):'b_1 seq i:integer):'b_1 = (apply  f:'a -> 'b_1 (mixfix [_]  (view 
-                q_4:'a t):'a seq i:integer):'a):'b_1):prop*)
+        ensures ((length  (view  r:'b_1 t):'b_1 seq):integer = (length 
+                (view  q_4:'a t):'a seq):integer):prop
+                ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                        i:integer < (length 
+                        (view  q_4:'a t):'a seq):integer):prop -> ((mixfix [_] 
+                        (view  r:'b_1 t):'b_1 seq i:integer):'b_1 = (apply 
+                        f:'a -> 'b_1 (mixfix [_] 
+                        (view  q_4:'a t):'a seq i:integer):'a):'b_1):prop*)
     
     (*@ function power (x:integer) (y:integer): integer *)
     
     val power_2_below : int -> int
     (*@ r_1:int, [k:integer: integer] = power_2_below n:int
-        requires ((integer_of_int n:int):integer >= 1:integer):prop
-        ensures ((integer_of_int r_1:int):integer = (power  2:integer 
-                k:integer):integer):prop && ((integer_of_int r_1:int):
-                integer <= (integer_of_int n:int):integer):prop /\ ((integer_of_int 
-                n:int):integer < (2:integer * (integer_of_int r_1:int):
-                integer):integer):prop*)
+        requires ((integer_of_int  n:int):integer >= 1:integer):prop
+        ensures ((integer_of_int  r_1:int):integer = (power 
+                2:integer k:integer):integer):prop && ((integer_of_int 
+                r_1:int):integer <= (integer_of_int 
+                n:int):integer):prop /\ ((integer_of_int 
+                n:int):integer < (2:integer * (integer_of_int 
+                r_1:int):integer):integer):prop*)
     
     type rand_state
-    (*@ ephemeral
-        mutable model internal_1 : unit *)
+         (*@ ephemeral
+             mutable model internal_1 : unit *)
     
     val random_init : int -> rand_state
     
     
     val random_int : rand_state -> int -> int
     (*@ n_1:int = random_int s:rand_state m:int
-        requires ((integer_of_int m:int):integer > 0:integer):prop
-        ensures (0:integer <= (integer_of_int n_1:int):integer):prop /\ ((integer_of_int 
-                n_1:int):integer < (integer_of_int m:int):integer):prop
+        requires ((integer_of_int  m:int):integer > 0:integer):prop
+        ensures (0:integer <= (integer_of_int 
+                n_1:int):integer):prop /\ ((integer_of_int 
+                n_1:int):integer < (integer_of_int  m:int):integer):prop
         writes s:rand_state*)
     
     (*@ open Set *)
@@ -335,57 +342,69 @@ module FM19.mli
     (*@ open Map *)
     
     type elem
-    
+         
     
     (*@ type uf_instance
-    (*@ ephemeral
-        mutable model dom : elem set
-        mutable model rep : elem -> elem
-        mutable model internal : unit
-        invariant forall x_1:elem . (mem  x_1:elem (dom_1 ):elem set):prop -> (mem  (apply  (rep_1 ):
-                  elem -> elem x_1:elem):elem (dom_1 ):elem set):prop
-        invariant forall x_2:elem . (mem  x_2:elem (dom_1 ):elem set):prop -> ((apply  (rep_1 ):
-                  elem -> elem (apply  (rep_1 ):elem -> elem x_2:elem):
-                  elem):elem = (apply  (rep_1 ):elem -> elem x_2:elem):
-                  elem):prop *) *)
+             (*@ ephemeral
+                 mutable model dom : elem set
+                 mutable model rep : elem -> elem
+                 mutable model internal : unit
+                 invariant forall x_1:elem . (mem 
+                           x_1:elem (dom_1 ):elem set):prop -> (mem 
+                           (apply  (rep_1 ):elem -> elem x_1:elem):elem
+                           (dom_1 ):elem set):propinvariantforall x_2:elem . (mem 
+                                                           x_2:elem
+                                                           (dom_1 ):elem 
+                                                           set):prop -> ((apply 
+                                                           (rep_1 ):elem ->
+                                                                    elem
+                                                           (apply 
+                                                           (rep_1 ):elem ->
+                                                                    elem
+                                                           x_2:elem):
+                                                           elem):elem = (apply 
+                                                           (rep_1 ):elem ->
+                                                                    elem
+                                                           x_2:elem):
+                                                           elem):prop *) *)
     
     val equiv : elem -> elem -> bool
     (*@ b_2:bool = equiv [uf:uf_instance: uf_instance] e1:elem e2:elem
-        requires (mem  e1:elem (dom uf:uf_instance):elem set):prop && (mem  
-                 e2:elem (dom uf:uf_instance):elem set):prop
-        ensures (b_2:bool = (True ):bool):prop <-> ((apply  (rep uf:uf_instance):
-                elem -> elem e1:elem):elem = (apply  (rep uf:uf_instance):
-                elem -> elem e2:elem):elem):prop
-        writes (internal uf:uf_instance):unit*)
+        requires (mem  e1:elem (dom  uf:uf_instance):elem set):prop && (mem 
+                 e2:elem (dom  uf:uf_instance):elem set):prop
+        ensures (b_2:bool = (True ):bool):prop <-> ((apply 
+                (rep  uf:uf_instance):elem -> elem e1:elem):elem = (apply 
+                (rep  uf:uf_instance):elem -> elem e2:elem):elem):prop
+        writes (internal  uf:uf_instance):unit*)
     
     (*@
     val create_instance : unit -> uf_instance
     (*@ uf_1:uf_instance = create_instance ()_1:unit
-        ensures ((dom uf_1:uf_instance):elem set = (mixfix {} ):elem 
-                set):prop*)
+        ensures ((dom 
+                uf_1:uf_instance):elem set = (mixfix {} ):elem set):prop*)
     *)
     
     val make : unit -> elem
     (*@ e:elem = make [uf_2:uf_instance: uf_instance] ()_2:unit
-        ensures not (mem  e:elem old ((dom uf_2:uf_instance):elem set)):prop
-        ensures ((dom uf_2:uf_instance):elem set = (union  old ((dom 
-                uf_2:uf_instance):elem set) (mixfix {:_:} e:elem):elem 
-                set):elem set):prop
-        ensures ((rep uf_2:uf_instance):elem -> elem = (mixfix [<-]  old ((rep 
-                uf_2:uf_instance):elem -> elem) e:elem e:elem):elem -> 
-                elem):prop
+        ensures not (mem  e:elem old ((dom  uf_2:uf_instance):elem set)):prop
+                ensures ((dom  uf_2:uf_instance):elem set = (union 
+                        old ((dom  uf_2:uf_instance):elem set) (mixfix {:_:} 
+                        e:elem):elem set):elem set):prop
+                ensures ((rep  uf_2:uf_instance):elem -> elem = (mixfix [<-] 
+                        old ((rep  uf_2:uf_instance):elem -> elem) e:elem
+                        e:elem):elem -> elem):prop
         writes uf_2:uf_instance*)
     
     type type1
-    
+         
     
     type type2
-    
+         
     
     type tt
-    (*@ ephemeral
-        mutable model left : type1
-        mutable model right : type2 *)
+         (*@ ephemeral
+             mutable model left : type1
+             mutable model right : type2 *)
     
     val f_1 : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
     (*@ p5:tt, p6:tt, m_1:int, [h:integer: integer] = f_1
@@ -393,7 +412,7 @@ module FM19.mli
         requires true:prop
         ensures true:prop
         writes p1:tt
-        writes (left p2:tt):type1
+               writes (left  p2:tt):type1
         consumes p3:tt*)
 
 

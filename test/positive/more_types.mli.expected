@@ -63,12 +63,12 @@ module more_types.mli
   Namespace: more_types.mli
     Type symbols
        t1
-      'a t2 [=t1]
-      'c t3 [=t1]
-      ('a,'b) t4
-      'a t5 [=('a,'a) t4]
-      'a t6
-      ('a,'b) t7 [='a t6]
+      ('a) t2 [=t1]
+      ('c) t3 [=t1]
+      ('a, 'b) t4
+      ('a) t5 [=('a, 'a) t4]
+      ('a) t6
+      ('a, 'b) t7 [='a t6]
       
     Logic Symbols
       function constr#t6 (_:int) (_:'a) : 'a t6
@@ -86,40 +86,40 @@ module more_types.mli
     (*@ open Gospelstdlib *)
     
     type t1
-    
+         
     
     type 'a t2 = t1
-    
+         
     
     (*@ function f_1 (x_1:t1): t1 =
         x_1:t1 *)
     
     type 'c t3 = t1
-    
+         
     
     (*@ function f_2 (x_2:t1): t1 =
         x_2:t1 *)
     
-    type ('a,'b) t4
+    type ('a, 'b) t4
+         
     
+    type 'a t5 = ('a, 'a) t4
+         
     
-    type 'a t5 = ('a,'a) t4
+    (*@ function f_3 (x_3:('a, 'a) t4): ('a, 'a) t4 =
+        x_3:('a, 'a) t4 *)
     
-    
-    (*@ function f_3 (x_3:('a,'a) t4): ('a,'a) t4 =
-        x_3:('a,'a) t4 *)
-    
-    (*@ function f_4 (x_4:('a,'a) t4): ('a,'a) t4 =
-        x_4:('a,'a) t4 *)
+    (*@ function f_4 (x_4:('a, 'a) t4): ('a, 'a) t4 =
+        x_4:('a, 'a) t4 *)
     
     type 'a t6 = {x:int; y:'a}
               function constr#t6 (_:int) (_:'a) : 'a t6
-                function x (_:'a t6) : int
-                function y (_:'a t6) : 'a
+              function x (_:'a t6) : int
+              function y (_:'a t6) : 'a
+         
     
-    
-    type ('a,'b) t7 = 'a t6
-    
+    type ('a, 'b) t7 = 'a t6
+         
     
     (*@ function f (x_5:'a t6): 'a t6 =
         match x_5:'a t6 with

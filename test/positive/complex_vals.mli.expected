@@ -77,15 +77,16 @@ module complex_vals.mli
     
     val f : int -> int -> int
     (*@ r:int = f x:int y:int
-        requires (((integer_of_int x:int):integer + 1:integer):integer < 0:
-                 integer):prop
-        requires (((integer_of_int y:int):integer + 2:integer):integer < 0:
-                 integer):prop
-        requires ((integer_of_int x:int):integer > 0:integer):prop
-        ensures ((integer_of_int r:int):integer = ((integer_of_int x:int):
-                integer + (integer_of_int y:int):integer):integer):prop
-        ensures ((integer_of_int r:int):integer > 2:integer):prop
-        ensures ((integer_of_int r:int):integer = 3:integer):prop*)
+        requires (((integer_of_int 
+                 x:int):integer + 1:integer):integer < 0:integer):prop
+                 requires (((integer_of_int 
+                          y:int):integer + 2:integer):integer < 0:integer):prop
+                 requires ((integer_of_int  x:int):integer > 0:integer):prop
+        ensures ((integer_of_int  r:int):integer = ((integer_of_int 
+                x:int):integer + (integer_of_int 
+                y:int):integer):integer):prop
+                ensures ((integer_of_int  r:int):integer > 2:integer):prop
+                ensures ((integer_of_int  r:int):integer = 3:integer):prop*)
     
     exception X
     
@@ -93,20 +94,22 @@ module complex_vals.mli
     
     val f_1 : int -> int -> int
     (*@ r_1:int = f_1 x_1:int y_1:int
-        requires (((integer_of_int x_1:int):integer + 1:integer):integer < 0:
-                 integer):prop
-        requires (((integer_of_int y_1:int):integer + 2:integer):integer < 0:
-                 integer):prop
-        requires ((integer_of_int x_1:int):integer > 0:integer):prop
-        ensures ((integer_of_int r_1:int):integer = ((integer_of_int 
-                x_1:int):integer + (integer_of_int y_1:int):integer):
-                integer):prop
-        ensures ((integer_of_int r_1:int):integer > 2:integer):prop
-        ensures ((integer_of_int r_1:int):integer = 3:integer):prop
-        raises X  -> ((integer_of_int x_1:int):integer = 2:integer):prop
-        raises Y i:int -> ((integer_of_int i:int):integer = (((integer_of_int 
-          y_1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
-          x_1:int):integer):integer):integer):prop*)
+        requires (((integer_of_int 
+                 x_1:int):integer + 1:integer):integer < 0:integer):prop
+                 requires (((integer_of_int 
+                          y_1:int):integer + 2:integer):integer < 0:integer):prop
+                 requires ((integer_of_int 
+                          x_1:int):integer > 0:integer):prop
+        ensures ((integer_of_int  r_1:int):integer = ((integer_of_int 
+                x_1:int):integer + (integer_of_int 
+                y_1:int):integer):integer):prop
+                ensures ((integer_of_int  r_1:int):integer > 2:integer):prop
+                ensures ((integer_of_int  r_1:int):integer = 3:integer):prop
+        raisesX  -> ((integer_of_int  x_1:int):integer = 2:integer):prop
+        raisesY i:int -> ((integer_of_int 
+              i:int):integer = (((integer_of_int 
+              y_1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
+              x_1:int):integer):integer):integer):prop*)
 
 
 *** OK ***

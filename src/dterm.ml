@@ -424,6 +424,7 @@ let term env dt =
 (* Pretty printing *)
 
 open Opprintast
+open Fmt
 
 (* TODO not sure if we need this. Maybe we just need this for pretty
    print dterm. The flatten part is already done in ty_of_dty. *)
@@ -439,21 +440,21 @@ let rec print_dty fmt dty = match flatten dty with
   | Tapp (ts,dtyl) -> match dtyl with
      | [] -> print_ts_name fmt ts
      | dtyl when is_ts_arrow ts ->
-        pp fmt "(%a)" (list ~sep:" -> " print_dty) dtyl
+        pp fmt "(%a)" (list ~sep:arrow print_dty) dtyl
      | [dty] ->
         pp fmt "%a %a" print_dty dty print_ts_name ts
      | dtyl ->
-        pp fmt "(%a) %a" (list ~sep:"," print_dty) dtyl print_ts_name ts
+        pp fmt "(%a) %a" (list ~sep:comma print_dty) dtyl print_ts_name ts
 
 let rec print_dpattern fmt {dp_node;dp_dty} = match dp_node with
   | DPwild -> pp fmt "_"
   | DPvar pid -> pp fmt "%a:%a" Preid.pp pid print_dty dp_dty
   | DPapp (ls,dpl) when is_fs_tuple ls ->
-     pp fmt "(%a)" (list ~sep:"," print_dpattern) dpl
+     pp fmt "(%a)" (list ~sep:comma print_dpattern) dpl
 
   | DPapp (ls,dpl) ->
      pp fmt "%a %a" print_ls_nm ls
-       (list ~sep:" " print_dpattern) dpl
+       (list ~sep:sp print_dpattern) dpl
   | DPor (dp1,dp2) ->
      pp fmt "(%a | %a):%a" print_dpattern dp1 print_dty dp_dty
        print_dpattern dp2
@@ -475,7 +476,7 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
   | DTvar v -> pp fmt "%a%a" Preid.pp v print_dty dt_dty
   | DTapp (ls,dtl) -> pp fmt "(%a %a)%a"
                         Ident.pp ls.ls_name
-                        (list ~sep:" " print_dterm) dtl
+                        (list ~sep:sp print_dterm) dtl
                         print_dty dt_dty
   | DTnot t -> pp fmt "not %a" print_dterm t
   | DTif (t1,t2,t3) -> pp fmt "if %a then %a else %a" print_dterm t1
@@ -489,7 +490,7 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
        pp fmt "%a%a" Preid.pp pid print_dty (Some dty) in
      pp fmt "%a %a %a. %a"
        print_quantifier q
-       (list ~sep:" " print_quant_v) vl
+       (list ~sep:sp print_quant_v) vl
        (fun _ _ -> ()) trl
        print_dterm dt
   | DTcase (dt, dptl) ->
@@ -497,7 +498,7 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
        pp fmt "| %a -> %a" print_dpattern dp print_dterm dt in
      pp fmt "match %a with@\n%a@\nend:%a"
        print_dterm dt
-       (list ~sep:"@\n" print_branch) dptl
+       (list ~sep:newline print_branch) dptl
        print_dty dt_dty
   | _ -> assert false
 

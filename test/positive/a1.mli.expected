@@ -33,7 +33,7 @@ module a1.mli
     (*@ open Gospelstdlib *)
     
     type t
-    
+         
 
 
 *** OK ***

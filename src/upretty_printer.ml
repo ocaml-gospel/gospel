@@ -11,6 +11,7 @@
 open Oparsetree
 open Uast
 open Opprintast
+open Utils.Fmt
 
 let const_hole s fmt _ = pp fmt "%s" s
 
@@ -34,7 +35,7 @@ let invariant fmt _ = pp fmt "@[INVARIANT ... @]"
 let list_keyword s fmt x = match x with
   | [] -> ()
   | _ -> pp fmt "%a@\n"
-           (list ~sep:"@\n" (const_hole s)) x
+           (list ~sep:newline (const_hole s)) x
 
 let type_spec f ts =
   let ephemeral f e =
@@ -54,10 +55,10 @@ let val_spec fmt vspec =
      let diverge fmt x = if x then pp fmt "diverges@\n" else () in
      let print_content fmt s =
        pp fmt "@[@[<h>%a%s %a %a@]@\n%a%a%a%a%a%a%a%a%a@]"
-         (list ~sep:"," labelled_arg) s.sp_hd_ret
+         (list ~sep:comma labelled_arg) s.sp_hd_ret
          (if s.sp_hd_ret = [] then "" else " =")
          Preid.pp s.sp_hd_nm
-         (list ~sep:" " labelled_arg) s.sp_hd_args
+         (list ~sep:sp labelled_arg) s.sp_hd_args
          (list_keyword "requires ...") s.sp_pre
          (list_keyword "ensures ...") s.sp_post
          (list_keyword "with ...") s.sp_xpost
@@ -107,7 +108,7 @@ let s_type_declaration f x =
     | Ptype_variant xs ->
       let variants fmt xs =
         if xs = [] then pp fmt " |" else
-          pp fmt "@\n%a" (list ~sep:"@\n" constructor_declaration) xs
+          pp fmt "@\n%a" (list ~sep:newline constructor_declaration) xs
       in pp f "%t%t%a" intro priv variants xs
     | Ptype_abstract -> ()
     | Ptype_record l ->
@@ -144,7 +145,7 @@ let s_type_declaration_rec_flag f (rf,l) =
   | [x] -> type_decl "type" rf f x
   | x :: xs -> pp f "@[<v>%a@,%a@]"
                  (type_decl "type" rf) x
-                 (list ~sep:"@," (type_decl "and" Oasttypes.Recursive)) xs
+                 (list (type_decl "and" Oasttypes.Recursive)) xs
 
 let function_ f x =
   let keyword = match x.fun_type with
@@ -204,7 +205,7 @@ let rec s_signature_item f x=
         | x :: xs ->
             pp f "@[<v>%a@,%a@]"
               (class_description "class") x
-              (list ~sep:"@," (class_description "and")) xs
+              (list (class_description "and")) xs
       end
   | Sig_module ({mdtype={mdesc=Mod_alias alias;
                             mattributes=[]; _};_} as pmd) ->
@@ -260,7 +261,7 @@ let rec s_signature_item f x=
   | Sig_ghost_val vd -> pp f "@[%a@]" (spec s_val_description) vd
   | Sig_ghost_open od -> pp f "@[%a@]" (spec print_open) od
 
-and s_signature f x = list ~sep:"@\n@\n" s_signature_item f x
+and s_signature f x = list ~sep:(newline ++ newline) s_signature_item f x
 
 and s_module_type f x =
   if x.mattributes <> [] then begin
@@ -283,20 +284,20 @@ and s_module_type f x =
           | Wtype (li, ({tparams= ls ;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a =@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
+                (list core_type ~sep:comma ~first:rparens ~last:lparens)
                 ls longident_loc li s_type_declaration td
           | Wmodule (li, li2) ->
               pp f "module %a =@ %a" longident_loc li longident_loc li2;
           | Wtypesubst (li, ({tparams=ls;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a :=@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
+                (list core_type ~sep:comma ~first:lparens ~last:rparens)
                 ls longident_loc li
                 s_type_declaration td
           | Wmodsubst (li, li2) ->
              pp f "module %a :=@ %a" longident_loc li longident_loc li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
-          s_module_type1 mt (list with_constraint ~sep:"@ and@ ") l
+          s_module_type1 mt (list with_constraint ~sep:(any " and@ ")) l
     | _ -> s_module_type1 f x
 
 and s_module_type1 f x =

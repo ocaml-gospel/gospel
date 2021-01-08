@@ -38,7 +38,7 @@ module a2.mli
     open A1
     
     type t2 = t
-    
+         
 
 
 *** OK ***

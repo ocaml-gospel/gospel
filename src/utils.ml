@@ -48,26 +48,34 @@ module Option = struct
   let fold ~none ~some = function Some v -> some v | None -> none
 end
 
-let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
-  ?first:Opprintast.space_formatter -> ?last:Opprintast.space_formatter ->
-  (Format.formatter -> 'a -> unit) ->
-  Format.formatter -> 'a list -> unit
-  = let open Opprintast in
-    fun ?sep ?first ?last fu f xs ->
-    let first = match first with Some x -> x |None -> ("": _ format6)
-    and last = match last with Some x -> x |None -> ("": _ format6)
-    and sep = match sep with Some x -> x |None -> ("@ ": _ format6) in
-    let aux f = function
-      | [] -> ()
-      | [x] -> pp f first; fu f x; pp f last
-      | xs ->
-          let rec loop  f = function
-            | [x] -> fu f x
-            | x::xs ->  fu f x; pp f sep; loop f xs;
-            | _ -> assert false in begin
-            pp f first; loop f xs; pp f last;
-          end in
-    aux f xs
+module Fmt = struct
+  include Fmt
+
+  let list ?(first=nop) ?(last=nop) ?sep pp_v =
+    fun ppf l ->
+      if List.length l = 0 then ()
+      else pf ppf "%a@[%a@]%a" first () (list ?sep pp_v) l last ()
+
+  let full ppf _ = pf ppf ".@ "
+
+  let arrow ppf _ = pf ppf " ->@ "
+
+  let star ppf _ = pf ppf " *@ "
+
+  let newline ppf _ = pf ppf "@\n"
+
+  let lparens ppf _ = pf ppf "@[<1>("
+
+  let rparens ppf _ = pf ppf ")@]"
+
+  let lbracket ppf _ = pf ppf "@[<1>["
+
+  let rbracket ppf _ = pf ppf "]@]"
+
+  let lbrace ppf _ = pf ppf "@[<1>{"
+
+  let rbrace ppf _ = pf ppf "}@]"
+end
 
 module Sstr = Set.Make(String)
 

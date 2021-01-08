@@ -401,7 +401,10 @@ let mk_sig_item desc loc = sig_item desc loc
 
 (** Pretty printing *)
 
+open Oparsetree
+open Upretty_printer
 open Opprintast
+open Fmt
 
 let print_variant_field fmt ld =
   pp fmt "%s%a:%a"
@@ -416,15 +419,13 @@ let print_rec_field fmt ld =
 
 let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}"
-    (list ~sep:"; " print_field) fields
-
-    (* cd_ld    : (Ident.t * ty) label_declaration list; *)
+    (list ~sep:semi print_field) fields
 
 let print_type_kind fmt = function
   | Pty_abstract -> ()
   | Pty_variant cpl ->
      let print_args cs fmt = function
-       | [] -> list ~sep:" * " print_ty fmt cs.ls_args
+       | [] -> list ~sep:star print_ty fmt cs.ls_args
        | ld -> print_label_decl_list print_variant_field fmt ld in
      let print_constructor fmt {cd_cs;cd_ld} =
        pp fmt "@[%a of %a@\n@[<h 2>%a@]@]"
@@ -432,17 +433,13 @@ let print_type_kind fmt = function
          (print_args cd_cs) cd_ld
          print_ls_decl cd_cs in
      pp fmt "@[ = %a@]"
-       (list ~sep:"@\n| " print_constructor) cpl
+       (list ~sep:(newline ++ const string "| ") print_constructor) cpl
   | Pty_record rd ->
      let pjs = List.map (fun ld -> ld.ld_field) rd.rd_ldl in
      pp fmt "@[ = %a@\n@[<h 2>%a@]@]"
        (print_label_decl_list print_rec_field) rd.rd_ldl
-       (list ~sep:"@\n" print_ls_decl) (rd.rd_cs::pjs)
+       (list ~sep:newline print_ls_decl) (rd.rd_cs::pjs)
   | Pty_open -> assert false
-
-open Opprintast
-open Oparsetree
-open Upretty_printer
 
 let print_type_spec fmt {ty_ephemeral;ty_fields;ty_invariants} =
   if not ty_ephemeral && ty_fields = [] && ty_invariants = [] then () else
@@ -454,10 +451,9 @@ let print_type_spec fmt {ty_ephemeral;ty_fields;ty_invariants} =
         print_ty (Option.get ls.ls_value) in
     pp fmt "(*@@ @[%a%a%a@] *)"
       print_ephemeral ty_ephemeral
-      (list_with_first_last ~first:"@\n@["
-         ~sep:"@\n" ~last:"@]" print_field) ty_fields
-      (list_with_first_last ~first:"@\n@[invariant "
-         ~sep:"@\ninvariant " ~last:"@]" print_term) ty_invariants
+      (list ~first:newline ~sep:newline print_field) ty_fields
+      (list ~first:(newline ++ const string "invariant ")
+         ~sep:(const string "invariant")  print_term) ty_invariants
 
 let print_type_declaration fmt td =
   let print_param fmt (tv,var) =
@@ -467,7 +463,7 @@ let print_type_declaration fmt td =
   let print_params fmt = function
     | [] -> ()
     | [p] -> pp fmt "%a " print_param p
-    | ps -> pp fmt "(%a) " (list ~sep:"," print_param) ps in
+    | ps -> pp fmt "(%a) " (list ~sep:comma print_param) ps in
   let print_manifest fmt man = match man with
     | None -> ()
     | Some ty -> pp fmt " = %a" print_ty ty in
@@ -479,7 +475,7 @@ let print_type_declaration fmt td =
     print_manifest td.td_manifest
     print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
-    (list ~sep:" constraint " print_constraint) td.td_cstrs
+    (list ~sep:(const string " constraint ") print_constraint) td.td_cstrs
     print_type_spec td.td_spec
 
 let print_lb_arg fmt = function
@@ -494,8 +490,8 @@ let print_xposts f xposts =
                            print_xs xs print_pattern p print_term t in
   let print_xpost xs = function
     | [] -> pp f "@\n@[<hv2>raises %a@]" print_xs xs
-    | tl -> list_with_first_last ~first:"@\n@[<hv2>raises "
-              ~sep:"@\nraises " ~last:"@]"
+    | tl -> list ~first:(newline ++ const string "raises")
+              ~sep:(newline ++ const string "raises")
               (print xs) f tl  in
   Mxs.iter (fun xs tl -> print_xpost xs tl) xposts
 
@@ -509,29 +505,29 @@ let print_vd_spec val_id fmt spec =
        List.fold_left (fun (pres,checks) (p,c) ->
         if c then pres,p::checks else p::pres,checks) ([],[]) vs.sp_pre in
      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
-       (list ~sep:", " print_lb_arg) vs.sp_ret
+       (list ~sep:comma print_lb_arg) vs.sp_ret
        (if vs.sp_ret = [] then "" else " =")
        Ident.pp val_id
-       (list ~sep:" " print_lb_arg) vs.sp_args
+       (list ~sep:sp print_lb_arg) vs.sp_args
        print_diverges vs.sp_diverge
-       (list_with_first_last ~first:"@\n@[requires "
-          ~sep:"@\nrequires " ~last:"@]"
+       (list ~first:(newline ++ const string "requires ")
+          ~sep:(newline ++ const string "requires ")
           print_term) pres
-       (list_with_first_last ~first:"@\n@[checks "
-          ~sep:"@\nchecks " ~last:"@]"
+       (list ~first:(newline ++ const string "checks ")
+          ~sep:(newline ++ const string "checks ")
           print_term) checks
-       (list_with_first_last ~first:"@\n@[ensures "
-          ~sep:"@\nensures " ~last:"@]"
+       (list ~first:(newline ++ const string "ensures ")
+          ~sep:(newline ++ const string "ensures ")
           print_term) vs.sp_post
        print_xposts vs.sp_xpost
-       (list_with_first_last ~first:"@\n@[writes "
-          ~sep:"@\nwrites " ~last:"@]"
+       (list ~first:(newline ++ const string "writes ")
+          ~sep:(newline ++ const string "writes ")
           print_term) vs.sp_wr
-       (list_with_first_last ~first:"@\n@[consumes "
-          ~sep:"@\nconsumes " ~last:"@]"
+       (list ~first:(newline ++ const string "consumes ")
+          ~sep:(newline ++ const string "consumes ")
           print_term) vs.sp_cs
-       (list_with_first_last ~first:"@\n@[equivalent "
-          ~sep:"@\nequivalent " ~last:"@]"
+       (list ~first:(newline ++ const string "equivalent ")
+          ~sep:(newline ++ const string "equivalent ")
           constant_string) vs.sp_equiv
 
 let print_param f p =
@@ -546,20 +542,20 @@ let print_function f x =
       func_pred
       (if x.fun_rec then "rec " else "")
       Ident.pp x.fun_ls.ls_name
-      (list ~sep:" " print_param) x.fun_params
-      (Fmt.option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
-      (Fmt.option
+      (list ~sep:sp print_param) x.fun_params
+      (option (fun f -> pp f ": %a" print_ty)) x.fun_ls.ls_value
+      (option
          (fun f -> pp f " =@\n@[<hov2>@[%a@]@]" print_term))
       x.fun_def
       (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
-      (list_with_first_last ~first:"@\n@[@[<hov2>variant "
-         ~sep:"@\nvariant " ~last:"@]@]"
+      (list ~first:(newline ++ const string "variant ")
+         ~sep:(newline ++ const string "variant ")
          print_term) x.fun_spec.fun_variant
-      (list_with_first_last ~first:"@\n@[<hov2>@[requires "
-         ~sep:"@\nrequires " ~last:"@]@]"
+      (list ~first:(newline ++ const string "requires ")
+         ~sep:(newline ++ const string "requires ")
          print_term) x.fun_spec.fun_req
-      (list_with_first_last ~first:"@\n@[<hov2>@[ensures "
-         ~sep:"@\nensures " ~last:"@]@]"
+      (list ~first:(newline ++ const string "ensures ")
+         ~sep:(newline ++ const string "ensures ")
          print_term) x.fun_spec.fun_ens
   in
   spec func f x
@@ -595,7 +591,7 @@ let rec print_signature_item f x =
   match x.sig_desc with
   | Sig_type (_, td,g) ->
      pp f (if g then "@[(*@@ type %a *)@]" else "@[type %a@]")
-       (list ~sep:"@\nand " print_type_declaration) td
+       (list ~sep:(newline ++ const string "and ") print_type_declaration) td
   | Sig_val (vd,g) ->
      pp f (if g then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
   | Sig_typext te ->
@@ -617,12 +613,12 @@ let rec print_signature_item f x =
         | x :: xs ->
             pp f "@[<v>%a@,%a@]"
               (class_description "class") x
-              (list ~sep:"@," (class_description "and")) xs
+              (list ~sep:comma (class_description "and")) xs
       end
   | Sig_module ({md_type={mt_desc=Mod_alias alias;
                             mt_attrs=[]; _};_} as pmd) ->
       pp f "@[<hov>module@ %a@ =@ %a@]%a" Ident.pp pmd.md_name
-        (list ~sep:"." Format.pp_print_string) alias
+        (list ~sep:full Format.pp_print_string) alias
         (item_attributes reset_ctxt) pmd.md_attrs
   | Sig_module pmd ->
       pp f "@[<hov>module@ %a@ :@ %a@]%a"
@@ -634,7 +630,7 @@ let rec print_signature_item f x =
       (if ghost then
          "@[<hov2>(*@@@ open%s@ %a@ *)@]%a" else "@[<hov2>open%s@ %a@]%a")
         (override od.opn_override)
-        (list ~sep:"." Format.pp_print_string) od.opn_id
+        (list ~sep:full Format.pp_print_string) od.opn_id
         (item_attributes reset_ctxt) od.opn_attrs
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a"
@@ -677,7 +673,8 @@ let rec print_signature_item f x =
   | Sig_use s -> pp f "(*@@ use %s *)" s
   | _ -> assert false
 
-and print_signature f x = list ~sep:"@\n@\n" print_signature_item f x
+and print_signature f x =
+  list ~sep:(newline ++ newline) print_signature_item f x
 
 and print_module_type f x =
   if x.mt_attrs <> [] then begin
@@ -703,7 +700,7 @@ and print_module_type f x =
              let ts = {td.td_ts with ts_ident = li } in
              let td = {td with td_ts = ts } in
               pp f "type@ %a"
-                (* (list print_tv ~sep:"," ~first:"(" ~last:")") ls
+                (* (list print_tv ~sep:comma ~first:lparens ~last:rparens) ls
                  * Ident.pp li *)
                 print_type_declaration td
           | Wmod (li, li2) ->
@@ -713,25 +710,25 @@ and print_module_type f x =
               let ts = {td.td_ts with ts_ident = li } in
               let td = {td with td_ts = ts } in
               pp f "type@ %a %a :=@ %a"
-                (list print_tv ~sep:"," ~first:"(" ~last:")")
+                (list print_tv ~sep:comma ~first:lparens ~last:rparens)
                 ls Ident.pp li
                 print_type_declaration td
           | Wmodsubs (li, li2) ->
              pp f "module %a :=@ %a" Ident.pp li Ident.pp li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
-          print_modyle_type1 mt (list with_constraint ~sep:"@ and@ ") l
+          print_modyle_type1 mt (list with_constraint ~sep:(any " and@ ")) l
     | _ -> print_modyle_type1 f x
 
 and print_modyle_type1 f x =
   if x.mt_attrs <> [] then print_module_type f x
   else match x.mt_desc with
     | Mod_ident li ->
-        pp f "%a" (list ~sep:"." Format.pp_print_string) li;
+        pp f "%a" (list ~sep:full Format.pp_print_string) li;
     | Mod_alias li ->
-        pp f "(module %a)" (list ~sep:"." Format.pp_print_string) li
+        pp f "(module %a)" (list ~sep:full Format.pp_print_string) li
     | Mod_signature s ->
         pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
-          (list ~sep:"@\n" print_signature_item) s (* FIXME wrong indentation*)
+          (list ~sep:newline print_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
         pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
     | Mod_extension e -> extension reset_ctxt f e

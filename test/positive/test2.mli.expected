@@ -14,11 +14,11 @@ type int
 (*@ open Gospelstdlib *)
 
 module type TA  = sig type 'a t
-                       type 'b t2
-                       (*@ function f ... *) end
+                        type 'b t2
+                        (*@ function f ... *) end
 
 module B : functor (A : TA) -> sig type 'a t = 'a A.t
-                                    end
+                                      end
 
 type t
   

@@ -67,15 +67,15 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
+(*@ r, [a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ [b : TY],r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
+(*@ [b : TY], r, [a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ [b : TY],r,[a : TY] = f ~x [w : TY] ~y [p : TY] z
+(*@ [b : TY], r, [a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
 
 *******************************
@@ -126,22 +126,22 @@ module vals.mli
     
     val f_9 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
     (*@ r_9:'c = f_9
-        ~x_9:'a -> 'b -> 'c [w_1:int: int] ~y_9:'a [p:integer: integer] 
+        ~x_9:'a -> 'b -> 'c [w_1:int: int] ~y_9:'a [p:integer: integer]
         z_4:'b*)
     
     val f_10 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
     (*@ r_10:'c, [a_1:'a: 'a] = f_10
-        ~x_10:'a -> 'b -> 'c [w_2:int: int] ~y_10:'a [p_1:integer: integer] 
+        ~x_10:'a -> 'b -> 'c [w_2:int: int] ~y_10:'a [p_1:integer: integer]
         z_5:'b*)
     
     val f_11 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
     (*@ [b_1:integer: integer], r_11:'c, [a_2:'a: 'a] = f_11
-        ~x_11:'a -> 'b -> 'c [w_3:int: int] ~y_11:'a [p_2:integer: integer] 
+        ~x_11:'a -> 'b -> 'c [w_3:int: int] ~y_11:'a [p_2:integer: integer]
         z_6:'b*)
     
     val f_12 : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
     (*@ [b_2:integer: integer], r_12:'c, [a_3:'a: 'a] = f_12
-        ~x_12:'a -> 'b -> 'c [w_4:int: int] ~y_12:'a [p_3:integer: integer] 
+        ~x_12:'a -> 'b -> 'c [w_4:int: int] ~y_12:'a [p_3:integer: integer]
         z_7:'b*)
 
 

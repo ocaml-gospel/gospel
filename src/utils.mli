@@ -28,14 +28,45 @@ val split_at_i : int -> 'a list -> 'a list * 'a list
 (** [split_at_i i l] is the partition [(l1, l2)] such that [l1] contains the
     first i elements. The order of the elements is not changed. *)
 
-val list_with_first_last :
-  ?sep:Opprintast.space_formatter ->
-  ?first:Opprintast.space_formatter ->
-  ?last:Opprintast.space_formatter ->
-  (Format.formatter -> 'a -> unit) ->
-  Format.formatter ->
-  'a list ->
-  unit
+module Fmt : sig
+  include module type of struct include Fmt end
+
+  val list : ?first:unit t -> ?last:unit t -> ?sep:unit t -> 'a t -> 'a list t
+
+  (** {1 More separators} *)
+
+  val full : 'a t
+  (** [full ppf ()] is [any ".@ "] *)
+
+  val arrow : 'a t
+  (** [arrow ppf ()] is [any " ->@ "] *)
+
+  val star : 'a t
+  (** [star ppf ()] is [any " *@ "] *)
+
+  val newline : 'a t
+  (** [newline ppf ()] is [any "@\n"] *)
+
+  (** {1 More brackets} *)
+
+  val lparens : 'a t
+  (** [lparens ppf ()] is [any "@[<1>("] *)
+
+  val rparens : 'a t
+  (** [rparens ppf ()] is [any ")@]"] *)
+
+  val lbracket : 'a t
+  (** [lbracket ppf ()] is [any "@[<1>["] *)
+
+  val rbracket : 'a t
+  (** [rbracket ppf ()] is [any "]@]"] *)
+
+  val lbrace : 'a t
+  (** [lbrace ppf ()] is [any "@[<1>{"] *)
+
+  val rbrace : 'a t
+  (** [rbrace ppf ()] is [any "}@]"] *)
+end
 
 exception TypeCheckingError of string
 

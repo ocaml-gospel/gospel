@@ -97,7 +97,7 @@ module abstract_functions.mli
       function f3  : integer t2 -> integer
       function f4  : 'a t2 -> integer
       function f5  : 'a t2 -> 'b
-      function f6  : ('a,'b) t3 -> ('b,'a) t3
+      function f6  : ('a, 'b) t3 -> ('b, 'a) t3
       function h1 (_:integer) : integer
       function h10 (_:'a) (_:'b) : 'a * 'b
       predicate h11 (_:'a) (_:'b) (_:'c)
@@ -107,11 +107,11 @@ module abstract_functions.mli
       function h15 (_:test) : integer
       function h2 (_:integer) (_:integer) : integer
       function h3 (_:t1) (_:integer t2) : integer
-      function h4 (_:(integer,'a) t3) (_:integer t2) : integer
+      function h4 (_:(integer, 'a) t3) (_:integer t2) : integer
       predicate h5 (_:integer)
       predicate h6 (_:integer) (_:integer)
       predicate h7 (_:t1) (_:integer t2)
-      predicate h8 (_:(integer,'a) t3) (_:integer t2)
+      predicate h8 (_:(integer, 'a) t3) (_:integer t2)
       function h9 (_:'a) : 'a * 'b
       function prefix !! (_:integer) : integer
       function prefix !? (_:'a) : 'a * 'b
@@ -138,7 +138,7 @@ module abstract_functions.mli
     
     (*@ function f5 : 'a t2 -> 'b *)
     
-    (*@ function f6 : ('a,'b) t3 -> ('b,'a) t3 *)
+    (*@ function f6 : ('a, 'b) t3 -> ('b, 'a) t3 *)
     
     (*@ function h1 (x:integer): integer *)
     
@@ -146,7 +146,7 @@ module abstract_functions.mli
     
     (*@ function h3 (x_2:t1) (y_1:integer t2): integer *)
     
-    (*@ function h4 (x_3:(integer,'a) t3) (y_2:integer t2): integer *)
+    (*@ function h4 (x_3:(integer, 'a) t3) (y_2:integer t2): integer *)
     
     (*@ predicate h5 (x_4:integer) *)
     
@@ -154,7 +154,7 @@ module abstract_functions.mli
     
     (*@ predicate h7 (x_6:t1) (y_4:integer t2) *)
     
-    (*@ predicate h8 (x_7:(integer,'a) t3) (y_5:integer t2) *)
+    (*@ predicate h8 (x_7:(integer, 'a) t3) (y_5:integer t2) *)
     
     (*@ function prefix !! (x_8:integer): integer *)
     

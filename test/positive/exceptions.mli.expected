@@ -145,20 +145,24 @@ module exceptions.mli
     
     val f : 'a -> 'a
     (*@ x_2:'a = f y:'a
-        raises E1 x_3:int -> ((integer_of_int x_3:int):integer = 1:integer):prop
-        raises E3 l:int list -> (match l:int list with
-          | [] -> (False ):bool
-          | infix :: y_1:int ys:int list -> if ((integer_of_int y_1:int):
-                                            integer = 2:integer):prop then (True ):
-                                            bool else (False ):bool
-          end::bool = (True ):bool):prop
-        raises E4 i:int, l_1:int list -> (match l_1:int list with
-          | [] -> (True ):bool
-          | infix :: y_2:int ys_1:int list -> if (y_2:int = i:int):prop then (True ):
-                                              bool else (False ):bool
-          end::bool = (True ):bool):prop
-        raises E5 f_1:int -> int -> ((integer_of_int (apply  f_1:int -> int (int_of_integer 3:
-          integer):int):int):integer = 4:integer):prop*)
+        raisesE1 x_3:int -> ((integer_of_int 
+              x_3:int):integer = 1:integer):prop
+        raisesE3 l:int list -> (match l:int list with
+              | [] -> (False ):bool
+              | infix :: y_1:int ys:int list -> if ((integer_of_int 
+                                                y_1:int):integer = 2:
+                                                integer):prop then (True ):
+                                                bool else (False ):bool
+              end::bool = (True ):bool):prop
+        raisesE4 i:int, l_1:int list -> (match l_1:int list with
+              | [] -> (True ):bool
+              | infix :: y_2:int ys_1:int list -> if (y_2:int = i:int):prop then (True ):
+                                                  bool else (False ):
+                                                  bool
+              end::bool = (True ):bool):prop
+        raisesE5 f_1:int -> int -> ((integer_of_int 
+              (apply  f_1:int -> int (int_of_integer  3:integer):int):int):
+              integer = 4:integer):prop*)
 
 
 *** OK ***
