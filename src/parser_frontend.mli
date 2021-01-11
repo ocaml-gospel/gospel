@@ -22,14 +22,14 @@ val with_loadpath : string list -> string -> string
 
     Raise Not_found if file does not exist.
     Raise Ocaml_syntax_error if there is an OCaml syntax error. *)
-val parse_ocaml : string -> Oparsetree.signature
+val parse_ocaml : string -> Parsetree.signature
 
-val parse_ocaml_lb : Lexing.lexbuf -> Oparsetree.signature
+val parse_ocaml_lb : Lexing.lexbuf -> Parsetree.signature
 
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 val parse_gospel :
-  Oparsetree.signature -> string -> Uast.s_signature
+  Parsetree.signature -> string -> Uast.s_signature
 
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL
     specification of the file located in [path].

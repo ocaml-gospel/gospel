@@ -9,12 +9,19 @@
 
 (library
  (public_name gospel)
- (flags :standard -w -9 -linkall)
+ (flags :standard -w -9)
  (libraries fmt ppxlib)
  (modules_without_implementation uast))
 
 (rule
  (targets gospelstdlib.ml)
- (deps stdlib/gospelstdlib.mli)
+ (deps gospelstdlib.mli.pp)
  (action
   (run stdlib/file_to_string.exe %{deps} %{targets})))
+
+(rule
+ (targets gospelstdlib.mli.pp)
+ (deps stdlib/gospelstdlib.mli)
+ (action
+  (with-stdout-to %{targets} (run gospel_pps %{deps} ))))
+

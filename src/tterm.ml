@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Ttypes
 open Utils
 
@@ -139,7 +140,7 @@ type term = {
 
 and term_node =
   | Tvar   of vsymbol
-  | Tconst of Oasttypes.constant
+  | Tconst of Parsetree.constant
   | Tapp   of lsymbol * term list
   | Tif    of term * term * term
   | Tlet   of vsymbol * term * term
@@ -317,8 +318,6 @@ let f_iff      = f_binop Tiff
 
 (** Pretty printing *)
 
-(* XXX(@pascutto): This one is only useful for [constant]. *)
-open Opprintast
 open Fmt
 
 let print_vs fmt {vs_name; vs_ty} =
@@ -381,7 +380,7 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
       None -> pp fmt ":prop"
     | Some ty -> pp fmt ":%a" print_ty ty in
   let print_t_node fmt t_node = match t_node with
-    | Tconst c -> pp fmt "%a%a" constant c print_ty t_ty
+    | Tconst c -> pp fmt "%a%a" Opprintast.constant c print_ty t_ty
     | Ttrue -> pp fmt "true%a" print_ty t_ty
     | Tfalse -> pp fmt "false%a" print_ty t_ty
     | Tvar vs ->
@@ -436,19 +435,19 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
 
 let () =
   let open Location in
-  register_error_of_exn (function
+  Location_error.register_error_of_exn (function
       | TermExpected t ->
-         Some (errorf "Term expected in %a" print_term t)
+         Some (raise_errorf "Term expected in %a" print_term t)
       | FmlaExpected t ->
-         Some (errorf "Formula expected in %a" print_term t)
+         Some (raise_errorf "Formula expected in %a" print_term t)
       | BadArity (ls,i) ->
-         Some (errorf "Function %a expects %d arguments as opposed to %d"
+         Some (raise_errorf "Function %a expects %d arguments as opposed to %d"
                  print_ls_nm ls (List.length ls.ls_args) i)
       | PredicateSymbolExpected ls ->
-         Some (errorf "Not a predicate symbol: %a" print_ls_nm ls)
+         Some (raise_errorf "Not a predicate symbol: %a" print_ls_nm ls)
       | FunctionSymbolExpected ls ->
-         Some (errorf "Not a function symbol: %a" print_ls_nm ls)
+         Some (raise_errorf "Not a function symbol: %a" print_ls_nm ls)
       | FreeVariables svs ->
-         Some (errorf "Unbound variables: %a" (list ~sep:comma print_vs)
+         Some (raise_errorf "Unbound variables: %a" (list ~sep:comma print_vs)
                  (Svs.elements svs) )
       | _ -> None)

@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
 open Ttypes
 open Tterm
@@ -82,9 +83,9 @@ let mk_val_spec args ret pre post wr cs dv equiv =
 
 type val_description = {
     vd_name  : Ident.t;
-    vd_type  : Oparsetree.core_type;
+    vd_type  : Parsetree.core_type;
     vd_prim  : string list; (* primitive declaration *)
-    vd_attrs : Oparsetree.attributes;
+    vd_attrs : Parsetree.attributes;
     vd_spec  : val_spec option;
     vd_loc   : Location.t;
 }
@@ -121,7 +122,7 @@ type 'a label_declaration = {
     ld_field : 'a;
     ld_mut   : mutable_flag;
     ld_loc   : Location.t;
-    ld_attrs : Oparsetree.attributes; (* l : T [@id1] [@id2] *)
+    ld_attrs : Parsetree.attributes; (* l : T [@id1] [@id2] *)
   }
 
 let label_declaration ld_field ld_mut ld_loc ld_attrs =
@@ -141,7 +142,7 @@ type constructor_decl = {
     (* cd_ld is empty if defined through a tuple *)
     cd_ld    : (Ident.t * ty) label_declaration list;
     cd_loc   : Location.t;
-    cd_attrs : Oparsetree.attributes; (* C of ... [@id1] [@id2] *)
+    cd_attrs : Parsetree.attributes; (* C of ... [@id1] [@id2] *)
 }
 
 let constructor_decl cd_cs cd_ld cd_loc cd_attrs =
@@ -171,7 +172,7 @@ type type_declaration = {
     td_kind     : type_kind;
     td_private  : private_flag;
     td_manifest : ty option;
-    td_attrs    : Oparsetree.attributes;
+    td_attrs    : Parsetree.attributes;
     td_spec     : type_spec;
     td_loc      : Location.t;
 }
@@ -275,9 +276,9 @@ type extension_constructor =
     {
      ext_ident     : Ident.t;
      ext_xs        : xsymbol;
-     ext_kind      : Oparsetree.extension_constructor_kind;
+     ext_kind      : Parsetree.extension_constructor_kind;
      ext_loc       : Location.t;
-     ext_attributes: Oparsetree.attributes; (* C of ... [@id1] [@id2] *)
+     ext_attributes: Parsetree.attributes; (* C of ... [@id1] [@id2] *)
    }
 
 let extension_constructor id xs kd loc attrs =
@@ -288,7 +289,7 @@ type type_exception =
   {
     exn_constructor : extension_constructor;
     exn_loc         : Location.t;
-    exn_attributes  : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+    exn_attributes  : Parsetree.attributes; (* ... [@@id1] [@@id2] *)
   }
 
 let type_exception ctr loc attrs =
@@ -313,9 +314,9 @@ type with_constraint =
 type open_description =
     {
      opn_id       : string list;
-     opn_override : Oasttypes.override_flag;
+     opn_override : Asttypes.override_flag;
      opn_loc      : Location.t;
-     opn_attrs    : Oparsetree.attributes;
+     opn_attrs    : Parsetree.attributes;
     }
 
 type signature = signature_item list
@@ -329,7 +330,7 @@ and signature_item_desc =
   | Sig_val of val_description * ghost
   | Sig_type of rec_flag * type_declaration list * ghost
         (* type t1 = ... and ... and tn = ... *)
-  | Sig_typext of Oparsetree.type_extension
+  | Sig_typext of Parsetree.type_extension
         (* type t1 += ... *)
   | Sig_module of module_declaration
         (* module X : MT *)
@@ -343,15 +344,15 @@ and signature_item_desc =
         (* exception C of T *)
   | Sig_open of open_description * ghost
         (* open X *)
-  | Sig_include of Oparsetree.include_description
+  | Sig_include of Parsetree.include_description
         (* include MT *)
-  | Sig_class of Oparsetree.class_description list
+  | Sig_class of Parsetree.class_description list
         (* class c1 : ... and ... and cn : ... *)
-  | Sig_class_type of Oparsetree.class_type_declaration list
+  | Sig_class_type of Parsetree.class_type_declaration list
         (* class type ct1 = ... and ... and ctn = ... *)
-  | Sig_attribute of Oparsetree.attribute
+  | Sig_attribute of Parsetree.attribute
         (* [@@@id] *)
-  | Sig_extension of Oparsetree.extension * Oparsetree.attributes
+  | Sig_extension of Parsetree.extension * Parsetree.attributes
         (* [%%id] *)
   (* Specific to specification *)
   | Sig_use of string
@@ -361,14 +362,14 @@ and signature_item_desc =
 and module_declaration = {
     md_name  : Ident.t;
     md_type  : module_type;
-    md_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+    md_attrs : Parsetree.attributes; (* ... [@@id1] [@@id2] *)
     md_loc   : Location.t;
   }
 
 and module_type_declaration = {
      mtd_name  : Ident.t;
      mtd_type  : module_type option;
-     mtd_attrs : Oparsetree.attributes; (* ... [@@id1] [@@id2] *)
+     mtd_attrs : Parsetree.attributes; (* ... [@@id1] [@@id2] *)
      mtd_loc   : Location.t;
   }
 
@@ -376,7 +377,7 @@ and module_type =
   {
     mt_desc  : module_type_desc;
     mt_loc   : Location.t;
-    mt_attrs : Oparsetree.attributes; (* ... [@id1] [@id2] *)
+    mt_attrs : Parsetree.attributes; (* ... [@id1] [@id2] *)
   }
 
 and module_type_desc =
@@ -388,9 +389,9 @@ and module_type_desc =
         (* functor(X : MT1) -> MT2 *)
   | Mod_with of module_type * with_constraint list
         (* MT with ... *)
-  | Mod_typeof of Oparsetree.module_expr
+  | Mod_typeof of Parsetree.module_expr
         (* module type of ME *)
-  | Mod_extension of Oparsetree.extension
+  | Mod_extension of Parsetree.extension
         (* [%id] *)
   | Mod_alias of string list
         (* (module M) *)
@@ -401,7 +402,7 @@ let mk_sig_item desc loc = sig_item desc loc
 
 (** Pretty printing *)
 
-open Oparsetree
+open Parsetree
 open Upretty_printer
 open Opprintast
 open Fmt
@@ -599,12 +600,12 @@ let rec print_signature_item f x =
   | Sig_exception ed ->
       exception_declaration reset_ctxt f ed
   | Sig_class l ->
-      let open Oparsetree in
+      let open Parsetree in
       let class_description kwd f ({pci_params=ls;pci_name={txt;_};_} as x) =
         pp f "@[<2>%s %a%a%s@;:@;%a@]%a" kwd
           virtual_flag x.pci_virt
           (class_params_def reset_ctxt) ls txt
-          (class_type reset_ctxt) x.pci_expr
+          class_type x.pci_expr
           (item_attributes reset_ctxt) x.pci_attributes
       in begin
         match l with
@@ -634,7 +635,7 @@ let rec print_signature_item f x =
         (item_attributes reset_ctxt) od.opn_attrs
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a"
-        (module_type reset_ctxt) incl.pincl_mod
+        module_type incl.pincl_mod
         (item_attributes reset_ctxt) incl.pincl_attributes
   | Sig_modtype {mtd_name=s; mtd_type=md; mtd_attrs=attrs} ->
       pp f "@[<hov2>module@ type@ %a%a@]%a"
@@ -730,15 +731,15 @@ and print_modyle_type1 f x =
         pp f "@[<hv0>@[<hv2>sig@\n%a@]@\nend@]" (* "@[<hov>sig@ %a@ end@]" *)
           (list ~sep:newline print_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
-        pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
+        pp f "@[<hov2>module@ type@ of@ %a@]" module_expr me
     | Mod_extension e -> extension reset_ctxt f e
     | _ -> paren true print_module_type f x
 
 (** register exceptions *)
 
 let () =
-  let open Location in
-  register_error_of_exn (function
+  Location_error.register_error_of_exn (function
       | DuplicatedArg vs ->
-         Some (errorf ~loc:vs.vs_name.id_loc "Duplicated argument %a" print_vs vs)
+        Some (Location.raise_errorf
+                ~loc:vs.vs_name.id_loc "Duplicated argument %a" print_vs vs)
       | _ -> None)

@@ -114,7 +114,7 @@ and dterm_node =
    *)
   | DTattr  of dterm * string list
   | DTvar   of Preid.t
-  | DTconst of Oasttypes.constant
+  | DTconst of Parsetree.constant
   | DTapp   of lsymbol * dterm list
   | DTif    of dterm * dterm * dterm
   | DTlet   of Preid.t * dterm * dterm
@@ -423,7 +423,6 @@ let term env dt =
 
 (* Pretty printing *)
 
-(* XXX(@pascutto): This one is only useful for [constant]. *)
 open Opprintast
 open Fmt
 

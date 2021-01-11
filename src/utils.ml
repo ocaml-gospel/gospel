@@ -23,7 +23,6 @@ let rec split_at_i i = function
       let xs', ys' = split_at_i (i-1) xs in
       x::xs', ys'
 
-
 module Option = struct
   let value o ~default = match o with
     | Some x -> x
@@ -102,15 +101,12 @@ let not_supported ?loc s =
   error ?loc (NotSupported s)
 
 let () =
-  let open Location in
+  let open Ppxlib.Location_error in
   register_error_of_exn (function
-      | Located (loc,exn) ->
-         begin match error_of_exn exn with
-         | None | Some `Already_displayed -> None
-         | Some `Ok e -> Some {e with loc = loc}
-         end
+      | Located (_loc, exn) ->
+        of_exn exn
       | TypeCheckingError s ->
-         Some (errorf "Type checking error: %s" s)
+        Some (Location.raise_errorf "Type checking error: %s" s)
       | NotSupported s ->
-         Some (errorf "Not supported: %s" s)
+        Some (Location.raise_errorf "Not supported: %s" s)
       | _ -> None)

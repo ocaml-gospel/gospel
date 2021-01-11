@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
 open Identifier
 open Uast
@@ -70,7 +71,7 @@ let rec ty_of_pty ns = function
 
 (* OCaml types *)
 let rec ty_of_core ns cty =
-  let open Oparsetree in
+  let open Parsetree in
   match cty.ptyp_desc with
   | Ptyp_any ->
      {ty_node = Tyvar (create_tv (Ident.create "_"))}
@@ -80,7 +81,7 @@ let rec ty_of_core ns cty =
      let tyl = List.map (ty_of_core ns) ctl in
      ty_app (ts_tuple (List.length tyl)) tyl
   | Ptyp_constr (lid,ctl) ->
-     let ts = find_ts ~loc:lid.loc ns (Longident.flatten lid.txt) in
+     let ts = find_ts ~loc:lid.loc ns (Longident.flatten_exn lid.txt) in
      let tyl = List.map (ty_of_core ns) ctl in
      ty_app ts tyl
   | Ptyp_arrow (_,ct1,ct2) ->
@@ -373,21 +374,21 @@ let fmla kid crcm ns env t =
 (** Typing type declarations *)
 
 let private_flag = function
-  | Oasttypes.Private -> Private
-  | Oasttypes.Public -> Public
+  | Asttypes.Private -> Private
+  | Asttypes.Public -> Public
 
 let variance = function
-  | Oasttypes.Covariant -> Covariant
-  | Oasttypes.Contravariant -> Contravariant
-  | Oasttypes.Invariant -> Invariant
+  | Asttypes.Covariant -> Covariant
+  | Asttypes.Contravariant -> Contravariant
+  | Asttypes.Invariant -> Invariant
 
 let rec_flag = function
-  | Oasttypes.Nonrecursive -> Nonrecursive
-  | Oasttypes.Recursive -> Recursive
+  | Asttypes.Nonrecursive -> Nonrecursive
+  | Asttypes.Recursive -> Recursive
 
 let mutable_flag = function
-  | Oasttypes.Mutable -> Mutable
-  | Oasttypes.Immutable -> Immutable
+  | Asttypes.Mutable -> Mutable
+  | Asttypes.Immutable -> Immutable
 
 let process_type_spec kid crcm ns ty (spec:Uast.type_spec) =
   let field (ns,fields) f =
@@ -413,7 +414,7 @@ let type_type_declaration kid crcm ns tdl =
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hashtbl.create 0 in
   let htd = Hashtbl.create 0 in
-  let open Oparsetree in
+  let open Parsetree in
 
   let rec parse_core alias tvl core = match core.ptyp_desc with
     | Ptyp_any ->
@@ -430,7 +431,7 @@ let type_type_declaration kid crcm ns tdl =
        let tyl = List.map (parse_core alias tvl) ctl in
        ty_app (ts_tuple (List.length tyl)) tyl
     | Ptyp_constr (lid,ctl) ->
-       let idl = Longident.flatten lid.txt in
+       let idl = Longident.flatten_exn lid.txt in
        let tyl = List.map (parse_core alias tvl) ctl in
        let ts = match idl with
          | [s] when Sstr.mem s alias ->
@@ -537,7 +538,7 @@ let process_sig_type ~loc ?(ghost=false) kid crcm ns r tdl =
 (** Type val declarations *)
 
 let rec val_parse_core_type ns cty =
-  let open Oparsetree in
+  let open Parsetree in
   match cty.ptyp_desc with
   | Ptyp_arrow (lbl,ct1,ct2) ->
      let args, res = val_parse_core_type ns ct2 in
@@ -573,20 +574,20 @@ let process_val_spec kid crcm ns id cty vs =
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lghost vs) env lal in
        process_args args tyl env lal
-    | (Lquestion pid)::args, (ty,Oasttypes.Optional s)::tyl ->
+    | (Lquestion pid)::args, (ty,Asttypes.Optional s)::tyl ->
        check_report ~loc:pid.pid_loc (pid.pid_str = s)
          "parameter do not match with val type";
        let ty = ty_app ts_option [ty] in
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lquestion vs) env lal in
        process_args args tyl env lal
-    | (Lnamed pid)::args, (ty,Oasttypes.Labelled s)::tyl ->
+    | (Lnamed pid)::args, (ty,Asttypes.Labelled s)::tyl ->
        check_report ~loc:pid.pid_loc (pid.pid_str = s)
          "parameter do not match with val type";
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lnamed vs) env lal in
        process_args args tyl env lal
-    | (Lnone pid)::args, (ty,Oasttypes.Nolabel)::tyl ->
+    | (Lnone pid)::args, (ty,Asttypes.Nolabel)::tyl ->
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lnone vs) env lal in
        process_args args tyl env lal
@@ -637,10 +638,10 @@ let process_val_spec kid crcm ns id cty vs =
   let env, ret = match vs.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []
     | _, Tyapp (ts,tyl) when is_ts_tuple ts ->
-       let tyl = List.map (fun ty -> (ty,Oasttypes.Nolabel)) tyl in
+       let tyl = List.map (fun ty -> (ty,Asttypes.Nolabel)) tyl in
        process_args vs.sp_hd_ret tyl env []
     | _, _ ->
-       process_args vs.sp_hd_ret [(ret,Oasttypes.Nolabel)] env [] in
+       process_args vs.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
   mk_val_spec args ret pre post xpost wr cs vs.sp_diverge vs.sp_equiv
@@ -701,17 +702,17 @@ let process_axiom loc kid crcm ns a =
   mk_sig_item (Sig_axiom ax) loc
 
 let process_exception_sig loc ns te =
-  let ec = te.Oparsetree.ptyexn_constructor in
+  let ec = te.Parsetree.ptyexn_constructor in
   let id = Ident.set_loc (Ident.create ec.pext_name.txt) ec.pext_name.loc in
   let xs = match ec.pext_kind with
     | Pext_rebind lid ->
-       find_xs ~loc:lid.loc ns (Longident.flatten lid.txt)
+       find_xs ~loc:lid.loc ns (Longident.flatten_exn lid.txt)
     | Pext_decl (ca,None) ->
        let args = match ca with
          | Pcstr_tuple ctyl ->
             Exn_tuple (List.map (ty_of_core ns) ctyl)
          | Pcstr_record ldl ->
-            let get Oparsetree.{pld_name;pld_type; _} =
+            let get Parsetree.{pld_name;pld_type; _} =
               Ident.create ~loc:pld_name.loc pld_name.txt,
               ty_of_core ns pld_type in
             Exn_record (List.map get ldl) in
@@ -721,8 +722,8 @@ let process_exception_sig loc ns te =
                            supported" in
   let ec = extension_constructor id xs ec.pext_kind
              ec.pext_loc ec.pext_attributes in
-  let te = type_exception ec te.Oparsetree.ptyexn_loc
-             te.Oparsetree.ptyexn_attributes in
+  let te = type_exception ec te.Parsetree.ptyexn_loc
+             te.Parsetree.ptyexn_attributes in
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
@@ -757,13 +758,13 @@ and module_as_file ~loc penv muc nm =
       error_report ~loc ("no module with name " ^ nm ^ " or file with name " ^ file_nm)
 
 and process_open ~loc ?(ghost=false) penv muc od =
-  let qd     = Longident.flatten od.Oparsetree.popen_lid.txt in
-  let qd_loc = od.Oparsetree.popen_lid.loc in
+  let qd     = Longident.flatten_exn od.Parsetree.popen_expr.txt in
+  let qd_loc = od.Parsetree.popen_expr.loc in
   let hd     = List.hd qd in
   let muc    = if ns_exists_ns (get_top_import muc) hd then muc else
                  module_as_file ~loc:qd_loc penv muc hd in
   let od =
-    let open Oparsetree in
+    let open Parsetree in
     {opn_id = qd; opn_override = od.popen_override;
      opn_loc = od.popen_loc; opn_attrs = od.popen_attributes} in
   muc, mk_sig_item (Sig_open (od,ghost)) loc
@@ -778,14 +779,14 @@ and process_modtype penv muc umty = match umty.mdesc with
      muc, tmty
   | Mod_ident li ->
      (* module type MTB = *MTA*  module MA : *MTA* *)
-     let nm = Longident.flatten li.txt in
+     let nm = Longident.flatten_exn li.txt in
      let tmty = {mt_desc = Mod_ident nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      let ns = find_tns ~loc:li.loc (get_top_import muc) nm in
      add_ns_top ~export:true muc ns, tmty
   | Mod_alias li ->
      (* module MB = *MA* *)
-     let nm = Longident.flatten li.txt in
+     let nm = Longident.flatten_exn li.txt in
      let tmty = {mt_desc = Mod_alias nm; mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      let ns = find_ns ~loc:li.loc (get_top_import muc) nm in
@@ -801,7 +802,7 @@ and process_modtype penv muc umty = match umty.mdesc with
           let td = match tdl with
             | [td] -> td | _ -> assert false in
 
-          let q = Longident.flatten li.txt in
+          let q = Longident.flatten_exn li.txt in
           let ns = get_top_import muc in
           let ts = find_ts ~loc:li.loc ns q in
 
@@ -827,7 +828,7 @@ and process_modtype penv muc umty = match umty.mdesc with
             | None -> assert false (* should not happen *)
             | Some ty -> ty in
 
-          let q = Longident.flatten li.txt in
+          let q = Longident.flatten_exn li.txt in
           let ns = get_top_import muc in
           let ts = find_ts ~loc:li.loc ns q in
           let muc = muc_rm_ts muc q in
@@ -853,17 +854,17 @@ and process_modtype penv muc umty = match umty.mdesc with
      let tmty = {mt_desc = Mod_with (tmty2,List.rev cl); mt_loc = umty.mloc;
                  mt_attrs = umty.mattributes} in
      muc, tmty
-  | Mod_functor (nm,mto,mt) ->
-     let mty_arg = match mto with
-       | None -> not_supported ~loc:umty.mloc
+  | Mod_functor (mto, mt) ->
+     let nm, mty_arg = match mto with
+       | Unit -> not_supported ~loc:umty.mloc
                    "functor type must be provided"
-       | Some mt -> mt in
-     let muc = open_module muc nm.txt in
+       | Named ({txt; _}, mt) -> Option.value ~default:"_" txt, mt in
+     let muc = open_module muc nm in
      let muc, tmty_arg = process_modtype penv muc mty_arg in
      let muc = close_module_functor muc in
      let muc, tmty = process_modtype penv muc mt in
      let tmty =
-       {mt_desc = Mod_functor (Ident.create nm.txt, Some tmty_arg, tmty);
+       {mt_desc = Mod_functor (Ident.create nm, Some tmty_arg, tmty);
         mt_loc = umty.mloc; mt_attrs = umty.mattributes} in
      muc, tmty
   | Mod_typeof _ ->
@@ -873,7 +874,7 @@ and process_modtype penv muc umty = match umty.mdesc with
     (* TODO warning saying that extensions are not supported *)
 
 and process_mod penv loc m muc =
-  let nm = m.mdname.txt in
+  let nm = Option.value ~default:"_" m.mdname.txt in
   let muc = open_module muc nm in
   let muc, mty = process_modtype penv muc m.mdtype in
   let decl = { md_name = Ident.create nm; md_type = mty;
@@ -934,18 +935,21 @@ and type_sig_item penv muc sig_item =
   let muc, _ = process_sig_item penv muc sig_item in muc
 
 let () =
-  let open Location in
-  register_error_of_exn (function
+  Location_error.register_error_of_exn (function
       | PartialApplication ls ->
-         Some (errorf "Symbol %a cannot be partially applied" print_ls_nm ls)
+        Some (Location.raise_errorf
+                "Symbol %a cannot be partially applied" print_ls_nm ls)
       | SymbolNotFound sl ->
-         Some (errorf "Symbol %s not found" (String.concat "." sl))
+        Some (Location.raise_errorf
+                "Symbol %s not found" (String.concat "." sl))
       | EmptyRecord ->
-         Some (errorf "Record cannot be empty")
+         Some (Location.raise_errorf "Record cannot be empty")
       | BadRecordField ls ->
-         Some (errorf "The record field %a does not exist" print_ls_nm ls)
+        Some (Location.raise_errorf
+                "The record field %a does not exist" print_ls_nm ls)
       | DuplicateRecordField ls ->
-         Some (errorf "Duplicated record field %a" print_ls_nm ls)
+        Some (Location.raise_errorf
+                "Duplicated record field %a" print_ls_nm ls)
       | Circular m ->
-         Some (errorf "Circular open: %s" m)
+         Some (Location.raise_errorf "Circular open: %s" m)
       | _ -> None)

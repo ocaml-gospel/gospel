@@ -8,8 +8,9 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
-open Oparsetree
+open Parsetree
 open Uast
 open Uast_utils
 
@@ -25,7 +26,12 @@ let is_val_spec  = function | Sval _  -> true | _ -> false
 let is_func_spec = function | Sfunc_spec _ -> true | _ -> false
 
 let get_attr_content attr = match attr.attr_payload with
-  | PGospel s -> s, attr.attr_loc | _ -> assert false
+  | PStr
+      [{pstr_desc =
+          Pstr_eval
+            ({pexp_desc = Pexp_constant (Pconst_string (spec, _, _))},
+             _)}] -> spec, attr.attr_loc
+        | _ -> assert false
 
 let get_type_spec = function
   | Stype (x,_) -> x | _ -> assert false
@@ -44,10 +50,11 @@ let unsupported_gospel =
   let gospel_attribute _ at = if is_spec at then
     let loc = at.attr_loc in
     let msg = "Specification not supported" in
-    let fmt = !Location.formatter_for_warnings in
+    let fmt = Format.err_formatter in
     Format.fprintf fmt "@[%a@\n@{<warning>Warning:@} %s@]@."
-      Location.print_loc loc msg
-  in {Oast_iterator.default_iterator with attribute=gospel_attribute}
+      Location.print loc msg
+  in
+  {Ocaml_common.Ast_iterator.default_iterator with attribute=gospel_attribute}
 
 let uns_gospel = unsupported_gospel
 
@@ -56,13 +63,13 @@ exception Floating_not_allowed of Location.t
 exception Orphan_decl_spec of Location.t
 
 let () =
-  Location.register_error_of_exn (function
+  Location_error.register_error_of_exn (function
       | Syntax_error loc ->
-         Some (Location.errorf ~loc "syntax error")
+         Some (Location.raise_errorf ~loc "syntax error")
       | Floating_not_allowed loc ->
-         Some (Location.errorf ~loc "floating specification not allowed")
+         Some (Location.raise_errorf ~loc "floating specification not allowed")
       | Orphan_decl_spec loc ->
-         Some (Location.errorf ~loc "orphan specification")
+         Some (Location.raise_errorf ~loc "orphan specification")
       | _ -> None )
 
 (** Parses the attribute content using the specification
@@ -95,8 +102,8 @@ let ghost_spec attr =
   lb.lex_curr_p <- loc.loc_start;
   lb.lex_abs_pos <- loc.loc_start.pos_cnum;
   let sign =
-    try Oparser.interface Olexer.token lb with
-      Oparser.Error -> begin
+    try Parser.interface Lexer.token lb with
+      Parser.Error -> begin
         let loc_start,loc_end = lb.lex_start_p, lb.lex_curr_p in
         let loc = Location.{loc_start; loc_end; loc_ghost=false}  in
         raise (Syntax_error loc) end in
@@ -338,7 +345,10 @@ let rec signature_ sigs acc prev_floats = match sigs with
           [{sdesc=Sig_class_type c;sloc}]
        | Psig_extension (e,a) ->
           let attrs,specs = get_spec_attrs a in
-          {sdesc=Sig_extension (e,attrs);sloc} :: specs in
+          {sdesc=Sig_extension (e,attrs);sloc} :: specs
+       | Psig_typesubst _ | Psig_modsubst _ ->
+         assert false (* TODO(@pascutto) *)
+     in
      let all_specs = acc @ prev_specs @ current_specs in
      signature_ xs all_specs []
 
@@ -350,14 +360,18 @@ and module_type_desc m =
      Mod_ident id
   | Pmty_signature s ->
      Mod_signature (signature s)
-  | Pmty_functor (l,m1,m2) ->
-     Mod_functor (l, Option.map module_type m1, module_type m2)
+  | Pmty_functor (fp, mt) ->
+     Mod_functor (functor_parameter fp, module_type mt)
   | Pmty_with (m,c) ->
      Mod_with (module_type m, List.map with_constraint c)
   | Pmty_typeof m ->
      uns_gospel.module_expr uns_gospel m; Mod_typeof m
   | Pmty_extension e -> Mod_extension e
   | Pmty_alias a -> Mod_alias a
+
+and functor_parameter = function
+  | Unit -> Unit
+  | Named (s, m) -> Named (s, module_type m)
 
 and module_type m =
   uns_gospel.attributes uns_gospel m.pmty_attributes;
