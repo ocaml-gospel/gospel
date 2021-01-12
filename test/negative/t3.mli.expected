@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  function f (x:float): bool = x = 2 ]
+[@@@gospel {| function f (x:float): bool = x = 2 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ function f ... *)
-File "t3.mli", line 11, characters 33-34:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match float with integer

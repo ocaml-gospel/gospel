@@ -2,78 +2,81 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  axiom a1: true ]
-[@@@gospel  axiom a2: 1 = 0 ]
-[@@@gospel  function f1 (x:int) : int ]
-[@@@gospel  function f2 (x:int) : int = x ]
-[@@@gospel  function f (x:integer): bool = x = 2 ]
-[@@@gospel  function f (x:integer): bool = true ]
-[@@@gospel  function f (x:bool): bool = x ]
-[@@@gospel  predicate pred (x:bool) = x ]
+[@@@gospel {| axiom a1: true |}]
+[@@@gospel {| axiom a2: 1 = 0 |}]
+[@@@gospel {| function f1 (x:int) : int |}]
+[@@@gospel {| function f2 (x:int) : int = x |}]
+[@@@gospel {| function f (x:integer): bool = x = 2 |}]
+[@@@gospel {| function f (x:integer): bool = true |}]
+[@@@gospel {| function f (x:bool): bool = x |}]
+[@@@gospel {| predicate pred (x:bool) = x |}]
 [@@@gospel
-   function p (x:integer):integer = x
+  {| function p (x:integer):integer = x
   requires x = 1
   variant x
   ensures x = 2
   ensures x > 2
   ensures x > 1
-]
-[@@@gospel  function rec f (x:bool): bool = f x ]
-[@@@gospel  function rec f (x: bool) (y: int): bool = f x y ]
+|}]
+[@@@gospel {| function rec f (x:bool): bool = f x |}]
+[@@@gospel {| function rec f (x: bool) (y: int): bool = f x y |}]
 [@@@gospel
-   function g (a: int): integer =
-      if (f true a) then 1 else 2 ]
-[@@@gospel  function int_of_integer (x:integer): int ]
+  {| function g (a: int): integer =
+      if (f true a) then 1 else 2 |}]
+[@@@gospel {| function int_of_integer (x:integer): int |}]
 [@@@gospel
-   function h (a:int) (b:bool) (c:'a): bool =
+  {| function h (a:int) (b:bool) (c:'a): bool =
       if a = int_of_integer 2
       then f b (int_of_integer 3)
       else g (int_of_integer 4) = 5
- ]
+ |}]
 [@@@gospel
-   function h (a:int) (b:bool) (c:'a): bool =
+  {| function h (a:int) (b:bool) (c:'a): bool =
       if a = int_of_integer 2
       then f (pred b) (int_of_integer 3)
       else g (int_of_integer 4) = 5
- ]
-[@@@gospel  function h (b:bool): bool = pred b ]
-[@@@gospel  function h: bool = [@ athing]true ]
-[@@@gospel  function to_integer (i: int): integer ]
+ |}]
+[@@@gospel {| function h (b:bool): bool = pred b |}]
+[@@@gospel {| function h: bool = [@ athing]true |}]
+[@@@gospel {| function to_integer (i: int): integer |}]
 [@@@gospel
-   function i (a:int): int =
-      int_of_integer (to_integer a + 1) ]
+  {| function i (a:int): int =
+      int_of_integer (to_integer a + 1) |}]
 [@@@gospel
-   function i (a:int):int =
+  {| function i (a:int):int =
       int_of_integer (to_integer a + 1)
     requires to_integer a > 0
     ensures let old_a [@ athing] = to_integer (old a) in
-            to_integer a = old_a + 1]
+            to_integer a = old_a + 1|}]
 type 'a t1 =
-  | C of 'a * int [@@gospel
-                     function i (a:'a t1): int =
+  | C of 'a * int 
+[@@@gospel
+  {| function i (a:'a t1): int =
       match a with
       | C (_,y) -> y
-      ]
+      |}]
 type 'a t2 =
   | C2 of 'a 
   | C3 of bool 
-  | C4 of int * 'a [@@gospel  function gnr: 'a ][@@gospel
-                                                   function g (x y:'a) (i: int): 'a ]
-[@@gospel
-   function f (x: 'a t2): 'a =
+  | C4 of int * 'a 
+[@@@gospel {| function gnr: 'a |}]
+[@@@gospel {| function g (x y:'a) (i: int): 'a |}]
+[@@@gospel
+  {| function f (x: 'a t2): 'a =
     match x with
     | C2 x -> x        (* TODO it does not give the right result if x is replaced by true *)
     | C3 b -> gnr
-    | C4 (i,x) -> g x x i ]
-[@@gospel  axiom ax1: forall x y. y = f x ]
+    | C4 (i,x) -> g x x i |}]
+[@@@gospel {| axiom ax1: forall x y. y = f x |}]
 val f : int -> int -> int[@@gospel
-                            r = f x y
+                           {| r = f x y
     requires x > 0
     requires y + 2 < 0
-    ensures r = x + y ]
+    ensures r = x + y |}]
 type 'a t3 =
-  | A [@@gospel  function f (x: int) : int t3 = A ][@@gospel
-                                                      function integer_of_int (x:int) : integer ]
+  | A 
+[@@@gospel {| function f (x: int) : int t3 = A |}]
+[@@@gospel {| function integer_of_int (x:int) : integer |}]
 type t4 =
   | A 
   | B 
@@ -82,18 +85,19 @@ type 'a t5 = {
   y: 'a }
 type 'a t6 = {
   xx: 'a ;
-  yy: int }[@@gospel
-              function g (a: t4) (b: t4 t5) : t4 t6 =
+  yy: int }
+[@@@gospel
+  {| function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y = A} -> {xx=B;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- ]
-[@@gospel
-   function g (a: t4) (b: t4 t5) : t4 t6 =
+ |}]
+[@@@gospel
+  {| function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y} -> {xx=y;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- ]
+ |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -206,9 +210,9 @@ yy: int }
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module basic_functions_axioms.mli
+module basic_functions_axioms.mli.pp
 
-  Namespace: basic_functions_axioms.mli
+  Namespace: basic_functions_axioms.mli.pp
     Type symbols
       ('a) t1
       ('a) t2

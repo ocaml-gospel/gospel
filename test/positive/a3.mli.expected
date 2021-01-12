@@ -2,8 +2,8 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  type t3 = A2.t2 ]
-[@@@gospel  type t4 = A1.t ]
+[@@@gospel {| type t3 = A2.t2 |}]
+[@@@gospel {| type t4 = A1.t |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -19,9 +19,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module a3.mli
+module a3.mli.pp
 
-  Namespace: a3.mli
+  Namespace: a3.mli.pp
     Type symbols
        t3 [=t]
        t4 [=t]

@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  predicate pred (x:int) = x ]
+[@@@gospel {| predicate pred (x:int) = x |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ predicate pred ... *)
-File "t4.mli", line 11, characters 29-30:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match int with bool

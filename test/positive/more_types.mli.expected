@@ -3,19 +3,23 @@
 ********** Parsed file ********
 *******************************
 type t1
-type 'a t2 = t1[@@gospel  function f (x: t1): 'a t2 = x ]
-type 'c t3 = 'c t2[@@gospel  function f (x: int t3) : 'a t2 = x ]
+type 'a t2 = t1
+[@@@gospel {| function f (x: t1): 'a t2 = x |}]
+type 'c t3 = 'c t2
+[@@@gospel {| function f (x: int t3) : 'a t2 = x |}]
 type ('a, 'b) t4
-type 'a t5 = ('a, 'a) t4[@@gospel  function f (x: 'a t5): ('a,'a) t4 = x ]
-[@@gospel  function f (x: ('a,'a) t4): 'a t5 = x ]
+type 'a t5 = ('a, 'a) t4
+[@@@gospel {| function f (x: 'a t5): ('a,'a) t4 = x |}]
+[@@@gospel {| function f (x: ('a,'a) t4): 'a t5 = x |}]
 type 'a t6 = {
   x: int ;
   y: 'a }
-type ('a, 'b) t7 = 'a t6[@@gospel
-                           function f (x: 'a t6) : ('a,'b) t7 =
+type ('a, 'b) t7 = 'a t6
+[@@@gospel
+  {| function f (x: 'a t6) : ('a,'b) t7 =
   match x with
   | {x;y} -> {x;y}
-]
+|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -58,9 +62,9 @@ type ('a, 'b) t7 = 'a t6
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module more_types.mli
+module more_types.mli.pp
 
-  Namespace: more_types.mli
+  Namespace: more_types.mli.pp
     Type symbols
        t1
       ('a) t2 [=t1]

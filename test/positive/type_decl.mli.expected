@@ -193,9 +193,9 @@ and u =
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module type_decl.mli
+module type_decl.mli.pp
 
-  Namespace: type_decl.mli
+  Namespace: type_decl.mli.pp
     Type symbols
        t1
        t10

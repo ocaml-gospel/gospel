@@ -1,7 +1,13 @@
 let print_rule file =
   if Filename.extension file = ".mli" then
+    let pp_file = (Filename.chop_extension file) ^ ".mli.pp" in
     Printf.printf
-      {|
+      {|(rule
+ (target %s)
+ (action
+  (with-outputs-to %%{target}
+     (run gospel_pps %%{dep:%s}))))
+
 (rule
  (targets %s.output)
  (action
@@ -13,8 +19,9 @@ let print_rule file =
 (rule
  (alias runtest)
  (action (diff %%{dep:%s.expected} %%{dep:%s.output})))
+
 |}
-      file file file file
+      pp_file file file pp_file file file
 
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in

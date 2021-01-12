@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : y:int -> int -> int[@@gospel  r = f ~y y]
+val f : y:int -> int -> int[@@gospel {| r = f ~y y|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -12,5 +12,5 @@ val f : y:int -> int -> int[@@gospel  r = f ~y y]
 val f : y:int -> int -> int
 (*@ r = f ~y y
      *)
-File "t19.mli", line 12, characters 13-14:
+File "_none_", line 1:
 Error: Variable y is duplicated in pattern

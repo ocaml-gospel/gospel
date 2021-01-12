@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  function rec f (x: bool) (y: int): bool = f y x ]
+[@@@gospel {| function rec f (x: bool) (y: int): bool = f y x |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ function rec f ... *)
-File "t9.mli", line 2, characters 48-49:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match int with bool

@@ -2,31 +2,31 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  open Type_decl ]
-[@@@gospel  function f1 : integer ]
-[@@@gospel  function f2 : integer -> integer ]
-[@@@gospel  function f3 : integer t2 -> integer ]
-[@@@gospel  function f4 : 'a t2 -> integer ]
-[@@@gospel  function f5 : 'a t2 -> 'b ]
-[@@@gospel  function f6 : ('a,'b) t3 -> ('b,'a) t3 ]
-[@@@gospel  function h1 (x : integer): integer ]
-[@@@gospel  function h2 (x : integer) (y: integer): integer ]
-[@@@gospel  function h3 (x : t1) (y: integer t2): integer ]
-[@@@gospel  function h4 (x : (integer,'a) t3) (y: integer t2): integer ]
-[@@@gospel  predicate h5 (x : integer) ]
-[@@@gospel  predicate h6 (x : integer) (y: integer) ]
-[@@@gospel  predicate h7 (x : t1) (y: integer t2) ]
-[@@@gospel  predicate h8 (x : (integer,'a) t3) (y: integer t2) ]
-[@@@gospel  function (!!) (x:integer) : integer ]
-[@@@gospel  function (??) (x: 'a): 'a ]
-[@@@gospel  function (!?) (x: 'a) : 'a * 'b ]
-[@@@gospel  function h9 (x: 'a) : 'a * 'b ]
-[@@@gospel  function h10 (x: 'a) (y: 'b): 'a * 'b ]
-[@@@gospel  predicate h11 (x: 'a) (y: 'b) (z: 'c) ]
-[@@@gospel  function h12 (x: 'a) : 'b -> 'c ]
-[@@@gospel  function h13 (x: 'a * 'b) (y: 'b * 'a): 'a * 'b ]
-[@@@gospel  function h14 (x: 'a): test ]
-[@@@gospel  function h15 (x: test): integer ]
+[@@@gospel {| open Type_decl |}]
+[@@@gospel {| function f1 : integer |}]
+[@@@gospel {| function f2 : integer -> integer |}]
+[@@@gospel {| function f3 : integer t2 -> integer |}]
+[@@@gospel {| function f4 : 'a t2 -> integer |}]
+[@@@gospel {| function f5 : 'a t2 -> 'b |}]
+[@@@gospel {| function f6 : ('a,'b) t3 -> ('b,'a) t3 |}]
+[@@@gospel {| function h1 (x : integer): integer |}]
+[@@@gospel {| function h2 (x : integer) (y: integer): integer |}]
+[@@@gospel {| function h3 (x : t1) (y: integer t2): integer |}]
+[@@@gospel {| function h4 (x : (integer,'a) t3) (y: integer t2): integer |}]
+[@@@gospel {| predicate h5 (x : integer) |}]
+[@@@gospel {| predicate h6 (x : integer) (y: integer) |}]
+[@@@gospel {| predicate h7 (x : t1) (y: integer t2) |}]
+[@@@gospel {| predicate h8 (x : (integer,'a) t3) (y: integer t2) |}]
+[@@@gospel {| function (!!) (x:integer) : integer |}]
+[@@@gospel {| function (??) (x: 'a): 'a |}]
+[@@@gospel {| function (!?) (x: 'a) : 'a * 'b |}]
+[@@@gospel {| function h9 (x: 'a) : 'a * 'b |}]
+[@@@gospel {| function h10 (x: 'a) (y: 'b): 'a * 'b |}]
+[@@@gospel {| predicate h11 (x: 'a) (y: 'b) (z: 'c) |}]
+[@@@gospel {| function h12 (x: 'a) : 'b -> 'c |}]
+[@@@gospel {| function h13 (x: 'a * 'b) (y: 'b * 'a): 'a * 'b |}]
+[@@@gospel {| function h14 (x: 'a): test |}]
+[@@@gospel {| function h15 (x: test): integer |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -86,9 +86,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module abstract_functions.mli
+module abstract_functions.mli.pp
 
-  Namespace: abstract_functions.mli
+  Namespace: abstract_functions.mli.pp
     Type symbols
       
     Logic Symbols

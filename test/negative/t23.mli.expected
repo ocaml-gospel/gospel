@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y ]
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -12,5 +12,6 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y ]
 val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y
      *)
-File "t23.mli", line 12, characters 8-9:
-Error: Type checking error: too few parameters
+gospel: internal error, uncaught exception:
+        Gospel.Utils.Located(_, _)
+        

@@ -5,30 +5,33 @@
 module MA :
 sig
   type ta =
-    | C of int [@@gospel  function int_of_integer (x:integer): int ][@@gospel
-                                                                     function integer_of_int (x:int): integer ]
+    | C of int 
+  [@@@gospel {| function int_of_integer (x:integer): int |}]
+  [@@@gospel {| function integer_of_int (x:int): integer |}]
   module MB :
   sig
     [@@@gospel
-       function fb (x:integer) (y:integer): ta =
+      {| function fb (x:integer) (y:integer): ta =
           C (int_of_integer (x + y))
-     ]
-    [@@@gospel  function int_of_float (x:float): int ]
-    [@@@gospel  function float_of_int (x:int) : float ]
+     |}]
+    [@@@gospel {| function int_of_float (x:float): int |}]
+    [@@@gospel {| function float_of_int (x:int) : float |}]
     module MC :
     sig
       type tc = {
         x: int ;
-        y: float }[@@gospel  function fc (y: tc): ta = C y.x ][@@gospel
-                                                                 function fcc (a: ta): tc = match a with
-            C b -> {x=b;y=float_of_int b}]
+        y: float }
+      [@@@gospel {| function fc (y: tc): ta = C y.x |}]
+      [@@@gospel
+        {| function fcc (a: ta): tc = match a with
+            C b -> {x=b;y=float_of_int b}|}]
     end
     module MD :
     sig
       [@@@gospel
-         function td (a:ta) (b:MC.tc) : integer = match a with
+        {| function td (a:ta) (b:MC.tc) : integer = match a with
         | C c -> (integer_of_int c) + (integer_of_int b.MC.x)
-       ]
+       |}]
     end
   end
 end
@@ -36,16 +39,17 @@ module ME = MA
 module type MTF  =
   sig
     type ft
-    val f : ft -> ft[@@gospel  function ff (x:ft): ft ][@@gospel
-                                                          predicate fp1 (x:ft) ]
-    [@@gospel  predicate fp2 (x:ft) ]
+    val f : ft -> ft
+    [@@@gospel {| function ff (x:ft): ft |}]
+    [@@@gospel {| predicate fp1 (x:ft) |}]
+    [@@@gospel {| predicate fp2 (x:ft) |}]
   end
 module MF : MTF
 val default : MF.ft -> MF.ft[@@gospel
-                               x = default y
+                              {| x = default y
     requires MF.fp1 y
     ensures MF.fp2 x
- ]
+ |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -91,9 +95,9 @@ val default : MF.ft -> MF.ft
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module modules.mli
+module modules.mli.pp
 
-  Namespace: modules.mli
+  Namespace: modules.mli.pp
     Type symbols
       
     Logic Symbols

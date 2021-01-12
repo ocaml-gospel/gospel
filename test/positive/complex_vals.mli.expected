@@ -3,17 +3,17 @@
 ********** Parsed file ********
 *******************************
 val f : int -> int -> int[@@gospel
-                            r = f x y
+                           {| r = f x y
     requires x > 0
     requires y + 2 < 0
     requires x + 1 < 0
     ensures r = x + y
     ensures r > 2
-    ensures r = 3 ]
+    ensures r = 3 |}]
 exception X 
 exception Y of int 
 val f : int -> int -> int[@@gospel
-                            r = f x y
+                           {| r = f x y
     raises X -> x = 2
     raises Y i -> i = y + 2 -3 / x
     requires x > 0
@@ -21,7 +21,7 @@ val f : int -> int -> int[@@gospel
     requires x + 1 < 0
     ensures r = x + y
     ensures r > 2
-    ensures r = 3 ]
+    ensures r = 3 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -57,9 +57,9 @@ val f : int -> int -> int
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module complex_vals.mli
+module complex_vals.mli.pp
 
-  Namespace: complex_vals.mli
+  Namespace: complex_vals.mli.pp
     Type symbols
       
     Logic Symbols

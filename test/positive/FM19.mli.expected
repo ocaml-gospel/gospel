@@ -2,79 +2,80 @@
 *******************************
 ********** Parsed file ********
 *******************************
-type 'a t[@@gospel  mutable model view: 'a seq ]
+type 'a t[@@gospel {| mutable model view: 'a seq |}]
 val push : 'a -> 'a t -> unit[@@gospel
-                                push v q
+                               {| push v q
     modifies q
-    ensures  q.view = Seq.cons v (old q.view) ]
+    ensures  q.view = Seq.cons v (old q.view) |}]
 val pop : 'a t -> 'a[@@gospel
-                       v = pop q
+                      {| v = pop q
     requires q.view <> empty
     modifies q
-    ensures  old q.view = q.view ++ (Seq.cons v empty) ]
+    ensures  old q.view = q.view ++ (Seq.cons v empty) |}]
 val is_empty : 'a t -> bool[@@gospel
-                              b = is_empty q
-    ensures b <-> q.view = empty ]
+                             {| b = is_empty q
+    ensures b <-> q.view = empty |}]
 val create : unit -> 'a t[@@gospel
-                            q = create ()
-    ensures q.view = empty ]
+                           {| q = create ()
+    ensures q.view = empty |}]
 val in_place_concat : 'a t -> 'a t -> unit[@@gospel
-                                             in_place_concat q1 q2
+                                            {| in_place_concat q1 q2
     modifies q1, q2
     ensures  q1.view = empty
-    ensures  q2.view = old q1.view ++ old q2.view ]
+    ensures  q2.view = old q1.view ++ old q2.view |}]
 val in_place_destructive_concat : 'a t -> 'a t -> unit[@@gospel
-                                                         in_place_destructive_concat q1 q2
+                                                        {| in_place_destructive_concat q1 q2
     consumes q1  modifies q2
-    ensures  q2.view = old q1.view ++ old q2.view ]
+    ensures  q2.view = old q1.view ++ old q2.view |}]
 val nondestructive_concat : 'a t -> 'a t -> 'a t[@@gospel
-                                                   q3 = nondestructive_concat q1 q2
-    ensures q3.view = q1.view ++ q2.view ]
+                                                  {| q3 = nondestructive_concat q1 q2
+    ensures q3.view = q1.view ++ q2.view |}]
 val map : ('a -> 'b) -> 'a t -> 'b t[@@gospel
-                                       r = map f q
+                                      {| r = map f q
     ensures length r.view = length q.view
     ensures forall i. 0 <= i < length q.view ->
-                      r.view[i] = f q.view[i] ]
-[@@gospel  function power (x y: integer): integer ]
+                      r.view[i] = f q.view[i] |}]
+[@@@gospel {| function power (x y: integer): integer |}]
 val power_2_below : int -> int[@@gospel
-                                 r, [k: integer] = power_2_below n
+                                {| r, [k: integer] = power_2_below n
     requires n >= 1
-    ensures  r = power 2 k && r <= n < 2 * r ]
-type rand_state[@@gospel  mutable model internal: unit ]
+    ensures  r = power 2 k && r <= n < 2 * r |}]
+type rand_state[@@gospel {| mutable model internal: unit |}]
 val random_init : int -> rand_state
 val random_int : rand_state -> int -> int[@@gospel
-                                            n = random_int s m
-    requires m > 0  modifies s  ensures  0 <= n < m ]
-[@@gospel  open Set ][@@gospel  open Map ]
-type elem[@@gospel  type uf_instance ][@@gospel
-                                         mutable model dom: elem set ]
-[@@gospel  mutable model rep: elem -> elem ][@@gospel
-                                               mutable model internal: unit ]
-[@@gospel  invariant forall x. mem x dom -> mem (rep x) dom ][@@gospel
-                                                                invariant forall x. mem x dom -> rep (rep x) = rep x ]
+                                           {| n = random_int s m
+    requires m > 0  modifies s  ensures  0 <= n < m |}]
+[@@@gospel {| open Set |}]
+[@@@gospel {| open Map |}]
+type elem[@@gospel {| type uf_instance |}][@@gospel
+                                            {| mutable model dom: elem set |}]
+[@@gospel {| mutable model rep: elem -> elem |}][@@gospel
+                                                  {| mutable model internal: unit |}]
+[@@gospel {| invariant forall x. mem x dom -> mem (rep x) dom |}][@@gospel
+                                                                   {| invariant forall x. mem x dom -> rep (rep x) = rep x |}]
 val equiv : elem -> elem -> bool[@@gospel
-                                   b = equiv [uf: uf_instance] e1 e2
+                                  {| b = equiv [uf: uf_instance] e1 e2
     requires mem e1 uf.dom && mem e2 uf.dom
     modifies uf.internal
-    ensures  b <-> uf.rep e1 = uf.rep e2 ]
-[@@gospel  val create_instance: unit -> uf_instance ][@@gospel
-                                                        uf = create_instance ()
-    ensures uf.dom = {} ]
+    ensures  b <-> uf.rep e1 = uf.rep e2 |}]
+[@@@gospel {| val create_instance: unit -> uf_instance |}]
+[@@@gospel {| uf = create_instance ()
+    ensures uf.dom = {} |}]
 val make : unit -> elem[@@gospel
-                          e = make [uf: uf_instance] ()
+                         {| e = make [uf: uf_instance] ()
     modifies uf
     ensures  not (mem e (old uf.dom))
     ensures  uf.dom = union (old uf.dom) {:e:}
-    ensures  uf.rep = (old uf.rep)[e <- e] ]
+    ensures  uf.rep = (old uf.rep)[e <- e] |}]
 type type1
 type type2
-type tt[@@gospel  mutable model left:  type1 ][@@gospel
-                                                 mutable model right: type2 ]
+type tt[@@gospel {| mutable model left:  type1 |}][@@gospel
+                                                    {| mutable model right: type2 |}]
 val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)[@@gospel
-                                                         p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]
+                                                        {| p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]
     requires true (* P in the paper *)
     modifies p1, p2.left  consumes p3
-    ensures  true (* Q in the paper *) ]
+    ensures  true (* Q in the paper *) |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -220,9 +221,9 @@ val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module FM19.mli
+module FM19.mli.pp
 
-  Namespace: FM19.mli
+  Namespace: FM19.mli.pp
     Type symbols
        elem
        rand_state

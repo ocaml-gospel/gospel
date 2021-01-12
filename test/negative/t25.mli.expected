@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y z ]
+val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y z |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -12,5 +12,6 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y z ]
 val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y z
      *)
-File "t25.mli", line 12, characters 10-11:
-Error: Type checking error: parameter do not match with val type
+gospel: internal error, uncaught exception:
+        Gospel.Utils.Located(_, _)
+        

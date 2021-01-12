@@ -2,24 +2,24 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : int -> int -> int[@@gospel  r = f y x ]
-val f : y:int -> int -> int[@@gospel  r = f ~y x ]
-val f : ?y:int -> int -> int[@@gospel  r = f ?y x ]
-val f : y:int -> ?x:int -> int[@@gospel  r = f ~y ?x ]
-val f : ?y:int -> x:int -> int[@@gospel  r = f ?y ~x ]
-val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f x y z ]
-val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel  r = f ~x y z ]
-val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel  r = f ~x ~y z ]
+val f : int -> int -> int[@@gospel {| r = f y x |}]
+val f : y:int -> int -> int[@@gospel {| r = f ~y x |}]
+val f : ?y:int -> int -> int[@@gospel {| r = f ?y x |}]
+val f : y:int -> ?x:int -> int[@@gospel {| r = f ~y ?x |}]
+val f : ?y:int -> x:int -> int[@@gospel {| r = f ?y ~x |}]
+val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y z |}]
+val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f ~x y z |}]
+val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel {| r = f ~x ~y z |}]
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 r = f ~x [w:int] ~y z ]
+                                                {| r = f ~x [w:int] ~y z |}]
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 r = f ~x [w:int] ~y [p:integer] z ]
+                                                {| r = f ~x [w:int] ~y [p:integer] z |}]
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+                                                {| r,[a:'a] = f ~x [w:int] ~y [p:integer] z |}]
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+                                                {| [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z |}]
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+                                                {| [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -81,9 +81,9 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module vals.mli
+module vals.mli.pp
 
-  Namespace: vals.mli
+  Namespace: vals.mli.pp
     Type symbols
       
     Logic Symbols

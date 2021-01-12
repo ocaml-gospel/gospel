@@ -4,10 +4,11 @@
 *******************************
 type 'a t = {
   x: int ;
-  y: 'a }[@@gospel
-            function f (x: 'a t): int =
+  y: 'a }
+[@@@gospel
+  {| function f (x: 'a t): int =
     match x with
-    | {x=x;y=x} -> x ]
+    | {x=x;y=x} -> x |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -20,5 +21,5 @@ y: 'a }
   
 
 (*@ function f ... *)
-File "t37.mli", line 15, characters 6-15:
+File "_none_", line 1:
 Error: Variable x is duplicated in pattern

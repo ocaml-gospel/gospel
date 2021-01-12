@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  axiom a2: 1 = true ]
+[@@@gospel {| axiom a2: 1 = true |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)
-File "t2.mli", line 11, characters 14-15:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match integer with bool

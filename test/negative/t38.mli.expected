@@ -5,10 +5,11 @@
 type 'a t1 = {
   x: int ;
   y: 'a }
-type ('a, 'b) t2 = 'a t1[@@gospel
-                           function f (x: 'a t1): ('b,int) t2 =
+type ('a, 'b) t2 = 'a t1
+[@@@gospel
+  {| function f (x: 'a t1): ('b,int) t2 =
     match x with
-    | {x;y} -> {x;y} ]
+    | {x;y} -> {x;y} |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -24,5 +25,5 @@ type ('a, 'b) t2 = 'a t1
   
 
 (*@ function f ... *)
-File "t38.mli", line 16, characters 4-37:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match 'a t1 with 'b t1

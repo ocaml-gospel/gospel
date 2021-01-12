@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  function f (x : Test.t) : integer ]
+[@@@gospel {| function f (x : Test.t) : integer |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -14,9 +14,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module test1.mli
+module test1.mli.pp
 
-  Namespace: test1.mli
+  Namespace: test1.mli.pp
     Type symbols
       
     Logic Symbols

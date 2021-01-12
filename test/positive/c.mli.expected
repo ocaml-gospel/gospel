@@ -2,10 +2,11 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  open Ocamlstdlib ]
+[@@@gospel {| open Ocamlstdlib |}]
 open B
 type t4 = t3
-type t5 = int A.t2[@@gospel  function f5 (x: 'a A.t2) : A.t1 ]
+type t5 = int A.t2
+[@@@gospel {| function f5 (x: 'a A.t2) : A.t1 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -23,5 +24,6 @@ type t5 = int A.t2
   
 
 (*@ function f5 ... *)
-File "c.mli", line 2, characters 9-20:
-Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli
+gospel: internal error, uncaught exception:
+        Gospel.Utils.Located(_, _)
+        

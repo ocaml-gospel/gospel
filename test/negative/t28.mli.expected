@@ -3,9 +3,9 @@
 ********** Parsed file ********
 *******************************
 [@@@gospel
-   axiom ax: forall x: float list.
+  {| axiom ax: forall x: float list.
     match x with
-    | y :: ys -> y = 2 ]
+    | y :: ys -> y = 2 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -13,5 +13,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)
-File "t28.mli", line 13, characters 17-18:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match float with integer

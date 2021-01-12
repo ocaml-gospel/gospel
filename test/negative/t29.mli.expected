@@ -4,10 +4,10 @@
 *******************************
 exception E of float list 
 val f : 'a -> 'a[@@gospel
-                   x = f y
+                  {| x = f y
     raises E l -> match l with
                   | [] -> false
-                  | y :: ys -> y = 2 ]
+                  | y :: ys -> y = 2 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -20,5 +20,5 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-File "t29.mli", line 18, characters 31-32:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match float with integer
