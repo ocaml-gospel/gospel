@@ -27,3 +27,20 @@ Tentative table of contents:
        loop invariants
        contracts for local functions
        ghost code
+
+
+TODO
+-----
+
+syntax
+
+  - syntax for a default, empty contract
+
+      e.g. val f: int -> int [@@gospel]
+
+    which is not the same as no annotation at all (see below)
+
+semantics
+  - no contract (i.e. no attribute "gospel") means we say nothing about the
+    function (it may diverge, raise exceptions, etc.)
+
