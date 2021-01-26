@@ -137,6 +137,20 @@ module a3.mli
                   
                 Type Namespaces
                   
+              Namespace: List
+                Type symbols
+                  
+                Logic Symbols
+                  function length_2 (_:'a list) : integer
+                  function map (_:'a -> 'b) (_:'a list) : 'b list
+                  function nth (_:'a list) (_:integer) : 'a
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
               Namespace: Map
                 Type symbols
                   
@@ -189,7 +203,7 @@ module a3.mli
                   function get (_:'a seq) (_:integer) : 'a
                   function hd (_:'a seq) : 'a
                   function len (_:'a seq) : integer
-                  function map (_:'a -> 'b) (_:'a seq) : 'b seq
+                  function map_1 (_:'a -> 'b) (_:'a seq) : 'b seq
                   predicate mem_1 (_:'a seq) (_:'a)
                   function mixfix [<-]_1 (_:'a seq) (_:integer) (_:'a) : 'a 
                   seq

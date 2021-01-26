@@ -194,6 +194,16 @@ end
 (*@ function seq_of_list (l: 'a list): 'a seq *)
 (*@ coercion *)
 
+module List : sig
+
+  (*@ function nth (l: 'a list) (i: integer) : 'a = Seq.get l i *)
+
+  (*@ function length (l: 'a list) : integer = Seq.len l *)
+
+  (*@ function map (f: 'a -> 'b) (l: 'a list) : 'b list *)
+
+end
+
 (** Arrays *)
 
 type 'a array
