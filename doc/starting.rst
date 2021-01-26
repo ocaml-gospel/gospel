@@ -15,7 +15,7 @@ Foo bar.
        modifies q
        ensures  q.view = Seq.cons v (old q.view) *)
 
-GOSPEL type-checker
+Gospel type-checker
 ~~~~~~~~~~~~~~~~~~~
 
 .. todo::
@@ -27,7 +27,7 @@ Cameleer
 ~~~~~~~~
 
 Cameleer is a tool for the deductive verification for OCaml code. It takes as
-input an OCaml programm, annotated with GOSPEL specification, and translates it
+input an OCaml programm, annotated with Gospel specification, and translates it
 into an equivalent WhyML counterpart.
 
 .. todo::

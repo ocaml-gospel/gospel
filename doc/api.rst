@@ -1,3 +1,3 @@
-GOSPEL API
+Gospel API
 ==========
 
