@@ -19,10 +19,4 @@ Welcome to Gospel's documentation!
    language
    api
    genindex
-
-Indices and tables
-==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+   todos

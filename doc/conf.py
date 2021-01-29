@@ -24,9 +24,9 @@ copyright = '2020, VOCaL team'
 author = 'VOCaL team'
 
 # The short X.Y version
-version = ''
+version = 'dev'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = 'dev'
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
+    'sphinx.ext.autosectionlabel',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -71,6 +72,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
+# The default language to highlight source code in.
+highlight_language = 'ocaml'
 
 # -- Options for HTML output -------------------------------------------------
 
