@@ -78,6 +78,8 @@ Such a contract is composed of two parts:
      val eucl_division: int -> int -> int * int
      (*@ q, r = eucl_division x y *)
 
+   Here, it means that ``eucl_division`` terminates, does not raise
+   any exception, and does not have any visible side effect.
 
 .. rubric:: Docstrings
 
@@ -95,11 +97,11 @@ as follows::
 Preconditions
 ^^^^^^^^^^^^^
 
-Preconditions are properties that are expected to be verified *before* the
-function call. They are usually used to describe the expected inputs of the
-function, but may also relate to a global state.
+Preconditions are properties that are expected to be verified at function
+entry. They are used to describe requirements on the inputs of the
+function, but also possibly on a global state.
 
-They denoted using the keyword ``requires`` or ``checks``, followed by a
+They are denoted using the keyword ``requires`` or ``checks``, followed by a
 :token:`formula`:
 
 .. productionlist::
@@ -108,14 +110,17 @@ They denoted using the keyword ``requires`` or ``checks``, followed by a
 
 .. rubric:: ``requires``
 
-The ``requires`` clauses state the conditions for which the specified function
-has a well specified behaviour. They unlock the other informations provided by
-the specification (postconditions, exceptions, effects, etc.).
+The ``requires`` clauses state the conditions for which the specified
+function has a well specified behaviour.  Whenever a ``requires``
+precondition is violated during a call to the function, its behaviour
+becomes unspecified, and the call should be considered faulty.  Even
+if the call terminates, any other information provided by the contract
+(postconditions, exceptions, effects, etc.) cannot be assumed.
 
-In our previous example, the precondition :math:`y > 0` is required to ensure the
-correct behaviour of the function:
+In our example, the precondition :math:`y > 0` is required to
+ensure the correct behaviour of the function:
 
-.. code-block:: ocaml
+.. code-block::
    :emphasize-lines: 3
 
    val eucl_division: int -> int -> int * int
@@ -123,27 +128,22 @@ correct behaviour of the function:
        requires y > 0
        ... *)
 
-Whenever a ``requires`` precondition is violated during a call to the function,
-the behaviour of the function becomes unspecified, and the call should be
-considered faulty.
 
 .. rubric:: ``checks``
 
-Similarly to the ``requires`` clauses, ``checks`` preconditions should be
-verified in the state of the environment prior to the function call.
-
-However, unlike ``requires`` clauses, the behaviour of the function is specified
-in case such a precondition is violated, and the function must *fail* by raising
-an OCaml ``Invalid_argument`` exception immediately, and before modifying any
-existing state; the prestate is left strictly unchanged. In that case, the call
-is not considered faulty, but the caller is now in charge of handling the
-exception.
+Similarly to the ``requires`` clauses, ``checks`` preconditions should
+be met at function entry.  However, unlike ``requires`` clauses, the
+behaviour of the function is specified in case such a precondition is
+violated. In that case, the function must *fail* by raising an OCaml
+``Invalid_argument`` exception, without modifying any existing
+state. The call is not considered faulty, but the caller is now in
+charge of handling the exception.
 
 The same function contract, where ``requires`` is replaced with ``checks``,
 states that the function should raise ``Invalid_argument`` whenever :math:`y
 \leq 0`.
 
-.. code-block:: ocaml
+.. code-block::
    :emphasize-lines: 3
 
    val eucl_division: int -> int -> int * int
@@ -153,23 +153,22 @@ states that the function should raise ``Invalid_argument`` whenever :math:`y
 
 .. rubric:: Multiple preconditions
 
-Whenever multiple preconditions of the same kind are provided, they must be
-independently verified, in a conjunction, which means::
+Whenever multiple preconditions of the same kind are provided, they are
+verified as a conjunction, which means::
 
-  val ...: ...
   (*@ ...
        requires P
        requires Q *)
 
 is equivalent to::
 
-  val ...: ...
   (*@ ...
        requires P /\ Q *)
 
-However, splitting the specification of the prestate into smaller properties
-leads to better readability and maintainability and is generally encouraged.
+However, splitting the specification into several, smaller clauses
+leads to better readability and maintainability and is encouraged.
 
+.. todo:: what about requires+checks? does the order matter?
 
 .. index:: ensures
 
@@ -177,38 +176,35 @@ Postconditions
 ^^^^^^^^^^^^^^
 
 Postconditions are properties that are expected to be verified *after* a valid
-function call. They are mostly used to specify how the outputs of the function
-relate to its inputs, and how values where mutated, when applicable.
+function call. They are used to specify how the outputs of the function
+relate to its inputs, and how values were mutated, when applicable.
 
-They are denoted using the ``ensures``, followed by a :token:`formula`:
+Postconditions are denoted using the ``ensures`` keyword, followed by a
+:token:`formula`:
 
 .. productionlist::
   postcondition: "ensures" `formula`
 
-Of course, as discussed in the :ref:`previous section <Preconditions>`, the
-property expressed by the formula is expected to be verified after the function
-call only if the preconditions have been verified.
+As discussed in the :ref:`previous section <Preconditions>`, the
+property expressed by the formula is expected to be verified after the
+function call only if the preconditions were satisfied.
 
 .. note::
 
   When an exception is raised, the postconditions are **not** expected to be
-  verified, and the prestate must be left unchanged by the call, unless
-  specified otherwise in an :ref:`exceptional postcondition <Exceptional
-  postconditions>`.
+  verified. :ref:`Exceptional postconditions` must be used instead.
 
 .. rubric:: Multiple postconditions
 
 The handling of multiple postconditions is identical to preconditions; multiple
-postconditions can be merged with a conjunction::
+postconditions can be merged into a conjunction::
 
-  val ...: ...
   (*@ ...
        ensures P
        ensures Q *)
 
 is equivalent to::
 
-  val ...: ...
   (*@ ...
        ensures P /\ Q *)
 
@@ -225,42 +221,68 @@ Whenever a function can raise an exception as part of its expected behaviour,
 this exception must be listed, along with the properties that are verified in
 that case.
 
-Thses clauses are expressed with a ``raises`` keyword, followed by a list of
-:token:`cases <case>` associating each exception with its :token:`formula`
-exceptions to be matched, in a syntax similar to OCaml:
+These clauses are expressed with a ``raises`` keyword, followed by a
+list of :token:`cases <case>` associating each exception with its
+:token:`formula`, with a syntax similar to OCaml's pattern matching:
 
 .. productionlist::
-    exceptional_postcondition: "raises" `case` ("|" `case`)*
-    case: `pattern` "->" `formula`
+    exceptional_postcondition: "raises" `exn_case` ("|" `exn_case`)*
+    exn_case: `qualid` "->" `formula`
+      : | `qualid` `pattern` "->" `formula`
+      : | `qualid`
 
-Gospel expects ``raises`` clauses to perform an exhaustive patterm matching each
-exception's arguments. Similarly to OCaml's pattern matchings, when an exception
-is raised, the postcondition to be verified is the first one being matched in
-the list of the cases.
+Gospel expects each ``raises`` clause to perform an exhaustive pattern
+matching for each exception listed in this clause. Similarly to
+OCaml's pattern matching, when an exception is raised, the
+postcondition that is satisfied is the first one being matched in the
+list of the cases. For instance, the contract::
+
+  (*@ ...
+      raises Unix_error (ENAMETOOLONG, _, _) -> P
+           | Unix_error _                    -> Q *)
+
+states that only ``P`` holds whenever ``Unix_error`` is raised with
+argument ``ENAMETOOLONG``, and that only ``Q`` holds whenever
+``Unix_error`` is raised with a different argument.
 
 .. rubric:: Multiple exceptional postconditions
 
-When multiple such clauses are given, they are checked independently of each
-other, meaning that the raised exception is matched against each ``raises``'s
-case list, and each matching pattern's postcondition must be verified in
-conjunction.
+When multiple such clauses are given, they are checked independently
+of each other, meaning that the raised exception is matched against
+each ``raises``'s case list, and each matching postcondition must be
+verified in conjunction. For instance, the contract::
 
-.. todo:: Give an example here
+  (*@ ...
+     raises Error "foo" -> P | Error _ -> Q
+     raises Error x -> R *)
+
+implies that
+ - when ``Error "foo"`` is raised, both ``P`` and ``R`` hold, but not ``Q``;
+ - when ``Error`` is raised with with an argument different from
+   ``"foo"``, both ``Q`` and ``R`` hold, but not ``P``.
+
+.. index:: Out_of_memory
+.. index:: Stack_overflow
 
 .. rubric:: Exemptions
 
-Highly environment dependent exceptions are not expected to be listed, because
-they could be unexpectedly triggered depending on the specifics of the machine
-the code is executed on.
+Some exceptions are not expected to be listed, because they could be
+unexpectedly triggered depending on the specifics of the machine the
+code is executed on.  There are two such exceptions in Gospel:
+`Stack_overflow` and `Out_of_memory`.
 
-There are two such exceptions in OCaml: `Stack_overflow` and `Out_of_memory`.
-For convenience, these are always assumed to be possibly raised by any
-function, without an explicit statement needed. This is equivalent to adding a
+These exceptions are always assumed to be possibly raised by any
+function, without an explicit ``raises``. This is equivalent to adding a
 ``raises Out_of_memory | Stack_overflow -> true`` clause to every function
 contract.
 
-Of course, one may still override that behaviour by stating a property whenever
-these exceptions are raised, like any other exception.
+Of course, one may still override that behaviour by stating a property
+whenever these exceptions are raised, like any other exception.
+For instance, one may state that a function runs in constant stack
+space as follows::
+
+  (*@ ...
+      raises Stack_overflow -> false *)
 
 
 .. index:: equivalent
@@ -284,6 +306,9 @@ Effects
 ^^^^^^^
 
 .. todo:: do it
+
+.. todo:: when we have ensures+raises+modifies, the effect stated by
+          modifies applies for both ensures and raises
 
 ``modifies``...
 ``consumes``...
