@@ -14,6 +14,8 @@ exception E1 of int
 
 exception E2 of int * int
 
+exception E2pair of (int * int)
+
 exception E3 of int list
 
 exception E4 of int * int list
@@ -42,6 +44,13 @@ exception E10 of {x : int -> int -> float;
 val f : 'a -> 'a
 (*@ x = f y
     raises E1 x -> integer_of_int x = 1
+    raises E2 _ -> true
+    raises E2 (x, y) -> true
+    raises E2 (_, _) -> true
+    raises E2pair _ -> true
+    raises E2pair (x, y) -> true
+    raises E2pair (_, _) -> true
+    raises E2pair z -> true
     raises E3 l -> (match l with
                    | [] -> false
                    | y :: ys -> integer_of_int y = 2)
