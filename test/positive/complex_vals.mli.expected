@@ -105,11 +105,11 @@ module complex_vals.mli.pp
                 y_1:int):integer):integer):prop
                 ensures ((integer_of_int  r_1:int):integer > 2:integer):prop
                 ensures ((integer_of_int  r_1:int):integer = 3:integer):prop
-        raisesX  -> ((integer_of_int  x_1:int):integer = 2:integer):prop
         raisesY i:int -> ((integer_of_int 
-              i:int):integer = (((integer_of_int 
-              y_1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
-              x_1:int):integer):integer):integer):prop*)
+                         i:int):integer = (((integer_of_int 
+                         y_1:int):integer + 2:integer):integer - (3:integer / (integer_of_int 
+                         x_1:int):integer):integer):integer):prop
+        raisesX  -> ((integer_of_int  x_1:int):integer = 2:integer):prop*)
 
 
 *** OK ***

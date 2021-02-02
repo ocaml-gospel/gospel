@@ -606,13 +606,13 @@ let process_val_spec kid crcm ns id cty vs =
   let cs = List.map (fun t -> let dt = dterm kid crcm ns env t in
                               term env dt) vs.sp_consumes in
 
-  let process_xpost mxs (loc,exn) =
+  let process_xpost (loc, exn) =
     let merge_xpost t tl = match t, tl with
       | None, None -> Some []
       | None, Some tl -> Some tl
       | Some t, None -> Some [t]
       | Some t, Some tl -> Some (t::tl) in
-    let process mxs (q,pt) =
+    let process mxs (q, pt) =
       let xs = find_q_xs ns q in
       match pt with
       | None -> Mxs.update xs (merge_xpost None) mxs
@@ -633,9 +633,13 @@ let process_val_spec kid crcm ns id cty vs =
          let choose_snd _ _ vs = Some vs in
          let env = Mstr.union choose_snd env vars in
          let t = fmla kid crcm ns env t in
-         Mxs.update xs (merge_xpost (Some (p,t))) mxs in
-    List.fold_left process mxs exn in
-  let xpost = List.fold_left process_xpost Mxs.empty vs.sp_xpost in
+         Mxs.update xs (merge_xpost (Some (p,t))) mxs
+    in
+    List.fold_left process Mxs.empty exn |> Mxs.bindings
+  in
+  let xpost =
+    List.fold_left (fun acc xp -> process_xpost xp @ acc) [] vs.sp_xpost
+  in
 
   let env, ret = match vs.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []

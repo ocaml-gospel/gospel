@@ -26,7 +26,7 @@ exception E10 of {
 [@@@gospel {| function int_of_integer (x:integer): int |}]
 val f : 'a -> 'a[@@gospel
                   {| x = f y
-    raises E1 x -> integer_of_int x = 1
+    raises E1 x -> integer_of_int x = 1 | E1 _ -> false
     raises E2 _ -> true
     raises E2 (x, y) -> true
     raises E2 (_, _) -> true
@@ -165,31 +165,35 @@ module exceptions.mli.pp
     
     val f : 'a -> 'a
     (*@ x_2:'a = f y:'a
-        raisesE1 x_3:int -> ((integer_of_int 
-              x_3:int):integer = 1:integer):prop
-        raisesE2 _, _ -> true:prop
-              raisesE2 x_4:int, y_1:int -> true:prop
-              raisesE2 _ -> true:prop
-        raisesE2pair z:int * int -> true:prop
-              raisesE2pair _, _ -> true:prop
-              raisesE2pair x_5:int, y_2:int -> true:prop
-              raisesE2pair _ -> true:prop
-        raisesE3 l:int list -> (match l:int list with
-              | [] -> (False ):bool
-              | infix :: y_3:int ys:int list -> if ((integer_of_int 
-                                                y_3:int):integer = 2:
-                                                integer):prop then (True ):
-                                                bool else (False ):bool
-              end::bool = (True ):bool):prop
-        raisesE4 i:int, l_1:int list -> (match l_1:int list with
-              | [] -> (True ):bool
-              | infix :: y_4:int ys_1:int list -> if (y_4:int = i:int):prop then (True ):
-                                                  bool else (False ):
-                                                  bool
-              end::bool = (True ):bool):prop
         raisesE5 f_1:int -> int -> ((integer_of_int 
-              (apply  f_1:int -> int (int_of_integer  3:integer):int):int):
-              integer = 4:integer):prop*)
+                                   (apply 
+                                   f_1:int -> int (int_of_integer 
+                                   3:integer):int):int):integer = 4:integer):prop
+        raisesE3 l:int list -> (match l:int list with
+                               | [] -> (False ):bool
+                               | infix :: y_1:int ys:int list -> if ((integer_of_int 
+                                                                 y_1:int):
+                                                                 integer = 2:
+                                                                 integer):prop then (True ):
+                                                                 bool else (False ):
+                                                                 bool
+                               end::bool = (True ):bool):prop
+        raisesE4 i:int, l_1:int list -> (match l_1:int list with
+                                        | [] -> (True ):bool
+                                        | infix :: y_2:int ys_1:int list -> 
+                                        if (y_2:int = i:int):prop then (True ):
+                                        bool else (False ):bool
+                                        end::bool = (True ):bool):prop
+        raisesE2pair z:int * int -> true:prop
+        raisesE2pair _, _ -> true:prop
+        raisesE2pair x_3:int, y_3:int -> true:prop
+        raisesE2pair _ -> true:prop
+        raisesE2 _, _ -> true:prop
+        raisesE2 x_4:int, y_4:int -> true:prop
+        raisesE2 _ -> true:prop
+        raisesE1 _ -> false:prop
+              | E1 x_5:int -> ((integer_of_int 
+                              x_5:int):integer = 1:integer):prop*)
 
 
 *** OK ***
