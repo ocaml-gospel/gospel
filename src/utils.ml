@@ -25,32 +25,6 @@ let rec split_at_i i = function
       let xs', ys' = split_at_i (i-1) xs in
       x::xs', ys'
 
-module Option = struct
-  let some v = Some v
-
-  let value o ~default = match o with
-    | Some x -> x
-    | None -> default
-
-  let get = function
-    | Some x -> x
-    | None -> invalid_arg "option is None"
-
-  let map f = function
-    | Some v -> Some (f v)
-    | None -> None
-
-  let iter f = function
-    | Some v -> f v
-    | None -> ()
-
-  let is_some = function
-    | Some _ -> true
-    | None-> false
-
-  let fold ~none ~some = function Some v -> some v | None -> none
-end
-
 module Fmt = struct
   include Fmt
 
