@@ -9,8 +9,8 @@
 
 (library
  (public_name gospel)
- (flags :standard -w -9)
- (libraries fmt ppxlib)
+ (flags :standard -open Ocaml_shadow -w -9)
+ (libraries ocaml-compiler-libs.shadow fmt ppxlib ppxlib.ast)
  (modules_without_implementation uast))
 
 (rule
@@ -23,5 +23,6 @@
  (targets gospelstdlib.mli.pp)
  (deps stdlib/gospelstdlib.mli)
  (action
-  (with-stdout-to %{targets} (run gospel_pps %{deps} ))))
-
+  (with-stdout-to
+   %{targets}
+   (run gospel_pps %{deps}))))

@@ -12,6 +12,5 @@ val f : int -> int -> int[@@gospel {| r = f ~x y|}]
 val f : int -> int -> int
 (*@ r = f ~x y
      *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: parameter do not match with val type

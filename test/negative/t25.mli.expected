@@ -12,6 +12,5 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y z |}]
 val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y z
      *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: parameter do not match with val type

@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
 
 module Ident = Identifier.Ident
@@ -291,11 +292,13 @@ let print_xs f x =
 (* register exceptions *)
 
 let () =
-  Location.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | TypeMismatch (ty1,ty2) ->
-         Some (Location.errorf "Type mismatch between %a and %a" print_ty ty1 print_ty ty2)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Type mismatch between %a and %a" print_ty ty1 print_ty ty2
       | BadTypeArity (ts,i) ->
-         Some (Location.errorf
-                 "Type %a expects %d arguments as opposed to %d"
-                 print_ts_name ts (ts_arity ts) i)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Type %a expects %d arguments as opposed to %d"
+          print_ts_name ts (ts_arity ts) i
       | _ -> None)

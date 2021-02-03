@@ -1,4 +1,8 @@
+open Ppxlib
+
 module Option : sig
+  val some : 'a -> 'a option
+
   val value : 'a option -> default:'a -> 'a
   (** [value o ~default] is [v] if [o] is [Some v] and default otherwise. *)
 

@@ -935,21 +935,24 @@ and type_sig_item penv muc sig_item =
   let muc, _ = process_sig_item penv muc sig_item in muc
 
 let () =
-  Location_error.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | PartialApplication ls ->
-        Some (Location.raise_errorf
-                "Symbol %a cannot be partially applied" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Symbol %a cannot be partially applied" print_ls_nm ls
       | SymbolNotFound sl ->
-        Some (Location.raise_errorf
-                "Symbol %s not found" (String.concat "." sl))
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Symbol %s not found" (String.concat "." sl)
       | EmptyRecord ->
-         Some (Location.raise_errorf "Record cannot be empty")
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Record cannot be empty"
       | BadRecordField ls ->
-        Some (Location.raise_errorf
-                "The record field %a does not exist" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "The record field %a does not exist" print_ls_nm ls
       | DuplicateRecordField ls ->
-        Some (Location.raise_errorf
-                "Duplicated record field %a" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Duplicated record field %a" print_ls_nm ls
       | Circular m ->
-         Some (Location.raise_errorf "Circular open: %s" m)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Circular open: %s" m
       | _ -> None)

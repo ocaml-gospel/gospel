@@ -20,6 +20,5 @@ type t3 = (t1 * int t2)
   
 
 (*@ function f4 ... *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

@@ -24,6 +24,5 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: exception pattern doesn't match its type

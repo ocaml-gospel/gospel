@@ -63,13 +63,17 @@ exception Floating_not_allowed of Location.t
 exception Orphan_decl_spec of Location.t
 
 let () =
-  Location_error.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | Syntax_error loc ->
-         Some (Location.raise_errorf ~loc "syntax error")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "syntax error"
       | Floating_not_allowed loc ->
-         Some (Location.raise_errorf ~loc "floating specification not allowed")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "floating specification not allowed"
       | Orphan_decl_spec loc ->
-         Some (Location.raise_errorf ~loc "orphan specification")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "orphan specification"
       | _ -> None )
 
 (** Parses the attribute content using the specification

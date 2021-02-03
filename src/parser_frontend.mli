@@ -9,6 +9,8 @@
 (*                                                                  *)
 (********************************************************************)
 
+open Ppxlib
+
 exception Ocaml_syntax_error of Location.t
 
 (** [with_loadpath loadpath filename] finds the first directory [d] in

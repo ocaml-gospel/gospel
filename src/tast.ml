@@ -738,8 +738,9 @@ and print_modyle_type1 f x =
 (** register exceptions *)
 
 let () =
-  Location_error.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | DuplicatedArg vs ->
-        Some (Location.raise_errorf
-                ~loc:vs.vs_name.id_loc "Duplicated argument %a" print_vs vs)
+        Fmt.kstr (fun str -> Some (make ~loc:vs.vs_name.id_loc ~sub:[] str))
+          "Duplicated argument %a" print_vs vs
       | _ -> None)

@@ -24,6 +24,5 @@ type t5 = int A.t2
   
 
 (*@ function f5 ... *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

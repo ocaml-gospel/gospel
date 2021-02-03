@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
 open Identifier
 open Ttypes
@@ -503,21 +504,28 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
   | _ -> assert false
 
 let () =
-  let open Location in
+  let open Location.Error in
   register_error_of_exn (function
       | ConstructorExpected ls ->
-         Some (errorf "Symbol %a is not a constructor" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Symbol %a is not a constructor" print_ls_nm ls
       | FmlaExpected ->
-         Some (errorf "Formula was expected")
-      | TermExpected -> Some (errorf "Term was expected")
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Formula was expected"
+      | TermExpected ->
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Term was expected"
       | PatternBadType (dty1,dty2) ->
-         Some (errorf "This pattern has type %a but is expected to \
-                       have type %a" print_dty dty2 print_dty dty1)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "This pattern has type %a but is expected to have type %a"
+          print_dty dty2 print_dty dty1
       | BadType (dty1,dty2) ->
-         Some (errorf "Type mysmatch. Cannot match %a with %a"
-                 print_dty dty1 print_dty dty2)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Type mysmatch. Cannot match %a with %a" print_dty dty1 print_dty dty2
       | DuplicatedVar s ->
-         Some (errorf "Variable %s is duplicated in pattern" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Variable %s is duplicated in pattern" s
       | UnboundVar s ->
-         Some (errorf "Variable %s does not appear in pattern" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Variable %s does not appear in pattern" s
       | _ -> None)

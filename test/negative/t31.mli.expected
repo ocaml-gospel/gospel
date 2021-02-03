@@ -25,5 +25,6 @@ val f : 'a -> 'a
     with ...
      *)
 File "_none_", line 1:
-Error: This pattern has type int * int but is expected to have type (
-       @193@, @194@, @195@) tuple3
+Error: This pattern has type int * int but is expected to have type (@193@, @194@,
+                                                              @195@) 
+tuple3

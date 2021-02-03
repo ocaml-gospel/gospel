@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
+
 let rec split_at_f f = function
   | [] -> [], []
   | x::xs as l ->
@@ -24,6 +26,8 @@ let rec split_at_i i = function
       x::xs', ys'
 
 module Option = struct
+  let some v = Some v
+
   let value o ~default = match o with
     | Some x -> x
     | None -> default
@@ -101,12 +105,16 @@ let not_supported ?loc s =
   error ?loc (NotSupported s)
 
 let () =
-  let open Ppxlib.Location_error in
+  let open Location.Error in
   register_error_of_exn (function
       | Located (_loc, exn) ->
         of_exn exn
+        (*   TODO: wait for the next ppxlib release to get this
+         * |> Option.map (fun t -> Location_error.update_loc t loc) *)
       | TypeCheckingError s ->
-        Some (Location.raise_errorf "Type checking error: %s" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Type checking error: %s" s
       | NotSupported s ->
-        Some (Location.raise_errorf "Not supported: %s" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Not supported: %s" s
       | _ -> None)

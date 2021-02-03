@@ -18,6 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Symbol z not found

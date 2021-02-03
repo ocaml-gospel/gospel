@@ -434,20 +434,25 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
 (** register exceptions *)
 
 let () =
-  let open Location in
-  Location_error.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | TermExpected t ->
-         Some (raise_errorf "Term expected in %a" print_term t)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Term expected in %a" print_term t
       | FmlaExpected t ->
-         Some (raise_errorf "Formula expected in %a" print_term t)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Formula expected in %a" print_term t
       | BadArity (ls,i) ->
-         Some (raise_errorf "Function %a expects %d arguments as opposed to %d"
-                 print_ls_nm ls (List.length ls.ls_args) i)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Function %a expects %d arguments as opposed to %d"
+          print_ls_nm ls (List.length ls.ls_args) i
       | PredicateSymbolExpected ls ->
-         Some (raise_errorf "Not a predicate symbol: %a" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Not a predicate symbol: %a" print_ls_nm ls
       | FunctionSymbolExpected ls ->
-         Some (raise_errorf "Not a function symbol: %a" print_ls_nm ls)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Not a function symbol: %a" print_ls_nm ls
       | FreeVariables svs ->
-         Some (raise_errorf "Unbound variables: %a" (list ~sep:comma print_vs)
-                 (Svs.elements svs) )
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Unbound variables: %a" (list ~sep:comma print_vs) (Svs.elements svs)
       | _ -> None)

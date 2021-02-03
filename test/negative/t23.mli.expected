@@ -12,6 +12,5 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y |}]
 val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y
      *)
-gospel: internal error, uncaught exception:
-        Gospel.Utils.Located(_, _)
-        
+File "_none_", line 1:
+Error: Type checking error: too few parameters
