@@ -8,9 +8,11 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Oparsetree
+open Ppxlib
+open Parsetree
 open Uast
 open Opprintast
+open Utils.Fmt
 
 let const_hole s fmt _ = pp fmt "%s" s
 
@@ -33,8 +35,7 @@ let invariant fmt _ = pp fmt "@[INVARIANT ... @]"
 
 let list_keyword s fmt x = match x with
   | [] -> ()
-  | _ -> pp fmt "%a@\n"
-           (list ~sep:"@\n" (const_hole s)) x
+  | _ -> pp fmt "%a@\n" (list ~sep:newline (const_hole s)) x
 
 let type_spec f ts =
   let ephemeral f e =
@@ -54,10 +55,10 @@ let val_spec fmt vspec =
      let diverge fmt x = if x then pp fmt "diverges@\n" else () in
      let print_content fmt s =
        pp fmt "@[@[<h>%a%s %a %a@]@\n%a%a%a%a%a%a%a%a%a@]"
-         (list ~sep:"," labelled_arg) s.sp_hd_ret
+         (list ~sep:comma labelled_arg) s.sp_hd_ret
          (if s.sp_hd_ret = [] then "" else " =")
          Preid.pp s.sp_hd_nm
-         (list ~sep:" " labelled_arg) s.sp_hd_args
+         (list ~sep:sp labelled_arg) s.sp_hd_args
          (list_keyword "requires ...") s.sp_pre
          (list_keyword "ensures ...") s.sp_post
          (list_keyword "with ...") s.sp_xpost
@@ -107,7 +108,7 @@ let s_type_declaration f x =
     | Ptype_variant xs ->
       let variants fmt xs =
         if xs = [] then pp fmt " |" else
-          pp fmt "@\n%a" (list ~sep:"@\n" constructor_declaration) xs
+          pp fmt "@\n%a" (list ~sep:newline constructor_declaration) xs
       in pp f "%t%t%a" intro priv variants xs
     | Ptype_abstract -> ()
     | Ptype_record l ->
@@ -144,7 +145,7 @@ let s_type_declaration_rec_flag f (rf,l) =
   | [x] -> type_decl "type" rf f x
   | x :: xs -> pp f "@[<v>%a@,%a@]"
                  (type_decl "type" rf) x
-                 (list ~sep:"@," (type_decl "and" Oasttypes.Recursive)) xs
+                 (list (type_decl "and" Asttypes.Recursive)) xs
 
 let function_ f x =
   let keyword = match x.fun_type with
@@ -180,7 +181,7 @@ let rec s_signature_item f x=
   let print_open f od =
       pp f "@[<hov2>open%s@ %a@]%a"
         (override od.popen_override)
-        longident_loc od.popen_lid
+        longident_loc od.popen_expr
         (item_attributes reset_ctxt) od.popen_attributes in
   match x.sdesc with
   | Sig_type (rf, l) ->
@@ -195,7 +196,7 @@ let rec s_signature_item f x=
         pp f "@[<2>%s %a%a%s@;:@;%a@]%a" kwd
           virtual_flag x.pci_virt
           (class_params_def reset_ctxt) ls txt
-          (class_type reset_ctxt) x.pci_expr
+          class_type x.pci_expr
           (item_attributes reset_ctxt) x.pci_attributes
       in begin
         match l with
@@ -204,22 +205,23 @@ let rec s_signature_item f x=
         | x :: xs ->
             pp f "@[<v>%a@,%a@]"
               (class_description "class") x
-              (list ~sep:"@," (class_description "and")) xs
+              (list (class_description "and")) xs
       end
   | Sig_module ({mdtype={mdesc=Mod_alias alias;
                             mattributes=[]; _};_} as pmd) ->
-      pp f "@[<hov>module@ %s@ =@ %a@]%a" pmd.mdname.txt
-        longident_loc alias
-        (item_attributes reset_ctxt) pmd.mdattributes
+    pp f "@[<hov>module@ %s@ =@ %a@]%a"
+      (match pmd.mdname.txt with None -> "_" | Some s -> s)
+      longident_loc alias
+      (item_attributes reset_ctxt) pmd.mdattributes
   | Sig_module pmd ->
-      pp f "@[<hov>module@ %s@ :@ %a@]%a"
-        pmd.mdname.txt
-        s_module_type pmd.mdtype
-        (item_attributes reset_ctxt) pmd.mdattributes
+    pp f "@[<hov>module@ %s@ :@ %a@]%a"
+      (match pmd.mdname.txt with None -> "_" | Some s -> s)
+      s_module_type pmd.mdtype
+      (item_attributes reset_ctxt) pmd.mdattributes
   | Sig_open od -> print_open f od
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a"
-        (module_type reset_ctxt) incl.pincl_mod
+        module_type incl.pincl_mod
         (item_attributes reset_ctxt) incl.pincl_attributes
   | Sig_modtype {mtdname=s; mtdtype=md; mtdattributes=attrs} ->
       pp f "@[<hov2>module@ type@ %s%a@]%a"
@@ -233,21 +235,23 @@ let rec s_signature_item f x=
         (item_attributes reset_ctxt) attrs
   | Sig_class_type (l) -> class_type_declaration_list reset_ctxt f l
   | Sig_recmodule decls ->
-      let rec  string_x_module_type_list f ?(first=true) l =
-        match l with
-        | [] -> () ;
-        | pmd :: tl ->
-            if not first then
-              pp f "@ @[<hov2>and@ %s:@ %a@]%a" pmd.mdname.txt
-                s_module_type1 pmd.mdtype
-                (item_attributes reset_ctxt) pmd.mdattributes
-            else
-              pp f "@[<hov2>module@ rec@ %s:@ %a@]%a" pmd.mdname.txt
-                s_module_type1 pmd.mdtype
-                (item_attributes reset_ctxt) pmd.mdattributes;
-            string_x_module_type_list f ~first:false tl
-      in
-      string_x_module_type_list f decls
+    let rec string_x_module_type_list f ?(first=true) l =
+      match l with
+      | [] -> () ;
+      | pmd :: tl ->
+        if not first then
+          pp f "@ @[<hov2>and@ %s:@ %a@]%a"
+            (match pmd.mdname.txt with None -> "_" | Some s -> s)
+            s_module_type1 pmd.mdtype
+            (item_attributes reset_ctxt) pmd.mdattributes
+        else
+          pp f "@[<hov2>module@ rec@ %s:@ %a@]%a"
+            (match pmd.mdname.txt with None -> "_" | Some s -> s)
+            s_module_type1 pmd.mdtype
+            (item_attributes reset_ctxt) pmd.mdattributes;
+        string_x_module_type_list f ~first:false tl
+    in
+    string_x_module_type_list f decls
   | Sig_attribute a -> floating_attribute reset_ctxt f a
   | Sig_extension(e, a) ->
       item_extension reset_ctxt f e;
@@ -260,7 +264,7 @@ let rec s_signature_item f x=
   | Sig_ghost_val vd -> pp f "@[%a@]" (spec s_val_description) vd
   | Sig_ghost_open od -> pp f "@[%a@]" (spec print_open) od
 
-and s_signature f x = list ~sep:"@\n@\n" s_signature_item f x
+and s_signature f x = list ~sep:(newline ++ newline) s_signature_item f x
 
 and s_module_type f x =
   if x.mattributes <> [] then begin
@@ -268,35 +272,32 @@ and s_module_type f x =
       (attributes reset_ctxt) x.mattributes
   end else
     match x.mdesc with
-    | Mod_functor (_, None, mt2) ->
-        pp f "@[<hov2>functor () ->@ %a@]" s_module_type mt2
-    | Mod_functor (s, Some mt1, mt2) ->
-        if s.txt = "_" then
-          pp f "@[<hov2>%a@ ->@ %a@]"
-            s_module_type1 mt1 s_module_type mt2
-        else
-          pp f "@[<hov2>functor@ (%s@ :@ %a)@ ->@ %a@]" s.txt
-            s_module_type mt1 s_module_type mt2
+    | Mod_functor (Unit, me) ->
+      pp f "functor ()@;->@;%a" s_module_type me
+    | Mod_functor (Named (s, mt), me) ->
+      pp f "functor@ (%s@ :@ %a)@;->@;%a"
+        (match s.txt with None -> "_" | Some s -> s)
+        s_module_type mt s_module_type me
     | Mod_with (mt, []) -> s_module_type f mt
     | Mod_with (mt, l) ->
         let with_constraint f = function
           | Wtype (li, ({tparams= ls ;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a =@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
+                (list core_type ~sep:comma ~first:rparens ~last:lparens)
                 ls longident_loc li s_type_declaration td
           | Wmodule (li, li2) ->
               pp f "module %a =@ %a" longident_loc li longident_loc li2;
           | Wtypesubst (li, ({tparams=ls;_} as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a :=@ %a"
-                (list core_type ~sep:"," ~first:"(" ~last:")")
+                (list core_type ~sep:comma ~first:lparens ~last:rparens)
                 ls longident_loc li
                 s_type_declaration td
           | Wmodsubst (li, li2) ->
              pp f "module %a :=@ %a" longident_loc li longident_loc li2 in
         pp f "@[<hov2>%a@ with@ %a@]"
-          s_module_type1 mt (list with_constraint ~sep:"@ and@ ") l
+          s_module_type1 mt (list with_constraint ~sep:(any " and@ ")) l
     | _ -> s_module_type1 f x
 
 and s_module_type1 f x =
@@ -310,6 +311,6 @@ and s_module_type1 f x =
         pp f "@[<hv0>@[<hv2>sig@ %a@]@ end@]" (* "@[<hov>sig@ %a@ end@]" *)
           (list s_signature_item) s (* FIXME wrong indentation*)
     | Mod_typeof me ->
-        pp f "@[<hov2>module@ type@ of@ %a@]" (module_expr reset_ctxt) me
+        pp f "@[<hov2>module@ type@ of@ %a@]" module_expr me
     | Mod_extension e -> extension reset_ctxt f e
     | _ -> paren true s_module_type f x

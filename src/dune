@@ -1,20 +1,28 @@
 (ocamllex
- (modules olexer ulexer))
+ (modules ulexer))
 
 (menhir
- (modules oparser uparser)
+ (modules uparser)
  (flags
   ("--unused-token" "GREATERRBRACKET" "--unused-token" "COMMENT"
     "--unused-token" "DOCSTRING" "--unused-token" "EOL")))
 
 (library
- (name gospel)
  (public_name gospel)
- (flags :standard -w -9 -linkall)
- (modules_without_implementation oasttypes oparsetree uast))
+ (flags :standard -open Ocaml_shadow -w -9)
+ (libraries ocaml-compiler-libs.shadow fmt ppxlib ppxlib.ast)
+ (modules_without_implementation uast))
 
 (rule
  (targets gospelstdlib.ml)
- (deps stdlib/gospelstdlib.mli)
+ (deps gospelstdlib.mli.pp)
  (action
   (run stdlib/file_to_string.exe %{deps} %{targets})))
+
+(rule
+ (targets gospelstdlib.mli.pp)
+ (deps stdlib/gospelstdlib.mli)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run gospel_pps %{deps}))))

@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
 open Identifier
 open Ttypes
@@ -359,7 +360,7 @@ let wrap_up_muc muc =
 
 (** Pretty printing *)
 
-open Opprintast
+open Utils.Fmt
 
 let rec tree_ns f fmt ns =
   Mstr.iter (fun s ns ->
@@ -404,8 +405,9 @@ let print_file fmt {fl_nm;fl_sigs;fl_export} =
     print_signature fl_sigs
 
 let () =
-  let open Location in
+  let open Location.Error in
   register_error_of_exn (function
       | TypeNameClash s ->
-         Some (errorf "Multiple definitions of type %s" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Multiple definitions of type %s" s
       | _ -> None)

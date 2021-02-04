@@ -9,6 +9,7 @@
 (*                                                                  *)
 (********************************************************************)
 
+open Ppxlib
 open Ttypes
 open Tterm
 open Utils
@@ -160,14 +161,17 @@ let print_coercions fmt crcmap =
 (* register exceptions *)
 
 let () =
-  let open Location in
+  let open Location.Error in
   register_error_of_exn (function
       | NotACoercion ls ->
-         Some (errorf "Function %s cannot be used as a coercion"
-            ls.ls_name.id_str)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Function %s cannot be used as a coercion"
+          ls.ls_name.id_str
       | CoercionCycle crc ->
-         Some (errorf "This coercion introduces a cycle;@ %a"
-          already_a_coercion crc)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "This coercion introduces a cycle;@ %a"
+          already_a_coercion crc
       | CoercionAlreadyDefined crc ->
-         Some (errorf "%a" already_a_coercion crc )
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "%a" already_a_coercion crc
       | _ -> None)

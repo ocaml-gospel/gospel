@@ -3,7 +3,7 @@
 ********** Parsed file ********
 *******************************
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
-                                                 [b:integer],[a:'a] = f ~x [w:int] ~y [p:integer] z ]
+                                                {| [b:integer],[a:'a] = f ~x [w:int] ~y [p:integer] z |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -11,7 +11,7 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
 (*@ open Gospelstdlib *)
 
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
-(*@ [b : TY],[a : TY] = f ~x [w : TY] ~y [p : TY] z
+(*@ [b : TY], [a : TY] = f ~x [w : TY] ~y [p : TY] z
      *)
-File "t27.mli", line 12, characters 25-26:
+File "_none_", line 1:
 Error: Type checking error: too few parameters

@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 {
+  open Ppxlib
   open Lexing
   open Uparser
 
@@ -19,17 +20,17 @@
   exception Error of error * Location.t
 
   let prepare_error loc = function
-    | IllegalCharacter c -> Location.errorf ~loc "illegal character %c" c
-    | UnterminatedComment -> Location.errorf ~loc "unterminated comment"
+    | IllegalCharacter c ->
+      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
+        "illegal character %c" c
+    | UnterminatedComment ->
+      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
+        "unterminated comment"
 
   let () =
-    Location.register_error_of_exn
-      (function
-       | Error (err, loc) ->
-          Some (prepare_error loc err)
-       | _ ->
-          None
-      )
+    Location.Error.register_error_of_exn (function
+       | Error (err, loc) -> prepare_error loc err
+       | _ -> None)
 
   (* let () = Exn_printer.register (fun fmt e -> match e with
    *   | IllegalCharacter c -> fprintf fmt "illegal character %c" c
@@ -232,7 +233,7 @@ rule token = parse
   | eof
       { EOF }
   | _ as c
-      { raise (Error (IllegalCharacter c,Location.curr lexbuf)) }
+      { raise (Error (IllegalCharacter c, Location.of_lexbuf lexbuf)) }
 
 and comment = parse
   | "*)"
@@ -242,7 +243,7 @@ and comment = parse
   | newline
       { newline lexbuf; comment lexbuf }
   | eof
-      { raise (Error (UnterminatedComment, Location.curr lexbuf)) }
+      { raise (Error (UnterminatedComment, Location.of_lexbuf lexbuf)) }
   | _
       { comment lexbuf }
 

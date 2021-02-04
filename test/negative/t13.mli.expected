@@ -2,14 +2,14 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  function int_of_float (x:float): int ]
-[@@@gospel  function to_float (i: integer): float ]
+[@@@gospel {| function int_of_float (x:float): int |}]
+[@@@gospel {| function to_float (i: integer): float |}]
 [@@@gospel
-   function i (a:float):float =
+  {| function i (a:float):float =
       to_float (int_of_float a + 1)
     requires int_of_float a > 0
     ensures let old_a [@ athing] = int_of_float (old a) in
-            a = old_a + 1]
+            a = old_a + 1|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -24,5 +24,5 @@
     requires ...
     ensures ...
      *)
-File "t13.mli", line 18, characters 12-13:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match float with integer

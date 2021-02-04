@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
+
 (** Pre-identifiers: these are not unique identifier; they come out of the
     parser and are used in the untyped AST. *)
 module Preid : sig

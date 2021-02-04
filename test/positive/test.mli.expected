@@ -15,9 +15,9 @@ type t
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module test.mli
+module test.mli.pp
 
-  Namespace: test.mli
+  Namespace: test.mli.pp
     Type symbols
        t
       
@@ -33,7 +33,7 @@ module test.mli
     (*@ open Gospelstdlib *)
     
     type t
-    
+         
 
 
 *** OK ***

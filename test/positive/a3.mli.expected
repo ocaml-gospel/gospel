@@ -2,8 +2,8 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel  type t3 = A2.t2 ]
-[@@@gospel  type t4 = A1.t ]
+[@@@gospel {| type t3 = A2.t2 |}]
+[@@@gospel {| type t4 = A1.t |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -19,9 +19,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module a3.mli
+module a3.mli.pp
 
-  Namespace: a3.mli
+  Namespace: a3.mli.pp
     Type symbols
        t3 [=t]
        t4 [=t]
@@ -42,10 +42,10 @@ module a3.mli
         Namespaces
           Namespace: Gospelstdlib
             Type symbols
-              'a array
+              ('a) array
                int
-              'a ref
-              'a seq
+              ('a) ref
+              ('a) seq
               
             Logic Symbols
               function abs (_:integer) : integer
@@ -106,8 +106,8 @@ module a3.mli
                   
                 Logic Symbols
                   predicate permut_all (_:'a array) (_:'a array)
-                  predicate permut_sub (_:'a array) (_:'a array) (_:integer) (_:
-                  integer)
+                  predicate permut_sub (_:'a array) (_:'a array) (_:integer)
+                                       (_:integer)
                   
                 Exception Symbols
                   
@@ -117,7 +117,7 @@ module a3.mli
                   
               Namespace: Bag
                 Type symbols
-                  'a bag
+                  ('a) bag
                   
                 Logic Symbols
                   function add (_:'a) (_:'a bag) : 'a bag
@@ -197,8 +197,7 @@ module a3.mli
                   function cons (_:'a) (_:'a seq) : 'a seq
                   function create (_:integer) (_:integer -> 'a) : 'a seq
                   predicate distinct (_:'a seq)
-                  function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b 
-                  seq) : 'a
+                  function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b seq) : 'a
                   function fold_right (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
                   function get (_:'a seq) (_:integer) : 'a
                   function hd (_:'a seq) : 'a
@@ -225,8 +224,8 @@ module a3.mli
                 Logic Symbols
                   function occ (_:'a seq) (_:'a) (_:integer) (_:integer) : 
                   integer
-                  predicate permut (_:'a seq) (_:'a seq) (_:integer) (_:
-                  integer)
+                  predicate permut (_:'a seq) (_:'a seq) (_:integer)
+                                   (_:integer)
                   predicate permut_all_1 (_:'a seq) (_:'a seq)
                   
                 Exception Symbols
@@ -237,7 +236,7 @@ module a3.mli
                   
               Namespace: Set
                 Type symbols
-                  'a set
+                  ('a) set
                   
                 Logic Symbols
                   predicate mem_2 (_:'a) (_:'a set)
@@ -283,12 +282,12 @@ module a3.mli
     (*@ use A2 *)
     
     (*@ type t3 = t
-     *)
+              *)
     
     (*@ use A1 *)
     
     (*@ type t4 = t
-     *)
+              *)
 
 
 *** OK ***

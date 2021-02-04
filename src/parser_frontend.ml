@@ -8,14 +8,17 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Oparser
+open Ppxlib
+open Parser
 
 exception Ocaml_syntax_error of Location.t
 
-let () = Location.register_error_of_exn (function
-             | Ocaml_syntax_error loc ->
-                Some (Location.errorf ~loc "OCaml syntax error")
-             | _ -> None )
+let () =
+  let open Location_error in
+  register_error_of_exn (function
+      | Ocaml_syntax_error loc ->
+         Some (make ~loc ~sub:[] "OCaml syntax error")
+      | _ -> None )
 
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
@@ -35,7 +38,7 @@ let with_loadpath load_path file =
   else raise Not_found
 
 let parse_ocaml_lb lb =
-  try interface Olexer.token lb with
+  try interface Lexer.token lb with
     Error -> begin
       let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
       let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
@@ -51,14 +54,17 @@ let parse_ocaml file =
   Location.init lb file;
   parse_ocaml_lb lb
 
+module B = Ast_builder.Make(struct
+    let loc = Location.none
+  end)
+
 let default_open =
   let open Uast in
-  let open Oparsetree in
   let od nm =
-    let id = Location.{txt = Longident.Lident nm; loc = none} in
-    let od = {popen_lid = id; popen_override = Fresh;
-              popen_loc = Location.none; popen_attributes = []} in
-    Sig_ghost_open od in
+    let id = Location.{txt = lident nm; loc = none} in
+    let od = B.open_infos ~expr:id ~override:Fresh in
+    Sig_ghost_open od
+  in
   {sdesc = od gospelstdlib; sloc = Location.none}
 
 (** Parse the attributes as GOSPEL specification. *)

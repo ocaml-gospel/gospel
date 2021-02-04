@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
+
 let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr
 
 let pp_attrs = Format.pp_print_list pp_attr
@@ -42,7 +44,7 @@ module Ident = struct
     let current s =
       let x =
         Hashtbl.find_opt current s
-        |> Utils.Option.fold ~none:0 ~some:succ
+        |> Option.fold ~none:0 ~some:succ
       in
       Hashtbl.replace current s x; x
     in

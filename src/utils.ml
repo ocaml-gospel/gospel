@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
+
 let rec split_at_f f = function
   | [] -> [], []
   | x::xs as l ->
@@ -23,55 +25,36 @@ let rec split_at_i i = function
       let xs', ys' = split_at_i (i-1) xs in
       x::xs', ys'
 
+module Fmt = struct
+  include Fmt
 
-module Option = struct
-  let value o ~default = match o with
-    | Some x -> x
-    | None -> default
+  let list ?(first=nop) ?(last=nop) ?sep pp_v =
+    fun ppf l ->
+      if List.length l = 0 then ()
+      else pf ppf "%a@[%a@]%a" first () (list ?sep pp_v) l last ()
 
-  let get = function
-    | Some x -> x
-    | None -> invalid_arg "option is None"
+  let pp = pf
 
-  let map f = function
-    | Some v -> Some (f v)
-    | None -> None
+  let full ppf _ = pf ppf ".@ "
 
-  let iter f = function
-    | Some v -> f v
-    | None -> ()
+  let arrow ppf _ = pf ppf " ->@ "
 
-  let is_some = function
-    | Some _ -> true
-    | None-> false
+  let star ppf _ = pf ppf " *@ "
 
-  let fold ~none ~some = function Some v -> some v | None -> none
+  let newline ppf _ = pf ppf "@\n"
+
+  let lparens ppf _ = pf ppf "@[<1>("
+
+  let rparens ppf _ = pf ppf ")@]"
+
+  let lbracket ppf _ = pf ppf "@[<1>["
+
+  let rbracket ppf _ = pf ppf "]@]"
+
+  let lbrace ppf _ = pf ppf "@[<1>{"
+
+  let rbrace ppf _ = pf ppf "}@]"
 end
-
-let pp_print_option ?(none = fun _ () -> ()) pp_v ppf = function
-  | None -> none ppf ()
-  | Some v -> pp_v ppf v
-
-let list_with_first_last : 'a . ?sep:Opprintast.space_formatter ->
-  ?first:Opprintast.space_formatter -> ?last:Opprintast.space_formatter ->
-  (Format.formatter -> 'a -> unit) ->
-  Format.formatter -> 'a list -> unit
-  = let open Opprintast in
-    fun ?sep ?first ?last fu f xs ->
-    let first = match first with Some x -> x |None -> ("": _ format6)
-    and last = match last with Some x -> x |None -> ("": _ format6)
-    and sep = match sep with Some x -> x |None -> ("@ ": _ format6) in
-    let aux f = function
-      | [] -> ()
-      | [x] -> pp f first; fu f x; pp f last
-      | xs ->
-          let rec loop  f = function
-            | [x] -> fu f x
-            | x::xs ->  fu f x; pp f sep; loop f xs;
-            | _ -> assert false in begin
-            pp f first; loop f xs; pp f last;
-          end in
-    aux f xs
 
 module Sstr = Set.Make(String)
 
@@ -96,15 +79,16 @@ let not_supported ?loc s =
   error ?loc (NotSupported s)
 
 let () =
-  let open Location in
+  let open Location.Error in
   register_error_of_exn (function
-      | Located (loc,exn) ->
-         begin match error_of_exn exn with
-         | None | Some `Already_displayed -> None
-         | Some `Ok e -> Some {e with loc = loc}
-         end
+      | Located (_loc, exn) ->
+        of_exn exn
+        (*   TODO: wait for the next ppxlib release to get this
+         * |> Option.map (fun t -> Location_error.update_loc t loc) *)
       | TypeCheckingError s ->
-         Some (errorf "Type checking error: %s" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Type checking error: %s" s
       | NotSupported s ->
-         Some (errorf "Not supported: %s" s)
+        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Not supported: %s" s
       | _ -> None)

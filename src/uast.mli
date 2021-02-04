@@ -8,8 +8,9 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Oasttypes
-open Oparsetree
+open Ppxlib
+open Asttypes
+open Parsetree
 
 module Preid = Identifier.Preid
 
@@ -261,7 +262,7 @@ and s_module_type_desc =
         (* S *)
   | Mod_signature of s_signature
         (* sig ... end *)
-  | Mod_functor of string loc * s_module_type option * s_module_type
+  | Mod_functor of s_functor_parameter * s_module_type
         (* functor(X : MT1) -> MT2 *)
   | Mod_with of s_module_type * s_with_constraint list
         (* MT with ... *)
@@ -272,6 +273,13 @@ and s_module_type_desc =
   | Mod_alias of Longident.t loc
         (* (module M) *)
 
+and s_functor_parameter =
+  | Unit
+  (* () *)
+  | Named of string option loc * s_module_type
+  (* (X : MT)          Some X, MT
+     (_ : MT)          None, MT *)
+
 and s_module_type =
   {
     mdesc       : s_module_type_desc;
@@ -281,7 +289,7 @@ and s_module_type =
 
 and s_module_declaration =
   {
-    mdname       : string loc;
+    mdname       : string option loc;
     mdtype       : s_module_type;
     mdattributes : attributes; (* ... [@@id1] [@@id2] *)
     mdloc        : Location.t;

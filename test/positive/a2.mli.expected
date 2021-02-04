@@ -18,9 +18,9 @@ type t2 = t
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module a2.mli
+module a2.mli.pp
 
-  Namespace: a2.mli
+  Namespace: a2.mli.pp
     Type symbols
        t2 [=t]
       
@@ -38,7 +38,7 @@ module a2.mli
     open A1
     
     type t2 = t
-    
+         
 
 
 *** OK ***

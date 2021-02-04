@@ -8,8 +8,9 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Utils
-open Oparsetree
+open Parsetree
 open Uast
 open Uast_utils
 
@@ -25,7 +26,12 @@ let is_val_spec  = function | Sval _  -> true | _ -> false
 let is_func_spec = function | Sfunc_spec _ -> true | _ -> false
 
 let get_attr_content attr = match attr.attr_payload with
-  | PGospel s -> s, attr.attr_loc | _ -> assert false
+  | PStr
+      [{pstr_desc =
+          Pstr_eval
+            ({pexp_desc = Pexp_constant (Pconst_string (spec, _, _))},
+             _)}] -> spec, attr.attr_loc
+        | _ -> assert false
 
 let get_type_spec = function
   | Stype (x,_) -> x | _ -> assert false
@@ -40,29 +46,31 @@ let split_attr attrs = List.partition is_spec attrs
 
 (** An iterator to check if there are attributes that are GOSPEL
    specification. A warning is printed for each one that is found. *)
-let unsupported_gospel =
-  let gospel_attribute _ at = if is_spec at then
-    let loc = at.attr_loc in
-    let msg = "Specification not supported" in
-    let fmt = !Location.formatter_for_warnings in
-    Format.fprintf fmt "@[%a@\n@{<warning>Warning:@} %s@]@."
-      Location.print_loc loc msg
-  in {Oast_iterator.default_iterator with attribute=gospel_attribute}
+let unsupported = object
+  inherit Ast_traverse.iter
 
-let uns_gospel = unsupported_gospel
+  method! attribute attr =
+    if is_spec attr then
+      Fmt.epr "@[%a@\n@{<warning>Warning:@} Specification not supported@]@."
+        Location.print attr.attr_loc
+end
 
 exception Syntax_error of Location.t
 exception Floating_not_allowed of Location.t
 exception Orphan_decl_spec of Location.t
 
 let () =
-  Location.register_error_of_exn (function
+  let open Location.Error in
+  register_error_of_exn (function
       | Syntax_error loc ->
-         Some (Location.errorf ~loc "syntax error")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "syntax error"
       | Floating_not_allowed loc ->
-         Some (Location.errorf ~loc "floating specification not allowed")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "floating specification not allowed"
       | Orphan_decl_spec loc ->
-         Some (Location.errorf ~loc "orphan specification")
+        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str))
+          "orphan specification"
       | _ -> None )
 
 (** Parses the attribute content using the specification
@@ -95,8 +103,8 @@ let ghost_spec attr =
   lb.lex_curr_p <- loc.loc_start;
   lb.lex_abs_pos <- loc.loc_start.pos_cnum;
   let sign =
-    try Oparser.interface Olexer.token lb with
-      Oparser.Error -> begin
+    try Parser.interface Lexer.token lb with
+      Parser.Error -> begin
         let loc_start,loc_end = lb.lex_start_p, lb.lex_curr_p in
         let loc = Location.{loc_start; loc_end; loc_ghost=false}  in
         raise (Syntax_error loc) end in
@@ -123,13 +131,12 @@ let attr2spec a = try parse_gospel a with
    specification. *)
 let type_spec ?(extra_spec=[]) t =
   (* no specification attached to unsupported fields *)
-  List.iter (fun (c,_)     -> uns_gospel.typ uns_gospel c) t.ptype_params;
-  List.iter (fun (c1,c2,_) -> uns_gospel.typ uns_gospel c1;
-                              uns_gospel.typ uns_gospel c2) t.ptype_cstrs;
-  uns_gospel.type_kind uns_gospel t.ptype_kind;
-  (match t.ptype_manifest with
-     None -> ()
-   | Some m -> uns_gospel.typ uns_gospel m);
+  List.iter (fun (c, _) -> unsupported#core_type c) t.ptype_params;
+  List.iter
+    (fun (c1, c2, _) -> unsupported#core_type c1; unsupported#core_type c2)
+    t.ptype_cstrs;
+  unsupported#type_kind t.ptype_kind;
+  Option.iter unsupported#core_type t.ptype_manifest;
 
   let spec,attr = split_attr t.ptype_attributes in
   let spec = List.map attr2spec spec in
@@ -172,7 +179,7 @@ let type_declaration ?(extra_spec=[]) t =
    other are assumed to be floating specification. *)
 let val_description v =
   (* no specification attached to unsupported fields *)
-  uns_gospel.typ uns_gospel v.pval_type;
+  unsupported#core_type v.pval_type;
 
   let spec,attrs =  split_attr v.pval_attributes in
   let spec = List.map attr2spec spec in
@@ -241,7 +248,7 @@ let rec floating_specs = function
 (** Raises warning if specifications are found in inner attributes and
    simply creates a s_with_constraint. *)
 let with_constraint c =
-  uns_gospel.with_constraint uns_gospel c;
+  unsupported#with_constraint c;
 
   let no_spec_type_decl t =
     { tname = t.ptype_name; tparams = t.ptype_params;
@@ -300,30 +307,30 @@ let rec signature_ sigs acc prev_floats = match sigs with
        | Psig_typext t ->
           let attrs, _ = get_spec_attrs t.ptyext_attributes in
           let t = {t with ptyext_attributes = attrs} in
-          uns_gospel.type_extension uns_gospel t;
+          unsupported#type_extension t;
           [{sdesc=Sig_typext t;sloc}]
        | Psig_exception e ->
           let attrs,specs = get_spec_attrs e.ptyexn_attributes in
           let e = {e with ptyexn_attributes = attrs} in
-          uns_gospel.type_exception  uns_gospel e;
+          unsupported#type_exception e;
           let current = {sdesc=Sig_exception e;sloc} in
           current :: specs
        | Psig_open o ->
           let attrs,specs = get_spec_attrs o.popen_attributes in
           let o = {o with popen_attributes = attrs } in
-          uns_gospel.open_description uns_gospel o;
+          unsupported#open_description o;
           {sdesc=Sig_open o;sloc} :: specs
        | Psig_include i ->
           let attrs, _ = get_spec_attrs i.pincl_attributes in
           let i = {i with pincl_attributes = attrs} in
-          uns_gospel.include_description uns_gospel i;
+          unsupported#include_description i;
           [{sdesc=Sig_include i;sloc}]
        | Psig_class c ->
           let c,specs =
             List.fold_right (fun cd (cl,specl) ->
                 let attrs,specs = get_spec_attrs cd.pci_attributes in
                 let c = {cd with pci_attributes = attrs} in
-                uns_gospel.class_description uns_gospel c;
+                unsupported#class_description c;
                 c::cl, specs @ specl
               ) c ([],[]) in
           {sdesc=Sig_class c;sloc} :: specs
@@ -332,13 +339,16 @@ let rec signature_ sigs acc prev_floats = match sigs with
             List.fold_right (fun cd (cl,specl) ->
                 let attrs,specs = get_spec_attrs cd.pci_attributes in
                 let c = {cd with pci_attributes = attrs} in
-                uns_gospel.class_type_declaration uns_gospel c;
+                unsupported#class_type_declaration c;
                 c::cl, specs @ specl
               ) c ([],[]) in
           [{sdesc=Sig_class_type c;sloc}]
        | Psig_extension (e,a) ->
           let attrs,specs = get_spec_attrs a in
-          {sdesc=Sig_extension (e,attrs);sloc} :: specs in
+          {sdesc=Sig_extension (e,attrs);sloc} :: specs
+       | Psig_typesubst _ | Psig_modsubst _ ->
+         assert false (* TODO(@pascutto) *)
+     in
      let all_specs = acc @ prev_specs @ current_specs in
      signature_ xs all_specs []
 
@@ -350,17 +360,21 @@ and module_type_desc m =
      Mod_ident id
   | Pmty_signature s ->
      Mod_signature (signature s)
-  | Pmty_functor (l,m1,m2) ->
-     Mod_functor (l, Option.map module_type m1, module_type m2)
+  | Pmty_functor (fp, mt) ->
+     Mod_functor (functor_parameter fp, module_type mt)
   | Pmty_with (m,c) ->
      Mod_with (module_type m, List.map with_constraint c)
   | Pmty_typeof m ->
-     uns_gospel.module_expr uns_gospel m; Mod_typeof m
+     unsupported#module_expr m; Mod_typeof m
   | Pmty_extension e -> Mod_extension e
   | Pmty_alias a -> Mod_alias a
 
+and functor_parameter = function
+  | Unit -> Unit
+  | Named (s, m) -> Named (s, module_type m)
+
 and module_type m =
-  uns_gospel.attributes uns_gospel m.pmty_attributes;
+  unsupported#attributes m.pmty_attributes;
   { mdesc = module_type_desc m.pmty_desc;
     mloc = m.pmty_loc; mattributes = m.pmty_attributes}
 

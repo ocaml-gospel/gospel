@@ -3,13 +3,13 @@
 ********** Parsed file ********
 *******************************
 [@@@gospel
-   function p (x:integer):integer = x
+  {| function p (x:integer):integer = x
   requires x > 0
   variant x = 0
   ensures x
   ensures x > 2
   ensures x > 1
-]
+|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -23,5 +23,5 @@
     ensures ...
     ensures ...
      *)
-File "t7.mli", line 14, characters 10-11:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match integer with bool

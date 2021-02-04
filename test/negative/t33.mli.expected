@@ -3,10 +3,10 @@
 ********** Parsed file ********
 *******************************
 type t = {
-  x: int }[@@gospel
-             function f (x: t): int =
+  x: int }
+[@@@gospel {| function f (x: t): int =
     match x with
-    | {x=y} -> x ]
+    | {x=y} -> x |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -18,5 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-File "t33.mli", line 14, characters 4-33:
+File "_none_", line 1:
 Error: Type mysmatch. Cannot match t with int

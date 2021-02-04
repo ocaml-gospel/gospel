@@ -2,7 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : z:int -> int -> int[@@gospel  r = f ~x y]
+val f : z:int -> int -> int[@@gospel {| r = f ~x y|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -12,5 +12,5 @@ val f : z:int -> int -> int[@@gospel  r = f ~x y]
 val f : z:int -> int -> int
 (*@ r = f ~x y
      *)
-File "t18.mli", line 12, characters 11-12:
+File "_none_", line 1:
 Error: Type checking error: parameter do not match with val type

@@ -2,12 +2,12 @@
 *******************************
 ********** Parsed file ********
 *******************************
-exception E of int * int [@@gospel
-                            function integer_of_int (x:int): integer ]
-[@@gospel  function fst (x: 'a * 'a): 'a ]
+exception E of int * int 
+[@@@gospel {| function integer_of_int (x:int): integer |}]
+[@@@gospel {| function fst (x: 'a * 'a): 'a |}]
 val f : 'a -> 'a[@@gospel
-                   x = f y
-    raises E x -> integer_of_int (fst x) = 1 ]
+                  {| x = f y
+    raises E x -> integer_of_int (fst x) = 1 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -24,5 +24,5 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-File "t30.mli", line 18, characters 11-44:
+File "_none_", line 1:
 Error: Type checking error: exception pattern doesn't match its type
