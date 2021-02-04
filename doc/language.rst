@@ -28,6 +28,8 @@ Terms and Formulas
    formula: TODO
    pattern: TODO
 
+.. todo:: ``&&`` and ``||`` are lazy, but ``/\`` and ``\/`` are not
+
 Function Contracts
 ------------------
 .. todo:: contracta for a constant e.g. val x: int (header needed? etc.)
