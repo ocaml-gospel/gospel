@@ -18,12 +18,14 @@ module Ident = Identifier.Ident
 (** signatures / top level declarations *)
 
 type lb_arg =
+  | Lunit
   | Lnone     of vsymbol
   | Lquestion of vsymbol
   | Lnamed    of vsymbol
   | Lghost    of vsymbol
 
 let vs_of_lb_arg = function
+  | Lunit        -> invalid_arg "vs_of_lb_arg Lunit"
   | Lnone     vs -> vs
   | Lquestion vs -> vs
   | Lnamed    vs -> vs
@@ -71,10 +73,13 @@ let val_spec args ret pre post xpost wr cs dv equiv = {
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
 let mk_val_spec args ret pre post wr cs dv equiv =
-  let add args a =
-    let vs = vs_of_lb_arg a in
-    check (not(Svs.mem vs args)) (DuplicatedArg vs);
-    Svs.add vs args in
+  let add args = function
+    | Lunit -> args
+    | a ->
+      let vs = vs_of_lb_arg a in
+      check (not(Svs.mem vs args)) (DuplicatedArg vs);
+      Svs.add vs args
+  in
   ignore(List.fold_left add Svs.empty args);
   let ty_check ty t = t_ty_check t ty in
   List.iter (fun (t,_) -> ty_check None t) pre;
@@ -480,6 +485,7 @@ let print_type_declaration fmt td =
     print_type_spec td.td_spec
 
 let print_lb_arg fmt = function
+  | Lunit -> pp fmt "()"
   | Lnone vs -> print_vs fmt vs
   | Lquestion vs -> pp fmt "?%a" print_vs vs
   | Lnamed vs -> pp fmt "~%a" print_vs vs

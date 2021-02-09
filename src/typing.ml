@@ -591,6 +591,8 @@ let process_val_spec kid crcm ns id cty vs =
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lnone vs) env lal in
        process_args args tyl env lal
+    | Lunit :: args, _ :: tyl ->
+       process_args args tyl env (Lunit :: lal)
     | la::_, _ ->
        error_report ~loc:((Uast_utils.pid_of_label la).pid_loc)
          "parameter do not match with val type" in

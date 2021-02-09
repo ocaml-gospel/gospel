@@ -27,6 +27,7 @@ type pty =
   | PTarrow  of labelled_arg * pty * pty
 
 and labelled_arg =
+  | Lunit
   | Lnone     of Preid.t
   | Lquestion of Preid.t
   | Lnamed    of Preid.t

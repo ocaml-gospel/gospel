@@ -275,7 +275,7 @@ module FM19.mli.pp
                 q_2:'a t):'a seq = (empty ):'a seq):prop*)
     
     val create : unit -> 'a t
-    (*@ q_3:'a t = create ():unit
+    (*@ q_3:'a t = create ()
         ensures ((view  q_3:'a t):'a seq = (empty ):'a seq):prop*)
     
     val in_place_concat : 'a t -> 'a t -> unit
@@ -380,13 +380,13 @@ module FM19.mli.pp
     
     (*@
     val create_instance : unit -> uf_instance
-    (*@ uf_1:uf_instance = create_instance ()_1:unit
+    (*@ uf_1:uf_instance = create_instance ()
         ensures ((dom 
                 uf_1:uf_instance):elem set = (mixfix {} ):elem set):prop*)
     *)
     
     val make : unit -> elem
-    (*@ e:elem = make [uf_2:uf_instance: uf_instance] ()_2:unit
+    (*@ e:elem = make [uf_2:uf_instance: uf_instance] ()
         ensures not (mem  e:elem old ((dom  uf_2:uf_instance):elem set)):prop
                 ensures ((dom  uf_2:uf_instance):elem set = (union 
                         old ((dom  uf_2:uf_instance):elem set) (mixfix {:_:} 
