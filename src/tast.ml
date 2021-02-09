@@ -38,7 +38,7 @@ type val_spec = {
     sp_ret     : lb_arg list; (* can only be Lnone or Lghost *)
     sp_pre     : pre list;
     sp_post    : post list;
-    sp_xpost   : (pattern * post) list Mxs.t;
+    sp_xpost   : (xsymbol * (pattern * post) list) list;
     (* sp_reads   : qualid list;TODO *)
     sp_wr      : term list;
     sp_cs      : term list; (* consumes *)
@@ -486,15 +486,19 @@ let print_lb_arg fmt = function
   | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
 
 let print_xposts f xposts =
-  if Mxs.is_empty xposts then () else
-  let print xs f (p,t) = pp f "@[%a@ %a@] -> %a"
-                           print_xs xs print_pattern p print_term t in
-  let print_xpost xs = function
-    | [] -> pp f "@\n@[<hv2>raises %a@]" print_xs xs
-    | tl -> list ~first:(newline ++ const string "raises")
-              ~sep:(newline ++ const string "raises")
-              (print xs) f tl  in
-  Mxs.iter (fun xs tl -> print_xpost xs tl) xposts
+  if xposts = [] then ()
+  else
+    let print xs f (p, t) =
+      pp f "@[@[%a@ %a@] -> @[%a@]@]"
+        print_xs xs print_pattern p print_term t
+    in
+    let print_xpost (xs, tl) = match tl with
+      | [] -> pp f "@\n@[raises %a@]" print_xs xs
+      | tl -> list ~first:(newline ++ const string "raises")
+                ~sep:(sp ++ const string "| ")
+          (print xs) f tl
+    in
+    List.iter print_xpost xposts
 
 let print_vd_spec val_id fmt spec =
   let print_term f t = pp f "@[%a@]" print_term t in
