@@ -5,6 +5,7 @@
 exception E 
 exception E1 of int 
 exception E2 of int * int 
+exception E2pair of (int * int) 
 exception E3 of int list 
 exception E4 of int * int list 
 exception E5 of (int -> int) 
@@ -26,6 +27,13 @@ exception E10 of {
 val f : 'a -> 'a[@@gospel
                   {| x = f y
     raises E1 x -> integer_of_int x = 1
+    raises E2 _ -> true
+    raises E2 (x, y) -> true
+    raises E2 (_, _) -> true
+    raises E2pair _ -> true
+    raises E2pair (x, y) -> true
+    raises E2pair (_, _) -> true
+    raises E2pair z -> true
     raises E3 l -> (match l with
                    | [] -> false
                    | y :: ys -> integer_of_int y = 2)
@@ -44,6 +52,8 @@ exception E
 exception E1 of int 
 
 exception E2 of int * int 
+
+exception E2pair of (int * int) 
 
 exception E3 of int list 
 
@@ -80,6 +90,13 @@ val f : 'a -> 'a
     with ...
     with ...
     with ...
+    with ...
+    with ...
+    with ...
+    with ...
+    with ...
+    with ...
+    with ...
      *)
 
 *******************************
@@ -99,6 +116,7 @@ module exceptions.mli.pp
       E1
       E10
       E2
+      E2pair
       E3
       E4
       E5
@@ -119,6 +137,8 @@ module exceptions.mli.pp
     exception E1
     
     exception E2
+    
+    exception E2pair
     
     exception E3
     
@@ -147,16 +167,23 @@ module exceptions.mli.pp
     (*@ x_2:'a = f y:'a
         raisesE1 x_3:int -> ((integer_of_int 
               x_3:int):integer = 1:integer):prop
+        raisesE2 _, _ -> true:prop
+              raisesE2 x_4:int, y_1:int -> true:prop
+              raisesE2 _ -> true:prop
+        raisesE2pair z:int * int -> true:prop
+              raisesE2pair _, _ -> true:prop
+              raisesE2pair x_5:int, y_2:int -> true:prop
+              raisesE2pair _ -> true:prop
         raisesE3 l:int list -> (match l:int list with
               | [] -> (False ):bool
-              | infix :: y_1:int ys:int list -> if ((integer_of_int 
-                                                y_1:int):integer = 2:
+              | infix :: y_3:int ys:int list -> if ((integer_of_int 
+                                                y_3:int):integer = 2:
                                                 integer):prop then (True ):
                                                 bool else (False ):bool
               end::bool = (True ):bool):prop
         raisesE4 i:int, l_1:int list -> (match l_1:int list with
               | [] -> (True ):bool
-              | infix :: y_2:int ys_1:int list -> if (y_2:int = i:int):prop then (True ):
+              | infix :: y_4:int ys_1:int list -> if (y_4:int = i:int):prop then (True ):
                                                   bool else (False ):
                                                   bool
               end::bool = (True ):bool):prop

@@ -619,11 +619,13 @@ let process_val_spec kid crcm ns id cty vs =
       | Some (p,t) ->
          let dp = dpattern kid ns p in
          let ty = match p.pat_desc, xs.xs_type with
-           | Pvar _, Exn_tuple [ty] -> ty
-           | Ptuple _, Exn_tuple tyl ->
+           | Pwild, Exn_tuple [] ->
+              error_report ~loc "exception pattern not expected"
+           | (Pvar _ | Pwild | Ptuple _), Exn_tuple [ty] -> ty
+           | (Pwild | Ptuple _), Exn_tuple tyl ->
               ty_app (ts_tuple (List.length tyl)) tyl
            | Prec _, Exn_record _ -> (* TODO unify types and field names *)
-              error_report ~loc "exception pattern doesn't match its type"
+              error_report ~loc "Unsupported record type in exceptions"
            | _, _ ->
               error_report ~loc "exception pattern doesn't match its type" in
          dpattern_unify dp (dty_of_ty ty);

@@ -13,4 +13,4 @@ clean:
 format:
 	dune build @fmt --auto-promote
 
-.PHONY: all gospel clean format
+.PHONY: all gospel clean format test
