@@ -217,7 +217,7 @@ val_spec_body:
 
 fun_arg:
 | LEFTPAR RIGHTPAR
-  { Lnone (Preid.create "()" ~attrs:[]  ~loc:(mk_loc $startpos $endpos)) }
+  { Lunit }
 | lident
   { Lnone $1 }
 | TILDA lident

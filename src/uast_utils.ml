@@ -64,6 +64,7 @@ let rev_tspec ts =
   }
 
 let pid_of_label = function
+    | Lunit -> invalid_arg "pid_of_label Lunit"
     | Lnone p | Lquestion p | Lnamed p | Lghost (p,_) -> p
 
 let str_of_label l = (pid_of_label l).pid_str

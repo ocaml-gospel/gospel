@@ -21,6 +21,7 @@ let rec qualid fmt (q:qualid) = match q with
   | Qdot (q,pid) -> pp fmt "@[%a.%a@]" qualid q Preid.pp pid
 
 let labelled_arg fmt (l:labelled_arg) = match l with
+  | Lunit -> pp fmt "()"
   | Lnone pid -> Preid.pp fmt pid
   | Lquestion pid -> pp fmt "@[?%a@]" Preid.pp pid
   | Lnamed pid -> pp fmt "@[~%a@]" Preid.pp pid
