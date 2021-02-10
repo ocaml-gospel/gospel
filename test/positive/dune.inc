@@ -233,6 +233,24 @@
  (action (diff %{dep:more_types.mli.expected} %{dep:more_types.mli.output})))
 
 (rule
+ (target pattern_matching.mli.pp)
+ (action
+  (with-outputs-to %{target}
+     (run gospel_pps %{dep:pattern_matching.mli}))))
+
+(rule
+ (targets pattern_matching.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} tc --print-intermediate %{dep:pattern_matching.mli.pp}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:pattern_matching.mli.expected} %{dep:pattern_matching.mli.output})))
+
+(rule
  (target test.mli.pp)
  (action
   (with-outputs-to %{target}

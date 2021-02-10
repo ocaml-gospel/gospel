@@ -1,0 +1,85 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t =
+  | O 
+  | S of t 
+val succ : t -> t[@@gospel {| y = succ x
+      ensures y = S x |}]
+val test1 : t -> t -> t[@@gospel
+                         {| r = test1 x y
+      requires x <> O && y = O
+      ensures  match x, y with
+               | _, S _ -> false
+               | O, _   -> false
+               | S a, O -> r = S (S a) |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t =
+| O 
+| S of t 
+  
+
+val succ : t -> t
+(*@ y = succ x
+    ensures ...
+     *)
+
+val test1 : t -> t -> t
+(*@ r = test1 x y
+    requires ...
+    ensures ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module pattern_matching.mli.pp
+
+  Namespace: pattern_matching.mli.pp
+    Type symbols
+       t
+      
+    Logic Symbols
+      function O  : t
+      function S (_:t) : t
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t = O of 
+             function O  : t
+             | S of t
+               function S (_:t) : t
+         
+    
+    val succ : t -> t
+    (*@ y:t = succ x:t
+        ensures (y:t = (S  x:t):t):prop*)
+    
+    val test1 : t -> t -> t
+    (*@ r:t = test1 x_1:t y_1:t
+        requires not (x_1:t = (O ):t):prop && (y_1:t = (O ):t):prop
+        ensures (match (tuple2 
+                x_1:t y_1:t):t * t with
+                | _, S _ -> (False ):bool
+                | O, _ -> (False ):bool
+                | S a:t, O -> if (r:t = (S 
+                              (S  a:t):t):t):prop then (True ):bool else (False ):
+                              bool
+                end::bool = (True ):bool):prop*)
+
+
+*** OK ***
+
