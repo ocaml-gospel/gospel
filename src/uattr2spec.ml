@@ -209,12 +209,18 @@ let rec floating_specs = function
      {sdesc=Sig_ghost_open od; sloc} :: floating_specs xs
   | Sfunction (f,sloc) :: xs ->
      (* Look forward and get floating function specification *)
-     let (fun_specs,xs) = split_at_f is_func_spec xs in
+     let fun_specs, xs = split_at_f is_func_spec xs in
      let fun_specs = List.map get_func_spec fun_specs in
-     let fun_specs = List.fold_left Uast_utils.fspec_union
-                     f.fun_spec fun_specs in
-     let f = {f with fun_spec = fun_specs } in
-     {sdesc=Sig_function f;sloc} :: floating_specs xs
+     let fun_specs =
+       List.fold_left Uast_utils.fspec_union
+         (Option.value ~default:empty_fspec f.fun_spec)
+         fun_specs
+     in
+     let f = {
+       f with
+       fun_spec = if fun_specs = empty_fspec then None else Some fun_specs }
+     in
+     {sdesc=Sig_function f; sloc} :: floating_specs xs
   | Saxiom (a,sloc) :: xs ->
      {sdesc=Sig_axiom a;sloc} :: floating_specs xs
   | Stype_ghost (r,td,sloc) :: xs ->

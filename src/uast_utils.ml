@@ -38,34 +38,41 @@ let array_get s e =
 
 let dummy_position = Location.none
 
+let empty_fspec = {
+  fun_req     = [];
+  fun_ens     = [];
+  fun_variant = [];
+  fun_coer    = false;
+}
+
 let fspec_union s1 s2 = {
-      fun_req     = s1.fun_req @ s2.fun_req;
-      fun_ens     = s1.fun_ens @ s2.fun_ens;
-      fun_variant = s1.fun_variant @ s2.fun_variant;
-      fun_coer    = s1.fun_coer || s2.fun_coer;
-    }
+  fun_req     = s1.fun_req @ s2.fun_req;
+  fun_ens     = s1.fun_ens @ s2.fun_ens;
+  fun_variant = s1.fun_variant @ s2.fun_variant;
+  fun_coer    = s1.fun_coer || s2.fun_coer;
+}
 
 let empty_tspec = {
-    ty_ephemeral = false;
-    ty_field = [];
-    ty_invariant = [];
-  }
+  ty_ephemeral = false;
+  ty_field = [];
+  ty_invariant = [];
+}
 
 let tspec_union s1 s2 = {
-    ty_ephemeral = s1.ty_ephemeral || s2.ty_ephemeral;
-    ty_field = s1.ty_field @ s2.ty_field;
-    ty_invariant = s1.ty_invariant @ s2.ty_invariant;
-  }
+  ty_ephemeral = s1.ty_ephemeral || s2.ty_ephemeral;
+  ty_field = s1.ty_field @ s2.ty_field;
+  ty_invariant = s1.ty_invariant @ s2.ty_invariant;
+}
 
-let rev_tspec ts =
-  { ts with
-    ty_field = List.rev ts.ty_field;
-    ty_invariant = List.rev ts.ty_invariant;
-  }
+let rev_tspec ts = {
+  ts with
+  ty_field = List.rev ts.ty_field;
+  ty_invariant = List.rev ts.ty_invariant;
+}
 
 let pid_of_label = function
-    | Lunit -> invalid_arg "pid_of_label Lunit"
-    | Lnone p | Lquestion p | Lnamed p | Lghost (p,_) -> p
+  | Lunit -> invalid_arg "pid_of_label Lunit"
+  | Lnone p | Lquestion p | Lnamed p | Lghost (p,_) -> p
 
 let str_of_label l = (pid_of_label l).pid_str
 

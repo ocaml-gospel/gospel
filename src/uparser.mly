@@ -14,13 +14,6 @@
   open Uast
   open Uast_utils
 
-  let empty_fspec = {
-      fun_req     = [];
-      fun_ens     = [];
-      fun_variant = [];
-      fun_coer    = false;
-    }
-
   let empty_vspec = {
     sp_hd_ret  = [];
     sp_hd_nm   = mk_pid "" Lexing.dummy_pos Lexing.dummy_pos;
@@ -35,12 +28,6 @@
     sp_diverge = false;
     sp_equiv   = [];
   }
-
-  let empty_tspec = {
-      ty_ephemeral = false;
-      ty_field     = [];
-      ty_invariant = [];
-    }
 
 %}
 
@@ -130,11 +117,11 @@ axiom:
 
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
-    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=func_spec
+    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec?
   { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec;
       fun_loc = mk_loc $startpos $endpos } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
-    fun_def=preceded(EQUAL, term)? fun_spec=func_spec
+    fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec?
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec;
       fun_loc = mk_loc $startpos $endpos } }
 ;

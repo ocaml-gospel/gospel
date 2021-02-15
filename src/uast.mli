@@ -150,7 +150,7 @@ type function_ = {
   fun_type    : pty option;
   fun_params  : param list;
   fun_def     : term option;
-  fun_spec    : fun_spec;
+  fun_spec    : fun_spec option;
   fun_loc     : Location.t;
 }
 

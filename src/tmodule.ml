@@ -314,8 +314,10 @@ let add_sig_contents muc sig_ =
   match sig_.sig_desc with
   | Sig_function f ->
      let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
-     let muc =
-       if f.fun_spec.fun_coer then add_coer muc f.fun_ls else muc in
+     let muc = match f.fun_spec with
+       | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
+       | _ -> muc
+     in
      add_kid muc f.fun_ls.ls_name sig_
   | Sig_type (_,tdl,_) ->
      let add_td muc td =

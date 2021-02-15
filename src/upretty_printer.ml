@@ -152,18 +152,22 @@ let function_ f x =
   let keyword = match x.fun_type with
     | None -> "predicate"
     | Some _ -> "function" in
-  let sep f _ =  match x.fun_spec with
+  let sep f x =  match x with
     | { fun_req=[];fun_ens=[];fun_variant=[];_ } -> () | _ -> pp f "@\n" in
+  let func_spec f x =
+    pp f "%a%a%a%a%a"
+      (fun f _ -> if x.fun_coer then pp f "@\ncoercion" else ()) ()
+      sep x
+      (list_keyword "variant ...") x.fun_variant
+      (list_keyword "requires ...") x.fun_req
+      (list_keyword "ensures ...") x.fun_ens
+  in
   let func f x =
-    pp f "@[%s %s%a ...%a%a%a%a%a@]"
+    pp f "@[%s %s%a ...%a@]"
       keyword
       (if x.fun_rec then "rec " else "")
       Preid.pp x.fun_name
-      (fun f _ -> if x.fun_spec.fun_coer then pp f "@\ncoercion" else ()) ()
-      sep ()
-      (list_keyword "variant ...") x.fun_spec.fun_variant
-      (list_keyword "requires ...") x.fun_spec.fun_req
-      (list_keyword "ensures ...") x.fun_spec.fun_ens
+      (option func_spec) x.fun_spec
   in
   spec func f x
 
