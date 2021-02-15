@@ -599,8 +599,9 @@ let process_val_spec kid crcm ns id cty vs =
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
 
-  let pre   = List.map (fun (t,c) ->
-                  fmla kid crcm ns env t, c) vs.sp_pre in
+  let pre = List.map (fmla kid crcm ns env) vs.sp_pre in
+
+  let checks = List.map (fmla kid crcm ns env) vs.sp_checks in
 
   let wr = List.map (fun t -> let dt = dterm kid crcm ns env t in
                               term env dt) vs.sp_writes in
@@ -652,7 +653,7 @@ let process_val_spec kid crcm ns id cty vs =
        process_args vs.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
-  mk_val_spec args ret pre post xpost wr cs vs.sp_diverge vs.sp_equiv
+  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in

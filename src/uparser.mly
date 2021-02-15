@@ -26,6 +26,7 @@
     sp_hd_nm   = mk_pid "" Lexing.dummy_pos Lexing.dummy_pos;
     sp_hd_args = [];
     sp_pre     = [];
+    sp_checks  = [];
     sp_post    = [];
     sp_xpost   = [];
     sp_reads   = [];
@@ -203,9 +204,9 @@ val_spec_body:
 | CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
 | REQUIRES t=term bd=val_spec_body
-  { { bd with sp_pre = (t,false) :: bd.sp_pre } }
+  { { bd with sp_pre = t :: bd.sp_pre } }
 | CHECKS t=term bd=val_spec_body
-  { { bd with sp_pre = (t,true) :: bd.sp_pre } }
+  { { bd with sp_checks = t :: bd.sp_pre } }
 | ENSURES t=term bd=val_spec_body
   { { bd with sp_post = t :: bd.sp_post} }
 | RAISES r=bar_list1(raises) bd=val_spec_body

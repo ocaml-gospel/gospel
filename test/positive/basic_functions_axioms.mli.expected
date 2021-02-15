@@ -377,10 +377,9 @@ module basic_functions_axioms.mli.pp
     
     val f_7 : int -> int -> int
     (*@ r:int = f_7 x_16:int y_5:int
-        requires (((integer_of_int_1 
-                 y_5:int):integer + 2:integer):integer < 0:integer):prop
-                 requires ((integer_of_int_1 
-                          x_16:int):integer > 0:integer):prop
+        requires ((integer_of_int_1  x_16:int):integer > 0:integer):prop
+                 requires (((integer_of_int_1 
+                          y_5:int):integer + 2:integer):integer < 0:integer):prop
         ensures ((integer_of_int_1  r:int):integer = ((integer_of_int_1 
                 x_16:int):integer + (integer_of_int_1 
                 y_5:int):integer):integer):prop*)
