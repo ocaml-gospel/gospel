@@ -43,7 +43,7 @@
 (*@ function (-)   (x y: integer) : integer *)
 (*@ function ( * ) (x y: integer) : integer *)
 (*@ function (/)   (x y: integer) : integer *)
-(*@ function mod   (x y: integer) : integer *) (* TODO allow infix in the parser*)
+(*@ function mod   (x y: integer) : integer *)
 (*@ function (-_)  (x: integer) : integer *)
 (*@ predicate (>)  (x y: integer) *)
 (*@ predicate (>=) (x y: integer) *)
@@ -78,8 +78,8 @@ type int
 (** References *)
 
 type 'a ref
-(*@ ephemeral *)
-(*@ mutable model contents: 'a *)
+(*@ ephemeral
+    mutable model contents: 'a *)
 
 (*@ function (!_) (r: 'a ref) : 'a = r.contents *)
 
@@ -207,10 +207,10 @@ end
 (** Arrays *)
 
 type 'a array
-(*@ ephemeral *)
-(*@ mutable model contents: 'a seq *)
-(*@ model array_length: integer *)
-(*@ invariant array_length = length contents *)
+(*@ ephemeral
+    mutable model contents: 'a seq
+    model array_length: integer
+    invariant array_length = length contents *)
 
 (*@ function elts (a: 'a array): 'a seq = a.contents *)
 (*@ coercion *)
