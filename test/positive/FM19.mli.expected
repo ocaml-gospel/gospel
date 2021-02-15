@@ -47,20 +47,23 @@ val random_int : rand_state -> int -> int[@@gospel
     requires m > 0  modifies s  ensures  0 <= n < m |}]
 [@@@gospel {| open Set |}]
 [@@@gospel {| open Map |}]
-type elem[@@gospel {| type uf_instance |}][@@gospel
-                                            {| mutable model dom: elem set |}]
-[@@gospel {| mutable model rep: elem -> elem |}][@@gospel
-                                                  {| mutable model internal: unit |}]
-[@@gospel {| invariant forall x. mem x dom -> mem (rep x) dom |}][@@gospel
-                                                                   {| invariant forall x. mem x dom -> rep (rep x) = rep x |}]
+type elem
+[@@@gospel
+  {| type uf_instance |}[@@gospel
+                          {| mutable model dom: elem set
+    mutable model rep: elem -> elem
+    mutable model internal: unit
+    invariant forall x. mem x dom -> mem (rep x) dom
+    invariant forall x. mem x dom -> rep (rep x) = rep x |}]]
 val equiv : elem -> elem -> bool[@@gospel
                                   {| b = equiv [uf: uf_instance] e1 e2
     requires mem e1 uf.dom && mem e2 uf.dom
     modifies uf.internal
     ensures  b <-> uf.rep e1 = uf.rep e2 |}]
-[@@@gospel {| val create_instance: unit -> uf_instance |}]
-[@@@gospel {| uf = create_instance ()
-    ensures uf.dom = {} |}]
+[@@@gospel
+  {| val create_instance: unit -> uf_instance |}[@@gospel
+                                                  {| uf = create_instance ()
+    ensures uf.dom = {} |}]]
 val make : unit -> elem[@@gospel
                          {| e = make [uf: uf_instance] ()
     modifies uf
@@ -69,8 +72,9 @@ val make : unit -> elem[@@gospel
     ensures  uf.rep = (old uf.rep)[e <- e] |}]
 type type1
 type type2
-type tt[@@gospel {| mutable model left:  type1 |}][@@gospel
-                                                    {| mutable model right: type2 |}]
+type tt[@@gospel
+         {| mutable model left:  type1
+    mutable model right: type2 |}]
 val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)[@@gospel
                                                         {| p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]
     requires true (* P in the paper *)

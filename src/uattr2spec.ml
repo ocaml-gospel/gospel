@@ -86,9 +86,24 @@ let ghost_spec attr =
   let lb = Lexing.from_string spec in
   try
     Parser.interface Lexer.token lb |> function
-    | [ { psig_desc = Psig_type (r, td); _ } ] ->
-        Sig_ghost_type (r, List.map type_declaration td)
-    | [ { psig_desc = Psig_value vd; _ } ] -> Sig_ghost_val (val_description vd)
+    | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
+        let type_ = type_declaration t in
+        if type_.tspec = None then
+          let tspec =
+            get_inner_spec attr |> fst
+            |> Option.map (parse_gospel Uparser.type_spec)
+          in
+          Sig_ghost_type (r, [ { type_ with tspec } ])
+        else Sig_ghost_type (r, [ type_ ])
+    | [ { psig_desc = Psig_value vd; _ } ] ->
+        let val_ = val_description vd in
+        if val_.vspec = None then
+          let vspec =
+            get_inner_spec attr |> fst
+            |> Option.map (parse_gospel Uparser.val_spec)
+          in
+          Sig_ghost_val { val_ with vspec }
+        else Sig_ghost_val val_
     | [ { psig_desc = Psig_open od; _ } ] -> Sig_ghost_open od
     | _ -> assert false
   with Parser.Error -> raise (Syntax_error loc)
@@ -141,8 +156,9 @@ let rec signature_item_desc = function
   | Psig_class c -> Sig_class c
   | Psig_class_type c -> Sig_class_type c
   | Psig_extension (e, a) -> Sig_extension (e, a)
-  | Psig_typesubst _ | Psig_modsubst _ -> assert false (* TODO(@pascutto) *)
+  | Psig_typesubst _ | Psig_modsubst _ -> assert false
 
+(* TODO(@pascutto) *)
 and signature sigs =
   List.map
     (fun { psig_desc; psig_loc } ->

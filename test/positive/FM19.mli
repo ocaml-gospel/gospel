@@ -72,11 +72,11 @@ val random_int: rand_state -> int -> int
 
 type elem
 (*@ type uf_instance *)
-(*@ mutable model dom: elem set *)
-(*@ mutable model rep: elem -> elem *)
-(*@ mutable model internal: unit *)
-(*@ invariant forall x. mem x dom -> mem (rep x) dom *)
-(*@ invariant forall x. mem x dom -> rep (rep x) = rep x *)
+(*@ mutable model dom: elem set
+    mutable model rep: elem -> elem
+    mutable model internal: unit
+    invariant forall x. mem x dom -> mem (rep x) dom
+    invariant forall x. mem x dom -> rep (rep x) = rep x *)
 
 val equiv: elem -> elem -> bool
 (*@ b = equiv [uf: uf_instance] e1 e2
@@ -102,8 +102,8 @@ type type2
    this scope. *)
 
 type tt
-(*@ mutable model left:  type1 *)
-(*@ mutable model right: type2 *)
+(*@ mutable model left:  type1
+    mutable model right: type2 *)
 
 val f: tt -> tt -> tt -> tt -> int -> tt * tt * int
 (*@ p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]
