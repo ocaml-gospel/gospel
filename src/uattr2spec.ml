@@ -145,11 +145,13 @@ let type_spec ?(extra_spec=[]) t =
   let tspec = List.map get_type_spec tspec in
   let tspec = tspec @ extra_spec in
   let tspec = List.fold_left tspec_union empty_tspec tspec in
-  let td = { tname = t.ptype_name;       tparams= t.ptype_params;
-             tcstrs = t.ptype_cstrs;     tkind = t.ptype_kind;
-             tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
-             tattributes = attr;         tspec = tspec;
-             tloc = t.ptype_loc;} in
+  let td = {
+    tname = t.ptype_name;       tparams= t.ptype_params;
+    tcstrs = t.ptype_cstrs;     tkind = t.ptype_kind;
+    tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
+    tattributes = attr;         tloc = t.ptype_loc;
+    tspec = if tspec = empty_tspec then None else Some tspec; }
+  in
   td, fspec
 
 (** It parses a list of type declarations. If more than one item is
@@ -255,7 +257,7 @@ let with_constraint c =
       tcstrs = t.ptype_cstrs; tkind = t.ptype_kind;
       tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
       tattributes = t.ptype_attributes;
-      tspec = empty_tspec; tloc = t.ptype_loc;}
+      tspec = None; tloc = t.ptype_loc;}
   in match c with
   | Pwith_type (l,t) -> Wtype (l,no_spec_type_decl t)
   | Pwith_module (l1,l2) -> Wmodule (l1,l2)

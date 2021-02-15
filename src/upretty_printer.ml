@@ -139,7 +139,7 @@ let s_type_declaration_rec_flag f (rf,l) =
       eq
       s_type_declaration x
       (item_attributes reset_ctxt) x.tattributes
-      type_spec x.tspec
+      (option type_spec) x.tspec
   in
   match l with
   | [] -> assert false

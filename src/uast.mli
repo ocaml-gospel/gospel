@@ -193,7 +193,7 @@ type s_type_declaration =
     tprivate    : private_flag;   (* = private ... *)
     tmanifest   : core_type option;  (* = T *)
     tattributes : attributes;   (* ... [@@id1] [@@id2] *)
-    tspec       : type_spec; (* specification *)
+    tspec       : type_spec option; (* specification *)
     tloc        : Location.t;
   }
 

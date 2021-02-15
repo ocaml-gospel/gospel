@@ -517,7 +517,7 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let params = List.combine params variance_list in
-    let spec = process_type_spec kid crcm ns ty td.tspec in
+    let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
 
     if  td.tcstrs != [] then
       not_supported ~loc:td.tloc "type constraints not supported";

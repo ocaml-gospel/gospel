@@ -178,7 +178,7 @@ type type_declaration = {
     td_private  : private_flag;
     td_manifest : ty option;
     td_attrs    : Parsetree.attributes;
-    td_spec     : type_spec;
+    td_spec     : type_spec option;
     td_loc      : Location.t;
 }
 
@@ -482,7 +482,7 @@ let print_type_declaration fmt td =
     print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
     (list ~sep:(const string " constraint ") print_constraint) td.td_cstrs
-    print_type_spec td.td_spec
+    (option print_type_spec) td.td_spec
 
 let print_lb_arg fmt = function
   | Lunit -> pp fmt "()"
