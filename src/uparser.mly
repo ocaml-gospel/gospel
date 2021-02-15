@@ -95,7 +95,6 @@
 
 %left BAR
 
-%start <Uast.spec> spec_init
 %start <Uast.function_> func
 %start <Uast.axiom> axiom
 %start <Uast.val_spec> val_spec
@@ -108,17 +107,6 @@ val_spec:
 | hd=val_spec_header bd=val_spec_body EOF
   { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
     { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
-;
-
-spec_init:
-| nonempty_type_spec EOF { Stype ($1, mk_loc $startpos $endpos) }
-| val_spec               { Sval ($1, mk_loc $startpos $endpos) }
-| func                   { Sfunction ($1, mk_loc $startpos $endpos)}
-| nonempty_func_spec     { Sfunc_spec ($1, mk_loc $startpos $endpos)}
-| axiom                  { Saxiom ($1, mk_loc $startpos $endpos)}
-| VAL                    { raise Ghost_decl }
-| TYPE                   { raise Ghost_decl }
-| OPEN                   { raise Ghost_decl }
 ;
 
 axiom:

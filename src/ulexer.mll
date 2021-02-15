@@ -32,12 +32,7 @@
        | Error (err, loc) -> prepare_error loc err
        | _ -> None)
 
-  (* let () = Exn_printer.register (fun fmt e -> match e with
-   *   | IllegalCharacter c -> fprintf fmt "illegal character %c" c
-   *   | UnterminatedComment -> fprintf fmt "unterminated comment"
-   *   | _ -> raise e) *)
-
- let keywords = Hashtbl.create 97
+  let keywords = Hashtbl.create 97
   let () =
     List.iter
       (fun (x,y) -> Hashtbl.add keywords x y)
@@ -56,11 +51,9 @@
         "let", LET;
         "match", MATCH;
         "not", NOT;
-        "open", OPEN;
         "predicate", PREDICATE;
         "then", THEN;
         "true", TRUE;
-        "type", TYPE;
         "with", WITH;
         "mutable", MUTABLE;
         (* programs *)
@@ -73,7 +66,6 @@
         "rec", REC;
         "requires", REQUIRES;
         "variant", VARIANT;
-        "val", VAL;
         "modifies", MODIFIES;
         "equivalent", EQUIVALENT;
         "checks", CHECKS;
