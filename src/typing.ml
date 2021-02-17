@@ -517,7 +517,7 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let params = List.combine params variance_list in
-    let spec = process_type_spec kid crcm ns ty td.tspec in
+    let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
 
     if  td.tcstrs != [] then
       not_supported ~loc:td.tloc "type constraints not supported";
@@ -694,12 +694,16 @@ let process_function kid crcm ns f =
     | Some ty -> Option.map (term_with_unify kid crcm ty ns env) f.fun_def in
 
   let spec =
-    let req = List.map (fmla kid crcm ns env) f.fun_spec.fun_req in
-    let ens = List.map (fmla kid crcm ns env) f.fun_spec.fun_ens in
-    let variant =
-      List.map (term_with_unify kid crcm ty_integer ns env)
-        f.fun_spec.fun_variant in
-    mk_fun_spec req ens variant f.fun_spec.fun_coer in
+    Option.map (fun (spec: Uast.fun_spec) ->
+        let req = List.map (fmla kid crcm ns env) spec.fun_req in
+        let ens = List.map (fmla kid crcm ns env) spec.fun_ens in
+        let variant =
+          List.map (term_with_unify kid crcm ty_integer ns env)
+            spec.fun_variant
+        in
+        mk_fun_spec req ens variant spec.fun_coer)
+      f.fun_spec
+  in
   let f = mk_function ?result ls f.fun_rec params def spec f.fun_loc in
   mk_sig_item (Sig_function f) f.fun_loc
 

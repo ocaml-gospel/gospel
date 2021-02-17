@@ -145,11 +145,13 @@ let type_spec ?(extra_spec=[]) t =
   let tspec = List.map get_type_spec tspec in
   let tspec = tspec @ extra_spec in
   let tspec = List.fold_left tspec_union empty_tspec tspec in
-  let td = { tname = t.ptype_name;       tparams= t.ptype_params;
-             tcstrs = t.ptype_cstrs;     tkind = t.ptype_kind;
-             tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
-             tattributes = attr;         tspec = tspec;
-             tloc = t.ptype_loc;} in
+  let td = {
+    tname = t.ptype_name;       tparams= t.ptype_params;
+    tcstrs = t.ptype_cstrs;     tkind = t.ptype_kind;
+    tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
+    tattributes = attr;         tloc = t.ptype_loc;
+    tspec = if tspec = empty_tspec then None else Some tspec; }
+  in
   td, fspec
 
 (** It parses a list of type declarations. If more than one item is
@@ -207,12 +209,18 @@ let rec floating_specs = function
      {sdesc=Sig_ghost_open od; sloc} :: floating_specs xs
   | Sfunction (f,sloc) :: xs ->
      (* Look forward and get floating function specification *)
-     let (fun_specs,xs) = split_at_f is_func_spec xs in
+     let fun_specs, xs = split_at_f is_func_spec xs in
      let fun_specs = List.map get_func_spec fun_specs in
-     let fun_specs = List.fold_left Uast_utils.fspec_union
-                     f.fun_spec fun_specs in
-     let f = {f with fun_spec = fun_specs } in
-     {sdesc=Sig_function f;sloc} :: floating_specs xs
+     let fun_specs =
+       List.fold_left Uast_utils.fspec_union
+         (Option.value ~default:empty_fspec f.fun_spec)
+         fun_specs
+     in
+     let f = {
+       f with
+       fun_spec = if fun_specs = empty_fspec then None else Some fun_specs }
+     in
+     {sdesc=Sig_function f; sloc} :: floating_specs xs
   | Saxiom (a,sloc) :: xs ->
      {sdesc=Sig_axiom a;sloc} :: floating_specs xs
   | Stype_ghost (r,td,sloc) :: xs ->
@@ -255,7 +263,7 @@ let with_constraint c =
       tcstrs = t.ptype_cstrs; tkind = t.ptype_kind;
       tprivate = t.ptype_private; tmanifest = t.ptype_manifest;
       tattributes = t.ptype_attributes;
-      tspec = empty_tspec; tloc = t.ptype_loc;}
+      tspec = None; tloc = t.ptype_loc;}
   in match c with
   | Pwith_type (l,t) -> Wtype (l,no_spec_type_decl t)
   | Pwith_module (l1,l2) -> Wmodule (l1,l2)

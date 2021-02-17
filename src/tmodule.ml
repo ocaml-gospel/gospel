@@ -314,8 +314,10 @@ let add_sig_contents muc sig_ =
   match sig_.sig_desc with
   | Sig_function f ->
      let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
-     let muc =
-       if f.fun_spec.fun_coer then add_coer muc f.fun_ls else muc in
+     let muc = match f.fun_spec with
+       | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
+       | _ -> muc
+     in
      add_kid muc f.fun_ls.ls_name sig_
   | Sig_type (_,tdl,_) ->
      let add_td muc td =
@@ -324,7 +326,11 @@ let add_sig_contents muc sig_ =
        let csl = get_cs_pjs td.td_kind in
        let muc = List.fold_left (fun muc cs ->
          add_ls ~export:true muc cs.ls_name.id_str cs) muc csl in
-       let fields = List.map fst td.td_spec.ty_fields in
+       let fields =
+         Option.fold
+           ~none:[] ~some:(fun spec -> List.map fst spec.ty_fields)
+           td.td_spec
+       in
        let muc = List.fold_left (fun muc ls ->
          add_ls ~export:true muc ls.ls_name.id_str ls) muc fields in
        add_kid muc td.td_ts.ts_ident sig_  in
