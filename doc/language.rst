@@ -2,7 +2,8 @@ Language Specification
 ======================
 
 Gospel annotations are inserted in interface files (``.mli``), using attributes
-``[@@gospel "...."]``. Gospel comes with a preprocessor for the OCaml compiler
+``[@@gospel "...."]`` or ``[@@@gospel "...."]``.
+Gospel comes with a preprocessor for the OCaml compiler
 that simplifies the writing of such a specification as ``(*@ .... *)``. We use
 the latter in the examples below.
 
@@ -54,7 +55,7 @@ Such a contract is composed of two parts:
 .. productionlist::
     contract: `header` `clause`*
     header: (`ident_tuple` "=")? `identifier` `parameter`+
-    clause: `precondtion`
+    clause: `precondition`
         : | `postcondition`
         : | `exceptional_postcondition`
         : | "modifies" `term` ("," `term`)*
