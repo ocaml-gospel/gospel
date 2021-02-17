@@ -179,6 +179,24 @@
  (action (diff %{dep:complex_vals.mli.expected} %{dep:complex_vals.mli.output})))
 
 (rule
+ (target constants.mli.pp)
+ (action
+  (with-outputs-to %{target}
+     (run gospel_pps %{dep:constants.mli}))))
+
+(rule
+ (targets constants.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} tc --print-intermediate %{dep:constants.mli.pp}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:constants.mli.expected} %{dep:constants.mli.output})))
+
+(rule
  (target exceptions.mli.pp)
  (action
   (with-outputs-to %{target}

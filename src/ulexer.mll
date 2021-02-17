@@ -15,6 +15,7 @@
 
   type error =
     | IllegalCharacter of char
+    | IllegalEscape of string * string option
     | UnterminatedComment
 
   exception Error of error * Location.t
@@ -26,7 +27,12 @@
     | UnterminatedComment ->
       Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
         "unterminated comment"
-
+    | IllegalEscape (s, explanation) ->
+      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
+        "Illegal backslash escape in string or character (%s)%t" s
+        (fun ppf -> match explanation with
+           | None -> ()
+           | Some expl -> Fmt.pf ppf ": %s" expl)
   let () =
     Location.Error.register_error_of_exn (function
        | Error (err, loc) -> prepare_error loc err
@@ -83,10 +89,53 @@
         "model", MODEL;
       ]
 
+  (* to translate escape sequences *)
+
+  let digit_value c =
+    match c with
+    | 'a' .. 'f' -> 10 + Char.code c - Char.code 'a'
+    | 'A' .. 'F' -> 10 + Char.code c - Char.code 'A'
+    | '0' .. '9' -> Char.code c - Char.code '0'
+    | _ -> assert false
+
+  let num_value lexbuf ~base ~first ~last =
+    let c = ref 0 in
+    for i = first to last do
+      let v = digit_value (Lexing.lexeme_char lexbuf i) in
+      assert(v < base);
+      c := (base * !c) + v
+    done;
+    !c
+
   let char_for_backslash = function
-    | 'n' -> '\n'
-    | 't' -> '\t'
-    | c -> c
+    | 'n' -> '\010'
+    | 'r' -> '\013'
+    | 'b' -> '\008'
+    | 't' -> '\009'
+    | c   -> c
+
+  let illegal_escape lexbuf reason =
+    let error = IllegalEscape (Lexing.lexeme lexbuf, Some reason) in
+    raise (Error (error, Location.of_lexbuf lexbuf))
+
+  let char_for_decimal_code lexbuf i =
+    let c = num_value lexbuf ~base:10 ~first:i ~last:(i+2) in
+    if (c < 0 || c > 255) then
+      illegal_escape lexbuf
+        (Printf.sprintf
+           "%d is outside the range of legal characters (0-255)." c)
+    else Char.chr c
+
+  let char_for_octal_code lexbuf i =
+    let c = num_value lexbuf ~base:8 ~first:i ~last:(i+2) in
+    if (c < 0 || c > 255) then
+      illegal_escape lexbuf
+        (Printf.sprintf
+           "o%o (=%d) is outside the range of legal characters (0-255)." c c)
+    else Char.chr c
+
+  let char_for_hexadecimal_code lexbuf i =
+    Char.chr (num_value lexbuf ~base:16 ~first:i ~last:(i+1))
 
   let newline lexbuf =
     let pos = lexbuf.lex_curr_p in
@@ -149,6 +198,16 @@ rule token = parse
       { INTEGER s }
   | (float_literal | hex_float_literal) as s
       { FLOAT s }
+  | "\'" ([^ '\\' '\'' '\010' '\013'] as c) "\'"
+    { CHAR c }
+  | "\'\\" (['\\' '\'' '\"' 'n' 't' 'b' 'r' ' '] as c) "\'"
+    { CHAR (char_for_backslash c) }
+  | "\'\\" ['0'-'9'] ['0'-'9'] ['0'-'9'] "\'"
+    { CHAR(char_for_decimal_code lexbuf 2) }
+  | "\'\\" 'o' ['0'-'7'] ['0'-'7'] ['0'-'7'] "\'"
+    { CHAR(char_for_octal_code lexbuf 3) }
+  | "\'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "\'"
+    { CHAR(char_for_hexadecimal_code lexbuf 3) }
   | "(*"
       { comment lexbuf; token lexbuf }
   | ","

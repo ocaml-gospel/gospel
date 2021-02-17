@@ -34,13 +34,15 @@
 (* Tokens *)
 
 %token <string> LIDENT UIDENT
-%token <string> INTEGER
 %token <string> OP1 OP2 OP3 OP4 OPPREF
-%token <string> FLOAT
 %token <string> QUOTE_LIDENT
 %token <string> BACKQUOTE_LIDENT
-%token <string> STRING
 %token <string> ATTRIBUTE
+
+%token <string> INTEGER
+%token <string> FLOAT
+%token <char> CHAR
+%token <string> STRING
 
 (* Spec Tokens *)
 
@@ -343,7 +345,7 @@ term_dot: mk_term(term_dot_) { $1 }
 
 term_arg_:
 | qualid                    { Tpreid $1 }
-| numeral                   { Tconst $1 }
+| constant                  { Tconst $1 }
 | TRUE                      { Ttrue }
 | FALSE                     { Tfalse }
 | o = oppref ; a = term_arg { Tidapp (Qpreid o, [a]) }
@@ -405,9 +407,11 @@ quant:
 | EXISTS  { Texists }
 ;
 
-numeral:
-| INTEGER { Parsetree.Pconst_integer ($1,None) }
-| FLOAT   { Parsetree.Pconst_float ($1, None) }
+constant:
+| INTEGER { Parsetree.Pconst_integer ($1, None) }
+| FLOAT { Parsetree.Pconst_float ($1, None) }
+| STRING { Pconst_string ($1, mk_loc $startpos $endpos, None) }
+| CHAR { Pconst_char $1 }
 ;
 
 binder_var:
