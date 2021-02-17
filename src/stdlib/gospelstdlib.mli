@@ -15,6 +15,7 @@
 
    type unit
    type string
+   type char
    type float
    type bool
    type integer
