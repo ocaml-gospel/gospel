@@ -9,42 +9,42 @@
       Queue.push (Other (Buffer.contents buf)) queue;
       Buffer.clear buf)
 
+  let rec print = function
+  | Ghost g :: Spec s :: l ->
+    Format.printf "[@@@@@@gospel {|%s|}[@@@@gospel {|%s|}]]" g s;
+    print l
+  | Ghost g :: Spaces sp :: Spec s :: l ->
+    Format.printf "[@@@@@@gospel {|%s|}%s[@@@@gospel {|%s|}]]" g sp s;
+    print l
+  | Ghost g :: l ->
+    Format.printf "[@@@@@@gospel {|%s|}]" g;
+    print l
+  | Other o :: Spec s :: l ->
+    Format.printf "%s[@@@@gospel {|%s|}]" o s;
+    print l
+  | Spec s :: l ->
+    (* FIXME: we could fail right here *)
+    Format.printf "[@@@@gospel {|%s|}]" s;
+    print l
+  | Other o :: Spaces sp :: Spec s :: l ->
+    Format.printf "%s%s[@@@@gospel {|%s|}]" o sp s;
+    print l
+  | (Other s | Spaces s) :: l ->
+    Format.print_string s;
+    print l
+  | [] ->
+    Format.printf "@?"
+
   let flush () =
     push ();
-    (Queue.fold (fun (acc, sp) t -> match acc, t with
-         | _, Spaces nsp -> (acc, sp ^ nsp)
-         | None, Ghost _ | None, Other _ -> Some t, sp
-         | None, Spec _ -> assert false
-         | Some (Ghost g), Spec s ->
-           Format.printf "%s[@@@@@@gospel {|%s|}[@@@@gospel {|%s|}]]%!" sp g s;
-           None, ""
-         | Some (Ghost g), _ ->
-           Format.printf "%s[@@@@@@gospel {|%s|}]%!" sp g;
-           Some t, ""
-         | Some (Other o), Spec s ->
-           Format.printf "%s%s[@@@@gospel {|%s|}]%!" sp o s;
-           None, ""
-         | Some (Other o), _ ->
-           print_string sp; print_string o;
-           Some t, ""
-         | Some (Spaces _), _ | Some (Spec _), _ -> assert false
-       ) (None, "") queue
-     |> fun (acc, sp) ->
-     print_string sp;
-     match acc with
-     | None -> ()
-     | Some (Spaces s) -> print_string s
-     | Some (Other o) -> print_string o
-     | Some (Ghost g) ->
-       Format.printf "[@@@@@@gospel {|%s|}]%!" g;
-     | Some (Spec _) -> assert false);
-    Queue.clear queue
+    let l = Queue.fold (fun acc t -> t :: acc) [] queue in
+    print (List.rev l)
 }
 
 let space = [ ' ' '\t' '\r' '\n' ]
 
 rule scan = parse
-  | space* as s
+  | space+ as s
     { push (); Queue.push (Spaces s) queue; scan lexbuf }
   | "(*@"
       (space*
