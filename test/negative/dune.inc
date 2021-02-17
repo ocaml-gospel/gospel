@@ -1,4 +1,22 @@
 (rule
+ (target char1.mli.pp)
+ (action
+  (with-outputs-to %{target}
+     (run gospel_pps %{dep:char1.mli}))))
+
+(rule
+ (targets char1.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} tc --print-intermediate %{dep:char1.mli.pp}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:char1.mli.expected} %{dep:char1.mli.output})))
+
+(rule
  (target t1.mli.pp)
  (action
   (with-outputs-to %{target}
