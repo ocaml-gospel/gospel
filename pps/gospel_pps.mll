@@ -1,8 +1,7 @@
 {
-  type t = Gospel of string | Other of string
+  type t = Ghost of string | Spec of string | Other of string | Spaces of string
 
   let queue = Queue.create ()
-  let empty_line = ref true
   let buf = Buffer.create 1024
 
   let push () =
@@ -12,28 +11,60 @@
 
   let flush () =
     push ();
-    let print = function
-      | Gospel s ->
-          let ats = if !empty_line then "@@@" else "@@" in
-          Format.printf "[%sgospel {|%s|}]%!" ats s
-      | Other s -> print_string s
-    in
-    Queue.iter print queue;
+    (Queue.fold (fun (acc, sp) t -> match acc, t with
+         | _, Spaces nsp -> (acc, sp ^ nsp)
+         | None, Ghost _ | None, Other _ -> Some t, sp
+         | None, Spec _ -> assert false
+         | Some (Ghost g), Spec s ->
+           Format.printf "%s[@@@@@@gospel {|%s|}[@@@@gospel {|%s|}]]%!" sp g s;
+           None, ""
+         | Some (Ghost g), _ ->
+           Format.printf "%s[@@@@@@gospel {|%s|}]%!" sp g;
+           Some t, ""
+         | Some (Other o), Spec s ->
+           Format.printf "%s%s[@@@@gospel {|%s|}]%!" sp o s;
+           None, ""
+         | Some (Other o), _ ->
+           print_string sp; print_string o;
+           Some t, ""
+         | Some (Spaces _), _ | Some (Spec _), _ -> assert false
+       ) (None, "") queue
+     |> fun (acc, sp) ->
+     print_string sp;
+     match acc with
+     | None -> ()
+     | Some (Spaces s) -> print_string s
+     | Some (Other o) -> print_string o
+     | Some (Ghost g) ->
+       Format.printf "[@@@@@@gospel {|%s|}]%!" g;
+     | Some (Spec _) -> assert false);
     Queue.clear queue
 }
 
 let space = [ ' ' '\t' '\r' '\n' ]
 
 rule scan = parse
-  | '\n' space* '\n' as s
-      { flush (); empty_line := true; print_string s; scan lexbuf }
+  | space* as s
+    { push (); Queue.push (Spaces s) queue; scan lexbuf }
+  | "(*@"
+      (space*
+       ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k)
+      {
+        push ();
+        Buffer.add_string buf k;
+        comment lexbuf;
+        let s = Buffer.contents buf in
+        Buffer.clear buf;
+        Queue.push (Ghost s) queue;
+        scan lexbuf
+      }
   | "(*@"
       {
         push ();
         comment lexbuf;
         let s = Buffer.contents buf in
         Buffer.clear buf;
-        Queue.push (Gospel s) queue;
+        Queue.push (Spec s) queue;
         scan lexbuf
       }
   | "(*"
@@ -43,8 +74,7 @@ rule scan = parse
         Buffer.add_string buf "*)";
         scan lexbuf
       }
-  | space as c { Buffer.add_char buf c; scan lexbuf }
-  | _ as c { Buffer.add_char buf c; empty_line := false; scan lexbuf }
+  | _ as c { Buffer.add_char buf c; scan lexbuf }
   | eof { flush () }
 
 (* FIXME: Strings in comments. *)

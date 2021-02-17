@@ -58,7 +58,7 @@
 %token COERCION
 %token IF IN
 %token OLD NOT RAISES (* READS *)
-%token THEN TRUE TYPE OPEN VAL MODIFIES EQUIVALENT CHECKS DIVERGES
+%token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES
 
 %token AS
 %token LET MATCH PREDICATE
@@ -98,33 +98,32 @@
 
 %left BAR
 
-%start <Uast.spec> spec_init
+%start <Uast.function_> func
+%start <Uast.axiom> axiom
+%start <Uast.val_spec> val_spec
+%start <Uast.type_spec> type_spec
+%start <Uast.fun_spec> func_spec
 
 %%
 
-spec_init:
-| nonempty_type_spec EOF { Stype ($1, mk_loc $startpos $endpos) }
-| val_spec EOF           { Sval ($1, mk_loc $startpos $endpos) }
-| func EOF               { Sfunction ($1, mk_loc $startpos $endpos)}
-| nonempty_func_spec EOF { Sfunc_spec ($1, mk_loc $startpos $endpos)}
-| axiom EOF              { Saxiom ($1, mk_loc $startpos $endpos)}
-| VAL                    { raise Ghost_decl }
-| TYPE                   { raise Ghost_decl }
-| OPEN                   { raise Ghost_decl }
+val_spec:
+| hd=val_spec_header bd=val_spec_body EOF
+  { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
+    { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
 ;
 
 axiom:
-| AXIOM id=lident COLON t=term
+| AXIOM id=lident COLON t=term EOF
   { {ax_name = id; ax_term = t; ax_loc = mk_loc $startpos $endpos} }
 ;
 
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
-    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec?
+    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
   { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec;
       fun_loc = mk_loc $startpos $endpos } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
-    fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec?
+    fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec;
       fun_loc = mk_loc $startpos $endpos } }
 ;
@@ -137,8 +136,8 @@ func_name:
   { mk_pid (mixfix "{:_:}") $startpos $endpos }
 
 func_spec:
-| (* Empty spec *)   { empty_fspec }
-| nonempty_func_spec { $1 }
+| EOF { empty_fspec }
+| nonempty_func_spec EOF { $1 }
 
 nonempty_func_spec:
 | REQUIRES t=term bd=func_spec
@@ -152,8 +151,8 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| (* Empty spec *)   { empty_tspec }
-| nonempty_type_spec { $1 }
+| EOF { empty_tspec }
+| nonempty_type_spec EOF { $1 }
 
 nonempty_type_spec:
 | EPHEMERAL ts=type_spec
@@ -171,11 +170,7 @@ type_spec_model:
   { { f_preid; f_mutable; f_pty;
       f_loc = mk_loc $startpos(f_mutable) $endpos(f_pty) } }
 
-val_spec:
-| hd=val_spec_header bd=val_spec_body
-  { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
-    { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
-;
+
 
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*

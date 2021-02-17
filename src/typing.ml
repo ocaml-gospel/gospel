@@ -390,7 +390,7 @@ let mutable_flag = function
   | Asttypes.Mutable -> Mutable
   | Asttypes.Immutable -> Immutable
 
-let process_type_spec kid crcm ns ty (spec:Uast.type_spec) =
+let process_type_spec kid crcm ns ty spec =
   let field (ns,fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol (Ident.of_preid f.f_preid) [ty] f_ty in
