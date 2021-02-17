@@ -91,37 +91,23 @@ and term_desc =
 
 (* Specification *)
 
-type invariant = term list
-
-type pre = term * bool (* wether it is a checks *)
-type post = term
 type xpost = Location.t * (qualid * (pattern * term) option) list
 
 type val_spec = {
-    sp_hd_nm   : Preid.t;             (* header name *)
-    sp_hd_ret  : labelled_arg list; (* Can only be LNone or LGhost *)
-    sp_hd_args : labelled_arg list; (* header arguments' names *)
-    sp_pre     : pre list;
-    sp_post    : post list;
-    sp_xpost   : xpost list;
-    sp_reads   : qualid list;        (* TODO *)
-    sp_writes  : term list;
-    sp_consumes: term list;
-    sp_alias   : (term * term) list; (* TODO *)
-    sp_diverge : bool;
-    sp_equiv   : string list;
+  sp_hd_nm   : Preid.t;           (* header name *)
+  sp_hd_ret  : labelled_arg list; (* Can only be LNone or LGhost *)
+  sp_hd_args : labelled_arg list; (* header arguments' names *)
+  sp_pre     : term list;
+  sp_checks  : term list;
+  sp_post    : term list;
+  sp_xpost   : xpost list;
+  sp_reads   : qualid list;        (* TODO *)
+  sp_writes  : term list;
+  sp_consumes: term list;
+  sp_alias   : (term * term) list; (* TODO *)
+  sp_diverge : bool;
+  sp_equiv   : string list;
 }
-
-(*
-1  val f : 'a -> 'b
-2  (*@ x = f y
-3      raises E1, E2                l1 = [(E1,None); (E2,None)]
-4      raises E1 -> t1
-5           | E2 -> t2              l2 = [(E1, Some (..., t1)); (E2, Some (...,t2))]
-6  *)
-
-  [(3,l1); (4,l2)]
-*)
 
 type field = {
   f_loc     : Location.t;
@@ -133,7 +119,7 @@ type field = {
 type type_spec = {
   ty_ephemeral : bool;
   ty_field     : field list;
-  ty_invariant : invariant;
+  ty_invariant : term list;
 }
 
 type fun_spec = {

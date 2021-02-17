@@ -77,11 +77,11 @@ module complex_vals.mli.pp
     
     val f : int -> int -> int
     (*@ r:int = f x:int y:int
-        requires (((integer_of_int 
-                 x:int):integer + 1:integer):integer < 0:integer):prop
+        requires ((integer_of_int  x:int):integer > 0:integer):prop
                  requires (((integer_of_int 
                           y:int):integer + 2:integer):integer < 0:integer):prop
-                 requires ((integer_of_int  x:int):integer > 0:integer):prop
+                 requires (((integer_of_int 
+                          x:int):integer + 1:integer):integer < 0:integer):prop
         ensures ((integer_of_int  r:int):integer = ((integer_of_int 
                 x:int):integer + (integer_of_int 
                 y:int):integer):integer):prop
@@ -94,12 +94,11 @@ module complex_vals.mli.pp
     
     val f_1 : int -> int -> int
     (*@ r_1:int = f_1 x_1:int y_1:int
-        requires (((integer_of_int 
-                 x_1:int):integer + 1:integer):integer < 0:integer):prop
+        requires ((integer_of_int  x_1:int):integer > 0:integer):prop
                  requires (((integer_of_int 
                           y_1:int):integer + 2:integer):integer < 0:integer):prop
-                 requires ((integer_of_int 
-                          x_1:int):integer > 0:integer):prop
+                 requires (((integer_of_int 
+                          x_1:int):integer + 1:integer):integer < 0:integer):prop
         ensures ((integer_of_int  r_1:int):integer = ((integer_of_int 
                 x_1:int):integer + (integer_of_int 
                 y_1:int):integer):integer):prop
