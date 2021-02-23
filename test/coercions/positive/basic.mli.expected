@@ -1,0 +1,56 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t1
+type t2
+[@@@gospel {| function c (x: t1) : t2 |}[@@gospel {| coercion |}]]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t1
+  
+
+type t2
+  
+
+(*@ function c ...
+    coercion *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module basic.mli.pp
+
+  Namespace: basic.mli.pp
+    Type symbols
+       t1
+       t2
+      
+    Logic Symbols
+      function c (_:t1) : t2
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t1
+         
+    
+    type t2
+         
+    
+    (*@ function c (x:t1): t2
+        coercion *)
+
+
+*** OK ***
+

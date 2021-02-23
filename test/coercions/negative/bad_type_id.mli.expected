@@ -1,0 +1,19 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t1
+[@@@gospel {| function c (x: t1) : t1 |}[@@gospel {| coercion |}]]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t1
+  
+
+(*@ function c ...
+    coercion *)
+File "_none_", line 1:
+Error: Function c cannot be used as a coercion

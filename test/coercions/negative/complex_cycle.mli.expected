@@ -1,0 +1,38 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t1
+type t2
+type t3
+[@@@gospel {| function c1 (x: t1) : t2 |}[@@gospel {| coercion |}]]
+[@@@gospel {| function c2 (x: t2) : t3 |}[@@gospel {| coercion |}]]
+[@@@gospel {| function c3 (x: t3) : t1 |}[@@gospel {| coercion |}]]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t1
+  
+
+type t2
+  
+
+type t3
+  
+
+(*@ function c1 ...
+    coercion *)
+
+(*@ function c2 ...
+    coercion *)
+
+(*@ function c3 ...
+    coercion *)
+File "_none_", line 1:
+Error: This coercion introduces a cycle;
+There is already a coercion from type t1 to type t3:
+c1: t1 -> t2
+c2: t2 -> t3
