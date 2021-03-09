@@ -1,11 +1,64 @@
 Language Specification
 ======================
 
-Gospel annotations are inserted in interface files (``.mli``), using attributes
-``[@@gospel "...."]`` or ``[@@@gospel "...."]``.
-Gospel comes with a preprocessor for the OCaml compiler
-that simplifies the writing of such a specification as ``(*@ .... *)``. We use
-the latter in the examples below.
+Specification locations
+-----------------------
+
+General conventions
+^^^^^^^^^^^^^^^^^^^
+
+Gospel annotations are written in interface files (``.mli``).
+
+:ref:`OCaml attributes
+<https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html>` with the
+identifier `gospel` are used to bear the Gospel specifications in their payload,
+as strings: ``[@@gospel "<spec>"]`` or ``[@@@gospel "<spec>"]``.
+
+.. rubric:: Floating attributes
+
+:ref:`Gost and logical declarations <Ghost and Logical Declarations>` must lie
+in floating attributes, inside module signatures::
+
+  [@@@gospel "val f : int -> int"]
+  [@@@gospel "predicate is_zero (x: integer) = x = 0"]
+
+
+.. rubric:: Attached attributes
+
+Specification bits which are semantically attached to OCaml declarations, e.g.
+:ref:`function contracts <Function Contracts>` or :ref:`type specifications
+<Type Specification>` specifications. In that case, the Gospel specification
+should be written in an attached attribute, following OCaml's attachement rules::
+
+  val f: int -> int
+  [@@gospel "y = f x ensures x > 0"]
+
+.. rubric:: Specification of ghost and logical Declarations
+
+When ghost and logical declarations need to be specified with a contract, the
+contract should reside in an attribute attached to the string containing the
+declaration::
+
+  [@@@gospel "val f : int -> int"
+    [@@gospel "y = f x ensures x > 0"]]
+
+Gospel preprocessor: =gospel_pps=
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Writing attributes can be tedious, especially when nested. Gospel is provided
+with a preprocessor that lets you write Gospel specifications in special
+comments, starting with a ``@``::
+
+  val f: int -> int           (* An OCaml value declaration *)
+  (*@ y = f x                 (* Its Gospel specification   *)
+      ensures x > 0 *)
+
+  (*@ type t *)               (* A ghost type declaration   *)
+  (*@ model size: int *)      (* Its Gospel specification   *)
+
+This notation will be used throughout the documentation, in place of the
+attribute-based one.
+
 
 Lexical Conventions
 -------------------
