@@ -377,11 +377,6 @@ let private_flag = function
   | Asttypes.Private -> Private
   | Asttypes.Public -> Public
 
-let variance = function
-  | Asttypes.Covariant -> Covariant
-  | Asttypes.Contravariant -> Contravariant
-  | Asttypes.Invariant -> Invariant
-
 let rec_flag = function
   | Asttypes.Nonrecursive -> Nonrecursive
   | Asttypes.Recursive -> Recursive
@@ -449,10 +444,10 @@ let type_type_declaration kid crcm ns tdl =
 
   and visit ~alias s td =
 
-    let parse_params (ct,v) (tvl,params,vs) = match ct.ptyp_desc with
+    let parse_params (ct, vi) (tvl,params,vs) = match ct.ptyp_desc with
       | Ptyp_var s ->
          let tv = tv_of_string s in
-         Mstr.add s tv tvl, tv :: params, variance v :: vs
+         Mstr.add s tv tvl, tv :: params, vi :: vs
       | Ptyp_any ->
          not_supported ~loc:ct.ptyp_loc "_ type parameters not supported yet"
       | _ -> assert false (* should not happen -- see parser optional_type_variable *)

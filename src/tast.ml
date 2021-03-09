@@ -160,16 +160,10 @@ type type_kind =
   | Pty_open
 
 type private_flag = Private | Public
-type variance = Covariant (* + *)
-              | Contravariant (* - *)
-              | Invariant
-
-(* type (+'a, +'b) t = 'a * 'b
-   type (-'a, +'b) t = 'a -> 'b *)
 
 type type_declaration = {
     td_ts         : tysymbol;
-    td_params     : (tvsymbol * variance) list;
+    td_params     : (tvsymbol * (variance * injectivity)) list;
     (* the core_type in uast can only be Ptyp_var _ or Ptyp_any
        according to the parser *)
     td_cstrs    : (ty * ty * Location.t) list;
@@ -468,10 +462,8 @@ let print_type_spec fmt {ty_ephemeral;ty_fields;ty_invariants} =
          ~sep:(const string "invariant")  print_term) ty_invariants
 
 let print_type_declaration fmt td =
-  let print_param fmt (tv,var) =
-    let var = match var with
-        Covariant -> "+" | Contravariant -> "-" | Invariant -> "" in
-   pp fmt "%s%a" var print_tv tv in
+  let print_param fmt (tv, (v, i)) =
+    pp fmt "%s%s%a" (type_variance v) (type_injectivity i) print_tv tv in
   let print_params fmt = function
     | [] -> ()
     | [p] -> pp fmt "%a " print_param p
