@@ -106,6 +106,7 @@ type val_spec = {
   sp_consumes: term list;
   sp_alias   : (term * term) list; (* TODO *)
   sp_diverge : bool;
+  sp_pure    : bool;
   sp_equiv   : string list;
 }
 
@@ -145,16 +146,6 @@ type axiom = {
   ax_term : term;
   ax_loc  : Location.t
 }
-
-type spec =
-  | Stype       of type_spec * Location.t
-  | Sval        of val_spec * Location.t
-  | Sfunction   of function_ * Location.t
-  | Sfunc_spec  of fun_spec * Location.t
-  | Saxiom      of axiom * Location.t
-  | Stype_ghost of rec_flag * type_declaration list * Location.t
-  | Sval_ghost  of value_description * Location.t
-  | Sopen_ghost of open_description  * Location.t
 
 (* Modified OCaml constructs with specification attached *)
 

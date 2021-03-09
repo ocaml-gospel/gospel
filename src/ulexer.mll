@@ -76,6 +76,7 @@
         "equivalent", EQUIVALENT;
         "checks", CHECKS;
         "diverges", DIVERGES;
+        "pure", PURE;
         (* vocal *)
         "ephemeral", EPHEMERAL;
         "model", MODEL;

@@ -27,6 +27,7 @@
     sp_consumes= [];
     sp_alias   = [];
     sp_diverge = false;
+    sp_pure    = false;
     sp_equiv   = [];
   }
 
@@ -58,7 +59,7 @@
 %token COERCION
 %token IF IN
 %token OLD NOT RAISES (* READS *)
-%token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES
+%token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
 
 %token AS
 %token LET MATCH PREDICATE
@@ -110,6 +111,7 @@ val_spec:
 | hd=val_spec_header bd=val_spec_body EOF
   { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
     { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
+(* TODO: pure or diverges only *)
 ;
 
 axiom:
@@ -181,6 +183,8 @@ val_spec_header:
 
 val_spec_body:
 | (* Empty spec *) { empty_vspec }
+| PURE bd=val_spec_body
+  { {bd with sp_pure = true} }
 | DIVERGES bd=val_spec_body
   { {bd with sp_diverge = true} }
 | MODIFIES wr=separated_list(COMMA, term) bd=val_spec_body
