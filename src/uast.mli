@@ -171,7 +171,7 @@ type s_val_description =
 type s_type_declaration =
   {
     tname       : string loc;
-    tparams     : (core_type * variance) list;
+    tparams     : (core_type * (variance * injectivity)) list;
     (* ('a1,...'an) t; None represents  _*)
     tcstrs      : (core_type * core_type * Location.t) list;
     (* ... constraint T1=T1'  ... constraint Tn=Tn' *)
