@@ -26,5 +26,5 @@ type 'a t2 =
   
 
 (*@ function i ... *)
-File "_none_", line 1:
+File "_none_", line 3, characters 8-15:
 Error: This pattern has type 'a t1 but is expected to have type @194@ t2

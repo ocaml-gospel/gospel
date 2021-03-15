@@ -62,13 +62,11 @@
         "true", TRUE;
         "with", WITH;
         "mutable", MUTABLE;
-        (* programs *)
         "ensures", ENSURES;
         "consumes", CONSUMES;
         "fun", FUN;
         "old", OLD;
         "raises", RAISES;
-        (*"reads", READS;*)
         "rec", REC;
         "requires", REQUIRES;
         "variant", VARIANT;
@@ -77,7 +75,6 @@
         "checks", CHECKS;
         "diverges", DIVERGES;
         "pure", PURE;
-        (* vocal *)
         "ephemeral", EPHEMERAL;
         "model", MODEL;
       ]
@@ -179,7 +176,6 @@ let op_char_34   = op_char_3 | op_char_4
 
 let op_char_pref = ['!' '?']
 
-
 rule token = parse
   | "[@" space* ([^ ' ' '\n' ']']+ (' '+ [^ ' ' '\n' ']']+)* as lbl) space* ']'
       { ATTRIBUTE lbl }
@@ -208,7 +204,7 @@ rule token = parse
   | ";"
       { SEMICOLON }
   | "~"
-      { TILDA }
+      { TILDE }
   | "?"
       { QUESTION }
   | "."

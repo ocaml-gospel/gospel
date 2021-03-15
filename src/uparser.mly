@@ -42,10 +42,8 @@
     sp_checks = [];
     sp_post = [];
     sp_xpost = [];
-    sp_reads = [];
     sp_writes = [];
     sp_consumes= [];
-    sp_alias = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
@@ -88,13 +86,13 @@
 
 (* keywords *)
 
-%token AXIOM (* CONSTANT *)
+%token AXIOM
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC
 %token INVARIANT
 %token COERCION
 %token IF IN
-%token OLD NOT RAISES (* READS *)
+%token OLD NOT RAISES
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
 
 %token AS
@@ -109,7 +107,7 @@
 %token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
-%token STAR TILDA UNDERSCORE
+%token STAR TILDE UNDERSCORE
 
 (* priorities *)
 
@@ -207,8 +205,7 @@ type_spec_model:
 | f_mutable=boption(MUTABLE) MODEL f_preid=lident_rich COLON f_pty=typ
   { { f_preid; f_mutable; f_pty;
       f_loc = mk_loc $loc } }
-
-
+;
 
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*
@@ -245,10 +242,10 @@ fun_arg:
   { Lunit }
 | lident
   { Lnone $1 }
-| TILDA lident
+| TILDE lident
   { Lnamed $2 }
 | QUESTION lident
-  { Lquestion $2 }
+  { Loptional $2 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
   { Lghost (id, ty) }
 ;
@@ -258,13 +255,12 @@ ret_value:
   { Lnone $1 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
   { Lghost (id, ty) }
+;
 
 ret_name:
 | LEFTPAR comma_list(ret_value) RIGHTPAR EQUAL
   { $2 }
-| comma_list(ret_value) EQUAL
-  { $1 }
-;
+| comma_list(ret_value) EQUAL { $1 } ;
 
 raises:
 | q=uqualid ARROW t=term
@@ -463,7 +459,7 @@ typ:
 | id=lident COLON aty=typ ARROW rty=typ
     { PTarrow (Lnamed id, aty, rty) }
 | QUESTION id=lident COLON aty=typ ARROW rty=typ
-    { PTarrow (Lquestion id, aty, rty) }
+    { PTarrow (Loptional id, aty, rty) }
 | typ ARROW typ
     { let l = mk_loc $loc in
       PTarrow (Lnone (id_anonymous l), $1, $3) }
@@ -472,7 +468,7 @@ typ:
 ;
 
 ty_tuple:
-| ty_arg  (* %prec prec_ty_arg *)
+| ty_arg
     { [$1] }
 | ty_arg STAR ty_tuple
     { $1 :: $3 }
@@ -597,11 +593,6 @@ quote_lident:
 | QUOTE_LIDENT  { mk_pid $1 $loc }
 ;
 
-(* ident:
- * | uident        { $1 }
- * | lident        { $1 }
- * ; *)
-
 ident_rich:
 | uident        { $1 }
 | lident_rich   { $1 }
@@ -617,25 +608,20 @@ lident_op_id:
 ;
 
 lident_op:
-| op_symbol                                   { infix $1        }
-| op_symbol UNDERSCORE                        { prefix $1       }
-| EQUAL                                       { infix "="       }
-| OPPREF UNDERSCORE?                          { prefix $1       }
-| DOT LEFTPAR RIGHTPAR                        { mixfix ".()"    }
-| DOT LEFTPAR LARROW RIGHTPAR                 { mixfix ".(<-)"  }
-| LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]"     }
-| LEFTSQ LARROW RIGHTSQ                       { mixfix "[<-]"   }
+| op_symbol                                   { infix $1 }
+| op_symbol UNDERSCORE                        { prefix $1 }
+| EQUAL                                       { infix "=" }
+| OPPREF UNDERSCORE?                          { prefix $1 }
+| DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
+| DOT LEFTPAR LARROW RIGHTPAR                 { mixfix ".(<-)" }
+| LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
+| LEFTSQ LARROW RIGHTSQ                       { mixfix "[<-]" }
 | LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { mixfix "[_.._]" }
-| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]"  }
-| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]"  }
+| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]" }
+| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]" }
 ;
 
 (* Qualified idents *)
-
-(* any_qualid:
- * | ident                { Qpreid $1 }
- * | any_qualid DOT ident { Qdot ($1, $3) }
- * ; *)
 
 qualid:
 | ident_rich              { Qpreid $1 }

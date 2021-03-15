@@ -19,7 +19,7 @@ open Tmodule
 
 let pid_of_label = function
   | Lunit -> invalid_arg "pid_of_label Lunit"
-  | Lnone p | Lquestion p | Lnamed p | Lghost (p, _) -> p
+  | Lnone p | Loptional p | Lnamed p | Lghost (p, _) -> p
 
 let string_list_of_qualid q =
   let rec fold_q acc = function
@@ -573,12 +573,12 @@ let process_val_spec kid crcm ns id cty vs =
        let vs = create_vsymbol pid ty in
        let env, lal = add_arg (Lghost vs) env lal in
        process_args args tyl env lal
-    | (Lquestion pid)::args, (ty,Asttypes.Optional s)::tyl ->
+    | (Loptional pid)::args, (ty,Asttypes.Optional s)::tyl ->
        check_report ~loc:pid.pid_loc (pid.pid_str = s)
          "parameter do not match with val type";
        let ty = ty_app ts_option [ty] in
        let vs = create_vsymbol pid ty in
-       let env, lal = add_arg (Lquestion vs) env lal in
+       let env, lal = add_arg (Loptional vs) env lal in
        process_args args tyl env lal
     | (Lnamed pid)::args, (ty,Asttypes.Labelled s)::tyl ->
        check_report ~loc:pid.pid_loc (pid.pid_str = s)

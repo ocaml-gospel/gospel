@@ -20,5 +20,5 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-File "_none_", line 1:
+File "_none_", line 4, characters 31-32:
 Error: Type mysmatch. Cannot match float with integer

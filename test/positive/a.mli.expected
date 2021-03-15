@@ -27,5 +27,5 @@ type 'a t2
 (*@ function f2 ... *)
 
 (*@ function f3 ... *)
-File "_none_", line 1:
+File "_none_", line 1, characters 6-17:
 Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

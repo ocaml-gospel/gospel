@@ -26,5 +26,5 @@
 (*@ function int_of_integer ... *)
 
 (*@ function h ... *)
-File "_none_", line 1:
+File "_none_", line 4, characters 11-31:
 Error: Type mysmatch. Cannot match float with int

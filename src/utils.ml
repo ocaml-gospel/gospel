@@ -12,18 +12,17 @@ open Ppxlib
 
 let rec split_at_f f = function
   | [] -> [], []
-  | x::xs as l ->
-      if f x then
-        let xs', ys' = split_at_f f xs in
-        x::xs', ys'
-      else [], l
+  | x :: xs when f x ->
+    let xs', ys' = split_at_f f xs in
+    x::xs', ys'
+  | l -> [], l
 
 let rec split_at_i i = function
   | [] -> [], []
   | l when i <= 0 -> [], l
-  | x::xs ->
-      let xs', ys' = split_at_i (i-1) xs in
-      x::xs', ys'
+  | x :: xs ->
+    let xs', ys' = split_at_i (pred i) xs in
+    x::xs', ys'
 
 module Fmt = struct
   include Fmt
@@ -81,10 +80,9 @@ let not_supported ?loc s =
 let () =
   let open Location.Error in
   register_error_of_exn (function
-      | Located (_loc, exn) ->
+      | Located (loc, exn) ->
         of_exn exn
-        (*   TODO: wait for the next ppxlib release to get this
-         * |> Option.map (fun t -> Location_error.update_loc t loc) *)
+        |> Option.map (fun t -> Location.Error.update_loc t loc)
       | TypeCheckingError s ->
         Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "Type checking error: %s" s

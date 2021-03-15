@@ -15,5 +15,5 @@
 (*@ function rec f ... *)
 
 (*@ function g ... *)
-File "_none_", line 1:
+File "_none_", line 2, characters 17-18:
 Error: Type mysmatch. Cannot match integer with int

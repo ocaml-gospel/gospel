@@ -31,5 +31,5 @@ type 'a t2 =
 (*@ function g ... *)
 
 (*@ function f ... *)
-File "_none_", line 1:
+File "_none_", line 5, characters 18-25:
 Error: Type mysmatch. Cannot match 'a with bool

@@ -33,14 +33,6 @@ let dty_fresh =
 
 let dty_of_ty ty = Tty ty
 
-(* Maybe this does not neet to be global. It can be declared inside
-   the function term
-
-   We definitively need a map between the dtv_id and identifiers (or
-   tyvars)
-*)
-(* let tyvars = Hashtbl.create 17 *)
-
 let ty_of_dty =
   let tyvars = Hashtbl.create 0 in
   fun dty ->
@@ -109,10 +101,6 @@ type dterm = {
 }
 
 and dterm_node =
-  (*
-   * | Trecord of (Preid.t * term) list
-   * | Tupdate of term * (Preid.t * term) list
-   *)
   | DTattr  of dterm * string list
   | DTvar   of Preid.t
   | DTconst of Parsetree.constant

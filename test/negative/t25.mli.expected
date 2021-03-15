@@ -12,5 +12,5 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y z |}]
 val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y z
      *)
-File "_none_", line 1:
+File "_none_", line 1, characters 7-8:
 Error: Type checking error: parameter do not match with val type

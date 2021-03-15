@@ -25,5 +25,5 @@ type ('a, 'b) t2 = 'a t1
   
 
 (*@ function f ... *)
-File "_none_", line 1:
+File "_none_", lines 2-3, characters 4-20:
 Error: Type mysmatch. Cannot match 'a t1 with 'b t1

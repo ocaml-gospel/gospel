@@ -20,14 +20,14 @@ module Ident = Identifier.Ident
 type lb_arg =
   | Lunit
   | Lnone     of vsymbol
-  | Lquestion of vsymbol
+  | Loptional of vsymbol
   | Lnamed    of vsymbol
   | Lghost    of vsymbol
 
 let vs_of_lb_arg = function
   | Lunit        -> invalid_arg "vs_of_lb_arg Lunit"
   | Lnone     vs -> vs
-  | Lquestion vs -> vs
+  | Loptional vs -> vs
   | Lnamed    vs -> vs
   | Lghost    vs -> vs
 
@@ -485,7 +485,7 @@ let print_type_declaration fmt td =
 let print_lb_arg fmt = function
   | Lunit -> pp fmt "()"
   | Lnone vs -> print_vs fmt vs
-  | Lquestion vs -> pp fmt "?%a" print_vs vs
+  | Loptional vs -> pp fmt "?%a" print_vs vs
   | Lnamed vs -> pp fmt "~%a" print_vs vs
   | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
 

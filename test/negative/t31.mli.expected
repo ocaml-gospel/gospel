@@ -24,7 +24,7 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-File "_none_", line 1:
+File "_none_", line 2, characters 13-20:
 Error: This pattern has type int * int but is expected to have type (@193@, @194@,
                                                               @195@) 
 tuple3

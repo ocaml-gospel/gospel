@@ -18,5 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-File "_none_", line 1:
+File "_none_", line 3, characters 7-8:
 Error: Symbol y not found

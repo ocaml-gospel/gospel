@@ -24,5 +24,5 @@
     requires ...
     ensures ...
      *)
-File "_none_", line 1:
+File "_none_", line 5, characters 12-13:
 Error: Type mysmatch. Cannot match float with integer

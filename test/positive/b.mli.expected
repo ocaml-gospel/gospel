@@ -20,5 +20,5 @@ type t3 = (t1 * int t2)
   
 
 (*@ function f4 ... *)
-File "_none_", line 1:
+File "_none_", line 1, characters 6-17:
 Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli

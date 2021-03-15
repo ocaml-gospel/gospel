@@ -25,5 +25,5 @@ type t
 
 type int
   
-File "_none_", line 1:
+File "test2.mli.pp", line 13, characters 5-8:
 Error: Multiple definitions of type int

@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ predicate pred ... *)
-File "_none_", line 1:
+File "_none_", line 1, characters 26-27:
 Error: Type mysmatch. Cannot match int with bool

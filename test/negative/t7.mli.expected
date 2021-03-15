@@ -23,5 +23,5 @@
     ensures ...
     ensures ...
      *)
-File "_none_", line 1:
+File "_none_", line 4, characters 10-11:
 Error: Type mysmatch. Cannot match integer with bool

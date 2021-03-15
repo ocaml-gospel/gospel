@@ -29,7 +29,7 @@ type pty =
 and labelled_arg =
   | Lunit
   | Lnone     of Preid.t
-  | Lquestion of Preid.t
+  | Loptional of Preid.t
   | Lnamed    of Preid.t
   | Lghost    of Preid.t * pty
 
@@ -51,7 +51,6 @@ and pat_desc =
   | Pas    of pattern * Preid.t
   | Por    of pattern * pattern
   | Pcast  of pattern * pty
-  (* | Pscope of qualid * pattern TODO: think about *)
 
 (* Logical terms and formulas *)
 
@@ -59,7 +58,6 @@ type binder = Preid.t * pty option
 type param  = Location.t * Preid.t * pty
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
-  (* TODO: think about 'by' and 'so' *)
 type quant = Tforall | Texists | Tlambda
 
 type term = {
@@ -101,10 +99,8 @@ type val_spec = {
   sp_checks  : term list;
   sp_post    : term list;
   sp_xpost   : xpost list;
-  sp_reads   : qualid list;        (* TODO *)
   sp_writes  : term list;
   sp_consumes: term list;
-  sp_alias   : (term * term) list; (* TODO *)
   sp_diverge : bool;
   sp_pure    : bool;
   sp_equiv   : string list;

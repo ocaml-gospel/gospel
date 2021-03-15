@@ -15,5 +15,5 @@ type 'a t1
 
 type t2 = t1
   
-File "_none_", line 1:
+File "t39.mli.pp", line 13, characters 10-12:
 Error: Type t1 expects 1 arguments as opposed to 0
