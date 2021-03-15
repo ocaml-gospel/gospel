@@ -12,25 +12,61 @@
   open Ppxlib
   open Identifier
   open Uast
-  open Uast_utils
 
-  let empty_vspec = {
-    sp_hd_ret  = [];
-    sp_hd_nm   = mk_pid "" Lexing.dummy_pos Lexing.dummy_pos;
-    sp_hd_args = [];
-    sp_pre     = [];
-    sp_checks  = [];
-    sp_post    = [];
-    sp_xpost   = [];
-    sp_reads   = [];
-    sp_writes  = [];
-    sp_consumes= [];
-    sp_alias   = [];
-    sp_diverge = false;
-    sp_pure    = false;
-    sp_equiv   = [];
+  let mk_loc (s, e) = {
+    Location.loc_start = s;
+    Location.loc_end = e;
+    Location.loc_ghost = false;
   }
 
+  let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
+  let mk_term d l = { term_desc = d; term_loc = mk_loc l }
+  let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
+
+  let get_op l = Qpreid (mk_pid (mixfix "[_]") l)
+  let set_op l = Qpreid (mk_pid (mixfix "[<-]") l)
+  let sub_op l = Qpreid (mk_pid (mixfix "[_.._]") l)
+  let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
+  let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
+
+  let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
+
+  let array_get l =
+    Qdot (Qpreid (mk_pid "Array" l), mk_pid (mixfix "[_]") l)
+
+  let empty_vspec = {
+    sp_hd_ret = [];
+    sp_hd_nm = mk_pid "" (Lexing.dummy_pos, Lexing.dummy_pos);
+    sp_hd_args = [];
+    sp_pre = [];
+    sp_checks = [];
+    sp_post = [];
+    sp_xpost = [];
+    sp_reads = [];
+    sp_writes = [];
+    sp_consumes= [];
+    sp_alias = [];
+    sp_diverge = false;
+    sp_pure = false;
+    sp_equiv = [];
+  }
+
+  let empty_fspec = {
+    fun_req = [];
+    fun_ens = [];
+    fun_variant = [];
+    fun_coer = false;
+  }
+
+  let empty_tspec = {
+    ty_ephemeral = false;
+    ty_field = [];
+    ty_invariant = [];
+  }
+
+  let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
+
+  let qualid_preid = function Qpreid p | Qdot (_, p) -> p
 %}
 
 (* Tokens *)
@@ -116,26 +152,26 @@ val_spec:
 
 axiom:
 | AXIOM id=lident COLON t=term EOF
-  { {ax_name = id; ax_term = t; ax_loc = mk_loc $startpos $endpos} }
+  { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc} }
 ;
 
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
   { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec;
-      fun_loc = mk_loc $startpos $endpos } }
+      fun_loc = mk_loc $loc } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
     fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec;
-      fun_loc = mk_loc $startpos $endpos } }
+      fun_loc = mk_loc $loc } }
 ;
 
 func_name:
 | lident_rich {$1}
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{}") $startpos $endpos }
+  { mk_pid (mixfix "{}") $loc }
 | LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{:_:}") $startpos $endpos }
+  { mk_pid (mixfix "{:_:}") $loc }
 
 func_spec:
 | EOF { empty_fspec }
@@ -170,7 +206,7 @@ nonempty_type_spec:
 type_spec_model:
 | f_mutable=boption(MUTABLE) MODEL f_preid=lident_rich COLON f_pty=typ
   { { f_preid; f_mutable; f_pty;
-      f_loc = mk_loc $startpos(f_mutable) $endpos(f_pty) } }
+      f_loc = mk_loc $loc } }
 
 
 
@@ -198,7 +234,7 @@ val_spec_body:
 | ENSURES t=term bd=val_spec_body
   { { bd with sp_post = t :: bd.sp_post} }
 | RAISES r=bar_list1(raises) bd=val_spec_body
-  { let xp = mk_loc $startpos(r) $endpos(r), r in
+  { let xp = mk_loc $loc(r), r in
     { bd with sp_xpost = xp :: bd.sp_xpost } }
 | EQUIVALENT e=STRING bd=val_spec_body
   { { bd with sp_equiv = e :: bd.sp_equiv} }
@@ -232,7 +268,7 @@ ret_name:
 
 raises:
 | q=uqualid ARROW t=term
-  { q, Some (mk_pat (Ptuple []) $startpos(q) $endpos(q), t) }
+  { q, Some (mk_pat (Ptuple []) $loc(q), t) }
 | q=uqualid p=pat_arg ARROW t=term
   { q, Some (p, t) }
 | q=uqualid
@@ -246,7 +282,7 @@ params:
 
 param:
 | LEFTPAR params=lident+ COLON t=ty RIGHTPAR
-  { List.map (fun x -> mk_loc $startpos $endpos, x, t) params }
+  { List.map (fun x -> mk_loc $loc, x, t) params }
 ;
 
 cast:
@@ -272,12 +308,12 @@ term_:
 | l = term ; o = infix_op_234 ; r = term
     { Tidapp (Qpreid o, [l; r]) }
 | l = term ; COLONCOLON ; r = term
-    { Tidapp (Qpreid (mk_pid (infix "::") $startpos $endpos), [l; r]) }
+    { Tidapp (Qpreid (mk_pid (infix "::") $loc), [l; r]) }
 | l = term ; o = BACKQUOTE_LIDENT ; r = term
-    { let id = mk_pid o $startpos $endpos in
+    { let id = mk_pid o $loc in
       Tidapp (Qpreid id, [l; r]) }
 | term_arg located(term_arg)+
-    { let join f (a,_,e) = mk_term (Tapply (f,a)) $startpos e in
+    { let join f (a, _ ,e) = mk_term (Tapply (f, a)) ($startpos, e) in
       (List.fold_left join $1 $2).term_desc }
 | IF term THEN term ELSE term
     { Tif ($2, $4, $6) }
@@ -296,7 +332,7 @@ term_:
 | MATCH term WITH match_cases(term)
     { Tcase ($2, $4) }
 | MATCH comma_list2(term) WITH match_cases(term)
-    { Tcase (mk_term (Ttuple $2) $startpos($2) $endpos($2), $4) }
+    { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
 | quant comma_list1(quant_vars) triggers DOT term
     { Tquant ($1, List.concat $2, $3, $5) }
 | FUN args = quant_vars ARROW t = term
@@ -362,13 +398,13 @@ term_block_:
 | LEFTPAR t=term RIGHTPAR                           { t.term_desc }
 | LEFTPAR RIGHTPAR                                  { Ttuple [] }
 | LEFTSQRIGHTSQ
-    { Tpreid (Qpreid (mk_pid "[]"  $startpos $endpos)) }
+    { Tpreid (Qpreid (mk_pid "[]"  $loc)) }
 | LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
 | LEFTBRC term_arg WITH field_list1(term) RIGHTBRC  { Tupdate ($2,$4) }
 | LEFTBRCRIGHTBRC
-    { Tpreid (Qpreid (mk_pid (mixfix "{}") $startpos $endpos)) }
+    { Tpreid (Qpreid (mk_pid (mixfix "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = Qpreid (mk_pid (mixfix "{:_:}") $startpos $endpos) in
+    { let id = Qpreid (mk_pid (mixfix "{:_:}") $loc) in
       Tidapp (id, [t]) }
 ;
 
@@ -377,20 +413,20 @@ term_sub_:
 | uqualid DOT mk_term(term_block_)                  { Tscope ($1, $3) }
 | term_dot DOT lqualid_rich                         { Tidapp ($3,[$1]) }
 | term_arg LEFTSQ term RIGHTSQ
-    { Tidapp (get_op $startpos($2) $endpos($2), [$1;$3]) }
+    { Tidapp (get_op $loc($2), [$1;$3]) }
 | term_arg LEFTSQ term LARROW term RIGHTSQ
-    { Tidapp (set_op $startpos($2) $endpos($2), [$1;$3;$5]) }
+    { Tidapp (set_op $loc($2), [$1;$3;$5]) }
 | term_arg LEFTSQ term DOTDOT term RIGHTSQ
-    { Tidapp (sub_op $startpos($2) $endpos($2), [$1;$3;$5]) }
+    { Tidapp (sub_op $loc($2), [$1;$3;$5]) }
 | term_arg LEFTSQ term DOTDOT RIGHTSQ
-    { Tidapp (above_op $startpos($2) $endpos($2), [$1;$3]) }
+    { Tidapp (above_op $loc($2), [$1;$3]) }
 | term_arg LEFTSQ DOTDOT term RIGHTSQ
-    { Tidapp (below_op $startpos($2) $endpos($2), [$1;$4]) }
+    { Tidapp (below_op $loc($2), [$1;$4]) }
 | LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
 | term_dot DOT LEFTPAR term RIGHTPAR
-    { Tidapp (array_get $startpos($2) $endpos($2), [$1; $4]) }
+    { Tidapp (array_get $loc($2), [$1; $4]) }
 | t1=term_dot DOT LEFTPAR t2=term LARROW t3=term  RIGHTPAR
-    { Tidapp (set_op $startpos($2) $endpos($2), [t1;t2;t3]) }
+    { Tidapp (set_op $loc($2), [t1;t2;t3]) }
 ;
 
 %inline bin_op:
@@ -410,7 +446,7 @@ quant:
 constant:
 | INTEGER { Parsetree.Pconst_integer ($1, None) }
 | FLOAT { Parsetree.Pconst_float ($1, None) }
-| STRING { Pconst_string ($1, mk_loc $startpos $endpos, None) }
+| STRING { Pconst_string ($1, mk_loc $loc, None) }
 | CHAR { Pconst_char $1 }
 ;
 
@@ -418,7 +454,7 @@ binder_var:
 | attrs(lident)  { $1 }
 ;
 
-mk_expr(X): d = X { mk_expr d $startpos $endpos }
+mk_expr(X): d = X { mk_expr d $loc }
 ;
 
 typ:
@@ -429,7 +465,7 @@ typ:
 | QUESTION id=lident COLON aty=typ ARROW rty=typ
     { PTarrow (Lquestion id, aty, rty) }
 | typ ARROW typ
-    { let l = mk_loc $startpos($1) $endpos($2) in
+    { let l = mk_loc $loc in
       PTarrow (Lnone (id_anonymous l), $1, $3) }
 | ty_arg STAR ty_tuple
     { PTtuple ($1 :: $3) }
@@ -459,12 +495,12 @@ ty_arg:
 | typ {$1}
 ;
 
-mk_term(X): d = X { mk_term d $startpos $endpos }
+mk_term(X): d = X { mk_term d $loc }
 ;
 
 (* Patterns *)
 
-mk_pat(X): X { mk_pat $1 $startpos $endpos }
+mk_pat(X): X { mk_pat $1 $loc }
 ;
 
 pattern: mk_pat(pattern_) { $1 };
@@ -484,7 +520,7 @@ pat_conj_:
 pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON pat_arg
-    { Papp (Qpreid (mk_pid (infix "::") $startpos $endpos),[$1;$3]) }
+    { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
 | uqualid pat_arg+                      { Papp ($1,$2) }
 | mk_pat(pat_uni_) AS attrs(lident)
                                         { Pas ($1,$3) }
@@ -501,7 +537,7 @@ pat_arg_shared_:
 | uqualid                               { Papp ($1,[]) }
 | LEFTPAR RIGHTPAR                      { Ptuple [] }
 | LEFTSQRIGHTSQ
-  { Papp (Qpreid (mk_pid "[]"  $startpos $endpos), []) }
+  { Papp (Qpreid (mk_pid "[]"  $loc), []) }
 | LEFTPAR pattern_ RIGHTPAR             { $2 }
 | LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
 ;
@@ -529,36 +565,36 @@ op_symbol:
 ;
 
 %inline oppref:
-| o = OPPREF { mk_pid (prefix o)  $startpos $endpos }
+| o = OPPREF { mk_pid (prefix o) $loc }
 ;
 
 prefix_op:
-| op_symbol { mk_pid (prefix $1)  $startpos $endpos }
+| op_symbol { mk_pid (prefix $1) $loc }
 ;
 
 %inline infix_op_1:
-| o = OP1   { mk_pid (infix o)    $startpos $endpos }
-| EQUAL     { mk_pid (infix "=")  $startpos $endpos }
-| LTGT      { mk_pid (infix "<>") $startpos $endpos }
+| o = OP1   { mk_pid (infix o) $loc }
+| EQUAL     { mk_pid (infix "=") $loc }
+| LTGT      { mk_pid (infix "<>") $loc }
 %inline infix_op_234:
-| o = OP2   { mk_pid (infix o)    $startpos $endpos }
-| o = OP3   { mk_pid (infix o)    $startpos $endpos }
-| STAR      { mk_pid (infix "*")   $startpos $endpos }
-| o = OP4   { mk_pid (infix o)    $startpos $endpos }
+| o = OP2   { mk_pid (infix o) $loc }
+| o = OP3   { mk_pid (infix o) $loc }
+| STAR      { mk_pid (infix "*") $loc }
+| o = OP4   { mk_pid (infix o) $loc }
 ;
 
 (* Idents *)
 
 lident:
-| LIDENT        { mk_pid $1 $startpos $endpos }
+| LIDENT        { mk_pid $1 $loc }
 ;
 
 uident:
-| UIDENT        { mk_pid $1 $startpos $endpos }
+| UIDENT        { mk_pid $1 $loc }
 ;
 
 quote_lident:
-| QUOTE_LIDENT  { mk_pid $1 $startpos $endpos }
+| QUOTE_LIDENT  { mk_pid $1 $loc }
 ;
 
 (* ident:
@@ -577,7 +613,7 @@ lident_rich:
 ;
 
 lident_op_id:
-| LEFTPAR lident_op RIGHTPAR  { mk_pid $2 $startpos $endpos }
+| LEFTPAR lident_op RIGHTPAR  { mk_pid $2 $loc }
 ;
 
 lident_op:

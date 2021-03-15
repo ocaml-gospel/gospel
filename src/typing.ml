@@ -17,6 +17,10 @@ open Tmodule
 
 (** Utils *)
 
+let pid_of_label = function
+  | Lunit -> invalid_arg "pid_of_label Lunit"
+  | Lnone p | Lquestion p | Lnamed p | Lghost (p, _) -> p
+
 let string_list_of_qualid q =
   let rec fold_q acc = function
     | Qpreid pid -> pid.pid_str :: acc
@@ -589,7 +593,7 @@ let process_val_spec kid crcm ns id cty vs =
     | Lunit :: args, _ :: tyl ->
        process_args args tyl env (Lunit :: lal)
     | la::_, _ ->
-       error_report ~loc:((Uast_utils.pid_of_label la).pid_loc)
+       error_report ~loc:((pid_of_label la).pid_loc)
          "parameter do not match with val type" in
 
   let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
