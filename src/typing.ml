@@ -551,7 +551,8 @@ let rec val_parse_core_type ns cty =
    3 -
 *)
 let process_val_spec kid crcm ns id cty vs =
-  check_report ~loc:vs.sp_hd_nm.pid_loc
+  let loc = vs.sp_hd_nm.pid_loc in
+  check_report ~loc
     (id.Ident.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
 
@@ -651,8 +652,13 @@ let process_val_spec kid crcm ns id cty vs =
     | _, _ ->
        process_args vs.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
-
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_equiv
+  if vs.sp_pure then (
+    if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
+    if wr <> [] then error_report ~loc "a pure function cannot have writes";
+    if xpost <> [] || checks <> [] then
+      error_report ~loc "a pure function cannot raise exceptions";
+  );
+  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in

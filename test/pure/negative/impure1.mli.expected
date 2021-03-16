@@ -1,0 +1,25 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t[@@gospel {| mutable model view: int |}]
+val f : t -> int[@@gospel {| y = f x
+    pure
+    modifies x |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t
+  (*@ ephemeral
+      model ...
+       *)
+
+val f : t -> int
+(*@ y = f x
+    modifies ...
+     *)
+File "_none_", line 1, characters 5-6:
+Error: Type checking error: a pure function cannot have writes

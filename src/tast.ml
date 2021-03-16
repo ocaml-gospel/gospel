@@ -26,10 +26,17 @@ type lb_arg =
 
 let vs_of_lb_arg = function
   | Lunit        -> invalid_arg "vs_of_lb_arg Lunit"
-  | Lnone     vs -> vs
-  | Loptional vs -> vs
-  | Lnamed    vs -> vs
+  | Lnone     vs
+  | Loptional vs
+  | Lnamed    vs
   | Lghost    vs -> vs
+
+let ty_of_lb_arg = function
+  | Lunit        -> ty_unit
+  | Lnone     vs
+  | Loptional vs
+  | Lnamed    vs
+  | Lghost    vs -> vs.vs_ty
 
 type val_spec = {
     sp_args    : lb_arg list;
@@ -43,12 +50,13 @@ type val_spec = {
     sp_cs      : term list; (* consumes *)
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge : bool;
+    sp_pure    : bool;
     sp_equiv   : string list;
 }
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre checks post xpost wr cs dv equiv = {
+let val_spec args ret pre checks post xpost wr cs dv pure equiv = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
@@ -60,6 +68,7 @@ let val_spec args ret pre checks post xpost wr cs dv equiv = {
     sp_cs      = cs;
     (* sp_alias   : (term * term) list; TODO *)
     sp_diverge = dv;
+    sp_pure    = pure;
     sp_equiv   = equiv;
 }
 

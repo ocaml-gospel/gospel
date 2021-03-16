@@ -1,0 +1,54 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int[@@gospel {| y = f x
+    pure |}]
+val g : int -> int[@@gospel {| y = g x
+    requires f x > 0 |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int
+(*@ y = f x
+     *)
+
+val g : int -> int
+(*@ y = g x
+    requires ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module pure.mli.pp
+
+  Namespace: pure.mli.pp
+    Type symbols
+      
+    Logic Symbols
+      function f (_:int) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> int
+    (*@ y:int = f x:int*)
+    
+    val g : int -> int
+    (*@ y_1:int = g x_1:int
+        requires ((integer_of_int 
+                 (f  x_1:int):int):integer > 0:integer):prop*)
+
+
+*** OK ***
+

@@ -203,6 +203,11 @@ let ty_string    = ty_app ts_string  []
 let ty_option ty = ty_app ts_option  [ty]
 let ty_list   ty = ty_app ts_list    [ty]
 
+let ty_tuple = function
+  | []   -> ty_unit
+  | [ty] -> ty
+  | tyl  -> ty_app (ts_tuple (List.length tyl)) tyl
+
 type exn_type =
   | Exn_tuple of ty list
   (* exception E of int * int

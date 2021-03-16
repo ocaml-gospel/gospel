@@ -312,6 +312,12 @@ let add_sig_contents muc sig_ =
        rd.rd_cs :: (List.map (fun ld -> ld.ld_field) rd.rd_ldl)
     | _ -> assert false in
   match sig_.sig_desc with
+  | Sig_val ({vd_spec = Some sp} as v, _) when sp.sp_pure ->
+      let tyl = List.map ty_of_lb_arg sp.sp_args in
+      let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
+      let ls = lsymbol v.vd_name tyl (Some ty) in
+      let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
+      add_kid muc ls.ls_name sig_
   | Sig_function f ->
      let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
      let muc = match f.fun_spec with

@@ -1,0 +1,20 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int[@@gospel
+                    {| y = f x
+    pure
+    raises Not_found -> true |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int
+(*@ y = f x
+    with ...
+     *)
+File "_none_", line 1, characters 5-6:
+Error: Type checking error: a pure function cannot raise exceptions
