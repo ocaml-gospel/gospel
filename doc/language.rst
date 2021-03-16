@@ -16,7 +16,7 @@ as strings: ``[@@gospel "<spec>"]`` or ``[@@@gospel "<spec>"]``.
 
 .. rubric:: Floating attributes
 
-:ref:`Gost and logical declarations <Ghost and Logical Declarations>` must lie
+:ref:`Ghost and logical declarations <Ghost and Logical Declarations>` must lie
 in floating attributes, inside module signatures::
 
   [@@@gospel "val f : int -> int"]
@@ -42,8 +42,8 @@ declaration::
   [@@@gospel "val f : int -> int"
     [@@gospel "y = f x ensures x > 0"]]
 
-Gospel preprocessor: =gospel_pps=
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gospel preprocessor: ``gospel_pps``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Writing attributes can be tedious, especially when nested. Gospel is provided
 with a preprocessor that lets you write Gospel specifications in special
