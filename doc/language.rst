@@ -353,7 +353,19 @@ Code equivalence
 Non termination
 ^^^^^^^^^^^^^^^
 
-.. todo:: do it
+OCaml functions with attached contracts are always considered to be terminating
+by default.
+
+If one function is allowed to not terminate (e.g. a game or server main loop, a
+function waiting for a signal or event, etc.), one can add this information to
+the contract using a ``diverges`` clause::
+
+  val run : unit -> unit
+  (*@ run ()
+      diverges *)
+
+This states that the execution of the function ``run`` may not terminate. It is
+not specified whether this function is always non-terminating or not.
 
 .. index:: modifies
 .. index:: consumes
