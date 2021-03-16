@@ -9,10 +9,9 @@ General conventions
 
 Gospel annotations are written in interface files (``.mli``).
 
-:ref:`OCaml attributes
-<https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html>` with the
-identifier `gospel` are used to bear the Gospel specifications in their payload,
-as strings: ``[@@gospel "<spec>"]`` or ``[@@@gospel "<spec>"]``.
+`OCaml attributes <https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html>`
+with the identifier `gospel` are used to bear the Gospel specifications in their
+payload, as strings: ``[@@gospel "<spec>"]`` or ``[@@@gospel "<spec>"]``.
 
 .. rubric:: Floating attributes
 
@@ -112,8 +111,8 @@ Such a contract is composed of two parts:
         : | `postcondition`
         : | `exceptional_postcondition`
         : | "modifies" `term` ("," `term`)*
-        : | "equivalent" `string`
-        : | "diverges"
+        : | `equivalence`
+        : | `divergence`
         : | "consumes"
     ident_tuple: `identifier` ("," `identifier`)*
     parameter: "()" | `identifier` | "~" `identifier` | "?" `identifier`
@@ -325,7 +324,7 @@ implies that
 Some exceptions are not expected to be listed, because they could be
 unexpectedly triggered depending on the specifics of the machine the
 code is executed on.  There are two such exceptions in Gospel:
-`Stack_overflow` and `Out_of_memory`.
+``Stack_overflow`` and ``Out_of_memory``.
 
 These exceptions are always assumed to be possibly raised by any
 function, without an explicit ``raises``. This is equivalent to adding a
@@ -346,7 +345,29 @@ space as follows::
 Code equivalence
 ^^^^^^^^^^^^^^^^
 
-.. todo:: do it
+Complementary to other specification clauses, Gospel allows the writer of the
+interface to talk about *code equivalence* in the function contract. Such a code
+equivalence is specified in a clause introduced by the keyword ``equivalent``,
+followed by a string containing the OCaml code the function should behave like.
+
+.. productionlist::
+    equivalence: "equivalent" `string`
+
+This is particularly useful when specifying functions which behaviour can hardly
+be expressed in pure logic::
+
+  val iter: ('a -> unit) -> 'a t -> unit
+  (*@ iter f t
+      equivalent "List.iter f (to_list t)" *)
+
+With such a specification, no logical assertion is provided, but applying
+``iter`` to ``f`` and ``t`` is equivalent to applying ``List.iter`` to ``f``,
+and the conversion of ``t`` to a list. This does not leak implementation
+details, as ``iter`` might in fact be implemented in a different, more
+efficient, way, it does however make the specification concise and elegant.
+
+.. todo:: Warn about the OCaml code not being parsed/type-checked at the moment
+          (or do it).
 
 .. index:: diverges
 
@@ -358,14 +379,18 @@ by default.
 
 If one function is allowed to not terminate (e.g. a game or server main loop, a
 function waiting for a signal or event, etc.), one can add this information to
-the contract using a ``diverges`` clause::
+the contract using the ``diverges`` keyword.
+
+.. productionlist::
+    divergence: "diverges"
+
+The following example states that the execution of the function ``run`` may not
+terminate. It is not specified whether this function is always non-terminating
+or not::
 
   val run : unit -> unit
   (*@ run ()
       diverges *)
-
-This states that the execution of the function ``run`` may not terminate. It is
-not specified whether this function is always non-terminating or not.
 
 .. index:: modifies
 .. index:: consumes
