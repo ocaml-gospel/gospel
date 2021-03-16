@@ -155,12 +155,12 @@ axiom:
 
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
-    COLON ty=typ fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
-  { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec;
+    COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
+  { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec = None;
       fun_loc = mk_loc $loc } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
-    fun_def=preceded(EQUAL, term)? fun_spec=nonempty_func_spec? EOF
-  { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec;
+    fun_def=preceded(EQUAL, term)? EOF
+  { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
       fun_loc = mk_loc $loc } }
 ;
 
