@@ -3,13 +3,12 @@
 ********** Parsed file ********
 *******************************
 [@@@gospel
-  {| function p (x:integer):integer = x
-  requires x
-  variant x
-  ensures x = 2
-  ensures x > 2
-  ensures x > 1
-|}]
+  {| function p (x:integer):integer = x |}[@@gospel
+                                            {| requires x
+    variant x
+    ensures x = 2
+    ensures x > 2
+    ensures x > 1 |}]]
 
 *******************************
 ****** GOSPEL translation *****
@@ -23,5 +22,5 @@
     ensures ...
     ensures ...
      *)
-File "_none_", line 2, characters 11-12:
+File "_none_", line 1, characters 10-11:
 Error: Type mysmatch. Cannot match integer with bool

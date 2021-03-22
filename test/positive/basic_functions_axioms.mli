@@ -24,13 +24,12 @@
 
 (*@ predicate pred (x:bool) = x *)
 
-(*@ function p (x:integer):integer = x
-  requires x = 1
-  variant x
-  ensures x = 2
-  ensures x > 2
-  ensures x > 1
-*)
+(*@ function p (x:integer):integer = x *)
+(*@ requires x = 1
+    variant x
+    ensures x = 2
+    ensures x > 2
+    ensures x > 1 *)
 
 (*@ function rec f (x:bool): bool = f x *)
 
@@ -63,10 +62,10 @@
       int_of_integer (to_integer a + 1) *)
 
 (*@ function i (a:int):int =
-      int_of_integer (to_integer a + 1)
-    requires to_integer a > 0
+      int_of_integer (to_integer a + 1) *)
+(*@ requires to_integer a > 0
     ensures let old_a [@ athing] = to_integer (old a) in
-            to_integer a = old_a + 1*)
+            to_integer a = old_a + 1 *)
 
 type 'a t1 = C of 'a * int
 
