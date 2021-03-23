@@ -9,8 +9,8 @@ General conventions
 
 Gospel annotations are written in interface files (``.mli``).
 
-`OCaml attributes <https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html>`
-with the identifier `gospel` are used to bear the Gospel specifications in their
+`OCaml attributes <https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html>`_
+with the identifier ``gospel`` are used to bear the Gospel specifications in their
 payload, as strings: ``[@@gospel "<spec>"]`` or ``[@@@gospel "<spec>"]``.
 
 .. rubric:: Floating attributes
@@ -32,7 +32,7 @@ should be written in an attached attribute, following OCaml's attachement rules:
   val f: int -> int
   [@@gospel "y = f x ensures x > 0"]
 
-.. rubric:: Specification of ghost and logical Declarations
+.. rubric:: Specification of ghost and logical declarations
 
 When ghost and logical declarations need to be specified with a contract, the
 contract should reside in an attribute attached to the string containing the
@@ -62,26 +62,127 @@ attribute-based one.
 Lexical Conventions
 -------------------
 
-Gospel uses the OCaml lexical conventions, with the following
+Gospel uses the `OCaml lexical conventions <https://caml.inria.fr/pub/docs/manual-ocaml/lex.html>`_, with the following
 exceptions:
 
-.. todo:: Define lexical conventions
+* there are reserved keywords, namely ``checks``, ``consumes``,
+  ``diverges``, ``ephemeral``, ``equivalent``, ``model``,
+  ``modifies``, ``pure``, ``raises``, ``requires``, ``variant``,
+  ``axiom``, ``coercion``, ``ensures``, ``exists``, ``forall``,
+  ``invariant``, ``predicate`` ;
+
+* there are a few reserved symbols, namely ``<->``, ``/\``, ``\/``.
+
+In the following, ``lident`` (resp. ``uident``) stands for an
+identifier with a lowercase (resp. uppercase) first character.
 
 Terms and Formulas
 ------------------
 
-.. todo:: Define terms and formulas - this is just a placeholder
+Gospel makes a distinction between terms (e.g. ``x+1``) and formulas
+(e.g. ``forall i. f i > 0``). That distinction is made during type
+checking, and not at the syntax level. Below, ``expr`` stands for a
+Gospel expression, be it a term or a formula.
+
+.. rubric:: Type expressions
+
+Type expressions follow the OCaml syntax.
 
 .. productionlist::
-    term: `integer`   ; integer constant
-        : | `real`   ; real constant
-        : | "true" | "false"   ; Boolean constant
-        : | `term` "+" `term`
-        : | TODO
-   formula: TODO
-   pattern: TODO
+   typexpr: `lname`
+        : | "'" `lident`
+        : | "(" `typexpr` ")"
+        : | `typexpr` `lpath`
+        : | "(" `typexpr` ("," `typexpr`)+ ")" `lpath`
+        : | `typexpr` ("," `typexpr`)*
+        : | ("?"? `lident` ":")? `typexpr` "->" `typexpr`
+        : | `typexpr` ("*" `typexpr`)+
+   lpath: (`upath` ".")? `lident`
+   upath: `uident`
+        : | `upath` "." `uident`
 
-.. todo:: ``&&`` and ``||`` are lazy, but ``/\`` and ``\/`` are not
+.. rubric:: Expressions
+
+A large fragment of the OCaml syntax is reused for Gospel expressions.
+
+.. productionlist::
+    expr: `constant`
+        : | (`upath` ".")? `ident`
+        : | "(" `expr` ")"
+        : | "(" `expr` ("," `expr`)+ ")"
+        : | `expr` "." "(" `expr` ")"
+        : | `expr` `infix_op` `expr`
+        : | `prefix_op` `expr`
+        : | "not" `expr`
+        : | `expr` `expr`+
+        : | "if" `expr` "then" `expr` "else" `expr`
+        : | "let" `pattern` "=" `expr` "in" `expr`
+        : | "match" `expr` ("," `expr`)* "with" `match_cases`
+        : | "fun" `binders` "->" `expr`
+        : | `expr` ":" `typexpr`
+        : | "{" `fields` "}"
+        : | "{" `expr` "with` `fields` "}"
+        : | "[@...]" `expr`
+        : | ...
+   binders: `lident`+ (":" `typexpr`)?
+   pattern: "_"
+        : | `lident`
+        : | `uname` `pattern`?
+        : | "()"
+        : | "(" `pattern` ")"
+        : | `pattern` ("," `pattern`)+
+        : | `pattern` "::" `pattern`
+        : | `pattern` "as` `lident`
+        : | `pattern` "|" `pattern`
+        : | "{" `field_pattern_` (";" `field_pattern)* "}"
+   field_pattern: `lname` "=" `pattern`
+        : | `lname`
+   match_cases: "|"? `match_case` ("|" `match_case`)*
+   match_case: `pattern` "->" `expr`
+   fields: `field` (";" `field`)*
+   field: `lname` "=" `expr`
+        : | `lname`
+   constant: `integer_literal`
+        : | `real_literal`
+        : | "true" | "false"
+        : | "()"
+        : | "[]"
+
+.. rubric:: Gospel-specific expressions
+
+In addition, there is syntax that is specific to Gospel.
+
+.. productionlist::
+   expr : ...
+        : | `expr` "/\" `expr`
+        : | `expr` "\/" `expr`
+        : | "old" `expr`
+        : | `quantifier` `binders` ("," `binders`)* "." `expr`
+        : | `expr` "[" `expr` "]"
+        : | `expr` "[" `expr` "<-" `expr` "]"
+        : | `expr` "[" `expr` ".." `expr` "]"
+        : | `expr` "[" ".." `expr` "]"
+        : | `expr` "[" `expr` ".." "]"
+        : | `expr` "." "(" `expr` "<-" `expr` ")"
+   quantifier: `forall`
+        : | `exists`
+
+Note that ``e1[e2]`` is part of the OCaml syntax (application
+of ``e1`` to a single-element list ``[e2]``) but is listed here as it
+has a different meaning in Gospel (namely, access to a sequence element).
+
+There are two operators for logical conjunction, namely ``&&`` and
+``/\``, and two operators for logical disjunction, namely ``||`` and
+``\/``. A distinction between the two, if any, is tool-specific. For
+instance, a deductive verification tool may interpret ``A && B`` as
+``A /\ (A -> B)`` and a runtime assertion checking tool may interpret
+``A && B`` as a lazy operator (as in OCaml) and ``A /\ B`` as a strict
+operator.
+
+A noticeable difference w.r.t. the OCaml syntax is that infix
+operators can be chained in Gospel. One can write ``0 <= n < 100``,
+for instance, and it is interpreted as ``0 <= n /\ n < 100``.
+
 
 Function Contracts
 ------------------
@@ -110,7 +211,7 @@ Such a contract is composed of two parts:
     clause: `precondition`
         : | `postcondition`
         : | `exceptional_postcondition`
-        : | "modifies" `term` ("," `term`)*
+        : | "modifies" `expr` ("," `expr`)*
         : | `equivalence`
         : | `divergence`
         : | "consumes"
