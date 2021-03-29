@@ -57,9 +57,9 @@ val f : int -> int -> int
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module complex_vals.mli.pp
+module complex_vals.mli
 
-  Namespace: complex_vals.mli.pp
+  Namespace: complex_vals.mli
     Type symbols
       
     Logic Symbols

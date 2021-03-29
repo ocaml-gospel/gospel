@@ -10,28 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ open T9 *)
-
-*******************************
-********* Typed GOSPEL ********
-*******************************
-module t10.mli.pp
-
-  Namespace: t10.mli.pp
-    Type symbols
-      
-    Logic Symbols
-      
-    Exception Symbols
-      
-    Namespaces
-      
-    Type Namespaces
-      
-  Signatures
-    (*@ open Gospelstdlib *)
-    
-    (*@ open T9 *)
-
-
-*** OK ***
-
+File "_none_", line 1, characters 45-46:
+Error: Type mysmatch. Cannot match int with bool

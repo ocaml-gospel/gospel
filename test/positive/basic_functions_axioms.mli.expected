@@ -210,9 +210,9 @@ yy: int }
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module basic_functions_axioms.mli.pp
+module basic_functions_axioms.mli
 
-  Namespace: basic_functions_axioms.mli.pp
+  Namespace: basic_functions_axioms.mli
     Type symbols
       ('a) t1
       ('a) t2

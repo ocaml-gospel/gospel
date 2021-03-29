@@ -81,9 +81,9 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module vals.mli.pp
+module vals.mli
 
-  Namespace: vals.mli.pp
+  Namespace: vals.mli
     Type symbols
       
     Logic Symbols

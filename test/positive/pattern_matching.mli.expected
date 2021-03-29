@@ -39,9 +39,9 @@ val test1 : t -> t -> t
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module pattern_matching.mli.pp
+module pattern_matching.mli
 
-  Namespace: pattern_matching.mli.pp
+  Namespace: pattern_matching.mli
     Type symbols
        t
       

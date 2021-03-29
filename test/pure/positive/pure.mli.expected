@@ -24,9 +24,9 @@ val g : int -> int
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module pure.mli.pp
+module pure.mli
 
-  Namespace: pure.mli.pp
+  Namespace: pure.mli
     Type symbols
       
     Logic Symbols
