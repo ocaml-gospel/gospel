@@ -26,8 +26,6 @@ val with_loadpath : string list -> string -> string
     Raise Ocaml_syntax_error if there is an OCaml syntax error. *)
 val parse_ocaml : string -> Parsetree.signature
 
-val parse_ocaml_lb : Lexing.lexbuf -> Parsetree.signature
-
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 val parse_gospel :

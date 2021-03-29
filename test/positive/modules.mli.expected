@@ -95,9 +95,9 @@ val default : MF.ft -> MF.ft
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module modules.mli.pp
+module modules.mli
 
-  Namespace: modules.mli.pp
+  Namespace: modules.mli
     Type symbols
       
     Logic Symbols

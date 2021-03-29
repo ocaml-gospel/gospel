@@ -23,9 +23,9 @@ type t2
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module basic.mli.pp
+module basic.mli
 
-  Namespace: basic.mli.pp
+  Namespace: basic.mli
     Type symbols
        t1
        t2

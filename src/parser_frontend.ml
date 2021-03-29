@@ -9,7 +9,6 @@
 (**************************************************************************)
 
 open Ppxlib
-open Parser
 
 exception Ocaml_syntax_error of Location.t
 
@@ -37,13 +36,6 @@ let with_loadpath load_path file =
   else if Sys.file_exists file then file
   else raise Not_found
 
-let parse_ocaml_lb lb =
-  try interface Lexer.token lb with
-    Error -> begin
-      let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
-      let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false}  in
-      raise (Ocaml_syntax_error loc) end
-
 let parse_ocaml file =
   let lb =
     if file = gospelstdlib_file then
@@ -51,26 +43,27 @@ let parse_ocaml file =
     else
       open_in file |> Lexing.from_channel
   in
+  let lb = Pps.run lb |> Lexing.from_string in
   Location.init lb file;
-  parse_ocaml_lb lb
+  try Parser.interface Lexer.token lb with
+      Parser.Error ->
+      let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
+      let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false} in
+      raise (Ocaml_syntax_error loc)
 
 module B = Ast_builder.Make(struct
     let loc = Location.none
   end)
 
 let default_open =
-  let open Uast in
-  let od nm =
-    let id = Location.{txt = lident nm; loc = none} in
-    let od = B.open_infos ~expr:id ~override:Fresh in
-    Sig_ghost_open od
-  in
-  {sdesc = od gospelstdlib; sloc = Location.none}
+  let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
+  let name = { txt = "gospel"; loc = Location.none } in
+  B.attribute ~name ~payload |> B.psig_attribute
 
 (** Parse the attributes as GOSPEL specification. *)
-let parse_gospel sign nm =
-  let s = Uattr2spec.signature sign in
-  if nm = gospelstdlib then s else default_open :: s
+let parse_gospel signature name =
+  (if name = gospelstdlib then signature else default_open :: signature)
+  |> Uattr2spec.signature
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii

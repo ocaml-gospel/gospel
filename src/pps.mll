@@ -4,6 +4,8 @@
   let queue = Queue.create ()
   let buf = Buffer.create 1024
 
+  let clear () = Queue.clear queue
+
   let push () =
     if Buffer.length buf > 0 then (
       Queue.push (Other (Buffer.contents buf)) queue;
@@ -11,29 +13,21 @@
 
   let rec print = function
   | Ghost g :: Spec s :: l ->
-    Format.printf "[@@@@@@gospel {|%s|}[@@@@gospel {|%s|}]]" g s;
-    print l
+    Fmt.str "[@@@@@@gospel {|%s|}[@@@@gospel {|%s|}]]%s" g s (print l)
   | Ghost g :: Spaces sp :: Spec s :: l ->
-    Format.printf "[@@@@@@gospel {|%s|}%s[@@@@gospel {|%s|}]]" g sp s;
-    print l
+    Fmt.str "[@@@@@@gospel {|%s|}%s[@@@@gospel {|%s|}]]%s" g sp s (print l)
   | Ghost g :: l ->
-    Format.printf "[@@@@@@gospel {|%s|}]" g;
-    print l
+    Fmt.str "[@@@@@@gospel {|%s|}]%s" g (print l)
   | Other o :: Spec s :: l ->
-    Format.printf "%s[@@@@gospel {|%s|}]" o s;
-    print l
+    Fmt.str "%s[@@@@gospel {|%s|}]%s" o s (print l)
   | Spec s :: l ->
     (* FIXME: we could fail right here *)
-    Format.printf "[@@@@gospel {|%s|}]" s;
-    print l
+    Fmt.str "[@@@@gospel {|%s|}]%s" s (print l)
   | Other o :: Spaces sp :: Spec s :: l ->
-    Format.printf "%s%s[@@@@gospel {|%s|}]" o sp s;
-    print l
+    Fmt.str "%s%s[@@@@gospel {|%s|}]%s" o sp s (print l)
   | (Other s | Spaces s) :: l ->
-    Format.print_string s;
-    print l
-  | [] ->
-    Format.printf "@?"
+    Fmt.str "%s%s" s (print l)
+  | [] -> ""
 
   let flush () =
     push ();
@@ -89,10 +83,7 @@ and comment = parse
   | _ as c { Buffer.add_char buf c; comment lexbuf }
 
 {
-  let () =
-    let c =
-      if Array.length Sys.argv > 1 then Sys.argv.(1) |> open_in else stdin
-    in
-    Lexing.from_channel c |> scan;
-    close_in c
+  let run lb =
+    clear ();
+    scan lb
 }

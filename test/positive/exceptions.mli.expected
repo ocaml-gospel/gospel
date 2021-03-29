@@ -102,9 +102,9 @@ val f : 'a -> 'a
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module exceptions.mli.pp
+module exceptions.mli
 
-  Namespace: exceptions.mli.pp
+  Namespace: exceptions.mli
     Type symbols
       
     Logic Symbols

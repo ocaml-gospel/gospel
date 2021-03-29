@@ -15,9 +15,9 @@ type t
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module test.mli.pp
+module test.mli
 
-  Namespace: test.mli.pp
+  Namespace: test.mli
     Type symbols
        t
       

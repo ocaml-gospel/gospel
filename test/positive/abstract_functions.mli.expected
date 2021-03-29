@@ -86,9 +86,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module abstract_functions.mli.pp
+module abstract_functions.mli
 
-  Namespace: abstract_functions.mli.pp
+  Namespace: abstract_functions.mli
     Type symbols
       
     Logic Symbols

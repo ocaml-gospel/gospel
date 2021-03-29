@@ -62,9 +62,9 @@ type ('a, 'b) t7 = 'a t6
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module more_types.mli.pp
+module more_types.mli
 
-  Namespace: more_types.mli.pp
+  Namespace: more_types.mli
     Type symbols
        t1
       ('a) t2 [=t1]

@@ -225,9 +225,9 @@ val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module FM19.mli.pp
+module FM19.mli
 
-  Namespace: FM19.mli.pp
+  Namespace: FM19.mli
     Type symbols
        elem
        rand_state

@@ -14,9 +14,9 @@
 *******************************
 ********* Typed GOSPEL ********
 *******************************
-module test1.mli.pp
+module test1.mli
 
-  Namespace: test1.mli.pp
+  Namespace: test1.mli
     Type symbols
       
     Logic Symbols

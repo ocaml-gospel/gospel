@@ -1,5 +1,5 @@
 (ocamllex
- (modules ulexer))
+ (modules pps ulexer))
 
 (menhir
  (modules uparser))
@@ -12,14 +12,6 @@
 
 (rule
  (targets gospelstdlib.ml)
- (deps gospelstdlib.mli.pp)
- (action
-  (run stdlib/file_to_string.exe %{deps} %{targets})))
-
-(rule
- (targets gospelstdlib.mli.pp)
  (deps stdlib/gospelstdlib.mli)
  (action
-  (with-stdout-to
-   %{targets}
-   (run gospel_pps %{deps}))))
+  (run stdlib/file_to_string.exe %{deps} %{targets})))

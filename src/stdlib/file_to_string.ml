@@ -12,4 +12,3 @@ let oc = open_out output
 let fmt = formatter_of_out_channel oc
 let () = fprintf fmt "let contents = %S@." contents
 let () = close_out oc
-
