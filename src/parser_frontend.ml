@@ -36,6 +36,15 @@ let with_loadpath load_path file =
   else if Sys.file_exists file then file
   else raise Not_found
 
+let parse_ocaml_lb lb =
+  let lb_pps = Pps.run lb |> Lexing.from_string in
+  Location.init lb_pps lb.lex_start_p.pos_fname;
+  try Parser.interface Lexer.token lb_pps with
+    Parser.Error ->
+    let loc_start, loc_end = lb_pps.lex_start_p, lb_pps.lex_curr_p in
+    let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
+    raise (Ocaml_syntax_error loc)
+
 let parse_ocaml file =
   let lb =
     if file = gospelstdlib_file then
@@ -43,13 +52,8 @@ let parse_ocaml file =
     else
       open_in file |> Lexing.from_channel
   in
-  let lb = Pps.run lb |> Lexing.from_string in
   Location.init lb file;
-  try Parser.interface Lexer.token lb with
-      Parser.Error ->
-      let spos,fpos = lb.lex_start_p, lb.lex_curr_p in
-      let loc = Location.{loc_start=spos; loc_end=fpos;loc_ghost=false} in
-      raise (Ocaml_syntax_error loc)
+  parse_ocaml_lb lb
 
 module B = Ast_builder.Make(struct
     let loc = Location.none
