@@ -558,13 +558,16 @@ let process_val_spec kid crcm ns id cty vs =
 
   let args, ret = val_parse_core_type ns cty in
 
-  let add_arg la env lal =
-    let vs = vs_of_lb_arg la in
-    let vs_str = vs.vs_name.id_str in
-    let add = function
-      | None -> Some vs
-      | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str) in
-    Mstr.update vs_str add env, la :: lal in
+  let add_arg la env lal = match la with
+    | Lunit ->
+      env, la :: lal
+    | _ ->
+      let vs = vs_of_lb_arg la in
+      let vs_str = vs.vs_name.id_str in
+      let add = function
+        | None -> Some vs
+        | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str) in
+      Mstr.update vs_str add env, la :: lal in
 
   let rec process_args args tyl env lal = match args, tyl with
     | [], [] -> env, List.rev lal
