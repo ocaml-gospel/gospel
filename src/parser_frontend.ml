@@ -56,6 +56,16 @@ let parse_ocaml_structure_lb lb =
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)
 
+let parse_ocaml_structure_lb lb =
+  (* TODO: extend pre-processor to handle structures *)
+  (* let lb_pps = Pps.run lb |> Lexing.from_string in *)
+  Location.init lb lb.lex_start_p.pos_fname;
+  try Parser.implementation Lexer.token lb with
+    Parser.Error ->
+    let loc_start, loc_end = lb.lex_start_p, lb.lex_curr_p in
+    let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
+    raise (Ocaml_syntax_error loc)
+
 let parse_ocaml_signature file =
   let lb =
     if file = gospelstdlib_file then Lexing.from_string Gospelstdlib.contents
@@ -89,6 +99,12 @@ let parse_structure_gospel ~filename structure name =
     (* TODO: default open of stdlib as a structure item *)
     (* default_open_str :: *) structure)
   |> Uattr2spec.structure ~filename
+
+let parse_structure_gospel structure name =
+  (if name = gospelstdlib then structure else
+  (* TODO: default open of stdlib as a structure item *)
+     (* default_open_str :: *) structure)
+  |> Uattr2spec.structure
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii

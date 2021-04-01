@@ -28,6 +28,7 @@ val with_loadpath : string list -> string -> string
 
 val parse_ocaml_signature : string -> Parsetree.signature
 val parse_ocaml_signature_lb : Lexing.lexbuf -> Parsetree.signature
+
 val parse_ocaml_structure_lb : Lexing.lexbuf -> Parsetree.structure
 
 (* val parse_gospel :
@@ -35,7 +36,6 @@ val parse_ocaml_structure_lb : Lexing.lexbuf -> Parsetree.structure
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 
-(* val parse_ocaml_gospel : string -> Uast.s_signature *)
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL
     specification of the file located in [path].
 

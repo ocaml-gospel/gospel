@@ -159,6 +159,16 @@ type prop = {
   prop_kind : prop_kind;
 }
 
+
+type prop_kind = Plemma | Paxiom
+
+type prop = {
+  prop_name : Preid.t;
+  prop_term : term;
+  prop_loc  : Location.t;
+  prop_kind : prop_kind;
+}
+
 (* Modified OCaml constructs with specification attached *)
 
 type s_val_description = {
@@ -267,6 +277,7 @@ and s_functor_parameter =
   | Unit
   (* () *)
   | Named of string option loc * s_module_type
+
 (* (X : MT)          Some X, MT
    (_ : MT)          None, MT *)
 
