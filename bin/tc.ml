@@ -41,9 +41,9 @@ let run_bench config files =
   let ok, error = (ref 0, ref 0) in
   let parse f =
     try
-      let ocaml = parse_ocaml f in
+      let ocaml = parse_ocaml_signature f in
       let module_nm = path2module f in
-      let sigs = parse_gospel ocaml module_nm in
+      let sigs = parse_signature_gospel ocaml module_nm in
       pp fmt "parse OK - ";
       incr ok;
       if config.parse_only then raise Exit;
@@ -61,7 +61,7 @@ let run_bench config files =
 
 let run_file config file =
   try
-    let ocaml = parse_ocaml file in
+    let ocaml = parse_ocaml_signature file in
     if config.print_intermediate then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[********** Parsed file ********@]@.";
@@ -70,7 +70,7 @@ let run_file config file =
     if config.parse_ocaml_only then raise Exit;
 
     let module_nm = path2module file in
-    let sigs = parse_gospel ocaml module_nm in
+    let sigs = parse_signature_gospel ocaml module_nm in
     if config.print_intermediate || config.print_parsed then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[****** GOSPEL translation *****@]@.";
