@@ -941,7 +941,7 @@ let rec open_file ~loc penv muc nm =
     let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
     let sl =
       let file = Parser_frontend.with_loadpath penv.lpaths file_nm in
-      Parser_frontend.parse_ocaml_gospel file
+      Parser_frontend.parse_ocaml_signature_gospel file
     in
     let muc = open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in

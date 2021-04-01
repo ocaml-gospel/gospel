@@ -26,7 +26,11 @@ val parse_ocaml : string -> Parsetree.signature
     Raise Not_found if file does not exist. Raise Ocaml_syntax_error if there is
     an OCaml syntax error. *)
 
-val parse_ocaml_lb : Lexing.lexbuf -> Parsetree.signature
+val parse_ocaml_signature : string -> Parsetree.signature
+
+val parse_ocaml_signature_lb : Lexing.lexbuf -> Parsetree.signature
+
+val parse_ocaml_structure_lb : Lexing.lexbuf -> Parsetree.structure
 
 val parse_gospel :
   filename:string -> Parsetree.signature -> string -> Uast.s_signature
@@ -34,8 +38,19 @@ val parse_gospel :
     integrates them in the corresponding OCaml signatures. *)
 
 val parse_ocaml_gospel : string -> Uast.s_signature
+
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL
     specification of the file located in [path].
 
     Raise Not_found if the file does not exist. Raise Ocaml_syntax_error if
     there is an OCaml syntax error. *)
+
+val parse_signature_gospel :
+  Parsetree.signature -> string -> Uast.s_signature
+
+val parse_structure_gospel :
+  Parsetree.structure -> string -> Uast.s_structure
+
+val parse_ocaml_signature_gospel :  string -> Uast.s_signature
+
+(* val parse_ocaml_structure_gospel : string -> Uast.s_structure *)
