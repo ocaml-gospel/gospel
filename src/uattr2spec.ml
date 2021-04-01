@@ -210,6 +210,9 @@ and mk_s_expression spexp_desc spexp_loc spexp_loc_stack spexp_attributes =
 and mk_s_module_expr spmod_desc spmod_loc spmod_attributes =
   { spmod_desc; spmod_loc; spmod_attributes }
 
+and mk_svb spvb_pat spvb_expr spvb_attributes spvb_vspec spvb_loc =
+  { spvb_pat; spvb_expr; spvb_attributes; spvb_vspec; spvb_loc }
+
 and s_expression expr =
   let loc = expr.pexp_loc in
   let loc_stack = expr.pexp_loc_stack in
@@ -346,10 +349,10 @@ and structure_item str_item =
   | Pstr_eval (e, attrs) ->
       [mk_s_structure_item (Str_eval (s_expression e, attrs)) ~loc]
   | Pstr_value (rec_flag, vb_list) ->
-      let vb_list, fspec = s_value_binding vb_list in
+      (* let vb_list, fspec = s_value_binding vb_list in *)
       (* let fspec_list = floating_specs_str fspec in *)
       let str_desc = mk_s_structure_item (Str_value (rec_flag, vb_list)) ~loc in
-      List.rev (str_desc :: fspec_list)
+      [str_desc]
   | Pstr_type (rec_flag, type_decl_list) ->
       let td_list, fspec = type_declaration type_decl_list in
       let fspec_list = floating_specs_str fspec in
@@ -387,18 +390,24 @@ and s_value_binding vb_list =
   (* [val_binding v] parses the attributes of a value binding. As for val
      description, only the first attribute is considered as specification. *)
   let val_spec v =
-    let spec, attrs = split_attr v.pvb_attributes in
-    let spec = List.map attr2spec spec in
+    let spec, _ = get_spec_attr v.pvb_attributes in
+    let val_spec = Option.map (parse_gospel Uparser.val_spec) spec in
     let expr = s_expression v.pvb_expr in
     let vb = mk_svb v.pvb_pat expr v.pvb_attributes None v.pvb_loc in
-    match spec with
-    | [] -> vb, spec
-    | Sval (x, _) :: xs -> { vb with spvb_vspec = Some x}, xs
-    | xs -> vb, xs in
+    (* match spec with
+     * | [] -> vb, spec
+     * | Sval (x, _) :: xs -> { vb with spvb_vspec = Some x}, xs
+     * | xs -> vb, xs in *)
+    vb, val_spec in
   let vspec_fspec = List.map val_spec vb_list in
   let mk_vb_fspec (vb_acc, fs_acc) (vb, fs) = vb :: vb_acc, fs :: fs_acc in
   let vb_list, fspec = List.fold_left mk_vb_fspec ([], []) vspec_fspec in
-  List.rev vb_list, List.flatten fspec
+  List.rev vb_list, List.rev fspec
+
+  (* let vspec_fspec = List.map val_spec vb_list in
+   * let mk_vb_fspec vb_acc vb = vb :: vb_acc in
+   * let vb_list = List.fold_left mk_vb_fspec [] vspec_fspec in
+   * List.rev vb_list *)
 
 and s_module_binding {pmb_name; pmb_expr; pmb_attributes; pmb_loc} =
   { spmb_expr       = s_module_expr pmb_expr; spmb_name = pmb_name;
