@@ -347,7 +347,7 @@ and structure_item str_item =
       [mk_s_structure_item (Str_eval (s_expression e, attrs)) ~loc]
   | Pstr_value (rec_flag, vb_list) ->
       let vb_list, fspec = s_value_binding vb_list in
-      let fspec_list = floating_specs_str fspec in
+      (* let fspec_list = floating_specs_str fspec in *)
       let str_desc = mk_s_structure_item (Str_value (rec_flag, vb_list)) ~loc in
       List.rev (str_desc :: fspec_list)
   | Pstr_type (rec_flag, type_decl_list) ->
