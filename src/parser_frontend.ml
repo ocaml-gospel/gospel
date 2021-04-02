@@ -59,7 +59,7 @@ let parse_ocaml_structure_lb lb =
 let parse_ocaml_structure_lb lb =
   (* TODO: extend pre-processor to handle structures *)
   (* let lb_pps = Pps.run lb |> Lexing.from_string in *)
-  Location.init lb lb.lex_start_p.pos_fname;
+  Location.init lb lb.lex_curr_p.pos_fname;
   try Parser.implementation Lexer.token lb with
     Parser.Error ->
     let loc_start, loc_end = lb.lex_start_p, lb.lex_curr_p in
