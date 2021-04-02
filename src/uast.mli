@@ -159,7 +159,7 @@ type prop = {
   prop_kind : prop_kind;
 }
 
-
+(* TODO: have only one type for axioms *)
 type prop_kind = Plemma | Paxiom
 
 type prop = {

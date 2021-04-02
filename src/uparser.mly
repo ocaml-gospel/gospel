@@ -175,6 +175,15 @@ prop:
      prop_loc = mk_loc $loc; prop_kind = Plemma} }
 ;
 
+prop:
+| AXIOM id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Paxiom} }
+| LEMMA id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Plemma} }
+;
+
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
