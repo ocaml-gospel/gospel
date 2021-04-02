@@ -48,6 +48,7 @@
     sp_xpost = [];
     sp_writes = [];
     sp_consumes= [];
+    sp_variant = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
@@ -255,6 +256,8 @@ val_spec_body:
     { bd with sp_xpost = xp :: bd.sp_xpost } }
 | EQUIVALENT e=STRING bd=val_spec_body
   { { bd with sp_equiv = e :: bd.sp_equiv} }
+| VARIANT t = comma_list1(term) bd=val_spec_body
+  { { bd with sp_variant = t @ bd.sp_variant } }
 ;
 
 loop_spec: _loop_spec EOF
