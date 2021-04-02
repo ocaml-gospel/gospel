@@ -481,7 +481,7 @@ and s_structure_item_desc =
         (* module rec X1 = ME1 and ... and Xn = MEn *)
   | Str_modtype of s_module_type_declaration
         (* module type S = MT *)
-  | Str_open of open_description
+  | Str_open of open_declaration
         (* open X *)
   | Str_class of class_declaration list
         (* class c1 = ... and ... and cn = ... *)
@@ -509,7 +509,7 @@ and s_value_binding = {
 }
 
 and s_module_binding = {
-  spmb_name: string loc;
+  spmb_name: string option loc;
   spmb_expr: s_module_expr;
   spmb_attributes: attributes;
   spmb_loc: Location.t;

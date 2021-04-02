@@ -429,7 +429,6 @@ and structure_item str_item =
       [str_desc]
   | Pstr_type (rec_flag, type_decl_list) ->
       let td_list = List.map type_declaration type_decl_list in
-      (* let fspec_list = floating_specs_str fspec in *)
       let str_desc = mk_s_structure_item (Str_type (rec_flag, td_list)) ~loc in
       [str_desc]
   | Pstr_attribute attr when is_spec attr ->
@@ -439,21 +438,21 @@ and structure_item str_item =
   | Pstr_module mod_binding ->
       [mk_s_structure_item (Str_module (s_module_binding mod_binding)) ~loc]
   | Pstr_modtype mod_type_decl ->
-      let s_mod_type, _ = module_type_declaration mod_type_decl in
+      let s_mod_type = module_type_declaration mod_type_decl in
       [mk_s_structure_item (Str_modtype s_mod_type) ~loc]
   | Pstr_exception ty_exn ->
-      let attrs, specs = get_spec_attrs_str ty_exn.ptyexn_attributes in
-      let ty_exn = { ty_exn with ptyexn_attributes = attrs } in
+      (* let specs, attrs = get_spec_attr ty_exn.ptyexn_attributes in
+       * let ty_exn = { ty_exn with ptyexn_attributes = attrs } in *)
       let str_desc = mk_s_structure_item (Str_exception ty_exn) ~loc in
-      List.rev (str_desc :: specs)
+      [str_desc]
   | Pstr_primitive _ -> assert false (* TODO *)
   | Pstr_typext _ -> assert false (* TODO *)
   | Pstr_recmodule _ -> assert false (* TODO *)
   | Pstr_open popen ->
-      let attrs, specs = get_spec_attrs_str popen.popen_attributes in
-      let popen = { popen with popen_attributes = attrs } in
+      (* let attrs, specs = get_spec_attrs_str popen.popen_attributes in
+       * let popen = { popen with popen_attributes = attrs } in *)
       let str_desc = mk_s_structure_item (Str_open popen) ~loc in
-      List.rev (str_desc :: specs)
+      [str_desc]
   | Pstr_class _ -> assert false (* TODO *)
   | Pstr_class_type _ -> assert false (* TODO *)
   | Pstr_include _ -> assert false (* TODO *)
