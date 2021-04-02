@@ -86,7 +86,7 @@
 
 (* keywords *)
 
-%token AXIOM
+%token AXIOM LEMMA
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC
 %token INVARIANT
@@ -139,6 +139,7 @@
 %start <Uast.type_spec> type_spec
 %start <Uast.fun_spec> func_spec
 %start <Uast.loop_spec> loop_spec
+%start <Uast.prop> prop
 
 %%
 
@@ -152,6 +153,15 @@ val_spec:
 axiom:
 | AXIOM id=lident COLON t=term EOF
   { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc} }
+;
+
+prop:
+| AXIOM id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Paxiom} }
+| LEMMA id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Plemma} }
 ;
 
 func:
