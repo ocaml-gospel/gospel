@@ -64,7 +64,6 @@ let parse_gospel ~filename parse attr =
   Location.init lb loc.loc_start.pos_fname; (*FIXME: use filename *)
   lb.lex_curr_p  <- loc.loc_start;
   lb.lex_abs_pos <- loc.loc_start.pos_cnum;
-  Format.eprintf "parse gospel: %s@." lb.lex_curr_p.pos_fname;
   try parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
 
 let type_declaration ~filename t =
