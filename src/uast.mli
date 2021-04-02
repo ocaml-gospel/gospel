@@ -153,7 +153,7 @@ type axiom = {
   ax_text : string;
 }
 
-
+(* TODO: have only one type for axioms *)
 type prop_kind = Plemma | Paxiom
 
 type prop = {
@@ -501,7 +501,7 @@ and s_structure_item_desc =
   | Str_prop of prop
   | Str_ghost_type of rec_flag * s_type_declaration list
   | Str_ghost_val  of s_val_description
-  | Str_ghost_open of open_description
+  | Str_ghost_open of open_declaration
 
 and s_value_binding = {
   spvb_pat: Parsetree.pattern; (* FIXME: change this pattern type *)
