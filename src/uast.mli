@@ -101,6 +101,7 @@ type val_spec = {
   sp_xpost   : xpost list;
   sp_writes  : term list;
   sp_consumes: term list;
+  sp_variant : term list;
   sp_diverge : bool;
   sp_pure    : bool;
   sp_equiv   : string list;
