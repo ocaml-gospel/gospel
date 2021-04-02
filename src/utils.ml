@@ -56,6 +56,7 @@ module Fmt = struct
 end
 
 module Sstr = Set.Make(String)
+module Hstr = Hashtbl.Make(struct include String let hash = Hashtbl.hash end)
 
 exception TypeCheckingError of string
 exception NotSupported of string
