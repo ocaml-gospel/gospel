@@ -98,7 +98,7 @@
 
 %token AS
 %token LET MATCH PREDICATE
-%token WITH
+%token WITH ANDKW
 
 (* symbols *)
 
@@ -141,6 +141,7 @@
 %start <Uast.fun_spec> func_spec
 %start <Uast.loop_spec> loop_spec
 %start <Uast.prop> prop
+%start <Uast.s_with_constraint list> with_constraint
 
 %%
 
@@ -250,6 +251,15 @@ val_spec_body:
 | VARIANT t = comma_list1(term) bd=val_spec_body
   { { bd with sp_variant = t @ bd.sp_variant } }
 ;
+
+with_constraint:
+| WITH c = separated_list(ANDKW, _with_constraint) EOF { c }
+
+_with_constraint:
+| PREDICATE id = lident_rich EQUAL qr = qualid
+  { Wpredicate (id, qr) }
+| FUNCTION id = lident_rich EQUAL qr = qualid
+  { Wfunction (id, qr) }
 
 loop_spec: _loop_spec EOF
   { let inv, var = $1 in
