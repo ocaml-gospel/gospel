@@ -57,7 +57,6 @@ let parse_ocaml_structure_lb lb =
     raise (Ocaml_syntax_error loc)
 
 let parse_ocaml_structure_lb lb =
-  (* TODO: extend pre-processor to handle structures *)
   let lb_pps = Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_curr_p.pos_fname;
   try Parser.implementation Lexer.token lb_pps with
