@@ -1,5 +1,10 @@
 {
-  type t = Ghost of string | Spec of string | Other of string | Spaces of string
+type t =
+  | Ghost of string
+  | Spec of string
+  | Other of string
+  | Spaces of string
+  | LoopHead of string
 
   let queue = Queue.create ()
   let buf = Buffer.create 1024
@@ -20,14 +25,21 @@
     Fmt.str "[@@@@@@gospel {|%s|}]%s" g (print l)
   | Other o :: Spec s :: l ->
     Fmt.str "%s[@@@@gospel {|%s|}]%s" o s (print l)
+  | Other o :: LoopHead h :: Other o' :: Spec s :: l ->
+    Fmt.str "%s%s[@@gospel {|%s|}]%s%s" o h s o' (print l)
   | Spec s :: l ->
     (* FIXME: we could fail right here *)
     Fmt.str "[@@@@gospel {|%s|}]%s" s (print l)
+  | LoopHead h :: Other o :: Spec s :: l ->
+    Fmt.str "%s[@@gospel {|%s|}]%s%s" h s o (print l)
   | Other o :: Spaces sp :: Spec s :: l ->
     Fmt.str "%s%s[@@@@gospel {|%s|}]%s" o sp s (print l)
+  | Other o :: Spaces sp :: LoopHead h :: Other o' :: Spec s :: l ->
+    Fmt.str "%s%s%s[@@gospel {|%s|}]%s%s" o sp h s o' (print l)
   | (Other s | Spaces s) :: l ->
     Fmt.str "%s%s" s (print l)
   | [] -> ""
+  | _ -> assert false
 
   let flush () =
     push ();
@@ -52,6 +64,16 @@ rule scan = parse
         Queue.push (Ghost s) queue;
         scan lexbuf
       }
+  | "while"
+    {
+      push ();
+      Queue.push (LoopHead "while") queue;
+      loop lexbuf;
+      let s = Buffer.contents buf in
+      Buffer.clear buf;
+      Queue.push (Spec s) queue;
+      scan lexbuf
+    }
   | "(*@"
       {
         push ();
@@ -81,6 +103,15 @@ and comment = parse
         Buffer.add_string buf "*)";
         comment lexbuf }
   | _ as c { Buffer.add_char buf c; comment lexbuf }
+
+and loop = parse
+  | "(*@"
+      {
+        push ();
+        comment lexbuf
+      }
+  | _ as c { Buffer.add_char buf c; loop lexbuf }
+  | eof { failwith "Erro" }
 
 {
   let run lb =
