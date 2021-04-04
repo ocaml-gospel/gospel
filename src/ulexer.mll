@@ -77,6 +77,7 @@
         "pure", PURE;
         "ephemeral", EPHEMERAL;
         "model", MODEL;
+        "and", ANDKW;
       ]
 
   (* to translate escape sequences *)
