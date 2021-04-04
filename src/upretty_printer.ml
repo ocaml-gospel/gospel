@@ -298,7 +298,11 @@ and s_module_type f x =
                 ls longident_loc li
                 s_type_declaration td
           | Wmodsubst (li, li2) ->
-             pp f "module %a :=@ %a" longident_loc li longident_loc li2 in
+            pp f "module %a :=@ %a" longident_loc li longident_loc li2
+          | Wpredicate (id, qr) ->
+            pp f "predicate %a =@ %a" Preid.pp id qualid qr
+          | Wfunction (id, qr) ->
+            pp f "function %a =@ %a" Preid.pp id qualid qr in
         pp f "@[<hov2>%a@ with@ %a@]"
           s_module_type1 mt (list with_constraint ~sep:(any " and@ ")) l
     | _ -> s_module_type1 f x

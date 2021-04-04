@@ -208,11 +208,17 @@ and signature sigs =
       { sdesc = signature_item_desc psig_desc; sloc = psig_loc })
     sigs
 
-and module_type_desc = function
+and module_type_desc spec = function
   | Pmty_ident id -> Mod_ident id
   | Pmty_signature s -> Mod_signature (signature s)
   | Pmty_functor (fp, mt) -> Mod_functor (functor_parameter fp, module_type mt)
-  | Pmty_with (m, c) -> Mod_with (module_type m, List.map with_constraint c)
+  | Pmty_with (m, c) ->
+    let extra_constraints = match spec with
+      | None -> []
+      | Some c -> parse_gospel Uparser.with_constraint c in
+    let mk_constraint acc c = with_constraint c :: acc in
+    let constraints = List.fold_left mk_constraint extra_constraints c in
+    Mod_with (module_type m, constraints)
   | Pmty_typeof m -> Mod_typeof m
   | Pmty_extension e -> Mod_extension e
   | Pmty_alias a -> Mod_alias a
@@ -222,10 +228,11 @@ and functor_parameter = function
   | Named (s, m) -> Named (s, module_type m)
 
 and module_type m =
+  let spec, attr = get_spec_attr m.pmty_attributes in
   {
-    mdesc = module_type_desc m.pmty_desc;
+    mdesc = module_type_desc spec m.pmty_desc;
     mloc = m.pmty_loc;
-    mattributes = m.pmty_attributes;
+    mattributes = attr;
   }
 
 and module_declaration m =
