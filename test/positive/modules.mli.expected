@@ -279,7 +279,7 @@ module modules.mli
                  function y (_:tc) : float
                
           (*@ function fc (y_2:tc): ta =
-              (C  (x  y_2:tc):int):ta *)
+              (C  (y_2:tc).x):ta *)
           (*@ function fcc (a:ta): tc =
               match a:ta with
               | C b:int -> (constr#tc  b:int (float_of_int  b:int):float):tc
@@ -292,7 +292,7 @@ module modules.mli
               match a_1:ta with
               | C c:int -> ((integer_of_int 
                            c:int):integer + (integer_of_int 
-                           (x  b_1:tc):int):integer):integer
+                           (b_1:tc).x):integer):integer
               end::integer
           *)
         end

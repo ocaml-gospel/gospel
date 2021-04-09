@@ -146,6 +146,7 @@ and term_node =
   | Tvar   of vsymbol
   | Tconst of Parsetree.constant
   | Tapp   of lsymbol * term list
+  | Tfield of term * lsymbol
   | Tif    of term * term * term
   | Tlet   of vsymbol * term * term
   | Tcase  of term * (pattern * term) list
@@ -171,6 +172,7 @@ let rec t_free_vars t = match t.t_node with
   | Tconst _ -> Svs.empty
   | Tapp (_,tl) -> List.fold_left (fun fvs t ->
       Svs.union (t_free_vars t) fvs) Svs.empty tl
+  | Tfield (t,_) -> t_free_vars t
   | Tif (t1,t2,t3) -> Svs.union (t_free_vars t1)
       (Svs.union (t_free_vars t2) (t_free_vars t3))
   | Tlet (vs,t1,t2) ->
@@ -274,6 +276,8 @@ let t_var vs           = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty       = mk_term (Tconst c) (Some ty)
 let t_app ls tl ty     = ignore(ls_app_inst ls tl ty);
                          mk_term (Tapp (ls,tl)) ty
+let t_field t ls ty    = ignore(ls_app_inst ls [t] ty);
+                         mk_term (Tfield (t, ls)) ty
 let t_if t1 t2 t3      = mk_term (Tif (t1,t2,t3)) t2.t_ty
 let t_let vs t1 t2     = mk_term (Tlet (vs,t1,t2)) t2.t_ty
 let t_case t1 ptl      = match ptl with
@@ -406,6 +410,8 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
          Ident.pp ls.ls_name
          (list ~first:sp ~sep:sp print_term) tl
          print_ty t_ty
+    | Tfield (t, ls) ->
+        pp fmt "(%a).%a" print_term t Ident.pp ls.ls_name
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1,t2,t3) ->
        pp fmt "if %a then %a else %a" print_term t1
