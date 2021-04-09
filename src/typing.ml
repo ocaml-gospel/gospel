@@ -392,8 +392,8 @@ let mutable_flag = function
 let process_type_spec kid crcm ns ty spec =
   let field (ns,fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
-    let ls = fsymbol (Ident.of_preid f.f_preid) [ty] f_ty in
-    let ls_inv = fsymbol (Ident.of_preid f.f_preid) [] f_ty in
+    let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ty] f_ty in
+    let ls_inv = fsymbol ~field:true (Ident.of_preid f.f_preid) [] f_ty in
     (ns_add_ls ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
@@ -468,11 +468,11 @@ let type_type_declaration kid crcm ns tdl =
       let cs_id = Ident.create ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
-      let rd_cs = fsymbol ~constr:true cs_id fields_ty ty in
+      let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
       let mk_ld ld =
         let id = Ident.create ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
-        let field = fsymbol id [ty] ty_res in
+        let field = fsymbol ~field:true id [ty] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         label_declaration field mut ld.pld_loc ld.pld_attributes in
       {rd_cs;rd_ldl = List.map mk_ld ldl}
@@ -488,7 +488,7 @@ let type_type_declaration kid crcm ns tdl =
            let arg = match tyl with
              | [] | [_] -> tyl
              | _ -> [ty_app (ts_tuple (List.length tyl)) tyl] in
-           fsymbol ~constr:true cs_id arg ty, []
+           fsymbol ~constr:true ~field:false cs_id arg ty, []
         | Pcstr_record ldl ->
            let add ld (ldl,tyl) =
              let id = Ident.create ld.pld_name.txt in
@@ -499,7 +499,7 @@ let type_type_declaration kid crcm ns tdl =
              let ld = label_declaration field mut loc attrs in
              ld :: ldl, ty :: tyl in
            let ldl,tyl = List.fold_right add ldl ([],[]) in
-           fsymbol ~constr:true cs_id tyl ty, ldl in
+           fsymbol ~constr:true ~field:false cs_id tyl ty, ldl in
       constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes
     in
 
@@ -681,7 +681,7 @@ let process_function kid crcm ns f =
     create_vsymbol pid (ty_of_pty ns pty)) f.fun_params in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
-  let ls = lsymbol (Ident.of_preid f.fun_name) tyl f_ty in
+  let ls = lsymbol ~field:false (Ident.of_preid f.fun_name) tyl f_ty in
   let ns = if f.fun_rec then ns_add_ls ns f.fun_name.pid_str ls else ns in
 
   (* check that there is no duplicated parameters; we must do this
