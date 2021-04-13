@@ -45,6 +45,7 @@
       [
         "as", AS;
         "axiom", AXIOM;
+        "lemma", LEMMA;
         "coercion", COERCION;
         "else", ELSE;
         "exists", EXISTS;
@@ -78,6 +79,7 @@
         "ephemeral", EPHEMERAL;
         "model", MODEL;
         "and", ANDKW;
+        "mod", OP3("mod");
       ]
 
   (* to translate escape sequences *)
