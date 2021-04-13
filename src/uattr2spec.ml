@@ -414,18 +414,12 @@ and structure_item str_item =
       let s_mod_type = module_type_declaration mod_type_decl in
       [mk_s_structure_item (Str_modtype s_mod_type) ~loc]
   | Pstr_exception ty_exn ->
-      (* let specs, attrs = get_spec_attr ty_exn.ptyexn_attributes in
-       * let ty_exn = { ty_exn with ptyexn_attributes = attrs } in *)
-      let str_desc = mk_s_structure_item (Str_exception ty_exn) ~loc in
-      [str_desc]
+      [mk_s_structure_item (Str_exception ty_exn) ~loc]
   | Pstr_primitive _ -> assert false (* TODO *)
   | Pstr_typext _ -> assert false (* TODO *)
   | Pstr_recmodule _ -> assert false (* TODO *)
   | Pstr_open popen ->
-      (* let attrs, specs = get_spec_attrs_str popen.popen_attributes in
-       * let popen = { popen with popen_attributes = attrs } in *)
-      let str_desc = mk_s_structure_item (Str_open popen) ~loc in
-      [str_desc]
+      [mk_s_structure_item (Str_open popen) ~loc]
   | Pstr_class _ -> assert false (* TODO *)
   | Pstr_class_type _ -> assert false (* TODO *)
   | Pstr_include _ -> assert false (* TODO *)
