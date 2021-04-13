@@ -36,10 +36,9 @@ type t =
     Fmt.str "%s%s[@@@@gospel {|%s|}]%s" o sp s (print l)
   | Other o :: Spaces sp :: LoopHead h :: Other o' :: Spec s :: l ->
     Fmt.str "%s%s%s[@@gospel {|%s|}]%s%s" o sp h s o' (print l)
-  | (Other s | Spaces s) :: l ->
+  | (Other s | Spaces s | LoopHead s) :: l ->
     Fmt.str "%s%s" s (print l)
   | [] -> ""
-  | _ -> assert false
 
   let flush () =
     push ();
@@ -54,7 +53,8 @@ rule scan = parse
     { push (); Queue.push (Spaces s) queue; scan lexbuf }
   | "(*@"
       (space*
-       ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k)
+       ("function" | "type" | "predicate" | "axiom" |
+        "lemma"    | "val"  | "open" ) as k)
       {
         push ();
         Buffer.add_string buf k;
@@ -64,14 +64,11 @@ rule scan = parse
         Queue.push (Ghost s) queue;
         scan lexbuf
       }
-  | "while"
+  | (("while" | "for") space+) as k
     {
       push ();
-      Queue.push (LoopHead "while") queue;
+      Queue.push (LoopHead k) queue;
       loop lexbuf;
-      let s = Buffer.contents buf in
-      Buffer.clear buf;
-      Queue.push (Spec s) queue;
       scan lexbuf
     }
   | "(*@"
@@ -105,11 +102,20 @@ and comment = parse
   | _ as c { Buffer.add_char buf c; comment lexbuf }
 
 and loop = parse
-  | "(*@"
-      {
-        push ();
-        comment lexbuf
-      }
+  | ("do" space*) as k "(*@"
+    {
+      Buffer.add_string buf k;
+      push ();
+      comment lexbuf;
+      let s = Buffer.contents buf in
+      Buffer.clear buf;
+      Queue.push (Spec s) queue
+    }
+  | ("do" space*) as k
+    {
+      Buffer.add_string buf k;
+      push ()
+    }
   | _ as c { Buffer.add_char buf c; loop lexbuf }
   | eof { failwith "Erro" }
 
