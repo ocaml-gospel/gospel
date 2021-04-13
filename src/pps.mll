@@ -39,7 +39,6 @@ type t =
   | (Other s | Spaces s | LoopHead s) :: l ->
     Fmt.str "%s%s" s (print l)
   | [] -> ""
-  | _ -> assert false
 
   let flush () =
     push ();
