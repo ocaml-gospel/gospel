@@ -236,9 +236,9 @@ type s_signature_item_desc =
   (* Specific to specification *)
   | Sig_function of function_
   | Sig_axiom of axiom
-  | Sig_ghost_type  of rec_flag * s_type_declaration list
-  | Sig_ghost_val   of s_val_description
-  | Sig_ghost_open  of open_description
+  | Sig_ghost_type of rec_flag * s_type_declaration list
+  | Sig_ghost_val  of s_val_description
+  | Sig_ghost_open of open_description
 
 and s_signature_item =
   {
