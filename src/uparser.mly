@@ -47,6 +47,7 @@
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
+    sp_text = "";
   }
 
   let empty_fspec = {

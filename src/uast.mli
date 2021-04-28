@@ -104,6 +104,7 @@ type val_spec = {
   sp_diverge : bool;
   sp_pure    : bool;
   sp_equiv   : string list;
+  sp_text    : string; (* the attribute string *)
 }
 
 type field = {

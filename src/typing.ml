@@ -661,7 +661,7 @@ let process_val_spec kid crcm ns id cty vs =
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions";
   );
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv
+  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
