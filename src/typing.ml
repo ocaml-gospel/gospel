@@ -373,7 +373,8 @@ let term_with_unify kid crcm ty ns env t =
 
 let fmla kid crcm ns env t =
   let dt = dterm kid crcm ns env t in
-  fmla env dt
+  let tt = fmla env dt in
+  { tt with t_loc = Some t.term_loc }
 
 (** Typing type declarations *)
 
