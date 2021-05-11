@@ -53,6 +53,39 @@ extended with element `v` added at the front. In Gospel, one uses the keyword
 `old` to refer to the pre-state (*i.e.*, before the function call) of some
 mutable field.
 
+.. code-block:: ocaml
+
+   exception Empty
+
+   val pop: 'a t -> 'a
+   (*@ v = pop q
+         raises   Empty -> q.view = empty
+         modifies q
+         ensures  old q.view = q.view ++ v :: nil *)
+
+Foo
+
+.. todo::
+
+   to explain `raises`: clearly state q.view (implicitly?) refers to the
+   pre-state
+
+
+.. code-block:: ocaml
+
+   val is_empty: 'a t -> bool
+   (*@ b = is_empty q
+         ensures b <-> q.view = empty *)
+
+.. todo::
+
+   `is_empty` is interesting because it is an effect-free function
+
+.. todo::
+
+   `concat`: should we show all the free variants? It could be interesting in
+   order to showcase the expressiveness of Gospel to cope with different
+   programming scenarios.
 
 Gospel type-checker
 ~~~~~~~~~~~~~~~~~~~
