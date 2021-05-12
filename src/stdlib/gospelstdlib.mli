@@ -45,6 +45,7 @@
 (*@ function ( * ) (x y: integer) : integer *)
 (*@ function (/)   (x y: integer) : integer *)
 (*@ function mod   (x y: integer) : integer *)
+(*@ function pow   (x y: integer) : integer *)
 (*@ function (-_)  (x: integer) : integer *)
 (*@ predicate (>)  (x y: integer) *)
 (*@ predicate (>=) (x y: integer) *)

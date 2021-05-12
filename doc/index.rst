@@ -15,8 +15,8 @@ Welcome to Gospel's documentation!
    :maxdepth: 2
 
    starting
-   tools
    language
    api
+   tools
    genindex
    todos

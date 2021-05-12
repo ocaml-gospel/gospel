@@ -351,7 +351,8 @@ let rec term env prop dt =
 and term_node ?loc env prop dty dterm_node =
   match dterm_node with
   | DTvar pid ->
-     let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in (* TODO should I match vs.vs_ty with dty? *)
+     let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in
+     (* TODO should I match vs.vs_ty with dty? *)
      t_var vs
   | DTconst c ->
      t_const c (ty_of_dty (Option.get dty))
@@ -363,6 +364,8 @@ and term_node ?loc env prop dty dterm_node =
      if dt1.dt_dty = None || dt2.dt_dty = None then
        f_iff (term env true dt1) (term env true dt2)
      else t_equ (term env false dt1) (term env false dt2)
+  | DTapp (ls, [dt1]) when ls.ls_field ->
+     t_field (term env false dt1) ls (Option.map ty_of_dty dty)
   | DTapp (ls,dtl) ->
      t_app ls (List.map (term env false) dtl) (Option.map ty_of_dty dty)
   | DTif (dt1,dt2,dt3) ->

@@ -40,6 +40,7 @@ type lsymbol = {
   ls_args   : ty list;
   ls_value  : ty option;
   ls_constr : bool; (* true if it is a construct, false otherwise*)
+  ls_field  : bool; (* true if it is a record/model field *)
 }
 
 (* CHECK *)
@@ -56,25 +57,25 @@ module Sls = Set.Make(LS)
 module Mls = Map.Make(LS)
 
 
-let lsymbol ?(constr=false) ls_name ls_args ls_value =
-  {ls_name;ls_args;ls_value;ls_constr=constr}
+let lsymbol ?(constr=false) ~field ls_name ls_args ls_value =
+  {ls_name;ls_args;ls_value;ls_constr=constr;ls_field=field}
 
-let fsymbol ?(constr=false) nm tyl ty =
-  lsymbol ~constr nm tyl (Some ty)
+let fsymbol ?(constr=false) ~field nm tyl ty =
+  lsymbol ~constr ~field nm tyl (Some ty)
 
 let psymbol nm ty =
-  lsymbol nm ty None
+  lsymbol ~field:false nm ty None
 
-let ls_subst_ts old_ts new_ts ({ls_name;ls_constr;_} as ls) =
+let ls_subst_ts old_ts new_ts ({ls_name;ls_constr;ls_field;_} as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
   let ls_value = Option.map (ty_subst_ts old_ts new_ts) ls.ls_value in
-  lsymbol ls_name ls_args ls_value ~constr:ls_constr
+  lsymbol ls_name ls_args ls_value ~constr:ls_constr ~field:ls_field
 
 let ls_subst_ty old_ts new_ts new_ty ls =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
   let ls_args = List.map subst ls.ls_args in
   let ls_value = Option.map subst ls.ls_value in
-  lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr
+  lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr ~field:ls.ls_field
 
 (** buil-in lsymbols *)
 
@@ -82,15 +83,18 @@ let ps_equ =
   let tv = fresh_ty_var "a" in
   psymbol Identifier.eq [tv; tv]
 
-let fs_unit = fsymbol ~constr:true (Ident.create "unit") [] ty_unit
+let fs_unit =
+  fsymbol ~constr:true ~field:false (Ident.create "unit") [] ty_unit
 
-let fs_bool_true  = fsymbol ~constr:true (Ident.create "True")  [] ty_bool
-let fs_bool_false = fsymbol ~constr:true (Ident.create "False") [] ty_bool
+let fs_bool_true  =
+  fsymbol ~constr:true ~field:false (Ident.create "True")  [] ty_bool
+let fs_bool_false =
+  fsymbol ~constr:true ~field:false (Ident.create "False") [] ty_bool
 
 let fs_apply =
   let ty_a, ty_b = fresh_ty_var "a", fresh_ty_var "b" in
   let ty_a_to_b = ty_app ts_arrow [ty_a;ty_b] in
-  fsymbol (Ident.create "apply") [ty_a_to_b; ty_a] ty_b
+  fsymbol ~field:false (Ident.create "apply") [ty_a_to_b; ty_a] ty_b
 
 (* CHECK do we need two hash tables? *)
 let fs_tuple_ids = Hashtbl.create 17
@@ -103,7 +107,7 @@ let fs_tuple =
       let id = Ident.create ("tuple" ^ string_of_int n) in
       let tyl = List.init n (fun _ -> fresh_ty_var "a") in
       let ty = ty_app (ts_tuple n) tyl in
-      let ls = fsymbol  ~constr:true id tyl ty in
+      let ls = fsymbol  ~constr:true ~field:false id tyl ty in
       Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls; ls
 
@@ -142,6 +146,7 @@ and term_node =
   | Tvar   of vsymbol
   | Tconst of Parsetree.constant
   | Tapp   of lsymbol * term list
+  | Tfield of term * lsymbol
   | Tif    of term * term * term
   | Tlet   of vsymbol * term * term
   | Tcase  of term * (pattern * term) list
@@ -167,6 +172,7 @@ let rec t_free_vars t = match t.t_node with
   | Tconst _ -> Svs.empty
   | Tapp (_,tl) -> List.fold_left (fun fvs t ->
       Svs.union (t_free_vars t) fvs) Svs.empty tl
+  | Tfield (t,_) -> t_free_vars t
   | Tif (t1,t2,t3) -> Svs.union (t_free_vars t1)
       (Svs.union (t_free_vars t2) (t_free_vars t3))
   | Tlet (vs,t1,t2) ->
@@ -270,6 +276,8 @@ let t_var vs           = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty       = mk_term (Tconst c) (Some ty)
 let t_app ls tl ty     = ignore(ls_app_inst ls tl ty);
                          mk_term (Tapp (ls,tl)) ty
+let t_field t ls ty    = ignore(ls_app_inst ls [t] ty);
+                         mk_term (Tfield (t, ls)) ty
 let t_if t1 t2 t3      = mk_term (Tif (t1,t2,t3)) t2.t_ty
 let t_let vs t1 t2     = mk_term (Tlet (vs,t1,t2)) t2.t_ty
 let t_case t1 ptl      = match ptl with
@@ -402,6 +410,8 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
          Ident.pp ls.ls_name
          (list ~first:sp ~sep:sp print_term) tl
          print_ty t_ty
+    | Tfield (t, ls) ->
+        pp fmt "(%a).%a" print_term t Ident.pp ls.ls_name
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1,t2,t3) ->
        pp fmt "if %a then %a else %a" print_term t1

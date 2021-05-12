@@ -261,59 +261,56 @@ module FM19.mli
     
     val push : 'a -> 'a t -> unit
     (*@  push v:'a q:'a t
-        ensures ((view  q:'a t):'a seq = (cons 
-                v:'a old ((view  q:'a t):'a seq)):'a seq):prop
+        ensures ((q:'a t).view = (cons 
+                v:'a old ((q:'a t).view)):'a seq):prop
         writes q:'a t*)
     
     val pop : 'a t -> 'a
     (*@ v_1:'a = pop q_1:'a t
-        requires not ((view  q_1:'a t):'a seq = (empty ):'a seq):prop
-        ensures (old ((view  q_1:'a t):'a seq) = ((view 
-                q_1:'a t):'a seq ++ (cons 
+        requires not ((q_1:'a t).view = (empty ):'a seq):prop
+        ensures (old ((q_1:'a t).view) = ((q_1:'a t).view ++ (cons 
                 v_1:'a (empty ):'a seq):'a seq):'a seq):prop
         writes q_1:'a t*)
     
     val is_empty : 'a t -> bool
     (*@ b:bool = is_empty q_2:'a t
-        ensures (b:bool = (True ):bool):prop <-> ((view 
-                q_2:'a t):'a seq = (empty ):'a seq):prop*)
+        ensures (b:bool = (True ):bool):prop <-> ((q_2:'a t).view = (empty ):'a 
+                seq):prop*)
     
     val create : unit -> 'a t
     (*@ q_3:'a t = create ()
-        ensures ((view  q_3:'a t):'a seq = (empty ):'a seq):prop*)
+        ensures ((q_3:'a t).view = (empty ):'a seq):prop*)
     
     val in_place_concat : 'a t -> 'a t -> unit
     (*@  in_place_concat q1:'a t q2:'a t
-        ensures ((view  q1:'a t):'a seq = (empty ):'a seq):prop
-                ensures ((view  q2:'a t):'a seq = old (((view 
-                        q1:'a t):'a seq ++ old ((view 
-                        q2:'a t):'a seq)):'a seq)):prop
+        ensures ((q1:'a t).view = (empty ):'a seq):prop
+                ensures ((q2:'a t).view = old (((q1:'a t).view ++ old ((
+                        q2:'a t).view)):'a seq)):prop
         writes q1:'a t
                writes q2:'a t*)
     
     val in_place_destructive_concat : 'a t -> 'a t -> unit
     (*@  in_place_destructive_concat q1_1:'a t q2_1:'a t
-        ensures ((view  q2_1:'a t):'a seq = old (((view 
-                q1_1:'a t):'a seq ++ old ((view 
-                q2_1:'a t):'a seq)):'a seq)):prop
+        ensures ((q2_1:'a t).view = old (((q1_1:'a t).view ++ old ((q2_1:'a t).view)):'a 
+                seq)):prop
         writes q2_1:'a t
         consumes q1_1:'a t*)
     
     val nondestructive_concat : 'a t -> 'a t -> 'a t
     (*@ q3:'a t = nondestructive_concat q1_2:'a t q2_2:'a t
-        ensures ((view  q3:'a t):'a seq = ((view  q1_2:'a t):'a seq ++ (view 
-                q2_2:'a t):'a seq):'a seq):prop*)
+        ensures ((q3:'a t).view = ((q1_2:'a t).view ++ (q2_2:'a t).view):'a 
+                seq):prop*)
     
     val map : ('a -> 'b) -> 'a t -> 'b t
     (*@ r:'b_1 t = map f:'a -> 'b_1 q_4:'a t
-        ensures ((length  (view  r:'b_1 t):'b_1 seq):integer = (length 
-                (view  q_4:'a t):'a seq):integer):prop
+        ensures ((length  (r:'b_1 t).view):integer = (length 
+                (q_4:'a t).view):integer):prop
                 ensures forall i:integer . (0:integer <= i:integer):prop /\ (
                         i:integer < (length 
-                        (view  q_4:'a t):'a seq):integer):prop -> ((mixfix [_] 
-                        (view  r:'b_1 t):'b_1 seq i:integer):'b_1 = (apply 
+                        (q_4:'a t).view):integer):prop -> ((mixfix [_] 
+                        (r:'b_1 t).view i:integer):'b_1 = (apply 
                         f:'a -> 'b_1 (mixfix [_] 
-                        (view  q_4:'a t):'a seq i:integer):'a):'b_1):prop*)
+                        (q_4:'a t).view i:integer):'a):'b_1):prop*)
     
     (*@ function power (x:integer) (y:integer): integer *)
     
@@ -375,29 +372,28 @@ module FM19.mli
     
     val equiv : elem -> elem -> bool
     (*@ b_2:bool = equiv [uf:uf_instance: uf_instance] e1:elem e2:elem
-        requires (mem  e1:elem (dom  uf:uf_instance):elem set):prop && (mem 
-                 e2:elem (dom  uf:uf_instance):elem set):prop
+        requires (mem  e1:elem (uf:uf_instance).dom):prop && (mem 
+                 e2:elem (uf:uf_instance).dom):prop
         ensures (b_2:bool = (True ):bool):prop <-> ((apply 
-                (rep  uf:uf_instance):elem -> elem e1:elem):elem = (apply 
-                (rep  uf:uf_instance):elem -> elem e2:elem):elem):prop
-        writes (internal  uf:uf_instance):unit*)
+                (uf:uf_instance).rep e1:elem):elem = (apply 
+                (uf:uf_instance).rep e2:elem):elem):prop
+        writes (uf:uf_instance).internal*)
     
     (*@
     val create_instance : unit -> uf_instance
     (*@ uf_1:uf_instance = create_instance ()
-        ensures ((dom 
-                uf_1:uf_instance):elem set = (mixfix {} ):elem set):prop*)
+        ensures ((uf_1:uf_instance).dom = (mixfix {} ):elem set):prop*)
     *)
     
     val make : unit -> elem
     (*@ e:elem = make [uf_2:uf_instance: uf_instance] ()
-        ensures not (mem  e:elem old ((dom  uf_2:uf_instance):elem set)):prop
-                ensures ((dom  uf_2:uf_instance):elem set = (union 
-                        old ((dom  uf_2:uf_instance):elem set) (mixfix {:_:} 
+        ensures not (mem  e:elem old ((uf_2:uf_instance).dom)):prop
+                ensures ((uf_2:uf_instance).dom = (union 
+                        old ((uf_2:uf_instance).dom) (mixfix {:_:} 
                         e:elem):elem set):elem set):prop
-                ensures ((rep  uf_2:uf_instance):elem -> elem = (mixfix [<-] 
-                        old ((rep  uf_2:uf_instance):elem -> elem) e:elem
-                        e:elem):elem -> elem):prop
+                ensures ((uf_2:uf_instance).rep = (mixfix [<-] 
+                        old ((uf_2:uf_instance).rep) e:elem e:elem):elem ->
+                                                                    elem):prop
         writes uf_2:uf_instance*)
     
     type type1
@@ -417,7 +413,7 @@ module FM19.mli
         requires true:prop
         ensures true:prop
         writes p1:tt
-               writes (left  p2:tt):type1
+               writes (p2:tt).left
         consumes p3:tt*)
 
 

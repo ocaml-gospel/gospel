@@ -76,6 +76,7 @@ module a3.mli
               seq
               function mixfix [_] (_:'a seq) (_:integer) : 'a
               function mod (_:integer) (_:integer) : integer
+              function pow (_:integer) (_:integer) : integer
               function pred (_:integer) : integer
               function prefix ! (_:'a ref) : 'a
               function prefix - (_:integer) : integer

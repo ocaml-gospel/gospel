@@ -52,11 +52,12 @@ type val_spec = {
     sp_diverge : bool;
     sp_pure    : bool;
     sp_equiv   : string list;
+    sp_text    : string;
 }
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre checks post xpost wr cs dv pure equiv = {
+let val_spec args ret pre checks post xpost wr cs dv pure equiv text = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
@@ -70,6 +71,7 @@ let val_spec args ret pre checks post xpost wr cs dv pure equiv = {
     sp_diverge = dv;
     sp_pure    = pure;
     sp_equiv   = equiv;
+    sp_text    = text;
 }
 
 (* Checks the following:

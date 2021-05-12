@@ -35,6 +35,40 @@ specification, as follows:
 
 .. code-block:: ocaml
 
+    type 'a t
+    (*@ mutable model view: 'a seq *)
+
+    val create : unit -> 'a t
+    (** Return a new queue, initially empty. *)
+    (*@ q = create ()
+          ensures q.view = empty *)
+
+    val push : 'a -> 'a t -> unit
+    (** [add x q] adds the element [x] at the end of the queue [q]. *)
+    (*@ push x q
+          modifies q
+          ensures  q.view = snoc (old q.view) x *)
+
+    val pop : 'a t -> 'a
+    (** [pop q] removes and returns the first element in queue [q]. *)
+    (*@ r = pop q
+          checks   q.view <> empty
+          modifies q
+          ensures  old q.view = cons r q.view *)
+
+    + variant with raises
+
+    val is_empty : 'a t -> bool
+    (** Return [true] if the given queue is empty, [false] otherwise. *)
+    (*@ b = is_empty q
+          ensures b <-> q.view = empty *)
+
+.. todo::
+
+   show all the signature first, or at the end with Gospel spec?
+
+.. code-block:: ocaml
+
    val push: 'a -> 'a t -> unit
    (*@ push v q
        modifies q

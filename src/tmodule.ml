@@ -128,13 +128,13 @@ let ns_with_primitives =
     [ ps_equ.ls_name.id_str, ps_equ ] in
   let primitive_ls =
     [ (let tv = fresh_ty_var "a" in
-       none.id_str, fsymbol ~constr:true none [] (ty_option tv));
+       none.id_str, fsymbol ~constr:true ~field:false none [] (ty_option tv));
       (let tv = fresh_ty_var "a" in
-       some.id_str, fsymbol ~constr:true some [tv] (ty_option tv));
+       some.id_str, fsymbol ~constr:true ~field:false some [tv] (ty_option tv));
       (let tv = fresh_ty_var "a" in
-       nil.id_str, fsymbol ~constr:true nil [] (ty_list tv));
+       nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv));
       (let tv = fresh_ty_var "a" in
-       cons.id_str, fsymbol ~constr:true cons [tv; ty_app ts_list [tv]] (ty_list tv));
+       cons.id_str, fsymbol ~constr:true ~field:false cons [tv; ty_app ts_list [tv]] (ty_list tv));
     ] in
   let ns = List.fold_left (fun ns (s,ts) ->
                ns_add_ts ns s ts) empty_ns primitive_tys in
@@ -315,7 +315,7 @@ let add_sig_contents muc sig_ =
   | Sig_val ({vd_spec = Some sp} as v, _) when sp.sp_pure ->
       let tyl = List.map ty_of_lb_arg sp.sp_args in
       let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
-      let ls = lsymbol v.vd_name tyl (Some ty) in
+      let ls = lsymbol ~field:false v.vd_name tyl (Some ty) in
       let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
       add_kid muc ls.ls_name sig_
   | Sig_function f ->
