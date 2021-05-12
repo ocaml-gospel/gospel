@@ -470,13 +470,17 @@ let type_type_declaration kid crcm ns tdl =
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
       let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
-      let mk_ld ld =
+      let mk_ld ld (ldl, ns) =
         let id = Ident.create ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
         let field = fsymbol ~field:true id [ty] ty_res in
+        let field_inv = fsymbol ~field:true id [] ty_res in
         let mut = mutable_flag ld.pld_mutable in
-        label_declaration field mut ld.pld_loc ld.pld_attributes in
-      {rd_cs;rd_ldl = List.map mk_ld ldl}
+        let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
+        ld :: ldl, ns_add_ls ns id.id_str field_inv
+      in
+      let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
+      {rd_cs; rd_ldl}, ns
     in
 
     let process_variant ty alias cd =
@@ -505,14 +509,15 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let ty = ty_app td_ts (List.map ty_of_var params) in
-    let kind =
+    let kind, ns =
       let alias = Sstr.empty in
       match td.tkind with
-      | Ptype_abstract -> Pty_abstract
+      | Ptype_abstract -> Pty_abstract, ns
       | Ptype_variant cdl ->
-         Pty_variant (List.map (process_variant ty alias) cdl)
+         Pty_variant (List.map (process_variant ty alias) cdl), ns
       | Ptype_record ldl ->
-         Pty_record (process_record ty alias ldl)
+        let record, ns = process_record ty alias ldl in
+        Pty_record record, ns
       | Ptype_open -> assert false
     in
 
