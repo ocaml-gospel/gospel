@@ -70,7 +70,8 @@ indicates that ``q`` may be mutated by this function call. Note that
 this applies to the exceptional case as well, and that's why we state
 that ``q`` is both empty and not modified.
 
-An alternative would be ...
+An alternative specification for the ``pop`` operation would use a precondition
+to exclude the case of an empty queue. This is as follows:
 
 .. code-block:: ocaml
 
@@ -80,6 +81,17 @@ An alternative would be ...
        modifies q
        ensures  old q.view = q.view ++ (Seq.cons v empty) *)
 
+The ``requires`` clause states a property that must hold whenever this function
+is called. It is worth noting that such a precondition is not, by default,
+checked at run-time. Hence, a call to ``pop`` should be only performed by a
+client that is sure of respecting the precondition, for instance, when the
+client code is itself proved.
+
+.. todo::
+   should we name the ``pop`` with a precondition ``pop_unsafe``?
+
+.. todo::
+   should we talk about ``checks``?
 
 .. code-block:: ocaml
 
