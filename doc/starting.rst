@@ -85,7 +85,7 @@ The ``requires`` clause states a property that must hold whenever this function
 is called. It is worth noting that such a precondition is not, by default,
 checked at run-time. Hence, a call to ``pop`` should be only performed by a
 client that is sure of respecting the precondition, for instance, when the
-client code is itself proved.
+client code is itself verified.
 
 .. todo::
    should we name the ``pop`` with a precondition ``pop_unsafe``?
