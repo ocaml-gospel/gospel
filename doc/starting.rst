@@ -89,11 +89,30 @@ clearly state this function is only supposed to be used by clients that are sure
 to respect the precondition (for instance, when the client code is itself
 formally verified).
 
-.. todo::
-   should we name the ``pop`` with a precondition ``pop_unsafe``?
+Gospel preconditions are not, by default, dynamically verified before calling a
+function. These represent logical conditions that are amenable to static
+analyses checking, such as deductive verification or abstract
+interpretation. However, Gospel allows one to state some preconditions must be
+verified at run-time. These are introduced using a ``checks`` clause, such as
+the following:
+
+.. code-block:: ocaml
+
+   val pop: 'a t -> 'a
+   (*@ v = pop q
+         checks   q.view <> empty
+         modifies q
+         ensures  old q.view = q.view ++ (Seq.cons v empty) *)
+
+A proper implementation to the ``pop`` function, adhering to this specification,
+should begin by a dynamic test that...
 
 .. todo::
-   should we talk about ``checks``?
+   Is this a good example for a ``checks`` clause? How can one dynamically test
+   emptiness of field ``view``? It is a sequence, after all.
+
+.. todo::
+   make a reference to Ortac?
 
 .. code-block:: ocaml
 
