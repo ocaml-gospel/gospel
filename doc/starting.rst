@@ -114,20 +114,40 @@ should begin by a dynamic test that...
 .. todo::
    make a reference to Ortac?
 
+The next function features a very simple specification. Consider the following
+declaration of ``is_empty`` function, together with its Gospel contract:
+
 .. code-block:: ocaml
 
    val is_empty: 'a t -> bool
    (*@ b = is_empty q
          ensures b <-> q.view = empty *)
 
+This function returns the Boolean value ``True`` if and only if the queue is
+empty. Such a property is exactly what is captured in the
+postcondition. Although very simple, the above specification states an important
+property: the argument ``q`` is read-only, hence function ``is_empty`` is
+effect-free. In Gospel, whenever an argument or mutable field is not declared
+withing a ``modifies`` clause, then it is treated as a read-only value. This
+makes it much easier to reason about the use of such arguments, since its
+internal state is not changed by the function's execution. Consequently, there
+is no such value as ``old q.view``. Using such an annotation in the
+postcondition will be rejected by the Gospel type-checker.
+
 .. todo::
 
-   `is_empty` is interesting because it is an effect-free function
+   When we say it is easier to reason about read-only values, should we cite
+   Arthur and Françoi's paper? (ESOP 2017)
+
+.. todo::
+
+   The thing about the Gospel type-checker rejecting the ``old`` annotation in
+   case of read-only arguments is not entirely true. Neither it is the case for
+   the ``consumes`` clause. Should we keep the sentence like this?
 
 .. code-block:: ocaml
 
     val create : unit -> 'a t
-    (** Return a new queue, initially empty. *)
     (*@ q = create ()
           ensures q.view = empty *)
 
