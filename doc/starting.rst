@@ -150,7 +150,7 @@ and Gospel specification are as follows:
 
 .. code-block:: ocaml
 
-    val create : unit -> 'a t
+    val create: unit -> 'a t
     (*@ q = create ()
           ensures q.view = empty *)
 
@@ -182,6 +182,28 @@ practice in OCaml.
    `concat`: should we show all the free variants? It could be interesting in
    order to showcase the expressiveness of Gospel to cope with different
    programming scenarios.
+
+.. code-block:: ocaml
+
+   val in_place_concat: 'a t -> 'a t -> unit
+   (*@ in_place_concat q1 q2
+         modifies q1, q2
+         ensures  q1.view = empty
+         ensures  q2.view = old q1.view ++ old q2.view *)
+
+.. code-block:: ocaml
+
+   val in_place_destructive_concat: 'a t -> 'a t -> unit
+   (*@ in_place_destructive_concat q1 q2
+         consumes q1
+         modifies q2
+         ensures  q2.view = old q1.view ++ old q2.view *)
+
+.. code-block:: ocaml
+
+   val nondestructive_concat: 'a t -> 'a t -> 'a t
+   (*@ q3 = nondestructive_concat q1 q2
+         ensures q3.view = q1.view ++ q2.view *)
 
 Gospel type-checker
 ~~~~~~~~~~~~~~~~~~~
