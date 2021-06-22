@@ -2,7 +2,7 @@ Starting Example
 ================
 
 As a warmup example, we use Gospel to provide formal specification to a mutable
-queue data structure (adapted from `this FM'19 paper <https://hal.inria.fr/hal-02157484>`_).
+queue data structure (adapted from this `FM'19 paper <https://hal.inria.fr/hal-02157484>`_).
 
 First, we shall define the type of queues. Following the OCaml convention, we
 use ``'a t`` to represent a polymorphic queue, storing elements of type ``'a``. In
@@ -115,7 +115,7 @@ should begin by a dynamic test that...
    make a reference to Ortac?
 
 The next function features a very simple specification. Consider the following
-declaration of ``is_empty`` function, together with its Gospel contract:
+declaration for an emptiness test, together with its Gospel contract:
 
 .. code-block:: ocaml
 
@@ -123,7 +123,7 @@ declaration of ``is_empty`` function, together with its Gospel contract:
    (*@ b = is_empty q
          ensures b <-> q.view = empty *)
 
-This function returns the Boolean value ``True`` if and only if the queue is
+This function returns the Boolean value ``true`` if and only if the queue is
 empty. Such a property is exactly what is captured in the
 postcondition. Although very simple, the above specification states an important
 property: the argument ``q`` is read-only, hence function ``is_empty`` is
@@ -137,7 +137,7 @@ postcondition will be rejected by the Gospel type-checker.
 .. todo::
 
    When we say it is easier to reason about read-only values, should we cite
-   Arthur and Françoi's paper? (ESOP 2017)
+   Arthur and François' paper? (ESOP 2017)
 
 .. todo::
 
@@ -145,11 +145,37 @@ postcondition will be rejected by the Gospel type-checker.
    case of read-only arguments is not entirely true. Neither it is the case for
    the ``consumes`` clause. Should we keep the sentence like this?
 
+The next function features the creation of a queue. Its OCaml declaration
+and Gospel specification are as follows:
+
 .. code-block:: ocaml
 
     val create : unit -> 'a t
     (*@ q = create ()
           ensures q.view = empty *)
+
+The newly created queue, named ``q``, has no elements, hence its ``view`` model
+corresponds to the ``empty`` sequence, exactly as stated in the
+postcondition. It is worth mentioning that the Gospel specification implicitly
+assumes ``q`` to be disjoint from every previously-allocated queue. This is an
+important design choice of Gospel, following the `rule of thumb` that writing a
+function that returns a non-fresh, mutable data structure is considered bad
+practice in OCaml.
+
+.. todo::
+
+   Shall we consider the following program to be bad practice ?
+
+   type t = { mutable c: int }
+
+   let incr (t: t) : t
+   = t.c <- t.c + 1; t
+
+  let () =
+    let t = { c = 42 } in
+    let tt = incr t in
+    let _ = incr tt in
+    assert (t.c = 44)
 
 .. todo::
 
