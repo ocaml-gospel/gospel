@@ -66,6 +66,10 @@ module a3.mli
               predicate infix >= (_:integer) (_:integer)
               function integer_of_int (_:int) : integer
               function length (_:'a seq) : integer
+              function logand (_:integer) (_:integer) : integer
+              function lognot (_:integer) : integer
+              function logor (_:integer) (_:integer) : integer
+              function logxor (_:integer) (_:integer) : integer
               function max (_:integer) (_:integer) : integer
               function max_int  : integer
               function min (_:integer) (_:integer) : integer
@@ -81,6 +85,9 @@ module a3.mli
               function prefix ! (_:'a ref) : 'a
               function prefix - (_:integer) : integer
               function seq_of_list (_:'a list) : 'a seq
+              function shift_left (_:integer) (_:integer) : integer
+              function shift_right (_:integer) (_:integer) : integer
+              function shift_right_trunc (_:integer) (_:integer) : integer
               function snd (_:'a * 'b) : 'b
               function succ (_:integer) : integer
               
