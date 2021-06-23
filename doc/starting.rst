@@ -89,12 +89,11 @@ clearly state this function is only supposed to be used by clients that are sure
 to respect the precondition (for instance, when the client code is itself
 formally verified).
 
-Gospel preconditions are not, by default, dynamically verified before calling a
-function. These represent logical conditions that are amenable to static
-analyses checking, such as deductive verification or abstract
-interpretation. However, Gospel allows one to state some preconditions must be
-verified at run-time. These are introduced using a ``checks`` clause, such as
-the following:
+Instead of assuming that the precondition is guaranteed by the caller,
+we can adopt a more defensive approach where ``pop`` raises
+``Invalid_argument`` on an empty queue. This is idiomatic of OCaml libraries.
+Gospel provides a way to declare such a behavior, using ``checks``
+instead of ``requires``. In our case, this is as follows:
 
 .. code-block:: ocaml
 
@@ -104,12 +103,10 @@ the following:
          modifies q
          ensures  old q.view = q.view ++ (Seq.cons v empty) *)
 
-A proper implementation to the ``pop`` function, adhering to this specification,
-should begin by a dynamic test that...
-
-.. todo::
-   Is this a good example for a ``checks`` clause? How can one dynamically test
-   emptiness of field ``view``? It is a sequence, after all.
+The meaning of ``checks`` is really that of a `precondition` that is
+dynamically checked at function entry. It is up to the implementation
+of ``pop`` to guarantee that whenever ``q.view <> empty`` does not
+hold, the exception ``Invalid_argument`` is raised.
 
 .. todo::
    make a reference to Ortac?
@@ -127,23 +124,12 @@ This function returns the Boolean value ``true`` if and only if the queue is
 empty. Such a property is exactly what is captured in the
 postcondition. Although very simple, the above specification states an important
 property: the argument ``q`` is read-only, hence function ``is_empty`` is
-effect-free. In Gospel, whenever an argument or mutable field is not declared
-withing a ``modifies`` clause, then it is treated as a read-only value. This
-makes it much easier to reason about the use of such arguments, since its
-internal state is not changed by the function's execution. Consequently, there
-is no such value as ``old q.view``. Using such an annotation in the
-postcondition will be rejected by the Gospel type-checker.
+effect-free. In particular, we know that ``q.view`` is not
+modified after a call to ``is_empty q``.
 
-.. todo::
-
-   When we say it is easier to reason about read-only values, should we cite
-   Arthur and François' paper? (ESOP 2017)
-
-.. todo::
-
-   The thing about the Gospel type-checker rejecting the ``old`` annotation in
-   case of read-only arguments is not entirely true. Neither it is the case for
-   the ``consumes`` clause. Should we keep the sentence like this?
+Generally speaking, whenever an argument or mutable field is not
+declared withing a ``modifies`` clause, then it is treated as a
+read-only value.
 
 The next function features the creation of a queue. Its OCaml declaration
 and Gospel specification are as follows:
@@ -162,26 +148,11 @@ important design choice of Gospel, following the `rule of thumb` that writing a
 function that returns a non-fresh, mutable data structure is considered bad
 practice in OCaml.
 
-.. todo::
-
-   Shall we consider the following program to be bad practice ?
-
-   type t = { mutable c: int }
-
-   let incr (t: t) : t
-   = t.c <- t.c + 1; t
-
-  let () =
-    let t = { c = 42 } in
-    let tt = incr t in
-    let _ = incr tt in
-    assert (t.c = 44)
-
-.. todo::
-
-   `concat`: should we show all the free variants? It could be interesting in
-   order to showcase the expressiveness of Gospel to cope with different
-   programming scenarios.
+Let us conclude this introduction to Gospel with a last function to
+concatenate two queues. Several approaches are possible for such a
+function, and we illustrate three of them.
+Let us start with a concatenation that transfers all elements from one
+queue to another, with the following specification:
 
 .. code-block:: ocaml
 
@@ -190,6 +161,12 @@ practice in OCaml.
          modifies q1, q2
          ensures  q1.view = empty
          ensures  q2.view = old q1.view ++ old q2.view *)
+
+Here, the contract states that both queues are modified. The queue
+``q1`` is emptied (after the call), its elements being appended to the
+queue ``q2``. Note the use of ``old`` in the second postcondition.
+
+One could think of a slightly different implementation. ...
 
 .. code-block:: ocaml
 
