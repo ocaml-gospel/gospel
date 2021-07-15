@@ -158,6 +158,7 @@ let floating_spec ~filename a =
 let ghost_spec_str attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
+  Location.init lb loc.loc_start.pos_fname;
   try
     Parser.implementation Lexer.token lb |> function
     | [ { pstr_desc = Pstr_type (r, [ t ]); _ } ] ->
