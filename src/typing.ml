@@ -556,13 +556,11 @@ let rec val_parse_core_type ns cty =
    match core type
    3 -
 *)
-let process_val_spec kid crcm ns id cty vs =
+let process_val_spec kid crcm ns id args ret vs =
   let loc = vs.sp_hd_nm.pid_loc in
   check_report ~loc
     (id.Ident.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
-
-  let args, ret = val_parse_core_type ns cty in
 
   let add_arg la env lal = match la with
     | Lunit ->
@@ -669,11 +667,35 @@ let process_val_spec kid crcm ns id cty vs =
   );
   mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text
 
+let empty_spec preid ret args = {
+  sp_hd_nm   = preid;
+  sp_hd_ret  = ret;
+  sp_hd_args = args;
+  sp_pre     = [];
+  sp_checks  = [];
+  sp_post    = [];
+  sp_xpost   = [];
+  sp_writes  = [];
+  sp_consumes= [];
+  sp_diverge = false;
+  sp_pure    = false;
+  sp_equiv   = [];
+  sp_text    = "";
+}
+
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
-  let spec = Option.map (process_val_spec kid crcm ns id vd.vtype) vd.vspec in
+  let args, ret = val_parse_core_type ns vd.vtype in
+  let spec = match vd.vspec with
+    | None   ->
+        let ret = Uast.Lnone (Preid.create "result") in
+        let args = List.mapi (fun i _ -> Uast.Lnone (Preid.create ("x" ^ string_of_int i))) args in
+        empty_spec (Preid.create vd.vname.txt) [ret] args
+    | Some s -> s in
+  let spec = process_val_spec kid crcm ns id args ret spec in
+  let so = Option.map (fun _ -> spec) vd.vspec in
   let vd =
-    mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
+    mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args spec.sp_ret so vd.vloc in
   mk_sig_item (Sig_val (vd,ghost)) loc
 
 (** Typing function, axiom, and exception declarations *)
