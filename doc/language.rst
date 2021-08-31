@@ -41,12 +41,12 @@ declaration::
   [@@@gospel "val f : int -> int"
     [@@gospel "y = f x ensures x > 0"]]
 
-Gospel preprocessor: ``gospel_pps``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gospel preprocessor
+^^^^^^^^^^^^^^^^^^^
 
-Writing attributes can be tedious, especially when nested. Gospel is provided
-with a preprocessor that lets you write Gospel specifications in special
-comments, starting with a ``@``::
+Writing attributes can be tedious, especially when nested. Gospel
+automatically applies a preprocessor that lets you write Gospel
+specifications in special comments, starting with a ``@``::
 
   val f: int -> int           (* An OCaml value declaration *)
   (*@ y = f x                 (* Its Gospel specification   *)
