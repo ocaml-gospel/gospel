@@ -2,8 +2,7 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : int -> int[@@gospel {| y = f x
-    pure |}]
+val f : int -> int[@@gospel {| pure |}]
 val g : int -> int[@@gospel {| y = g x
     requires f x > 0 |}]
 
@@ -13,8 +12,7 @@ val g : int -> int[@@gospel {| y = g x
 (*@ open Gospelstdlib *)
 
 val f : int -> int
-(*@ y = f x
-     *)
+(*@  *)
 
 val g : int -> int
 (*@ y = g x
@@ -42,12 +40,11 @@ module pure.mli
     (*@ open Gospelstdlib *)
     
     val f : int -> int
-    (*@ y:int = f x:int*)
+    (*@ result:int = f $x0:int*)
     
     val g : int -> int
-    (*@ y_1:int = g x_1:int
-        requires ((integer_of_int 
-                 (f  x_1:int):int):integer > 0:integer):prop*)
+    (*@ y:int = g x:int
+        requires ((integer_of_int  (f  x:int):int):integer > 0:integer):prop*)
 
 
 *** OK ***

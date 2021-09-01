@@ -33,23 +33,41 @@
 
 (** Arithmetic
 
-   The type [integer] is built-in. This is the type of arbitrary precision integers,
-   not to be confused with OCaml's type [int] (machine integers).
+   The type [integer] is built-in. This is the type of arbitrary
+   precision integers, not to be confused with OCaml's type [int]
+   (machine integers).
 
-   There is a coercion from type [int] to type [integer], so that GOSPEL specifications
-   can be written using type [integer] only, and yet use OCaml's variables of type [int].
-*)
+   There is a coercion from type [int] to type [integer], so that
+   GOSPEL specifications can be written using type [integer] only, and
+   yet use OCaml's variables of type [int].  *)
 
-(*@ function (+)   (x y: integer) : integer *)
-(*@ function (-)   (x y: integer) : integer *)
-(*@ function ( * ) (x y: integer) : integer *)
-(*@ function (/)   (x y: integer) : integer *)
-(*@ function mod   (x y: integer) : integer *)
-(*@ function (-_)  (x: integer) : integer *)
-(*@ predicate (>)  (x y: integer) *)
-(*@ predicate (>=) (x y: integer) *)
-(*@ predicate (<)  (x y: integer) *)
-(*@ predicate (<=) (x y: integer) *)
+(*@ function (+)               (x y: integer) : integer *)
+(*@ function (-)               (x y: integer) : integer *)
+(*@ function ( * )             (x y: integer) : integer *)
+(*@ function (/)               (x y: integer) : integer *)
+(*@ function mod               (x y: integer) : integer *)
+(*@ function pow               (x y: integer) : integer *)
+(*@ function logand            (x y: integer) : integer *)
+(*@ function logor             (x y: integer) : integer *)
+(*@ function logxor            (x y: integer) : integer *)
+(*@ function lognot            (x: integer)   : integer *)
+
+(*@ function shift_left        (x y: integer) : integer *)
+(* Shifts to the left, equivalent to a multiplication by a power of two *)
+
+(*@ function shift_right       (x y: integer) : integer *)
+(* Shifts to the right, equivalent to a multiplication by a power of two
+   with rounding toward -oo *)
+
+(*@ function shift_right_trunc (x y: integer) : integer *)
+(* Shift to the right with truncation, equivalent to a multiplication
+   by a power of two with rounding toward 0 *)
+
+(*@ function (-_)              (x: integer)   : integer *)
+(*@ predicate (>)              (x y: integer) *)
+(*@ predicate (>=)             (x y: integer) *)
+(*@ predicate (<)              (x y: integer) *)
+(*@ predicate (<=)             (x y: integer) *)
 
 type int
 

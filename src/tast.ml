@@ -52,11 +52,12 @@ type val_spec = {
     sp_diverge : bool;
     sp_pure    : bool;
     sp_equiv   : string list;
+    sp_text    : string;
 }
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre checks post xpost wr cs dv pure equiv = {
+let val_spec args ret pre checks post xpost wr cs dv pure equiv text = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
@@ -70,6 +71,7 @@ let val_spec args ret pre checks post xpost wr cs dv pure equiv = {
     sp_diverge = dv;
     sp_pure    = pure;
     sp_equiv   = equiv;
+    sp_text    = text;
 }
 
 (* Checks the following:
@@ -99,15 +101,19 @@ type val_description = {
     vd_type  : Parsetree.core_type;
     vd_prim  : string list; (* primitive declaration *)
     vd_attrs : Parsetree.attributes;
+    vd_args  : lb_arg list;
+    vd_ret   : lb_arg list;
     vd_spec  : val_spec option;
     vd_loc   : Location.t;
 }
 
-let val_description id cty prim attrs spec loc = {
+let val_description id cty prim attrs args ret spec loc = {
     vd_name  = id;
     vd_type  = cty;
     vd_prim  = prim;
     vd_attrs = attrs;
+    vd_args  = args;
+    vd_ret   = ret;
     vd_spec  = spec;
     vd_loc   = loc;
 }
@@ -116,8 +122,8 @@ let val_description id cty prim attrs spec loc = {
    1 - TODO
 
 *)
-let mk_val_description id cty prim attrs spec loc =
-  val_description id cty prim attrs spec loc
+let mk_val_description id cty prim attrs args ret spec loc =
+  val_description id cty prim attrs args ret spec loc
 
 type type_spec = {
   ty_ephemeral  : bool;

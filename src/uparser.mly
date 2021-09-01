@@ -34,10 +34,14 @@
   let array_get l =
     Qdot (Qpreid (mk_pid "Array" l), mk_pid (mixfix "[_]") l)
 
-  let empty_vspec = {
+(*
     sp_hd_ret = [];
     sp_hd_nm = mk_pid "" (Lexing.dummy_pos, Lexing.dummy_pos);
     sp_hd_args = [];
+*)
+
+  let empty_vspec = {
+    sp_header = None;
     sp_pre = [];
     sp_checks = [];
     sp_post = [];
@@ -48,6 +52,7 @@
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
+    sp_text = "";
   }
 
   let empty_fspec = {
@@ -146,9 +151,8 @@
 %%
 
 val_spec:
-| hd=val_spec_header bd=val_spec_body EOF
-  { let sp_hd_ret, sp_hd_nm, sp_hd_args = hd in
-    { bd with sp_hd_ret; sp_hd_nm; sp_hd_args } }
+| hd=val_spec_header? bd=val_spec_body EOF
+  { { bd with sp_header = hd } }
 (* TODO: pure or diverges only *)
 ;
 
@@ -222,9 +226,9 @@ type_spec_model:
 
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*
-  { ret, nm, args }
+  { { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
 | nm=lident_rich args=fun_arg*
-  { [], nm, args }
+  { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
 ;
 
 val_spec_body:

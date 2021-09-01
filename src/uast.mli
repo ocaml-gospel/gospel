@@ -91,10 +91,14 @@ and term_desc =
 
 type xpost = Location.t * (qualid * (pattern * term) option) list
 
-type val_spec = {
+type spec_header = {
   sp_hd_nm   : Preid.t;           (* header name *)
   sp_hd_ret  : labelled_arg list; (* Can only be LNone or LGhost *)
   sp_hd_args : labelled_arg list; (* header arguments' names *)
+}
+
+type val_spec = {
+  sp_header  : spec_header option;
   sp_pre     : term list;
   sp_checks  : term list;
   sp_post    : term list;
@@ -105,6 +109,7 @@ type val_spec = {
   sp_diverge : bool;
   sp_pure    : bool;
   sp_equiv   : string list;
+  sp_text    : string; (* the attribute string *)
 }
 
 type field = {

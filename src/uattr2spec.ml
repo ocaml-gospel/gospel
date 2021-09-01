@@ -55,11 +55,12 @@ let parse_gospel parse attr =
   Location.init lb loc.loc_start.pos_fname;
   lb.lex_curr_p  <- loc.loc_start;
   lb.lex_abs_pos <- loc.loc_start.pos_cnum;
-  try parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
+  try spec, parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
 
 let type_declaration t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
-  let spec = Option.map (parse_gospel Uparser.type_spec) spec_attr in
+  let parse attr = snd (parse_gospel Uparser.type_spec attr) in
+  let spec = Option.map parse spec_attr in
   {
     tname = t.ptype_name;
     tparams = t.ptype_params;
@@ -74,7 +75,10 @@ let type_declaration t =
 
 let val_description v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
-  let spec = Option.map (parse_gospel Uparser.val_spec) spec_attr in
+  let parse attr =
+    let text, spec = parse_gospel Uparser.val_spec attr in
+    { spec with sp_text = text } in
+  let spec = Option.map parse spec_attr in
   {
     vname = v.pval_name;
     vtype = v.pval_type;
@@ -95,6 +99,7 @@ let ghost_spec attr =
           let tspec =
             get_inner_spec attr |> fst
             |> Option.map (parse_gospel Uparser.type_spec)
+            |> Option.map snd (* FIXME *)
           in
           Sig_ghost_type (r, [ { type_ with tspec } ])
         else Sig_ghost_type (r, [ type_ ])
@@ -104,6 +109,7 @@ let ghost_spec attr =
           let vspec =
             get_inner_spec attr |> fst
             |> Option.map (parse_gospel Uparser.val_spec)
+            |> Option.map snd (* FIXME *)
           in
           Sig_ghost_val { val_ with vspec }
         else Sig_ghost_val val_
@@ -141,15 +147,16 @@ let ghost_spec_str attr =
 
 let floating_spec a =
   try
-    let fun_ = parse_gospel Uparser.func a in
+    let _, fun_ = parse_gospel Uparser.func a in (* FIXME *)
     if fun_.fun_spec = None then
       let fun_spec =
         get_inner_spec a |> fst |> Option.map (parse_gospel Uparser.func_spec)
+        |> Option.map snd (* FIXME *)
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
   with Syntax_error _ -> (
-    try Sig_axiom (parse_gospel Uparser.axiom a)
+    try Sig_axiom (snd (parse_gospel Uparser.axiom a)) (* FIXME *)
     with Syntax_error _ -> ghost_spec a)
 
 let floating_spec_str a =

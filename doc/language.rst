@@ -41,12 +41,12 @@ declaration::
   [@@@gospel "val f : int -> int"
     [@@gospel "y = f x ensures x > 0"]]
 
-Gospel preprocessor: ``gospel_pps``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gospel preprocessor
+^^^^^^^^^^^^^^^^^^^
 
-Writing attributes can be tedious, especially when nested. Gospel is provided
-with a preprocessor that lets you write Gospel specifications in special
-comments, starting with a ``@``::
+Writing attributes can be tedious, especially when nested. Gospel
+automatically applies a preprocessor that lets you write Gospel
+specifications in special comments, starting with a ``@``::
 
   val f: int -> int           (* An OCaml value declaration *)
   (*@ y = f x                 (* Its Gospel specification   *)
@@ -186,7 +186,6 @@ for instance, and it is interpreted as ``0 <= n /\ n < 100``.
 
 Function Contracts
 ------------------
-.. todo:: contracta for a constant e.g. val x: int (header needed? etc.)
 
 An OCaml function is given a formal specification by appending one Gospel
 function contract to its declaration. Here is an example::
@@ -199,10 +198,10 @@ function contract to its declaration. Here is an example::
 
 Such a contract is composed of two parts:
  - The first line is the header of the contract; it names the function arguments
-   and result. It is mandatory and must appear at the beginning of the contract.
+   and result. It must appear at the beginning of the contract.
  - The next lines contain as many specification `clauses` as needed. Here we
    have three clauses: one :ref:`precondition <Preconditions>` introduced with
-   ``requires``, and two :ref:`postconditions <Postconditions>`" introduced with
+   ``requires``, and two :ref:`postconditions <Postconditions>` introduced with
    ``ensures``.
 
 .. productionlist::
@@ -220,6 +219,8 @@ Such a contract is composed of two parts:
 
 .. todo:: ghost parameters and results
 
+.. todo:: contract for a constant e.g. val x: int ensures x > 0
+
 .. note::
 
    In the absence of a contract attached to a function declaration, **no
@@ -227,6 +228,7 @@ Such a contract is composed of two parts:
 
    No preconditions or postconditions are to be verified, and the function may
    diverge, raise unlisted exceptions, or modify mutable types, etc.
+   However, it cannot break any :ref:`type invariant <Type invariants>`.
 
    One may still enable the implicit specification about exceptions,
    mutability, non-termination, etc. by creating a contract with no clause::
@@ -517,6 +519,11 @@ Type Specification
 ------------------
 
 .. todo:: do it
+
+Type invariants
+^^^^^^^^^^^^^^^
+
+.. todo:: document type invariants
 
 .. index:: function
 .. index:: predicate

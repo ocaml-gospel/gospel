@@ -1,7 +1,6 @@
 
 val f: int ->  int
-(*@ y = f x
-    pure *)
+(*@ pure *)
 
 val g: int -> int
 (*@ y = g x

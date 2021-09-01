@@ -373,7 +373,8 @@ let term_with_unify kid crcm ty ns env t =
 
 let fmla kid crcm ns env t =
   let dt = dterm kid crcm ns env t in
-  fmla env dt
+  let tt = fmla env dt in
+  { tt with t_loc = Some t.term_loc }
 
 (** Typing type declarations *)
 
@@ -392,8 +393,8 @@ let mutable_flag = function
 let process_type_spec kid crcm ns ty spec =
   let field (ns,fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
-    let ls = fsymbol (Ident.of_preid f.f_preid) [ty] f_ty in
-    let ls_inv = fsymbol (Ident.of_preid f.f_preid) [] f_ty in
+    let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ty] f_ty in
+    let ls_inv = fsymbol ~field:true (Ident.of_preid f.f_preid) [] f_ty in
     (ns_add_ls ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
@@ -468,14 +469,18 @@ let type_type_declaration kid crcm ns tdl =
       let cs_id = Ident.create ("constr#" ^ s) in
       let fields_ty = List.map (fun ld ->
                           parse_core alias tvl ld.pld_type) ldl in
-      let rd_cs = fsymbol ~constr:true cs_id fields_ty ty in
-      let mk_ld ld =
+      let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
+      let mk_ld ld (ldl, ns) =
         let id = Ident.create ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
-        let field = fsymbol id [ty] ty_res in
+        let field = fsymbol ~field:true id [ty] ty_res in
+        let field_inv = fsymbol ~field:true id [] ty_res in
         let mut = mutable_flag ld.pld_mutable in
-        label_declaration field mut ld.pld_loc ld.pld_attributes in
-      {rd_cs;rd_ldl = List.map mk_ld ldl}
+        let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
+        ld :: ldl, ns_add_ls ns id.id_str field_inv
+      in
+      let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
+      {rd_cs; rd_ldl}, ns
     in
 
     let process_variant ty alias cd =
@@ -488,7 +493,7 @@ let type_type_declaration kid crcm ns tdl =
            let arg = match tyl with
              | [] | [_] -> tyl
              | _ -> [ty_app (ts_tuple (List.length tyl)) tyl] in
-           fsymbol ~constr:true cs_id arg ty, []
+           fsymbol ~constr:true ~field:false cs_id arg ty, []
         | Pcstr_record ldl ->
            let add ld (ldl,tyl) =
              let id = Ident.create ld.pld_name.txt in
@@ -499,19 +504,20 @@ let type_type_declaration kid crcm ns tdl =
              let ld = label_declaration field mut loc attrs in
              ld :: ldl, ty :: tyl in
            let ldl,tyl = List.fold_right add ldl ([],[]) in
-           fsymbol ~constr:true cs_id tyl ty, ldl in
+           fsymbol ~constr:true ~field:false cs_id tyl ty, ldl in
       constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes
     in
 
     let ty = ty_app td_ts (List.map ty_of_var params) in
-    let kind =
+    let kind, ns =
       let alias = Sstr.empty in
       match td.tkind with
-      | Ptype_abstract -> Pty_abstract
+      | Ptype_abstract -> Pty_abstract, ns
       | Ptype_variant cdl ->
-         Pty_variant (List.map (process_variant ty alias) cdl)
+         Pty_variant (List.map (process_variant ty alias) cdl), ns
       | Ptype_record ldl ->
-         Pty_record (process_record ty alias ldl)
+        let record, ns = process_record ty alias ldl in
+        Pty_record record, ns
       | Ptype_open -> assert false
     in
 
@@ -550,13 +556,12 @@ let rec val_parse_core_type ns cty =
    match core type
    3 -
 *)
-let process_val_spec kid crcm ns id cty vs =
-  let loc = vs.sp_hd_nm.pid_loc in
+let process_val_spec kid crcm ns id args ret vs =
+  let header = Option.get vs.sp_header in
+  let loc = header.sp_hd_nm.pid_loc in
   check_report ~loc
-    (id.Ident.id_str = vs.sp_hd_nm.pid_str) "val specification header does \
+    (id.Ident.id_str = header.sp_hd_nm.pid_str) "val specification header does \
                                        not match name";
-
-  let args, ret = val_parse_core_type ns cty in
 
   let add_arg la env lal = match la with
     | Lunit ->
@@ -571,7 +576,7 @@ let process_val_spec kid crcm ns id cty vs =
 
   let rec process_args args tyl env lal = match args, tyl with
     | [], [] -> env, List.rev lal
-    | [], _ -> error_report ~loc:(vs.sp_hd_nm.pid_loc) "too few parameters"
+    | [], _ -> error_report ~loc:(header.sp_hd_nm.pid_loc) "too few parameters"
     | Uast.Lghost (pid,pty) :: args, _ ->
        let ty = ty_of_pty ns pty in
        let vs = create_vsymbol pid ty in
@@ -600,7 +605,7 @@ let process_val_spec kid crcm ns id cty vs =
        error_report ~loc:((pid_of_label la).pid_loc)
          "parameter do not match with val type" in
 
-  let env, args = process_args vs.sp_hd_args args Mstr.empty [] in
+  let env, args = process_args header.sp_hd_args args Mstr.empty [] in
 
   let pre = List.map (fmla kid crcm ns env) vs.sp_pre in
 
@@ -647,13 +652,13 @@ let process_val_spec kid crcm ns id cty vs =
     List.fold_left (fun acc xp -> process_xpost xp @ acc) [] vs.sp_xpost
   in
 
-  let env, ret = match vs.sp_hd_ret, ret.ty_node with
+  let env, ret = match header.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []
     | _, Tyapp (ts,tyl) when is_ts_tuple ts ->
        let tyl = List.map (fun ty -> (ty,Asttypes.Nolabel)) tyl in
-       process_args vs.sp_hd_ret tyl env []
+       process_args header.sp_hd_ret tyl env []
     | _, _ ->
-       process_args vs.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
+       process_args header.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
@@ -661,13 +666,38 @@ let process_val_spec kid crcm ns id cty vs =
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions";
   );
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv
+  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text
+
+let empty_spec preid ret args = {
+  sp_header  = Some { sp_hd_nm = preid; sp_hd_ret = ret; sp_hd_args = args };
+  sp_pre     = [];
+  sp_checks  = [];
+  sp_post    = [];
+  sp_xpost   = [];
+  sp_writes  = [];
+  sp_consumes= [];
+  sp_diverge = false;
+  sp_pure    = false;
+  sp_equiv   = [];
+  sp_text    = "";
+}
 
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
-  let spec = Option.map (process_val_spec kid crcm ns id vd.vtype) vd.vspec in
+  let args, ret = val_parse_core_type ns vd.vtype in
+  let spec = match vd.vspec with
+    | None | Some { sp_header = None } ->
+        let id = Preid.create vd.vname.txt in
+        let ret = Uast.Lnone (if args = [] then id else Preid.create "result") in
+        let args = List.mapi (fun i _ -> Uast.Lnone (Preid.create ("$x" ^ string_of_int i))) args in
+        (match vd.vspec with
+           | None -> empty_spec id [ret] args
+           | Some s -> { s with sp_header = Some { sp_hd_nm = id; sp_hd_ret = [ret]; sp_hd_args = args } })
+    | Some s -> s in
+  let spec = process_val_spec kid crcm ns id args ret spec in
+  let so = Option.map (fun _ -> spec) vd.vspec in
   let vd =
-    mk_val_description id vd.vtype vd.vprim vd.vattributes spec vd.vloc in
+    mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args spec.sp_ret so vd.vloc in
   mk_sig_item (Sig_val (vd,ghost)) loc
 
 (** Typing function, axiom, and exception declarations *)
@@ -681,7 +711,7 @@ let process_function kid crcm ns f =
     create_vsymbol pid (ty_of_pty ns pty)) f.fun_params in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
-  let ls = lsymbol (Ident.of_preid f.fun_name) tyl f_ty in
+  let ls = lsymbol ~field:false (Ident.of_preid f.fun_name) tyl f_ty in
   let ns = if f.fun_rec then ns_add_ls ns f.fun_name.pid_str ls else ns in
 
   (* check that there is no duplicated parameters; we must do this
