@@ -106,7 +106,7 @@ Type expressions follow the OCaml syntax.
 A large fragment of the OCaml syntax is reused for Gospel expressions.
 
 .. productionlist::
-    expr: `constant`
+    ocaml_expr: `constant`
         : | (`upath` ".")? `ident`
         : | "(" `expr` ")"
         : | "(" `expr` ("," `expr`)+ ")"
@@ -153,7 +153,7 @@ A large fragment of the OCaml syntax is reused for Gospel expressions.
 In addition, there is syntax that is specific to Gospel.
 
 .. productionlist::
-   expr : ...
+   expr : `ocaml_expr`
         : | `expr` "/\" `expr`
         : | `expr` "\/" `expr`
         : | "old" `expr`
@@ -228,7 +228,7 @@ Such a contract is composed of two parts:
 
    No preconditions or postconditions are to be verified, and the function may
    diverge, raise unlisted exceptions, or modify mutable types, etc.
-   However, it cannot break any :ref:`type invariant <Type invariants>`.
+   However, it cannot break any :ref:`type invariant <Invariants>`.
 
    One may still enable the implicit specification about exceptions,
    mutability, non-termination, etc. by creating a contract with no clause::
@@ -260,11 +260,11 @@ entry. They are used to describe requirements on the inputs of the
 function, but also possibly on a global state.
 
 They are denoted using the keyword ``requires`` or ``checks``, followed by a
-:token:`formula`:
+:token:`expr`:
 
 .. productionlist::
-  precondition: "requires" `formula`
-            : | "checks" `formula`
+  precondition: "requires" `expr`
+            : | "checks" `expr`
 
 .. rubric:: ``requires``
 
@@ -338,10 +338,10 @@ function call. They are used to specify how the outputs of the function
 relate to its inputs, and how values were mutated, when applicable.
 
 Postconditions are denoted using the ``ensures`` keyword, followed by a
-:token:`formula`:
+:token:`expr`:
 
 .. productionlist::
-  postcondition: "ensures" `formula`
+  postcondition: "ensures" `expr`
 
 As discussed in the :ref:`previous section <Preconditions>`, the
 property expressed by the formula is expected to be verified after the
@@ -381,12 +381,12 @@ that case.
 
 These clauses are expressed with a ``raises`` keyword, followed by a
 list of :token:`cases <case>` associating each exception with its
-:token:`formula`, with a syntax similar to OCaml's pattern matching:
+:token:`expr`, with a syntax similar to OCaml's pattern matching:
 
 .. productionlist::
     exceptional_postcondition: "raises" `exn_case` ("|" `exn_case`)*
-    exn_case: `qualid` "->" `formula`
-      : | `qualid` `pattern` "->" `formula`
+    exn_case: `qualid` "->" `expr`
+      : | `qualid` `pattern` "->" `expr`
       : | `qualid`
 
 Gospel expects each ``raises`` clause to perform an exhaustive pattern
@@ -510,20 +510,82 @@ Effects
 ``consumes``...
 
 
-.. index:: model
-.. index:: mutable
-.. index:: invariant
-.. index:: ephemeral
 
 Type Specification
 ------------------
 
-.. todo:: do it
+Similarly to functions, OCaml types can also be annotated with Gospel
+specifications. Consider the following example of a container datastructure::
 
-Type invariants
+  type 'a t
+  (*@ model capacity: int
+      mutable model contents: 'a Set.t
+      invariant Set.cardinal contents <= capacity *)
+
+The specification of this type contains three elements
+ - the first two lines are :ref:`models <Models>`. They represent the type ``t``
+   in the logical domain. ``capacity`` is an immutable model of type ``int``
+   representing the maximum length of the datastructure, and ``contents`` is a
+   mutable set representing its contents. Note that ``Set.t`` references a
+   logical set provided by Gospel standard library. Models do not give any
+   information on the actual implementation of ``t``.
+ - the last line is a clause denoting a type :ref:`invariant <Invariants>`. At
+   all times, values of type ``t`` should contain less elements that their
+   maximum capacity.
+
+Types specifications can contain the following constructs:
+
+.. productionlist::
+   type_contract: (`model` | "ephemeral" | `invariant`)*
+
+.. index:: model
+.. index:: mutable
+
+Models
+^^^^^^
+
+Type models are logical projections of OCaml types. They help specify the type
+invariants and contents at several locations of the program, without actually
+exposing them and leaking implementations details. Their syntax is as follows:
+
+.. productionlist::
+    model: "mutable"? "model" `identifier` ":" `typexpr`
+
+The keyword ``model`` is used to introduce a new model. It may be preceded by
+the keyword ``mutable`` to denote that the model may be mutated during the
+execution of the program, e.g. by a function call. It is then followed by a type
+annotated name for that model, in a fashion similar to OCaml's record fields.
+
+.. index:: ephemeral
+
+Mutable types
+^^^^^^^^^^^^^
+
+Gospel lets you specify when a type may contain some mutable state by using the
+keyword ``ephemeral`` in its annotation::
+
+  type t
+  (*@ model capacity: int
+      ephemeral *)
+
+Of course, a type that has a mutable model is considered mutable, so the
+``ephemeral`` may be omitted whenever at least one declared model is mutable.
+
+.. index:: invariant
+
+Invariants
+^^^^^^^^^^
+
+Type annotation may also contain invariants that hold at every entry and exit
+point of every fonction that manipulates their values. Formulae expressing these
+properties may be added after the ``invariant`` keyword:
+
+..productionlist::
+    invariant: "invariant" `expr`
+
+Note that function may break these invariants internally, but must restore them
+so that they still hold at the function exit.
 ^^^^^^^^^^^^^^^
-
-.. todo:: document type invariants
 
 .. index:: function
 .. index:: predicate
