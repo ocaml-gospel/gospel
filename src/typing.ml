@@ -677,6 +677,7 @@ let empty_spec preid ret args = {
   sp_writes  = [];
   sp_consumes= [];
   sp_diverge = false;
+  sp_variant = [];
   sp_pure    = false;
   sp_equiv   = [];
   sp_text    = "";

@@ -129,6 +129,7 @@ let ghost_spec_str attr =
           let tspec =
             get_inner_spec attr |> fst
             |> Option.map (parse_gospel Uparser.type_spec)
+            |> Option.map snd
           in
           Str_ghost_type (r, [ { type_ with tspec } ])
         else Str_ghost_type (r, [ type_ ])
@@ -138,6 +139,7 @@ let ghost_spec_str attr =
           let vspec =
             get_inner_spec attr |> fst
             |> Option.map (parse_gospel Uparser.val_spec)
+            |> Option.map snd
           in
           Str_ghost_val { val_ with vspec }
         else Str_ghost_val val_
@@ -161,15 +163,16 @@ let floating_spec a =
 
 let floating_spec_str a =
   try
-    let fun_ = parse_gospel Uparser.func a in
+    let _, fun_ = parse_gospel Uparser.func a in
     if fun_.fun_spec = None then
       let fun_spec =
         get_inner_spec a |> fst |> Option.map (parse_gospel Uparser.func_spec)
+        |> Option.map snd
       in
       Str_function { fun_ with fun_spec }
     else Str_function fun_
   with Syntax_error _ -> (
-    try Str_prop (parse_gospel Uparser.prop a)
+    try Str_prop (snd (parse_gospel Uparser.prop a))
     with Syntax_error _ -> ghost_spec_str a)
 
 let with_constraint c =
@@ -223,7 +226,7 @@ and module_type_desc spec = function
   | Pmty_with (m, c) ->
     let extra_constraints = match spec with
       | None -> []
-      | Some c -> parse_gospel Uparser.with_constraint c in
+      | Some c -> snd (parse_gospel Uparser.with_constraint c) in
     let mk_constraint acc c = with_constraint c :: acc in
     let constraints = List.fold_left mk_constraint extra_constraints c in
     Mod_with (module_type m, constraints)
@@ -294,7 +297,8 @@ and s_expression expr =
         Sexp_function (List.map case case_list)
     | Pexp_fun (arg, expr_arg, pat, expr_body) ->
         let spec, _ = get_spec_attr attributes in
-        let fun_spec = Option.map (parse_gospel Uparser.func_spec) spec in
+        let fun_spec = Option.map (parse_gospel Uparser.func_spec) spec |>
+                       Option.map snd in
         let expr_arg = Option.map s_expression expr_arg in
         let expr_body = s_expression expr_body in
         Sexp_fun (arg, expr_arg, pat, expr_body, fun_spec)
@@ -326,14 +330,16 @@ and s_expression expr =
         Sexp_sequence (s_expression expr1, s_expression expr2)
     | Pexp_while (expr1, expr2) ->
         let spec, _ = get_spec_attr attributes in
-        let while_spec = Option.map (parse_gospel Uparser.loop_spec) spec in
+        let while_spec = Option.map (parse_gospel Uparser.loop_spec) spec |>
+                         Option.map snd in
         Sexp_while (s_expression expr1, s_expression expr2, while_spec)
     | Pexp_for (pat, expr1, expr2, direction_flag, expr3) ->
         let expr1 = s_expression expr1 and expr2 = s_expression expr2 in
         let expr3 = s_expression expr3 in
         (* TODO: avoid all of this code duplication *)
         let spec, _ = get_spec_attr attributes in
-        let for_spec = Option.map (parse_gospel Uparser.loop_spec) spec in
+        let for_spec = Option.map (parse_gospel Uparser.loop_spec) spec |>
+                       Option.map snd in
         Sexp_for (pat, expr1, expr2, direction_flag, expr3, for_spec)
     | Pexp_constraint (expr, core_type) ->
         Sexp_constraint (s_expression expr, core_type)
@@ -438,7 +444,8 @@ and s_value_binding vb_list =
      description, only the first attribute is considered as specification. *)
   let val_spec v =
     let spec, _ = get_spec_attr v.pvb_attributes in
-    let val_spec = Option.map (parse_gospel Uparser.val_spec) spec in
+    let val_spec = Option.map (parse_gospel Uparser.val_spec) spec |>
+                   Option.map snd in
     let expr = s_expression v.pvb_expr in
     mk_svb v.pvb_pat expr v.pvb_attributes val_spec v.pvb_loc in
   List.map val_spec vb_list
