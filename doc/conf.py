@@ -19,14 +19,15 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'GOSPEL'
-copyright = '2020, VOCaL team'
-author = 'VOCaL team'
+project = 'Gospel'
+
+author = 'Jean-Christophe Filliâtre, Clément Pascutto, Mário Pereira'
+copyright = '2020—2021, Jean-Christophe Filliâtre, Clément Pascutto, Mário Pereira'
 
 # The short X.Y version
-version = 'dev'
+version = '0.1.0'
 # The full version, including alpha/beta/rc tags
-release = 'dev'
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -39,6 +40,7 @@ release = 'dev'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinxcontrib.bibtex',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
@@ -70,7 +72,7 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "friendly"
 
 # The default language to highlight source code in.
 highlight_language = 'ocaml'
@@ -107,7 +109,7 @@ html_static_path = []
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'GOSPELdoc'
+htmlhelp_basename = 'gospeldoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -134,7 +136,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GOSPEL.tex', 'GOSPEL Documentation',
+    (master_doc, 'Gospel.tex', 'Gospel Documentation',
      'VOCaL team', 'manual'),
 ]
 
@@ -144,7 +146,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'gospel', 'GOSPEL Documentation',
+    (master_doc, 'gospel', 'Gospel Documentation',
      [author], 1)
 ]
 
@@ -155,8 +157,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'GOSPEL', 'GOSPEL Documentation',
-     author, 'GOSPEL', 'One line description of project.',
+    (master_doc, 'Gospel', 'Gospel Documentation',
+     author, 'Gospel', 'One line description of project.',
      'Miscellaneous'),
 ]
 
@@ -185,3 +187,5 @@ epub_exclude_files = ['search.html']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+bibtex_bibfiles = ['bibliography.bib']
