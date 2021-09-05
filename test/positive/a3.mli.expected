@@ -297,6 +297,4 @@ module a3.mli
     (*@ type t4 = t
               *)
 
-
-*** OK ***
-
+OK

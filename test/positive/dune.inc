@@ -4,7 +4,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:FM19.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:FM19.mli}")))))
 
 (rule
  (alias runtest)
@@ -16,7 +16,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:a.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:a.mli}")))))
 
 (rule
  (alias runtest)
@@ -28,7 +28,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:a1.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:a1.mli}")))))
 
 (rule
  (alias runtest)
@@ -40,7 +40,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:a2.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:a2.mli}")))))
 
 (rule
  (alias runtest)
@@ -52,7 +52,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:a3.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:a3.mli}")))))
 
 (rule
  (alias runtest)
@@ -64,7 +64,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:abstract_functions.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:abstract_functions.mli}")))))
 
 (rule
  (alias runtest)
@@ -76,7 +76,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:b.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:b.mli}")))))
 
 (rule
  (alias runtest)
@@ -88,7 +88,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:basic_functions_axioms.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:basic_functions_axioms.mli}")))))
 
 (rule
  (alias runtest)
@@ -100,7 +100,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:c.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:c.mli}")))))
 
 (rule
  (alias runtest)
@@ -112,7 +112,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:complex_vals.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:complex_vals.mli}")))))
 
 (rule
  (alias runtest)
@@ -124,7 +124,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:constants.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:constants.mli}")))))
 
 (rule
  (alias runtest)
@@ -136,7 +136,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:exceptions.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:exceptions.mli}")))))
 
 (rule
  (alias runtest)
@@ -148,7 +148,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:modules.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:modules.mli}")))))
 
 (rule
  (alias runtest)
@@ -160,7 +160,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:more_types.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:more_types.mli}")))))
 
 (rule
  (alias runtest)
@@ -172,7 +172,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:pattern_matching.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:pattern_matching.mli}")))))
 
 (rule
  (alias runtest)
@@ -184,7 +184,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:test.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:test.mli}")))))
 
 (rule
  (alias runtest)
@@ -196,7 +196,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:test1.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:test1.mli}")))))
 
 (rule
  (alias runtest)
@@ -208,7 +208,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:test2.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:test2.mli}")))))
 
 (rule
  (alias runtest)
@@ -220,7 +220,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:type_decl.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:type_decl.mli}")))))
 
 (rule
  (alias runtest)
@@ -232,7 +232,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:vals.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:vals.mli}")))))
 
 (rule
  (alias runtest)

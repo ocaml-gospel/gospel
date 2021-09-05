@@ -110,6 +110,4 @@ module complex_vals.mli
                          x_1:int):integer):integer):integer):prop
         raisesX  -> ((integer_of_int  x_1:int):integer = 2:integer):prop*)
 
-
-*** OK ***
-
+OK

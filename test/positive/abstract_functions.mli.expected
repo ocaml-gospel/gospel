@@ -176,6 +176,4 @@ module abstract_functions.mli
     
     (*@ function h15 (x_17:test): integer *)
 
-
-*** OK ***
-
+OK

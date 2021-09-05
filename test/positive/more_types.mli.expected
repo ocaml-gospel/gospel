@@ -131,6 +131,4 @@ module more_types.mli
         end::'a t6
     *)
 
-
-*** OK ***
-
+OK

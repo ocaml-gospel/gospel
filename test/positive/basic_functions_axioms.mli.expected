@@ -429,6 +429,4 @@ module basic_functions_axioms.mli
         end::t4 t6
     *)
 
-
-*** OK ***
-
+OK

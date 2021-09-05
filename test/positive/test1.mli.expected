@@ -35,6 +35,4 @@ module test1.mli
     
     (*@ function f (x:t): integer *)
 
-
-*** OK ***
-
+OK

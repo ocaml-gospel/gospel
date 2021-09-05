@@ -51,6 +51,4 @@ module basic.mli
     (*@ function c (x:t1): t2
         coercion *)
 
-
-*** OK ***
-
+OK

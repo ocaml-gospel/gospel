@@ -380,6 +380,4 @@ module type_decl.mli
          and v = u
          
 
-
-*** OK ***
-
+OK

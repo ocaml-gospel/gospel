@@ -195,6 +195,4 @@ module exceptions.mli
               | E1 x_5:int -> ((integer_of_int 
                               x_5:int):integer = 1:integer):prop*)
 
-
-*** OK ***
-
+OK

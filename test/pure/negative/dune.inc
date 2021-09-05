@@ -4,7 +4,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:impure1.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:impure1.mli}")))))
 
 (rule
  (alias runtest)
@@ -16,7 +16,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:impure2.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:impure2.mli}")))))
 
 (rule
  (alias runtest)
@@ -28,7 +28,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:impure3.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:impure3.mli}")))))
 
 (rule
  (alias runtest)
@@ -40,7 +40,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:impure4.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:impure4.mli}")))))
 
 (rule
  (alias runtest)
@@ -52,7 +52,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:not_pure.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:not_pure.mli}")))))
 
 (rule
  (alias runtest)

@@ -416,6 +416,4 @@ module FM19.mli
                writes (p2:tt).left
         consumes p3:tt*)
 
-
-*** OK ***
-
+OK

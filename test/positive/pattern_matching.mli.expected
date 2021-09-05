@@ -80,6 +80,4 @@ module pattern_matching.mli
                               bool
                 end::bool = (True ):bool):prop*)
 
-
-*** OK ***
-
+OK

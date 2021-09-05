@@ -4,7 +4,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:bad_type_id.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:bad_type_id.mli}")))))
 
 (rule
  (alias runtest)
@@ -16,7 +16,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:bad_type_multiple_args.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:bad_type_multiple_args.mli}")))))
 
 (rule
  (alias runtest)
@@ -28,7 +28,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:complex_cycle.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:complex_cycle.mli}")))))
 
 (rule
  (alias runtest)
@@ -40,7 +40,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:double_definition.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:double_definition.mli}")))))
 
 (rule
  (alias runtest)
@@ -52,7 +52,7 @@
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%{bin:gospel} tc --print-intermediate %{dep:simple_cycle.mli}")))))
+       (system "%{bin:gospel} check --verbose %{dep:simple_cycle.mli}")))))
 
 (rule
  (alias runtest)

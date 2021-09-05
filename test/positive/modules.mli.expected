@@ -319,6 +319,4 @@ module modules.mli
         requires (fp1  y_3:ft):prop
         ensures (fp2  x_9:ft):prop*)
 
-
-*** OK ***
-
+OK

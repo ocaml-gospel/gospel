@@ -46,6 +46,4 @@ module pure.mli
     (*@ y:int = g x:int
         requires ((integer_of_int  (f  x:int):int):integer > 0:integer):prop*)
 
-
-*** OK ***
-
+OK

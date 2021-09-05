@@ -35,6 +35,4 @@ module a1.mli
     type t
          
 
-
-*** OK ***
-
+OK
