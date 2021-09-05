@@ -1,9 +1,6 @@
 Getting started
 ===============
 
-.. todo:: Add more links to the language specification, and generally more
-          links.
-
 Installing Gospel
 ^^^^^^^^^^^^^^^^^
 
@@ -14,7 +11,7 @@ Please make sure that you already have a decently recent version ``ocaml`` and
 - Opam 2.0 or newer
 
 Please visit `ocaml.org
-<https://ocaml.org/learn/tutorials/up_and_running.html>`_ for instructions on
+<https://ocaml.org/learn/tutorials/up_and_running.html>`__ for instructions on
 how to get started with your OCaml environment.
 
 Gospel is available on Opam repositories. Installing it is straightforward:
@@ -56,7 +53,7 @@ interface for polymorphic, limited capacity containers::
   (** [add t x] adds [x] to the container [t], or raises [Full] if
       [t] has reached its maximum capacity. *)
 
-  val remove 'a t -> 'a -> unit
+  val remove: 'a t -> 'a -> unit
   (** [remove t x] removes [x] from [t], or raises [Not_found] if
       [x] is not in [t]. *)
 
@@ -76,12 +73,12 @@ the container directly translates into Gospel::
   (*@ model capacity: int
       model contents: 'a set *)
 
-Notice that documentation comments and Gospel specification can coexist, and
+Notice that documentation comments and Gospel specifications can coexist and
 even often help understand each other! However, for the sake of brevity, we will
 omit them in the rest of this section.
 
-One may also note that the capacity must be positive, and number of values in
-the ``contents`` set may not exceed ``capacity``. Those is a type invariants:
+One may also note that the capacity must be positive, and the number of values
+in the ``contents`` set may not exceed ``capacity``. Those are type invariants:
 
 .. code-block::
    :emphasize-lines: 4,5
@@ -92,7 +89,12 @@ the ``contents`` set may not exceed ``capacity``. Those is a type invariants:
         invariant capacity > 0
         invariant Set.cardinal contents <= capacity *)
 
-Now that our type is annotated with its models and invariants, we can attach
+The ``Set`` module is part of the :doc:`Gospel standard library <stdlib>`.
+Although it tries to mimic familiar interfaces from the OCaml standard library,
+those two should not be confused: logical declarations only can appear in
+specifications.
+
+Now that we annotated our type with its models and invariants, we can attach
 specifications to the functions to show how they interact with the container.
 
 The function ``create`` returns a container when provided a capacity. We may
@@ -105,10 +107,10 @@ want to specify three bits of information:
 
 Let's write a Gospel formalisation of that contract. The contract starts with a
 header that lets us name the arguments and return value (we will call the
-argument ``c`` and the return value ``t``) so we can mention them in the rest of
-the specification. The first property is a precondition of the function (we use
-the keyword ``requires``), while the second and third ones are postconditions
-(the keyword is ``ensures``)::
+argument ``c`` and the return value ``t``) to mention them in the rest of the
+specification. The first property is a pre-condition of the function (we use the
+keyword ``requires``), while the second and third ones are post-conditions (the
+keyword is ``ensures``)::
 
   val create: int -> t
   (*@ t = create c
@@ -118,8 +120,8 @@ the keyword ``requires``), while the second and third ones are postconditions
 
 Now on to ``is_empty`` and ``clear``.
 
-``is_empty t`` is true if and only if ``t`` is empty; this is a postcondition.
-This function also (hopefully) has no side-effect: it does not modify ``t``, and
+``is_empty t`` is true if and only if ``t`` is empty; this is a post-condition.
+This function also (hopefully) has no side-effect: it does not modify ``t`` and
 does not depend on any internal state. In Gospel's language, this function is
 *pure*::
 
@@ -129,13 +131,16 @@ does not depend on any internal state. In Gospel's language, this function is
       ensures b <-> t.capacity = Set.empty *)
 
 Clear removes any element in its argument: it is empty after the call.
-Obviously, it modifies its argument. More precisely, it modifies the
-``contents`` model of its argument::
+Obviously, it modifies the ``contents`` model of its argument. After its
+execution, the container should be empty. Note that we are only allowed to mention
+``is_empty`` in the specification because it is a pure function; attempting
+to use a non-pure OCaml function in a specification will result in a Gospel
+error. ::
 
   val clear: 'a t -> unit
   (*@ clear t
       modifies t.contents
-      ensures t.contents = Set.empty *)
+      ensures is_empty t *)
 
 Finally, let's specify ``add`` and ``remove``. A first attempt is similar to the
 previous examples. In the following, we use Gospel's ``old`` primitive, which
@@ -151,13 +156,13 @@ helps up refer to the state of the container prior to the function execution::
       modifies t.contents
       ensures t.contents = Set.remove x (old t.contents) *)
 
-Notice however that this specification is incomplete. Indeed, one specifity of
-those functions is that they can raise exceptions under certain circumpstances,
-and their normal behaviour may thus be altered. Let us complete that contract
-with this bit of information. If ``add`` raises ``Full``, we can deduce that
-``t.contents`` already contains ``t.capacity`` elements. Likewise, if ``remove``
-raises ``Not_found``, then the element we're trying to remove was actually not
-in ``t.contents``:
+Notice, however, that this specification is incomplete. Indeed, one specificity
+of those functions is that they can raise exceptions under certain
+circumstances, altering their normal behaviour. Let us complete
+that contract with this bit of information. If ``add`` raises ``Full``, we can
+deduce that ``t.contents`` already contains ``t.capacity`` elements. Likewise,
+if ``remove`` raises ``Not_found``, then the element we're trying to remove was
+not in ``t.contents``:
 
 .. code-block::
    :emphasize-lines: 5,11
@@ -179,7 +184,7 @@ t.capacity`` in every contract; as a type invariant, this property implicitely
 holds in every function's pre-state and post-state.
 
 We're done! Our module interface is fully specified, independently of any
-implementation. Let's finish by verifying that these are well typed by calling
+implementation. Let's finish by verifying that these are well-typed, and call
 Gospel's type-checker:
 
 .. code-block:: shell
@@ -212,13 +217,13 @@ Cameleer is a tool for the deductive verification of OCaml code.
 
 It extents Gospel to implementation files, where you may add logical annotations
 like logical assertions, recursion variants, or loop invariants. The
-verification relies on the `Why3 framework <https://why3.lri.fr>`_: ``cameleer``
-translates the OCaml code into an equivalent WhyML program. It then lets you
-analyse this program whithin the framework (and its IDE!) to prove the
+verification relies on the `Why3 <https://why3.lri.fr>`__ framework:
+``cameleer`` translates the OCaml code into an equivalent WhyML program. It then
+lets you analyse this program whithin the framework (and its IDE!) to prove the
 assertions via semi-automated techniques based on SMT provers.
 
 For more information, please visit the project page `on Github
-<https://github.com/ocaml-gospel/cameleer>`_.
+<https://github.com/ocaml-gospel/cameleer>`__.
 
 .. index:: ortac
 .. index:: runtime assertion checking
@@ -235,7 +240,7 @@ your program execution by logging unexpected events or generate testing suites
 and fuzzers.
 
 For more information, please visit the project page `on Github
-<https://github.com/ocaml-gospel/ortac>`_.
+<https://github.com/ocaml-gospel/ortac>`__.
 
 .. index:: why3gospel
 .. index:: why3
@@ -244,21 +249,33 @@ For more information, please visit the project page `on Github
 Why3gospel
 ~~~~~~~~~~
 
-Why3gospel is a Why3 plugin that lets you verify that Why3 a program proof
-refines the Gospel specifications before extracting it to OCaml.
+Why3gospel is a `Why3 <https://why3.lri.fr>`__ plugin that lets you verify that
+a program proof refines the Gospel specifications before extracting it to OCaml.
 
 It interfaces the Why3 framework with the Gospel specifications to ensure that
 the former refines the latter, guaranteeing that OCaml programs extracted from
 proved WhyML indeed comply with their Gospel specification.
 
 For more information, please visit the project page `on Github
-<https://github.com/ocaml-gospel/why3gospel>`_.
+<https://github.com/ocaml-gospel/why3gospel>`__.
 
-Getting help
-^^^^^^^^^^^^
+Going further
+^^^^^^^^^^^^^
 
-.. todo:: finish this section
+This tutorial only covered very few features of Gospel. Please feel free to
+visit our other resources before getting started:
 
-Please feel free to `open a discussion
-<https://github.com/ocaml-gospel/gospel/discussions/new>`_ and share your issues
-and ideas!
+- If you like to learn by example, the :doc:`walkthrough <walkthrough>` section
+  contains a gallery of more advanced use-cases extracted from real-world
+  interfaces. Those should help you familiarize yourself with the process of
+  formal specification.
+
+- If you prefer to read the manual for more in-depth information on specific
+  features of the language, you may also visit the :doc:`language specification
+  <language>` section.
+
+Finally, we are always thrilled to hear your thoughts or questions regarding
+Gospel and this tutorial. Please feel free to `open a discussion
+<https://github.com/ocaml-gospel/gospel/discussions/new>`__ and share your
+issues and ideas!
+

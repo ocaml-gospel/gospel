@@ -24,6 +24,8 @@ project = 'Gospel'
 author = 'Jean-Christophe Filliâtre, Clément Pascutto, Mário Pereira'
 copyright = '2020—2021, Jean-Christophe Filliâtre, Clément Pascutto, Mário Pereira'
 
+show_authors = True
+
 # The short X.Y version
 version = '0.1.0'
 # The full version, including alpha/beta/rc tags
