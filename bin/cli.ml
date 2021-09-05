@@ -73,7 +73,7 @@ let run_tc backtrace bench_mode print_intermediate print_parsed parse_only
     file
 
 let tc =
-  let doc = "Run Gospel type-checker." in
+  let doc = "Gospel type-checker." in
   ( Term.(
       const run_tc
       $ backtrace
@@ -87,16 +87,17 @@ let tc =
     Term.info "tc" ~doc )
 
 let pps =
-  let doc = "Run Gospel preprocessor." in
+  let doc = "Gospel preprocessor." in
   (Term.(const Pps.run $ files), Term.info "pps" ~doc)
 
 let wc =
-  let doc = "Run Gospel line count." in
+  let doc = "Gospel line count." in
   (Term.(const Wc.run $ files), Term.info "wc" ~doc)
 
 let usage_cmd =
-  let doc = "The Gospel command line tool." in
-  (Term.(ret (const (`Help (`Auto, None)))), Term.info "gospel" ~doc)
+  let doc = "Gospel command line tool." in
+  ( Term.(ret (const (`Help (`Auto, None)))),
+    Term.info "gospel" ~doc ~version:"%%VERSION%%" )
 
 let () =
   let commands = [ tc; wc; pps ] in
