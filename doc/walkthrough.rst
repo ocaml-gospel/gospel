@@ -1,5 +1,5 @@
-Walkthoughs
-===========
+Walk-through
+============
 
 This section contains a gallery of advanced use-cases extracted from
 real-world interfaces.

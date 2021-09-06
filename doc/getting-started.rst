@@ -266,7 +266,7 @@ Going further
 This tutorial only covered very few features of Gospel. Please feel free to
 visit our other resources before getting started:
 
-- If you like to learn by example, the :doc:`walkthrough <walkthrough>` section
+- If you like to learn by example, the :doc:`walk-through <walkthrough>` section
   contains a gallery of more advanced use-cases extracted from real-world
   interfaces. Those should help you familiarize yourself with the process of
   formal specification.
