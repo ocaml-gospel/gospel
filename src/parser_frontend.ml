@@ -19,7 +19,8 @@ let () =
     | _ -> None)
 
 let gospelstdlib = "Gospelstdlib"
-let gospelstdlib_file = "gospelstdlib.mli"
+let _gospelstdlib_file = "gospelstdlib.mli"
+let gospelstdlib_file_ml = "gospelstdlib.ml"
 
 let with_loadpath load_path file =
   let exception Break of string in
@@ -102,7 +103,7 @@ let parse_structure_gospel ~filename structure name =
 let parse_structure_gospel structure name =
   (if name = gospelstdlib then structure else
   (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str :: *) structure)
+     (* default_open_str ::  *)structure)
   |> Uattr2spec.structure
 
 let path2module p =
