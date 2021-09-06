@@ -1,0 +1,62 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Stack-safe and fast implementation of [List.map]\n\n    following antron's post\n    https://discuss.ocaml.org/t/a-new-list-map-that-is-both-stack-safe-and-fast/865\n\n    Important note: the function is applied to the elements starting from the\n    end of the list, thus not in the same order as with [List.map]. So if your\n    functions has side-effects, this is not equivalent to [List.map] but\n    rather to a combination of [List.rev] and [List.map] as stated below.\n "]
+val map : ('a -> 'b) -> 'a list -> 'b list[@@gospel
+                                            {| r = map f l
+      ensures length r = length l
+      ensures forall i. 0 <= i < length l -> r[i] = f l[i]
+      equivalent "List.rev (List.map f (List.rev l))" |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Stack-safe and fast implementation of [List.map]\n\n    following antron's post\n    https://discuss.ocaml.org/t/a-new-list-map-that-is-both-stack-safe-and-fast/865\n\n    Important note: the function is applied to the elements starting from the\n    end of the list, thus not in the same order as with [List.map]. So if your\n    functions has side-effects, this is not equivalent to [List.map] but\n    rather to a combination of [List.rev] and [List.map] as stated below.\n "]
+
+val map : ('a -> 'b) -> 'a list -> 'b list
+(*@ r = map f l
+    ensures ...
+    ensures ...
+    equivalent ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Lists.mli
+
+  Namespace: Lists.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Stack-safe and fast implementation of [List.map]\n\n    following antron's post\n    https://discuss.ocaml.org/t/a-new-list-map-that-is-both-stack-safe-and-fast/865\n\n    Important note: the function is applied to the elements starting from the\n    end of the list, thus not in the same order as with [List.map]. So if your\n    functions has side-effects, this is not equivalent to [List.map] but\n    rather to a combination of [List.rev] and [List.map] as stated below.\n "]
+    
+    val map : ('a -> 'b) -> 'a list -> 'b list
+    (*@ r:'b list = map f:'a -> 'b l:'a list
+        ensures ((length  (seq_of_list  r:'b list):'b seq):integer = (length 
+                (seq_of_list  l:'a list):'a seq):integer):prop
+                ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                        i:integer < (length 
+                        (seq_of_list  l:'a list):'a seq):integer):prop -> ((mixfix [_] 
+                        (seq_of_list  r:'b list):'b seq i:integer):'b = (apply 
+                        f:'a -> 'b (mixfix [_] 
+                        (seq_of_list  l:'a list):'a seq i:integer):'a):'b):prop
+        equivalent "List.rev (List.map f (List.rev l))"*)
+
+OK

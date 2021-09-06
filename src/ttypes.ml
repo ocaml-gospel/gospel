@@ -176,7 +176,7 @@ let ts_list    = ts (Ident.create "list"   ) [fresh_tv "a"]
 let ts_tuple =
   let ts_tuples = Hashtbl.create 0 in
   fun n ->
-    if n = 0 then ts_unit else
+    (* if n = 0 then ts_unit else *)
     try Hashtbl.find ts_tuples n
     with Not_found ->
       let ts_id = Ident.create ("tuple" ^ string_of_int n) in

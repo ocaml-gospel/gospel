@@ -1,0 +1,385 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel {| open Set |}]
+[@@@gospel {| open Map |}]
+type 'a elem
+[@@@gospel
+  {| type 'a uf |}[@@gospel
+                    {| mutable model dom : 'a elem set
+    mutable model rep : 'a elem -> 'a elem
+    mutable model img : 'a elem -> 'a
+    invariant forall x: 'a elem. mem x dom -> img x = img (rep x)
+    invariant forall x: 'a elem. mem x dom -> rep (rep x) = rep x
+    invariant forall x: 'a elem. mem x dom -> mem (rep x) dom |}]]
+[@@@gospel
+  {| predicate equiv (uf: 'a uf) (x: 'a elem) (y: 'a elem) =
+      rep uf x = rep uf y |}]
+[@@@gospel
+  {| val create: unit -> 'a uf |}[@@gospel
+                                   {| uf = create ()
+      ensures dom uf = {} |}]]
+val make : 'a -> 'a elem[@@gospel
+                          {| e = make [uf: 'a uf] v
+      (* requires $ O(1) *)
+      modifies uf
+      ensures  not (mem e (old (dom uf)))
+      ensures  dom uf = old (dom uf) `union` {:e:}
+      ensures  rep uf = (old (rep uf))[e <- e]
+      ensures  img uf = (old (img uf))[e <- v]
+|}]
+[@@@ocaml.text
+  " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+[@@@gospel {| function alpha : integer -> integer |}]
+val find : 'a elem -> 'a elem[@@gospel
+                               {| r = find [uf: 'a uf] e
+      (* requires $ O(alpha(n)) where n = card (dom uf) *)
+      (* could be O(1) if we prove (internally) that card dom is bounded e.g. by
+         max_int *)
+      requires mem e (dom uf)
+      modifies uf
+      ensures  dom uf = old (dom uf)
+      ensures  rep uf = old (rep uf)
+      ensures  img uf = old (img uf)
+      ensures  r = rep uf e
+|}]
+val eq : 'a elem -> 'a elem -> bool[@@gospel
+                                     {| b = eq [uf: 'a uf] e1 e2
+      (* requires $ O(alpha(n)) where n = card (dom uf) *)
+      requires mem e1 (dom uf)
+      requires mem e2 (dom uf)
+      modifies uf
+      ensures  dom uf = old (dom uf)
+      ensures  rep uf = old (rep uf)
+      ensures  img uf = old (img uf)
+      ensures  b <-> rep uf e1 = rep uf e2
+|}]
+val get : 'a elem -> 'a[@@gospel
+                         {| v = get [uf: 'a uf] e
+      (* requires $ O(alpha(n)) where n = card (dom uf) *)
+      requires mem e (dom uf)
+      modifies uf
+      ensures  dom uf = old (dom uf)
+      ensures  rep uf = old (rep uf)
+      ensures  img uf = old (img uf)
+      ensures  v = img uf e
+|}]
+val set : 'a elem -> 'a -> unit[@@gospel
+                                 {| set [uf: 'a uf] e v
+      (* requires $ O(alpha(n)) where n = card (dom uf) *)
+      requires mem e (dom uf)
+      modifies uf
+      ensures  dom uf = old (dom uf)
+      ensures  rep uf = old (rep uf)
+      ensures  forall x. img uf x = if equiv uf x e then v else old (img uf x)
+|}]
+val union : 'a elem -> 'a elem -> unit[@@gospel
+                                        {| union [uf: 'a uf] e1 e2
+      (* requires $ O(alpha(n)) where n = card (dom uf) *)
+      requires mem e1 (dom uf)
+      requires mem e2 (dom uf)
+      modifies uf
+      ensures  dom uf = old (dom uf)
+      ensures  exists r. (r = old (rep uf e1) || r = old (rep uf e2)) &&
+           forall x. mem x uf.dom ->
+           rep uf x = (if old (equiv uf x e1 || equiv uf x e2) then r
+                      else old (rep uf x))
+        && img uf x = if old (equiv uf x e1 || equiv uf x e2) then img uf r
+                      else old (img uf x)
+|}]
+[@@@gospel
+  {| val join: 'a uf -> 'a uf -> unit |}[@@gospel
+                                          {| join uf1 uf2
+    (*? requires disjoint (dom uf1) (dom uf2) *)
+    modifies uf1
+    consumes uf2
+    ensures  dom uf1 = old (dom uf1) `union` old (dom uf2)
+    ensures  forall x.
+      rep uf1 x = if mem x (old (dom uf1)) then old (rep uf1 x)
+                                           else old (rep uf2 x)
+    ensures  forall x.
+      img uf1 x = if mem x (old (dom uf1)) then old (img uf1 x)
+                                             else old (img uf2 x)
+|}]]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ open Set *)
+
+(*@ open Map *)
+
+type 'a elem
+  
+
+(*@ type 'a uf
+  (*@ ephemeral
+      model ...
+      model ...
+      model ...
+      invariant ...
+      invariant ...
+      invariant ...
+       *)
+*)
+
+(*@ predicate equiv ... *)
+
+(*@ val create : unit -> 'a uf
+(*@ uf = create ()
+    ensures ...
+     *) *)
+
+val make : 'a -> 'a elem
+(*@ e = make [uf : TY] v
+    ensures ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+[@@@ocaml.text
+  " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+
+(*@ function alpha ... *)
+
+val find : 'a elem -> 'a elem
+(*@ r = find [uf : TY] e
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val eq : 'a elem -> 'a elem -> bool
+(*@ b = eq [uf : TY] e1 e2
+    requires ...
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val get : 'a elem -> 'a
+(*@ v = get [uf : TY] e
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val set : 'a elem -> 'a -> unit
+(*@  set [uf : TY] e v
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val union : 'a elem -> 'a elem -> unit
+(*@  union [uf : TY] e1 e2
+    requires ...
+    requires ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+(*@ val join : 'a uf -> 'a uf -> unit
+(*@  join uf1 uf2
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+    consumes ...
+     *)
+*)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module UnionFind.mli
+
+  Namespace: UnionFind.mli
+    Type symbols
+      ('a) elem
+      ('a) uf
+      
+    Logic Symbols
+      function alpha  : integer -> integer
+      function dom (_:'a uf) : 'a elem set
+      predicate equiv (_:'a uf) (_:'a elem) (_:'a elem)
+      function img (_:'a uf) : 'a elem -> 'a
+      function rep (_:'a uf) : 'a elem -> 'a elem
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ open Set *)
+    
+    (*@ open Map *)
+    
+    type 'a elem
+         
+    
+    (*@ type 'a uf
+             (*@ ephemeral
+                 mutable model dom : 'a elem set
+                 mutable model rep : 'a elem -> 'a elem
+                 mutable model img : 'a elem -> 'a
+                 invariant forall x:'a elem . (mem 
+                           x:'a elem (dom_1 ):'a elem set):prop -> ((apply 
+                           (img_1 ):'a elem -> 'a x:'a elem):'a = (apply 
+                           (img_1 ):'a elem -> 'a (apply 
+                           (rep_1 ):'a elem -> 'a elem x:'a elem):'a 
+                           elem):'a):propinvariantforall x_1:'a elem . (mem 
+                                                  x_1:'a elem
+                                                  (dom_1 ):'a elem set):prop -> ((apply 
+                                                  (rep_1 ):'a elem -> 'a elem
+                                                  (apply 
+                                                  (rep_1 ):'a elem -> 'a elem
+                                                  x_1:'a elem):'a elem):'a 
+                                                  elem = (apply 
+                                                  (rep_1 ):'a elem -> 'a elem
+                                                  x_1:'a elem):'a elem):propinvariant
+                           forall x_2:'a elem . (mem 
+                           x_2:'a elem (dom_1 ):'a elem set):prop -> (mem 
+                           (apply 
+                           (rep_1 ):'a elem -> 'a elem x_2:'a elem):'a 
+                           elem (dom_1 ):'a elem set):prop *) *)
+    
+    (*@ predicate equiv (uf_1:'a uf) (x_3:'a elem) (y:'a elem) =
+        ((apply  (uf_1:'a uf).rep x_3:'a elem):'a elem = (apply 
+        (uf_1:'a uf).rep y:'a elem):'a elem):prop
+    *)
+    
+    (*@
+    val create : unit -> 'a uf
+    (*@ uf_2:'a uf = create ()
+        ensures ((uf_2:'a uf).dom = (mixfix {} ):'a elem set):prop*)
+    *)
+    
+    val make : 'a -> 'a elem
+    (*@ e:'a elem = make [uf_3:'a uf: 'a uf] v:'a
+        ensures not (mem  e:'a elem old ((uf_3:'a uf).dom)):prop
+                ensures ((uf_3:'a uf).dom = old ((union 
+                        (uf_3:'a uf).dom (mixfix {:_:} 
+                        e:'a elem):'a elem set):'a elem set)):prop
+                ensures ((uf_3:'a uf).rep = (mixfix [<-] 
+                        old ((uf_3:'a uf).rep) e:'a elem e:'a elem):'a 
+                                                                    elem ->
+                                                                    'a 
+                                                                    elem):prop
+                ensures ((uf_3:'a uf).img = (mixfix [<-] 
+                        old ((uf_3:'a uf).img) e:'a elem v:'a):'a elem -> 'a):prop
+        writes uf_3:'a uf*)
+    
+    [@@@ocaml.text
+      " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+    
+    (*@ function alpha : integer -> integer *)
+    
+    val find : 'a elem -> 'a elem
+    (*@ r:'a elem = find [uf_4:'a uf: 'a uf] e_1:'a elem
+        requires (mem  e_1:'a elem (uf_4:'a uf).dom):prop
+        ensures ((uf_4:'a uf).dom = old ((uf_4:'a uf).dom)):prop
+                ensures ((uf_4:'a uf).rep = old ((uf_4:'a uf).rep)):prop
+                ensures ((uf_4:'a uf).img = old ((uf_4:'a uf).img)):prop
+                ensures (r:'a elem = (apply 
+                        (uf_4:'a uf).rep e_1:'a elem):'a elem):prop
+        writes uf_4:'a uf*)
+    
+    val eq : 'a elem -> 'a elem -> bool
+    (*@ b:bool = eq [uf_5:'a uf: 'a uf] e1:'a elem e2:'a elem
+        requires (mem  e1:'a elem (uf_5:'a uf).dom):prop
+                 requires (mem  e2:'a elem (uf_5:'a uf).dom):prop
+        ensures ((uf_5:'a uf).dom = old ((uf_5:'a uf).dom)):prop
+                ensures ((uf_5:'a uf).rep = old ((uf_5:'a uf).rep)):prop
+                ensures ((uf_5:'a uf).img = old ((uf_5:'a uf).img)):prop
+                ensures (b:bool = (True ):bool):prop <-> ((apply 
+                        (uf_5:'a uf).rep e1:'a elem):'a elem = (apply 
+                        (uf_5:'a uf).rep e2:'a elem):'a elem):prop
+        writes uf_5:'a uf*)
+    
+    val get : 'a elem -> 'a
+    (*@ v_1:'a = get [uf_6:'a uf: 'a uf] e_2:'a elem
+        requires (mem  e_2:'a elem (uf_6:'a uf).dom):prop
+        ensures ((uf_6:'a uf).dom = old ((uf_6:'a uf).dom)):prop
+                ensures ((uf_6:'a uf).rep = old ((uf_6:'a uf).rep)):prop
+                ensures ((uf_6:'a uf).img = old ((uf_6:'a uf).img)):prop
+                ensures (v_1:'a = (apply 
+                        (uf_6:'a uf).img e_2:'a elem):'a):prop
+        writes uf_6:'a uf*)
+    
+    val set_1 : 'a elem -> 'a -> unit
+    (*@  set_1 [uf_7:'a uf: 'a uf] e_3:'a elem v_2:'a
+        requires (mem  e_3:'a elem (uf_7:'a uf).dom):prop
+        ensures ((uf_7:'a uf).dom = old ((uf_7:'a uf).dom)):prop
+                ensures ((uf_7:'a uf).rep = old ((uf_7:'a uf).rep)):prop
+                ensures forall x_4:'a elem . ((apply 
+                        (uf_7:'a uf).img x_4:'a elem):'a = if (equiv 
+                        uf_7:'a uf x_4:'a elem e_3:'a elem):prop then 
+                        v_2:'a else old ((apply 
+                        (uf_7:'a uf).img x_4:'a elem):'a)):prop
+        writes uf_7:'a uf*)
+    
+    val union_1 : 'a elem -> 'a elem -> unit
+    (*@  union_1 [uf_8:'a uf: 'a uf] e1_1:'a elem e2_1:'a elem
+        requires (mem  e1_1:'a elem (uf_8:'a uf).dom):prop
+                 requires (mem  e2_1:'a elem (uf_8:'a uf).dom):prop
+        ensures ((uf_8:'a uf).dom = old ((uf_8:'a uf).dom)):prop
+                ensures exists r_1:'a elem . (r_1:'a elem = old ((apply 
+                        (uf_8:'a uf).rep e1_1:'a elem):'a elem)):prop || (
+                        r_1:'a elem = old ((apply 
+                        (uf_8:'a uf).rep e2_1:'a elem):'a elem)):prop && forall 
+                        x_5:'a elem . (mem 
+                        x_5:'a elem (uf_8:'a uf).dom):prop -> ((apply 
+                        (uf_8:'a uf).rep x_5:'a elem):'a elem = if old ((equiv 
+                        uf_8:'a uf x_5:'a elem e1_1:'a elem):prop || (equiv 
+                        uf_8:'a uf x_5:'a elem e2_1:'a elem):prop) then 
+                        r_1:'a elem else old ((apply 
+                        (uf_8:'a uf).rep x_5:'a elem):'a elem)):prop && ((apply 
+                        (uf_8:'a uf).img x_5:'a elem):'a = if old ((equiv 
+                        uf_8:'a uf x_5:'a elem e1_1:'a elem):prop || (equiv 
+                        uf_8:'a uf x_5:'a elem e2_1:'a elem):prop) then (apply 
+                        (uf_8:'a uf).img r_1:'a elem):'a else old ((apply 
+                        (uf_8:'a uf).img x_5:'a elem):'a)):prop
+        writes uf_8:'a uf*)
+    
+    (*@
+    val join : 'a uf -> 'a uf -> unit
+    (*@  join uf1:'a uf uf2:'a uf
+        ensures ((uf1:'a uf).dom = old ((union 
+                (uf1:'a uf).dom old ((uf2:'a uf).dom)):'a elem set)):prop
+                ensures forall x_6:'a elem . ((apply 
+                        (uf1:'a uf).rep x_6:'a elem):'a elem = if (mem 
+                        x_6:'a elem old ((uf1:'a uf).dom)):prop then old ((apply 
+                        (uf1:'a uf).rep x_6:'a elem):'a elem) else old ((apply 
+                        (uf2:'a uf).rep x_6:'a elem):'a elem)):prop
+                ensures forall x_7:'a elem . ((apply 
+                        (uf1:'a uf).img x_7:'a elem):'a = if (mem 
+                        x_7:'a elem old ((uf1:'a uf).dom)):prop then old ((apply 
+                        (uf1:'a uf).img x_7:'a elem):'a) else old ((apply 
+                        (uf2:'a uf).img x_7:'a elem):'a)):prop
+        writes uf1:'a uf
+        consumes uf2:'a uf*)
+    *)
+
+OK

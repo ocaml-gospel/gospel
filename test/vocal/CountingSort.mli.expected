@@ -1,0 +1,113 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel
+  {| predicate k_values (k: int) (a: int seq) =
+      forall i: integer. 0 <= i < length a -> 0 <= a[i] < k |}]
+[@@@gospel {| open Seq     |}]
+[@@@gospel {| open SeqPerm |}]
+val counting_sort : int -> int array -> int array -> unit[@@gospel
+                                                           {| counting_sort k a b
+      requires 0 < k
+      requires k_values k a
+      requires length a = length b
+      modifies b
+      ensures  Seq.sorted b
+      ensures  SeqPerm.permut_all a b |}]
+val in_place_counting_sort : int -> int array -> unit[@@gospel
+                                                       {| in_place_counting_sort k a
+      requires 0 < k
+      requires k_values k a
+      modifies a
+      ensures  Seq.sorted a
+      ensures  SeqPerm.permut_all (old a) a |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ predicate k_values ... *)
+
+(*@ open Seq *)
+
+(*@ open SeqPerm *)
+
+val counting_sort : int -> int array -> int array -> unit
+(*@  counting_sort k a b
+    requires ...
+    requires ...
+    requires ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val in_place_counting_sort : int -> int array -> unit
+(*@  in_place_counting_sort k a
+    requires ...
+    requires ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module CountingSort.mli
+
+  Namespace: CountingSort.mli
+    Type symbols
+      
+    Logic Symbols
+      predicate k_values (_:int) (_:int seq)
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ predicate k_values (k:int) (a:int seq) =
+        forall i:integer . (0:integer <= i:integer):prop /\ (i:integer < (length 
+        a:int seq):integer):prop -> (0:integer <= (integer_of_int 
+        (mixfix [_]  a:int seq i:integer):int):integer):prop /\ ((integer_of_int 
+        (mixfix [_]  a:int seq i:integer):int):integer < (integer_of_int 
+        k:int):integer):prop
+    *)
+    
+    (*@ open Seq *)
+    
+    (*@ open SeqPerm *)
+    
+    val counting_sort : int -> int array -> int array -> unit
+    (*@  counting_sort k_1:int a_1:int array b:int array
+        requires (0:integer < (integer_of_int  k_1:int):integer):prop
+                 requires (k_values 
+                          k_1:int (elts  a_1:int array):int seq):prop
+                 requires ((length 
+                          (elts  a_1:int array):int seq):integer = (length 
+                          (elts  b:int array):int seq):integer):prop
+        ensures (sorted  (elts  b:int array):int seq):prop
+                ensures (permut_all 
+                        (elts  a_1:int array):int seq (elts 
+                        b:int array):int seq):prop
+        writes b:int array*)
+    
+    val in_place_counting_sort : int -> int array -> unit
+    (*@  in_place_counting_sort k_2:int a_2:int array
+        requires (0:integer < (integer_of_int  k_2:int):integer):prop
+                 requires (k_values 
+                          k_2:int (elts  a_2:int array):int seq):prop
+        ensures (sorted  (elts  a_2:int array):int seq):prop
+                ensures (permut_all 
+                        (elts  old (a_2:int array)):int seq (elts 
+                        a_2:int array):int seq):prop
+        writes a_2:int array*)
+
+OK

@@ -1,0 +1,725 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@ocaml.text
+  " Vectors (aka resizable arrays, growing arrays, dynamic arrays, etc.)\n\n    This module implements arrays that automatically expand as necessary.\n    Its implementation uses a traditional array and replaces it with a\n    larger array when needed (and elements are copied from the old array\n    to the new one). The current implementation doubles the capacity when\n    growing the array (and shrinks it whenever the number of elements\n    comes to one fourth of the capacity).\n\n    The unused part of the internal array is filled with a dummy value,\n    which is user-provided at creation time (and referred to below\n    as ``the dummy value''). Consequently, vectors do not retain pointers\n    to values that are not used anymore after a shrinking.\n\n    Vectors provide an efficient implementation of stacks, with a\n    better locality of reference than list-based implementations (such\n    as standard library {!Stack}). A stack interface is provided,\n    similar to that of {!Stack} (though {!Vector.push} have arguments\n    in the other way round). Inserting [n] elements with\n    {!Vector.push} has overall complexity O(n) i.e. each insertion has\n    amortized constant time complexity. "]
+[@@@gospel {| open Seq |}]
+type 'a t[@@gospel {| mutable model view: 'a seq |}][@@gospel
+                                                      {| invariant length view <= Sys.max_array_length |}]
+[@@@ocaml.text
+  " {2 Operations proper to vectors, or with a different type and/or\n    semantics than those of module [Array]} "]
+val create : ?capacity:int -> dummy:'a -> 'a t[@@gospel
+                                                {| a = create ?capacity ~dummy
+      requires let capacity = match capacity with
+                 | None -> 0 | Some c -> c in
+               0 <= capacity <= Sys.max_array_length
+      ensures  length a.view = 0 |}]
+val make : ?dummy:'a -> int -> 'a -> 'a t[@@gospel
+                                           {| a = make ?dummy n x
+      requires 0 <= n <= Sys.max_array_length
+      ensures  length a.view = n
+      ensures  forall i: integer. 0 <= i < n -> a.view[i] = x |}]
+val init : dummy:'a -> int -> (int -> 'a) -> 'a t[@@gospel
+                                                   {| a = init ~dummy n f
+      requires 0 <= n <= Sys.max_array_length
+      ensures  length a.view = n
+      ensures  forall i: int. 0 <= i < n -> a.view[i] = f i |}]
+val resize : 'a t -> int -> unit[@@gospel
+                                  {| resize a n
+      checks   0 <= n <= Sys.max_array_length
+      modifies a
+      ensures  length a.view = n
+      ensures  forall i. 0 <= i < min (length (old a.view)) n ->
+                 a.view[i] = (old a.view)[i] |}]
+[@@@ocaml.text " {2 Array interface} "]
+val clear : 'a t -> unit[@@gospel
+                          {| clear a
+      modifies a
+      ensures length a.view = 0 |}]
+val is_empty : 'a t -> bool[@@gospel
+                             {| r = is_empty a
+      ensures r <-> length a.view = 0 |}]
+val length : 'a t -> int[@@gospel
+                          {| n = length a
+      ensures n = length a.view |}]
+val get : 'a t -> int -> 'a[@@gospel
+                             {| x = get a i
+      requires 0 <= i < length a.view
+      ensures  x = a.view[i] |}]
+val set : 'a t -> int -> 'a -> unit[@@gospel
+                                     {| set a i x
+      requires 0 <= i < length a.view
+      modifies a
+      ensures length a.view = length (old a).view
+      ensures  a.view[i] = x
+      ensures  forall j. 0 <= j < length a.view -> j <> i ->
+                 a.view[j] = (old a).view[j] |}]
+val sub : 'a t -> int -> int -> 'a t[@@gospel
+                                      {| r = sub a ofs n
+      requires 0 <= ofs /\ 0 <= n /\ ofs + n <= length a.view
+      ensures  length r.view = n
+      ensures  forall i. 0 <= i < n -> r.view[i] = a.view[ofs + i] |}]
+val fill : 'a t -> int -> int -> 'a -> unit[@@gospel
+                                             {| fill a ofs n x
+      requires 0 <= ofs /\ 0 <= n /\ ofs + n <= length a.view
+      modifies a
+      ensures  forall i. (0 <= i < ofs \/ ofs + n <= i < length a.view) ->
+                 a.view[i] = (old a).view[i]
+      ensures  forall i. ofs <= i < ofs + n -> a.view[i] = x |}]
+val blit : 'a t -> int -> 'a t -> int -> int -> unit[@@gospel
+                                                      {| blit a1 ofs1 a2 ofs2 n
+      requires 0 <= n
+      requires 0 <= ofs1 /\ ofs1 + n <= length a1.view
+      requires 0 <= ofs2 /\ ofs2 + n <= length a2.view
+      modifies a2
+      ensures  forall i. (0 <= i < ofs2 \/ ofs2 + n <= i < length a2.view) ->
+                         a2.view[i] = (old a2).view[i]
+      ensures  forall i. ofs2 <= i < ofs2 + n ->
+                         a2.view[i] = (old a1).view[ofs1 + i - ofs2] |}]
+val append : 'a t -> 'a t -> 'a t[@@gospel
+                                   {| a3 = append a1 a2
+      requires length a1.view + length a2.view <= Sys.max_array_length
+      ensures  length a3.view = length a1.view + length a2.view
+      ensures  forall i. 0 <= i < length a1.view -> a3.view[i] = a1.view[i]
+      ensures  forall i. 0 <= i < length a2.view ->
+                 a3.view[length a1.view + i] = a2.view[i] |}]
+val merge_right : 'a t -> 'a t -> unit[@@gospel
+                                        {| merge_right a1 a2
+      requires length a1.view + length a2.view <= Sys.max_array_length
+      modifies a1, a2
+      ensures  length a2.view = 0
+      ensures  length a1.view = length (old a1).view + length (old a2).view
+      ensures  forall i. 0 <= i < length (old a1).view ->
+                 a1.view[i] = (old a1).view[i]
+      ensures  forall i. 0 <= i < length (old a2).view ->
+                 a1.view[length (old a1).view + i] = (old a2).view[i] |}]
+val map : dummy:'b -> 'a t -> ('a -> 'b) -> 'b t[@@gospel
+                                                  {| a2 = map ~dummy a1 f
+      ensures  length a2.view = length a1.view
+      ensures  forall i. 0 <= i < length a1.view -> a2.view[i] = f a1.view[i] |}]
+val mapi : dummy:'b -> 'a t -> (int -> 'a -> 'b) -> 'b t[@@gospel
+                                                          {| a2 = mapi ~dummy a1 f
+      ensures  length a2.view = length a1.view
+      ensures  forall i: int. 0 <= i < length a1.view ->
+               a2.view[i] = f i a1.view[i] |}]
+val copy : 'a t -> 'a t[@@gospel
+                         {| a2 = copy a1
+      ensures  length a2.view = length a1.view
+      ensures  forall i. 0 <= i < length a1.view -> a2.view[i] = a1.view[i] |}]
+val fold_left : 'b t -> ('a -> 'b -> 'a) -> 'a -> 'a[@@gospel
+                                                      {| r = fold_left a f acc
+      ensures  r = Seq.fold_left f acc a.view |}]
+val fold_right : 'b t -> ('b -> 'a -> 'a) -> 'a -> 'a[@@gospel
+                                                       {| r = fold_right a f acc
+      ensures  r = Seq.fold_right f a.view acc |}]
+[@@@ocaml.text
+  " {2 Stack interface}\n\n    Contrary to standard library's {!Stack}, module {!Vector} uses less space\n    (between N and 2N words, instead of 3N) and has better data locality. "]
+val push : 'a t -> 'a -> unit[@@gospel
+                               {| push a x
+      requires length a.view < Sys.max_array_length
+      modifies a
+      ensures  length a.view = length (old a.view) + 1
+      ensures  a.view[length a.view - 1] = x
+      ensures  forall i. 0 <= i < length (old a.view) ->
+                 a.view[i] = (old a).view[i] |}]
+exception Empty 
+val pop : 'a t -> 'a[@@gospel
+                      {| x = pop a
+      modifies a
+      raises   Empty -> length a.view = length (old a).view = 0
+      ensures  length a.view = length (old a).view - 1
+      ensures  x = (old a).view[length a.view]
+      ensures  forall i. 0 <= i < length a.view ->
+                 a.view[i] = (old a).view[i] |}]
+val pop_opt : 'a t -> 'a option[@@gospel
+                                 {| r = pop_opt a
+      modifies a
+      ensures  match r with
+               | None   -> length a.view = length (old a).view = 0
+               | Some x -> length a.view = length (old a).view - 1 /\
+                           x = (old a).view[length a.view] /\
+                           forall i. 0 <= i < length a.view ->
+                                     a.view[i] = (old a).view[i] |}]
+val top : 'a t -> 'a[@@gospel
+                      {| x = top a
+      requires 0 < length a.view
+      ensures  x = a.view[length a.view - 1] |}]
+val top_opt : 'a t -> 'a option[@@gospel
+                                 {| r = top_opt a
+      ensures  match r with
+               | None   -> length a.view = 0
+               | Some x -> x = a.view[length a.view - 1] |}]
+[@@@ocaml.text " {2 Conversions to/from arrays and lists} "]
+[@@@ocaml.text " {2 Only if you know what you are doing...} "]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+[@@@ocaml.text
+  " Vectors (aka resizable arrays, growing arrays, dynamic arrays, etc.)\n\n    This module implements arrays that automatically expand as necessary.\n    Its implementation uses a traditional array and replaces it with a\n    larger array when needed (and elements are copied from the old array\n    to the new one). The current implementation doubles the capacity when\n    growing the array (and shrinks it whenever the number of elements\n    comes to one fourth of the capacity).\n\n    The unused part of the internal array is filled with a dummy value,\n    which is user-provided at creation time (and referred to below\n    as ``the dummy value''). Consequently, vectors do not retain pointers\n    to values that are not used anymore after a shrinking.\n\n    Vectors provide an efficient implementation of stacks, with a\n    better locality of reference than list-based implementations (such\n    as standard library {!Stack}). A stack interface is provided,\n    similar to that of {!Stack} (though {!Vector.push} have arguments\n    in the other way round). Inserting [n] elements with\n    {!Vector.push} has overall complexity O(n) i.e. each insertion has\n    amortized constant time complexity. "]
+
+(*@ open Seq *)
+
+type 'a t[@@gospel {| invariant length view <= Sys.max_array_length |}]
+  (*@ ephemeral
+      model ...
+       *)
+
+[@@@ocaml.text
+  " {2 Operations proper to vectors, or with a different type and/or\n    semantics than those of module [Array]} "]
+
+val create : ?capacity:int -> dummy:'a -> 'a t
+(*@ a = create ?capacity ~dummy
+    requires ...
+    ensures ...
+     *)
+
+val make : ?dummy:'a -> int -> 'a -> 'a t
+(*@ a = make ?dummy n x
+    requires ...
+    ensures ...
+    ensures ...
+     *)
+
+val init : dummy:'a -> int -> (int -> 'a) -> 'a t
+(*@ a = init ~dummy n f
+    requires ...
+    ensures ...
+    ensures ...
+     *)
+
+val resize : 'a t -> int -> unit
+(*@  resize a n
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+[@@@ocaml.text " {2 Array interface} "]
+
+val clear : 'a t -> unit
+(*@  clear a
+    ensures ...
+    modifies ...
+     *)
+
+val is_empty : 'a t -> bool
+(*@ r = is_empty a
+    ensures ...
+     *)
+
+val length : 'a t -> int
+(*@ n = length a
+    ensures ...
+     *)
+
+val get : 'a t -> int -> 'a
+(*@ x = get a i
+    requires ...
+    ensures ...
+     *)
+
+val set : 'a t -> int -> 'a -> unit
+(*@  set a i x
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val sub : 'a t -> int -> int -> 'a t
+(*@ r = sub a ofs n
+    requires ...
+    ensures ...
+    ensures ...
+     *)
+
+val fill : 'a t -> int -> int -> 'a -> unit
+(*@  fill a ofs n x
+    requires ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val blit : 'a t -> int -> 'a t -> int -> int -> unit
+(*@  blit a1 ofs1 a2 ofs2 n
+    requires ...
+    requires ...
+    requires ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+val append : 'a t -> 'a t -> 'a t
+(*@ a3 = append a1 a2
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+     *)
+
+val merge_right : 'a t -> 'a t -> unit
+(*@  merge_right a1 a2
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+    modifies ...
+     *)
+
+val map : dummy:'b -> 'a t -> ('a -> 'b) -> 'b t
+(*@ a2 = map ~dummy a1 f
+    ensures ...
+    ensures ...
+     *)
+
+val mapi : dummy:'b -> 'a t -> (int -> 'a -> 'b) -> 'b t
+(*@ a2 = mapi ~dummy a1 f
+    ensures ...
+    ensures ...
+     *)
+
+val copy : 'a t -> 'a t
+(*@ a2 = copy a1
+    ensures ...
+    ensures ...
+     *)
+
+val fold_left : 'b t -> ('a -> 'b -> 'a) -> 'a -> 'a
+(*@ r = fold_left a f acc
+    ensures ...
+     *)
+
+val fold_right : 'b t -> ('b -> 'a -> 'a) -> 'a -> 'a
+(*@ r = fold_right a f acc
+    ensures ...
+     *)
+
+[@@@ocaml.text
+  " {2 Stack interface}\n\n    Contrary to standard library's {!Stack}, module {!Vector} uses less space\n    (between N and 2N words, instead of 3N) and has better data locality. "]
+
+val push : 'a t -> 'a -> unit
+(*@  push a x
+    requires ...
+    ensures ...
+    ensures ...
+    ensures ...
+    modifies ...
+     *)
+
+exception Empty 
+
+val pop : 'a t -> 'a
+(*@ x = pop a
+    ensures ...
+    ensures ...
+    ensures ...
+    with ...
+    modifies ...
+     *)
+
+val pop_opt : 'a t -> 'a option
+(*@ r = pop_opt a
+    ensures ...
+    modifies ...
+     *)
+
+val top : 'a t -> 'a
+(*@ x = top a
+    requires ...
+    ensures ...
+     *)
+
+val top_opt : 'a t -> 'a option
+(*@ r = top_opt a
+    ensures ...
+     *)
+
+[@@@ocaml.text " {2 Conversions to/from arrays and lists} "]
+
+[@@@ocaml.text " {2 Only if you know what you are doing...} "]
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Vector.mli
+
+  Namespace: Vector.mli
+    Type symbols
+      ('a) t
+      
+    Logic Symbols
+      function view (_:'a t) : 'a seq
+      
+    Exception Symbols
+      Empty
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    [@@@ocaml.text
+      " Vectors (aka resizable arrays, growing arrays, dynamic arrays, etc.)\n\n    This module implements arrays that automatically expand as necessary.\n    Its implementation uses a traditional array and replaces it with a\n    larger array when needed (and elements are copied from the old array\n    to the new one). The current implementation doubles the capacity when\n    growing the array (and shrinks it whenever the number of elements\n    comes to one fourth of the capacity).\n\n    The unused part of the internal array is filled with a dummy value,\n    which is user-provided at creation time (and referred to below\n    as ``the dummy value''). Consequently, vectors do not retain pointers\n    to values that are not used anymore after a shrinking.\n\n    Vectors provide an efficient implementation of stacks, with a\n    better locality of reference than list-based implementations (such\n    as standard library {!Stack}). A stack interface is provided,\n    similar to that of {!Stack} (though {!Vector.push} have arguments\n    in the other way round). Inserting [n] elements with\n    {!Vector.push} has overall complexity O(n) i.e. each insertion has\n    amortized constant time complexity. "]
+    
+    (*@ open Seq *)
+    
+    type 'a t
+         (*@ ephemeral
+             mutable model view : 'a seq *)
+    
+    [@@@ocaml.text
+      " {2 Operations proper to vectors, or with a different type and/or\n    semantics than those of module [Array]} "]
+    
+    val create : ?capacity:int -> dummy:'a -> 'a t
+    (*@ a_1:'a t = create ?capacity:int option ~dummy:'a
+        requires let capacity_1:integer = match capacity:int option with
+                 | None -> 0:integer
+                 | Some c:int -> (integer_of_int  c:int):integer
+                 end::integer in (0:integer <= capacity_1:integer):prop /\ (
+                 capacity_1:integer <= (max_array_length ):integer):prop
+        ensures ((length  (a_1:'a t).view):integer = 0:integer):prop*)
+    
+    val make : ?dummy:'a -> int -> 'a -> 'a t
+    (*@ a_2:'a t = make ?dummy_1:'a option n:int x:'a
+        requires (0:integer <= (integer_of_int 
+                 n:int):integer):prop /\ ((integer_of_int 
+                 n:int):integer <= (max_array_length ):integer):prop
+        ensures ((length  (a_2:'a t).view):integer = (integer_of_int 
+                n:int):integer):prop
+                ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                        i:integer < (integer_of_int 
+                        n:int):integer):prop -> ((mixfix [_] 
+                        (a_2:'a t).view i:integer):'a = x:'a):prop*)
+    
+    val init : dummy:'a -> int -> (int -> 'a) -> 'a t
+    (*@ a_3:'a t = init ~dummy_2:'a n_1:int f:int -> 'a
+        requires (0:integer <= (integer_of_int 
+                 n_1:int):integer):prop /\ ((integer_of_int 
+                 n_1:int):integer <= (max_array_length ):integer):prop
+        ensures ((length  (a_3:'a t).view):integer = (integer_of_int 
+                n_1:int):integer):prop
+                ensures forall i_1:int . (0:integer <= (integer_of_int 
+                        i_1:int):integer):prop /\ ((integer_of_int 
+                        i_1:int):integer < (integer_of_int 
+                        n_1:int):integer):prop -> ((mixfix [_] 
+                        (a_3:'a t).view (integer_of_int  i_1:int):integer):'a = (apply 
+                        f:int -> 'a i_1:int):'a):prop*)
+    
+    val resize : 'a t -> int -> unit
+    (*@  resize a_4:'a t n_2:int
+        checks (0:integer <= (integer_of_int 
+               n_2:int):integer):prop /\ ((integer_of_int 
+               n_2:int):integer <= (max_array_length ):integer):prop
+        ensures ((length  (a_4:'a t).view):integer = (integer_of_int 
+                n_2:int):integer):prop
+                ensures forall i_2:integer . (0:integer <= i_2:integer):prop /\ (
+                        i_2:integer < (min 
+                        (length  old ((a_4:'a t).view)):integer
+                        (integer_of_int  n_2:int):integer):integer):prop -> ((mixfix [_] 
+                        (a_4:'a t).view i_2:integer):'a = (mixfix [_] 
+                        old ((a_4:'a t).view) i_2:integer):'a):prop
+        writes a_4:'a t*)
+    
+    [@@@ocaml.text " {2 Array interface} "]
+    
+    val clear : 'a t -> unit
+    (*@  clear a_5:'a t
+        ensures ((length  (a_5:'a t).view):integer = 0:integer):prop
+        writes a_5:'a t*)
+    
+    val is_empty : 'a t -> bool
+    (*@ r:bool = is_empty a_6:'a t
+        ensures (r:bool = (True ):bool):prop <-> ((length 
+                (a_6:'a t).view):integer = 0:integer):prop*)
+    
+    val length_1 : 'a t -> int
+    (*@ n_3:int = length_1 a_7:'a t
+        ensures ((integer_of_int  n_3:int):integer = (length 
+                (a_7:'a t).view):integer):prop*)
+    
+    val get : 'a t -> int -> 'a
+    (*@ x_1:'a = get a_8:'a t i_3:int
+        requires (0:integer <= (integer_of_int 
+                 i_3:int):integer):prop /\ ((integer_of_int 
+                 i_3:int):integer < (length  (a_8:'a t).view):integer):prop
+        ensures (x_1:'a = (mixfix [_] 
+                (a_8:'a t).view (integer_of_int  i_3:int):integer):'a):prop*)
+    
+    val set : 'a t -> int -> 'a -> unit
+    (*@  set a_9:'a t i_4:int x_2:'a
+        requires (0:integer <= (integer_of_int 
+                 i_4:int):integer):prop /\ ((integer_of_int 
+                 i_4:int):integer < (length  (a_9:'a t).view):integer):prop
+        ensures ((length  (a_9:'a t).view):integer = (length 
+                (old (a_9:'a t)).view):integer):prop
+                ensures ((mixfix [_] 
+                        (a_9:'a t).view (integer_of_int  i_4:int):integer):'a = 
+                        x_2:'a):prop
+                ensures forall j:integer . (0:integer <= j:integer):prop /\ (
+                        j:integer < (length 
+                        (a_9:'a t).view):integer):prop -> not (j:integer = (integer_of_int 
+                        i_4:int):integer):prop -> ((mixfix [_] 
+                        (a_9:'a t).view j:integer):'a = (mixfix [_] 
+                        (old (a_9:'a t)).view j:integer):'a):prop
+        writes a_9:'a t*)
+    
+    val sub : 'a t -> int -> int -> 'a t
+    (*@ r_1:'a t = sub a_10:'a t ofs:int n_4:int
+        requires (0:integer <= (integer_of_int 
+                 ofs:int):integer):prop /\ (0:integer <= (integer_of_int 
+                 n_4:int):integer):prop /\ (((integer_of_int 
+                 ofs:int):integer + (integer_of_int 
+                 n_4:int):integer):integer <= (length 
+                 (a_10:'a t).view):integer):prop
+        ensures ((length  (r_1:'a t).view):integer = (integer_of_int 
+                n_4:int):integer):prop
+                ensures forall i_5:integer . (0:integer <= i_5:integer):prop /\ (
+                        i_5:integer < (integer_of_int 
+                        n_4:int):integer):prop -> ((mixfix [_] 
+                        (r_1:'a t).view i_5:integer):'a = (mixfix [_] 
+                        (a_10:'a t).view ((integer_of_int 
+                        ofs:int):integer + i_5:integer):integer):'a):prop*)
+    
+    val fill : 'a t -> int -> int -> 'a -> unit
+    (*@  fill a_11:'a t ofs_1:int n_5:int x_3:'a
+        requires (0:integer <= (integer_of_int 
+                 ofs_1:int):integer):prop /\ (0:integer <= (integer_of_int 
+                 n_5:int):integer):prop /\ (((integer_of_int 
+                 ofs_1:int):integer + (integer_of_int 
+                 n_5:int):integer):integer <= (length 
+                 (a_11:'a t).view):integer):prop
+        ensures forall i_6:integer . (0:integer <= i_6:integer):prop /\ (
+                i_6:integer < (integer_of_int 
+                ofs_1:int):integer):prop \/ (((integer_of_int 
+                ofs_1:int):integer + (integer_of_int 
+                n_5:int):integer):integer <= i_6:integer):prop /\ (i_6:
+                                                                   integer < (length 
+                (a_11:'a t).view):integer):prop -> ((mixfix [_] 
+                (a_11:'a t).view i_6:integer):'a = (mixfix [_] 
+                (old (a_11:'a t)).view i_6:integer):'a):prop
+                ensures forall i_7:integer . ((integer_of_int 
+                        ofs_1:int):integer <= i_7:integer):prop /\ (i_7:
+                                                                    integer < ((integer_of_int 
+                        ofs_1:int):integer + (integer_of_int 
+                        n_5:int):integer):integer):prop -> ((mixfix [_] 
+                        (a_11:'a t).view i_7:integer):'a = x_3:'a):prop
+        writes a_11:'a t*)
+    
+    val blit : 'a t -> int -> 'a t -> int -> int -> unit
+    (*@  blit a1:'a t ofs1:int a2:'a t ofs2:int n_6:int
+        requires (0:integer <= (integer_of_int  n_6:int):integer):prop
+                 requires (0:integer <= (integer_of_int 
+                          ofs1:int):integer):prop /\ (((integer_of_int 
+                          ofs1:int):integer + (integer_of_int 
+                          n_6:int):integer):integer <= (length 
+                          (a1:'a t).view):integer):prop
+                 requires (0:integer <= (integer_of_int 
+                          ofs2:int):integer):prop /\ (((integer_of_int 
+                          ofs2:int):integer + (integer_of_int 
+                          n_6:int):integer):integer <= (length 
+                          (a2:'a t).view):integer):prop
+        ensures forall i_8:integer . (0:integer <= i_8:integer):prop /\ (
+                i_8:integer < (integer_of_int 
+                ofs2:int):integer):prop \/ (((integer_of_int 
+                ofs2:int):integer + (integer_of_int 
+                n_6:int):integer):integer <= i_8:integer):prop /\ (i_8:
+                                                                   integer < (length 
+                (a2:'a t).view):integer):prop -> ((mixfix [_] 
+                (a2:'a t).view i_8:integer):'a = (mixfix [_] 
+                (old (a2:'a t)).view i_8:integer):'a):prop
+                ensures forall i_9:integer . ((integer_of_int 
+                        ofs2:int):integer <= i_9:integer):prop /\ (i_9:
+                                                                   integer < ((integer_of_int 
+                        ofs2:int):integer + (integer_of_int 
+                        n_6:int):integer):integer):prop -> ((mixfix [_] 
+                        (a2:'a t).view i_9:integer):'a = (mixfix [_] 
+                        (old (a1:'a t)).view (((integer_of_int 
+                        ofs1:int):integer + i_9:integer):integer - (integer_of_int 
+                        ofs2:int):integer):integer):'a):prop
+        writes a2:'a t*)
+    
+    val append : 'a t -> 'a t -> 'a t
+    (*@ a3:'a t = append a1_1:'a t a2_1:'a t
+        requires (((length  (a1_1:'a t).view):integer + (length 
+                 (a2_1:'a t).view):integer):integer <= (max_array_length ):
+                 integer):prop
+        ensures ((length  (a3:'a t).view):integer = ((length 
+                (a1_1:'a t).view):integer + (length 
+                (a2_1:'a t).view):integer):integer):prop
+                ensures forall i_10:integer . (0:integer <= i_10:integer):prop /\ (
+                        i_10:integer < (length 
+                        (a1_1:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a3:'a t).view i_10:integer):'a = (mixfix [_] 
+                        (a1_1:'a t).view i_10:integer):'a):prop
+                ensures forall i_11:integer . (0:integer <= i_11:integer):prop /\ (
+                        i_11:integer < (length 
+                        (a2_1:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a3:'a t).view ((length 
+                        (a1_1:'a t).view):integer + i_11:integer):integer):'a = (mixfix [_] 
+                        (a2_1:'a t).view i_11:integer):'a):prop*)
+    
+    val merge_right : 'a t -> 'a t -> unit
+    (*@  merge_right a1_2:'a t a2_2:'a t
+        requires (((length  (a1_2:'a t).view):integer + (length 
+                 (a2_2:'a t).view):integer):integer <= (max_array_length ):
+                 integer):prop
+        ensures ((length  (a2_2:'a t).view):integer = 0:integer):prop
+                ensures ((length  (a1_2:'a t).view):integer = ((length 
+                        (old (a1_2:'a t)).view):integer + (length 
+                        (old (a2_2:'a t)).view):integer):integer):prop
+                ensures forall i_12:integer . (0:integer <= i_12:integer):prop /\ (
+                        i_12:integer < (length 
+                        (old (a1_2:'a t)).view):integer):prop -> ((mixfix [_] 
+                        (a1_2:'a t).view i_12:integer):'a = (mixfix [_] 
+                        (old (a1_2:'a t)).view i_12:integer):'a):prop
+                ensures forall i_13:integer . (0:integer <= i_13:integer):prop /\ (
+                        i_13:integer < (length 
+                        (old (a2_2:'a t)).view):integer):prop -> ((mixfix [_] 
+                        (a1_2:'a t).view ((length 
+                        (old (a1_2:'a t)).view):integer + i_13:integer):
+                        integer):'a = (mixfix [_] 
+                        (old (a2_2:'a t)).view i_13:integer):'a):prop
+        writes a1_2:'a t
+               writes a2_2:'a t*)
+    
+    val map : dummy:'b -> 'a t -> ('a -> 'b) -> 'b t
+    (*@ a2_3:'b t = map ~dummy_3:'b a1_3:'a t f_1:'a -> 'b
+        ensures ((length  (a2_3:'b t).view):integer = (length 
+                (a1_3:'a t).view):integer):prop
+                ensures forall i_14:integer . (0:integer <= i_14:integer):prop /\ (
+                        i_14:integer < (length 
+                        (a1_3:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_3:'b t).view i_14:integer):'b = (apply 
+                        f_1:'a -> 'b (mixfix [_] 
+                        (a1_3:'a t).view i_14:integer):'a):'b):prop*)
+    
+    val mapi : dummy:'b -> 'a t -> (int -> 'a -> 'b) -> 'b t
+    (*@ a2_4:'b t = mapi ~dummy_4:'b a1_4:'a t f_2:int -> 'a -> 'b
+        ensures ((length  (a2_4:'b t).view):integer = (length 
+                (a1_4:'a t).view):integer):prop
+                ensures forall i_15:int . (0:integer <= (integer_of_int 
+                        i_15:int):integer):prop /\ ((integer_of_int 
+                        i_15:int):integer < (length 
+                        (a1_4:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_4:'b t).view (integer_of_int  i_15:int):integer):'b = (apply 
+                        (apply  f_2:int -> 'a -> 'b i_15:int):'a -> 'b
+                        (mixfix [_] 
+                        (a1_4:'a t).view (integer_of_int  i_15:int):integer):'a):'b):prop*)
+    
+    val copy : 'a t -> 'a t
+    (*@ a2_5:'a t = copy a1_5:'a t
+        ensures ((length  (a2_5:'a t).view):integer = (length 
+                (a1_5:'a t).view):integer):prop
+                ensures forall i_16:integer . (0:integer <= i_16:integer):prop /\ (
+                        i_16:integer < (length 
+                        (a1_5:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_5:'a t).view i_16:integer):'a = (mixfix [_] 
+                        (a1_5:'a t).view i_16:integer):'a):prop*)
+    
+    val fold_left : 'b t -> ('a -> 'b -> 'a) -> 'a -> 'a
+    (*@ r_2:'a = fold_left a_12:'b t f_3:'a -> 'b -> 'a acc:'a
+        ensures (r_2:'a = (fold_left_1 
+                f_3:'a -> 'b -> 'a acc:'a (a_12:'b t).view):'a):prop*)
+    
+    val fold_right : 'b t -> ('b -> 'a -> 'a) -> 'a -> 'a
+    (*@ r_3:'a = fold_right a_13:'b t f_4:'b -> 'a -> 'a acc_1:'a
+        ensures (r_3:'a = (fold_right_1 
+                f_4:'b -> 'a -> 'a (a_13:'b t).view acc_1:'a):'a):prop*)
+    
+    [@@@ocaml.text
+      " {2 Stack interface}\n\n    Contrary to standard library's {!Stack}, module {!Vector} uses less space\n    (between N and 2N words, instead of 3N) and has better data locality. "]
+    
+    val push : 'a t -> 'a -> unit
+    (*@  push a_14:'a t x_4:'a
+        requires ((length 
+                 (a_14:'a t).view):integer < (max_array_length ):integer):prop
+        ensures ((length  (a_14:'a t).view):integer = ((length 
+                old ((a_14:'a t).view)):integer + 1:integer):integer):prop
+                ensures ((mixfix [_] 
+                        (a_14:'a t).view ((length 
+                        (a_14:'a t).view):integer - 1:integer):integer):'a = 
+                        x_4:'a):prop
+                ensures forall i_17:integer . (0:integer <= i_17:integer):prop /\ (
+                        i_17:integer < (length 
+                        old ((a_14:'a t).view)):integer):prop -> ((mixfix [_] 
+                        (a_14:'a t).view i_17:integer):'a = (mixfix [_] 
+                        (old (a_14:'a t)).view i_17:integer):'a):prop
+        writes a_14:'a t*)
+    
+    exception Empty
+    
+    val pop : 'a t -> 'a
+    (*@ x_5:'a = pop a_15:'a t
+        ensures ((length  (a_15:'a t).view):integer = ((length 
+                (old (a_15:'a t)).view):integer - 1:integer):integer):prop
+                ensures (x_5:'a = (mixfix [_] 
+                        (old (a_15:'a t)).view (length 
+                        (a_15:'a t).view):integer):'a):prop
+                ensures forall i_18:integer . (0:integer <= i_18:integer):prop /\ (
+                        i_18:integer < (length 
+                        (a_15:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a_15:'a t).view i_18:integer):'a = (mixfix [_] 
+                        (old (a_15:'a t)).view i_18:integer):'a):prop
+        raisesEmpty  -> ((length  (a_15:'a t).view):integer = (length 
+                        (old (a_15:'a t)).view):integer):prop /\ ((length 
+                        (old (a_15:'a t)).view):integer = 0:integer):prop
+        writes a_15:'a t*)
+    
+    val pop_opt : 'a t -> 'a option
+    (*@ r_4:'a option = pop_opt a_16:'a t
+        ensures (match r_4:'a option with
+                | None -> if ((length  (a_16:'a t).view):integer = (length 
+                          (old (a_16:'a t)).view):integer):prop /\ ((length 
+                          (old (a_16:'a t)).view):integer = 0:integer):prop then (True ):
+                          bool else (False ):bool
+                | Some x_6:'a -> if ((length 
+                                 (a_16:'a t).view):integer = ((length 
+                                 (old (a_16:'a t)).view):integer - 1:
+                                 integer):integer):prop /\ (x_6:'a = (mixfix [_] 
+                                 (old (a_16:'a t)).view (length 
+                                 (a_16:'a t).view):integer):'a):prop /\ forall 
+                                 i_19:integer . (0:integer <= i_19:integer):prop /\ (
+                                 i_19:integer < (length 
+                                 (a_16:'a t).view):integer):prop -> ((mixfix [_] 
+                                 (a_16:'a t).view i_19:integer):'a = (mixfix [_] 
+                                 (old (a_16:'a t)).view i_19:integer):'a):prop then (True ):
+                                 bool else (False ):bool
+                end::bool = (True ):bool):prop
+        writes a_16:'a t*)
+    
+    val top : 'a t -> 'a
+    (*@ x_7:'a = top a_17:'a t
+        requires (0:integer < (length  (a_17:'a t).view):integer):prop
+        ensures (x_7:'a = (mixfix [_] 
+                (a_17:'a t).view ((length 
+                (a_17:'a t).view):integer - 1:integer):integer):'a):prop*)
+    
+    val top_opt : 'a t -> 'a option
+    (*@ r_5:'a option = top_opt a_18:'a t
+        ensures (match r_5:'a option with
+                | None -> if ((length 
+                          (a_18:'a t).view):integer = 0:integer):prop then (True ):
+                          bool else (False ):bool
+                | Some x_8:'a -> if (x_8:'a = (mixfix [_] 
+                                 (a_18:'a t).view ((length 
+                                 (a_18:'a t).view):integer - 1:integer):
+                                 integer):'a):prop then (True ):bool else (False ):
+                                 bool
+                end::bool = (True ):bool):prop*)
+    
+    [@@@ocaml.text " {2 Conversions to/from arrays and lists} "]
+    
+    [@@@ocaml.text " {2 Only if you know what you are doing...} "]
+
+OK
