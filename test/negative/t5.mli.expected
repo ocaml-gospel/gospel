@@ -22,5 +22,5 @@
     ensures ...
     ensures ...
      *)
-File "_none_", line 1, characters 10-11:
+File "t5.mli", line 11, characters 10-11:
 Error: Type mysmatch. Cannot match integer with bool

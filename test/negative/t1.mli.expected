@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)
-File "_none_", line 1, characters 11-12:
+File "t1.mli", line 11, characters 11-12:
 Error: Type mysmatch. Cannot match integer with bool

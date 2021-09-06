@@ -13,5 +13,5 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 (*@ r = f ~x [z : TY] ~y z
      *)
-File "_none_", line 1, characters 21-22:
+File "t26.mli", line 12, characters 59-60:
 Error: Variable z is duplicated in pattern

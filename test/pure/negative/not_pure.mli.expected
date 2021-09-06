@@ -19,5 +19,5 @@ val g : int -> int
 (*@ y = g x
     requires ...
      *)
-File "_none_", line 2, characters 13-14:
+File "not_pure.mli", line 8, characters 13-14:
 Error: Symbol f not found

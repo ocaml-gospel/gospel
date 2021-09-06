@@ -64,9 +64,9 @@ let default_open =
   B.attribute ~name ~payload |> B.psig_attribute
 
 (** Parse the attributes as GOSPEL specification. *)
-let parse_gospel signature name =
+let parse_gospel ~filename signature name =
   (if name = gospelstdlib then signature else default_open :: signature)
-  |> Uattr2spec.signature
+  |> Uattr2spec.signature ~filename
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
@@ -74,4 +74,4 @@ let path2module p =
 let parse_ocaml_gospel path =
   let module_name = path2module path in
   let ocaml = parse_ocaml path in
-  parse_gospel ocaml module_name
+  parse_gospel ~filename:path ocaml module_name

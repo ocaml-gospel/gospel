@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ function rec f ... *)
-File "_none_", line 1, characters 35-36:
+File "t8.mli", line 2, characters 35-36:
 Error: Type mysmatch. Cannot match integer with bool

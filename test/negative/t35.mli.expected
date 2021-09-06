@@ -18,5 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-File "_none_", line 3, characters 9-10:
+File "t35.mli", line 15, characters 9-10:
 Error: Symbol z not found
