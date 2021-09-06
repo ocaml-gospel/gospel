@@ -21,7 +21,7 @@ Gospel is available on Opam repositories. Installing it is straightforward:
    $ opam install gospel
 
 This will install the ``gospel`` tool binary, as well as the developer library if you
-wish to build your software on top of Gospel. You may check the installation with
+wish to build your software on top of Gospel. You may check the installation with:
 
 .. code-block:: shell
 
@@ -47,7 +47,7 @@ interface for polymorphic, limited capacity containers::
   (** [is_empty t] is [true] iff [t] contains no elements. *)
 
   val clear: 'a t -> unit
-  (** [clear t] removes all values in [t]. *)*
+  (** [clear t] removes all values in [t]. *)
 
   val add: 'a t -> 'a -> unit
   (** [add t x] adds [x] to the container [t], or raises [Full] if
@@ -151,7 +151,7 @@ helps up refer to the state of the container prior to the function execution::
       modifies t.contents
       ensures t.contents = Set.add x (old t.contents) *)
 
-  val remove 'a t -> 'a -> unit
+  val remove: 'a t -> 'a -> unit
   (*@ remove t x
       modifies t.contents
       ensures t.contents = Set.remove x (old t.contents) *)
