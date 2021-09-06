@@ -1,6 +1,9 @@
 Walkthoughs
 ===========
 
+This section contains a gallery of advanced use-cases extracted from
+real-world interfaces.
+
 Mutable queues
 ^^^^^^^^^^^^^^
 .. sectionauthor:: Mário Pereira

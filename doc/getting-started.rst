@@ -4,8 +4,9 @@ Getting started
 Installing Gospel
 ^^^^^^^^^^^^^^^^^
 
-Please make sure that you already have a decently recent version ``ocaml`` and
-``opam`` installed. Gospel requires the following versions:
+Please make sure that you already have a decently recent version of
+``ocaml`` and ``opam`` installed. Gospel requires the following
+versions:
 
 - OCaml 4.09.0 or newer
 - Opam 2.0 or newer
@@ -39,7 +40,7 @@ interface for polymorphic, limited capacity containers::
 
   exception Full
 
-  val create: int -> t
+  val create: int -> 'a t
   (** [create capacity] is an empty container which maximum capacity
       is [capacity]. *)
 
@@ -53,9 +54,8 @@ interface for polymorphic, limited capacity containers::
   (** [add t x] adds [x] to the container [t], or raises [Full] if
       [t] has reached its maximum capacity. *)
 
-  val remove: 'a t -> 'a -> unit
-  (** [remove t x] removes [x] from [t], or raises [Not_found] if
-      [x] is not in [t]. *)
+  val mem: 'a t -> 'a -> bool
+  (** [mem t x] is [true] iff [t] contains [x]. *)
 
 Gospel specifications live in special comments, starting with the ``@``
 character. These comments may be attached to type declarations or value
@@ -71,7 +71,7 @@ the container directly translates into Gospel::
   type 'a t
   (** The type for containers. *)
   (*@ model capacity: int
-      model contents: 'a set *)
+      mutable model contents: 'a set *)
 
 Notice that documentation comments and Gospel specifications can coexist and
 even often help understand each other! However, for the sake of brevity, we will
@@ -118,7 +118,7 @@ keyword is ``ensures``)::
       ensures t.capacity = c
       ensures t.contents = Set.empty *)
 
-Now on to ``is_empty`` and ``clear``.
+Now on to ``is_empty`` and ``mem``.
 
 ``is_empty t`` is true if and only if ``t`` is empty; this is a post-condition.
 This function also (hopefully) has no side-effect: it does not modify ``t`` and
@@ -130,7 +130,17 @@ does not depend on any internal state. In Gospel's language, this function is
       pure
       ensures b <-> t.capacity = Set.empty *)
 
-Clear removes any element in its argument: it is empty after the call.
+The specification for ``mem`` is similar::
+
+  val mem: 'a t -> 'a -> bool
+  (*@ b = mem t x
+      pure
+      ensures b <-> Set.mem x t.contents *)
+
+Finally, let us specify ``clear`` and ``add``, which are functions
+that mutate the container.
+
+Function ``clear`` removes any element in its argument: it is empty after the call.
 Obviously, it modifies the ``contents`` model of its argument. After its
 execution, the container should be empty. Note that we are only allowed to mention
 ``is_empty`` in the specification because it is a pure function; attempting
@@ -142,42 +152,33 @@ error. ::
       modifies t.contents
       ensures is_empty t *)
 
-Finally, let's specify ``add`` and ``remove``. A first attempt is similar to the
-previous examples. In the following, we use Gospel's ``old`` primitive, which
-helps up refer to the state of the container prior to the function execution::
+A first attempt at specifying ``add`` is similar to the
+previous examples. We use Gospel's ``old`` primitive to refer to the
+state of the container prior to the function execution::
 
   val add: 'a t -> 'a -> unit
   (*@ add t x
       modifies t.contents
       ensures t.contents = Set.add x (old t.contents) *)
 
-  val remove: 'a t -> 'a -> unit
-  (*@ remove t x
-      modifies t.contents
-      ensures t.contents = Set.remove x (old t.contents) *)
-
 Notice, however, that this specification is incomplete. Indeed, one specificity
-of those functions is that they can raise exceptions under certain
-circumstances, altering their normal behaviour. Let us complete
+of this function is that it can raise ``Full``. Let us complete
 that contract with this bit of information. If ``add`` raises ``Full``, we can
-deduce that ``t.contents`` already contains ``t.capacity`` elements. Likewise,
-if ``remove`` raises ``Not_found``, then the element we're trying to remove was
-not in ``t.contents``:
+deduce that ``t.contents`` already contains ``t.capacity`` elements.
 
 .. code-block::
-   :emphasize-lines: 5,11
+   :emphasize-lines: 5-6
 
     val add: 'a t -> 'a -> unit
     (*@ add t x
         modifies t.contents
         ensures t.contents = Set.add x (old t.contents)
-        raises Full -> Set.cardinal t.contents = t.capacity *)
+        raises Full -> Set.cardinal (old t.contents) = t.capacity
+                    /\ t.contents = old t.contents *)
 
-    val remove 'a t -> 'a -> unit
-    (*@ remove t x
-        modifies t.contents
-        ensures t.contents = Set.remove x (old t.contents)
-        raises Not_found -> not Set.mem x (old t.contents) *)
+Since we have a ``modifies`` clause, the contents of ``t`` may be
+mutated even when ``Full`` is raised. The last line of specification
+forbids such a behavior.
 
 Notice how we did not need to repeat that ``S.cardinal t.contents <=
 t.capacity`` in every contract; as a type invariant, this property implicitely
@@ -202,8 +203,8 @@ docstring, which may be incomplete or ambiguous, leading to wrong
 interpretations of your semantics, or wrong usage of your library.
 
 But besides the ``gospel`` binary, we also provide a developer API which lets
-other tools leverage these specifications to provide different features. Some
-such tools already exist, and let you benefit from the specification to bring
+other tools leverage these specifications to provide different features.
+Such tools already exist, and let you benefit from the specification to bring
 more guarantees to your programs.
 
 .. index:: cameleer
@@ -216,7 +217,7 @@ Cameleer
 Cameleer is a tool for the deductive verification of OCaml code.
 
 It extents Gospel to implementation files, where you may add logical annotations
-like logical assertions, recursion variants, or loop invariants. The
+like logical assertions, loop invariants, or termination arguments. The
 verification relies on the `Why3 <https://why3.lri.fr>`__ framework:
 ``cameleer`` translates the OCaml code into an equivalent WhyML program. It then
 lets you analyse this program whithin the framework (and its IDE!) to prove the
@@ -278,4 +279,3 @@ Finally, we are always thrilled to hear your thoughts or questions regarding
 Gospel and this tutorial. Please feel free to `open a discussion
 <https://github.com/ocaml-gospel/gospel/discussions/new>`__ and share your
 issues and ideas!
-
