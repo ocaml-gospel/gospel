@@ -655,10 +655,10 @@ let process_val_spec kid crcm ns id args ret vs =
   let env, ret = match header.sp_hd_ret, ret.ty_node with
     | [], _ -> env, []
     | _, Tyapp (ts,tyl) when is_ts_tuple ts ->
-       let tyl = List.map (fun ty -> (ty,Asttypes.Nolabel)) tyl in
+      let tyl = List.map (fun ty -> (ty,Asttypes.Nolabel)) tyl in
        process_args header.sp_hd_ret tyl env []
     | _, _ ->
-       process_args header.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
+      process_args header.sp_hd_ret [(ret,Asttypes.Nolabel)] env [] in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
@@ -682,14 +682,24 @@ let empty_spec preid ret args = {
   sp_text    = "";
 }
 
+let mk_dummy_var i (ty, arg) = 
+  match arg with
+  | _ when ty_equal ty ty_unit -> Uast.Lunit  
+  | Nolabel -> Uast.Lnone (Preid.create ("$x" ^ string_of_int i))
+  | Labelled s -> Uast.Lnamed (Preid.create s)
+  | Optional s -> Uast.Loptional (Preid.create s)
+
 let process_val ~loc ?(ghost=false) kid crcm ns vd =
   let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
   let args, ret = val_parse_core_type ns vd.vtype in
   let spec = match vd.vspec with
     | None | Some { sp_header = None } ->
         let id = Preid.create vd.vname.txt in
-        let ret = Uast.Lnone (if args = [] then id else Preid.create "result") in
-        let args = List.mapi (fun i _ -> Uast.Lnone (Preid.create ("$x" ^ string_of_int i))) args in
+        let ret =
+          if ty_equal ret ty_unit then Uast.Lunit
+          else Uast.Lnone (if args = [] then id else Preid.create "result")
+        in
+        let args = List.mapi mk_dummy_var args in
         (match vd.vspec with
            | None -> empty_spec id [ret] args
            | Some s -> { s with sp_header = Some { sp_hd_nm = id; sp_hd_ret = [ret]; sp_hd_args = args } })

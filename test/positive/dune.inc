@@ -167,6 +167,18 @@
  (action (diff %{dep:more_types.mli.expected} %{dep:more_types.mli.output})))
 
 (rule
+ (targets no_header.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:no_header.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:no_header.mli.expected} %{dep:no_header.mli.output})))
+
+(rule
  (targets pattern_matching.mli.output)
  (action
    (with-outputs-to %{targets}
