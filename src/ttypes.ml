@@ -223,6 +223,8 @@ type xsymbol = {
 
 let xsymbol id ty = {xs_ident = id; xs_type = ty}
 
+let xs_equal = (=)
+
 module Xs = struct
   type t = xsymbol
   let equal = (=)

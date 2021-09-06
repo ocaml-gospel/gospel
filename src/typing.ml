@@ -395,7 +395,7 @@ let process_type_spec kid crcm ns ty spec =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ty] f_ty in
     let ls_inv = fsymbol ~field:true (Ident.of_preid f.f_preid) [] f_ty in
-    (ns_add_ls ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
+    (ns_add_ls ~allow_duplicate:true ns f.f_preid.pid_str ls_inv, (ls, f.f_mutable)::fields) in
   let (ns,fields) = List.fold_left field (ns,[]) spec.ty_field in
   let fields = List.rev fields in
   let env = Mstr.empty in
@@ -408,7 +408,7 @@ exception CyclicTypeDecl of string
 let type_type_declaration kid crcm ns tdl =
   let add_new tdm td =
     if Mstr.mem td.tname.txt tdm then
-      error ~loc:td.tname.loc (TypeNameClash td.tname.txt)
+      error ~loc:td.tname.loc (NameClash td.tname.txt)
     else
       Mstr.add td.tname.txt td tdm in
   let tdm = List.fold_left add_new Mstr.empty tdl in
@@ -477,7 +477,7 @@ let type_type_declaration kid crcm ns tdl =
         let field_inv = fsymbol ~field:true id [] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
-        ld :: ldl, ns_add_ls ns id.id_str field_inv
+        ld :: ldl, ns_add_ls ~allow_duplicate:true ns id.id_str field_inv
       in
       let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
       {rd_cs; rd_ldl}, ns
@@ -723,7 +723,7 @@ let process_function kid crcm ns f =
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
   let ls = lsymbol ~field:false (Ident.of_preid f.fun_name) tyl f_ty in
-  let ns = if f.fun_rec then ns_add_ls ns f.fun_name.pid_str ls else ns in
+  let ns = if f.fun_rec then ns_add_ls ~allow_duplicate:true ns f.fun_name.pid_str ls else ns in
 
   (* check that there is no duplicated parameters; we must do this
      here, before creating identifiers *)
