@@ -40,7 +40,7 @@ let run_file config file =
       pp fmt "@[%a@]@." Opprintast.signature ocaml);
 
     let module_nm = path2module file in
-    let sigs = parse_gospel ocaml module_nm in
+    let sigs = parse_gospel ~filename:file ocaml module_nm in
     if config.verbose then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[****** GOSPEL translation *****@]@.";

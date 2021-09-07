@@ -18,5 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-File "_none_", lines 2-3, characters 4-16:
+File "t33.mli", lines 14-15, characters 4-16:
 Error: Type mysmatch. Cannot match t with int

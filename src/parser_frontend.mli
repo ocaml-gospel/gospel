@@ -31,7 +31,7 @@ val parse_ocaml_lb : Lexing.lexbuf -> Parsetree.signature
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 val parse_gospel :
-  Parsetree.signature -> string -> Uast.s_signature
+  filename:string -> Parsetree.signature -> string -> Uast.s_signature
 
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL
     specification of the file located in [path].

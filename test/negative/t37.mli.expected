@@ -21,5 +21,5 @@ y: 'a }
   
 
 (*@ function f ... *)
-File "_none_", line 3, characters 6-15:
+File "t37.mli", line 15, characters 6-15:
 Error: Variable x is duplicated in pattern

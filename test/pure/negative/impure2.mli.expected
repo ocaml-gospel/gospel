@@ -15,5 +15,5 @@ val f : int -> int
 (*@ y = f x
     diverges
      *)
-File "_none_", line 1, characters 5-6:
+File "impure2.mli", line 5, characters 21-22:
 Error: Type checking error: a pure function cannot diverge

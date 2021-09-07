@@ -49,14 +49,16 @@ let () =
         Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str)) "syntax error"
     | _ -> None)
 
-let parse_gospel parse attr =
+let parse_gospel ~pos ~filename parse attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
+  Lexing.set_position lb pos;
+  Lexing.set_filename lb filename;
   try spec, parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
 
-let type_declaration t =
+let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
-  let parse attr = snd (parse_gospel Uparser.type_spec attr) in
+  let parse attr = snd (parse_gospel ~filename ~pos:t.ptype_loc.loc_end Uparser.type_spec attr) in
   let spec = Option.map parse spec_attr in
   {
     tname = t.ptype_name;
@@ -70,10 +72,10 @@ let type_declaration t =
     tloc = t.ptype_loc;
   }
 
-let val_description v =
+let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
   let parse attr =
-    let text, spec = parse_gospel Uparser.val_spec attr in
+    let text, spec = parse_gospel ~filename ~pos:v.pval_loc.loc_end Uparser.val_spec attr in
     { spec with sp_text = text } in
   let spec = Option.map parse spec_attr in
   {
@@ -85,27 +87,28 @@ let val_description v =
     vloc = v.pval_loc;
   }
 
-let ghost_spec attr =
+let ghost_spec ~filename attr =
+  let pos = attr.attr_loc.loc_start in
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
   let sigs = try Parse.interface lb with _ -> raise (Syntax_error loc) in
   match sigs with
     | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
-        let type_ = type_declaration t in
+        let type_ = type_declaration ~filename t in
         if type_.tspec = None then
           let tspec =
             get_inner_spec attr |> fst
-            |> Option.map (parse_gospel Uparser.type_spec)
+            |> Option.map (parse_gospel ~filename ~pos Uparser.type_spec)
             |> Option.map snd (* FIXME *)
           in
           Sig_ghost_type (r, [ { type_ with tspec } ])
         else Sig_ghost_type (r, [ type_ ])
     | [ { psig_desc = Psig_value vd; _ } ] ->
-        let val_ = val_description vd in
+        let val_ = val_description ~filename vd in
         if val_.vspec = None then
           let vspec =
             get_inner_spec attr |> fst
-            |> Option.map (parse_gospel Uparser.val_spec)
+            |> Option.map (parse_gospel ~filename ~pos Uparser.val_spec)
             |> Option.map snd (* FIXME *)
           in
           Sig_ghost_val { val_ with vspec }
@@ -113,19 +116,20 @@ let ghost_spec attr =
     | [ { psig_desc = Psig_open od; _ } ] -> Sig_ghost_open od
     | _ -> assert false
 
-let floating_spec a =
+let floating_spec ~filename a =
+  let pos = a.attr_loc.loc_start in
   try
-    let _, fun_ = parse_gospel Uparser.func a in (* FIXME *)
+    let _, fun_ = parse_gospel ~filename ~pos Uparser.func a in (* FIXME *)
     if fun_.fun_spec = None then
       let fun_spec =
-        get_inner_spec a |> fst |> Option.map (parse_gospel Uparser.func_spec)
+        get_inner_spec a |> fst |> Option.map (parse_gospel ~filename ~pos Uparser.func_spec)
         |> Option.map snd (* FIXME *)
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
   with Syntax_error _ -> (
-    try Sig_axiom (snd (parse_gospel Uparser.axiom a)) (* FIXME *)
-    with Syntax_error _ -> ghost_spec a)
+    try Sig_axiom (snd (parse_gospel ~filename ~pos Uparser.axiom a)) (* FIXME *)
+    with Syntax_error _ -> ghost_spec ~filename a)
 
 let with_constraint c =
   let no_spec_type_decl t =
@@ -147,14 +151,14 @@ let with_constraint c =
   | Pwith_typesubst (l, t) -> Wtypesubst (l, no_spec_type_decl t)
   | Pwith_modsubst (l1, l2) -> Wmodsubst (l1, l2)
 
-let rec signature_item_desc = function
-  | Psig_value v -> Sig_val (val_description v)
-  | Psig_type (r, tl) -> Sig_type (r, List.map type_declaration tl)
+let rec signature_item_desc ~filename = function
+  | Psig_value v -> Sig_val (val_description ~filename v)
+  | Psig_type (r, tl) -> Sig_type (r, List.map (type_declaration ~filename) tl)
   | Psig_attribute a ->
-      if not (is_spec a) then Sig_attribute a else floating_spec a
-  | Psig_module m -> Sig_module (module_declaration m)
-  | Psig_recmodule d -> Sig_recmodule (List.map module_declaration d)
-  | Psig_modtype d -> Sig_modtype (module_type_declaration d)
+      if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
+  | Psig_module m -> Sig_module (module_declaration ~filename m)
+  | Psig_recmodule d -> Sig_recmodule (List.map (module_declaration ~filename) d)
+  | Psig_modtype d -> Sig_modtype (module_type_declaration ~filename d)
   | Psig_typext t -> Sig_typext t
   | Psig_exception e -> Sig_exception e
   | Psig_open o -> Sig_open o
@@ -165,44 +169,44 @@ let rec signature_item_desc = function
   | Psig_typesubst _ | Psig_modsubst _ -> assert false
 
 (* TODO(@pascutto) *)
-and signature sigs =
+and signature ~filename sigs =
   List.map
     (fun { psig_desc; psig_loc } ->
-      { sdesc = signature_item_desc psig_desc; sloc = psig_loc })
+      { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
     sigs
 
-and module_type_desc = function
+and module_type_desc ~filename = function
   | Pmty_ident id -> Mod_ident id
-  | Pmty_signature s -> Mod_signature (signature s)
-  | Pmty_functor (fp, mt) -> Mod_functor (functor_parameter fp, module_type mt)
-  | Pmty_with (m, c) -> Mod_with (module_type m, List.map with_constraint c)
+  | Pmty_signature s -> Mod_signature (signature ~filename s)
+  | Pmty_functor (fp, mt) -> Mod_functor (functor_parameter ~filename fp, module_type ~filename mt)
+  | Pmty_with (m, c) -> Mod_with (module_type ~filename m, List.map with_constraint c)
   | Pmty_typeof m -> Mod_typeof m
   | Pmty_extension e -> Mod_extension e
   | Pmty_alias a -> Mod_alias a
 
-and functor_parameter = function
+and functor_parameter ~filename = function
   | Unit -> Unit
-  | Named (s, m) -> Named (s, module_type m)
+  | Named (s, m) -> Named (s, module_type ~filename m)
 
-and module_type m =
+and module_type ~filename m =
   {
-    mdesc = module_type_desc m.pmty_desc;
+    mdesc = module_type_desc ~filename m.pmty_desc;
     mloc = m.pmty_loc;
     mattributes = m.pmty_attributes;
-  }
+ }
 
-and module_declaration m =
+and module_declaration ~filename m =
   {
     mdname = m.pmd_name;
-    mdtype = module_type m.pmd_type;
+    mdtype = module_type ~filename m.pmd_type;
     mdattributes = m.pmd_attributes;
     mdloc = m.pmd_loc;
   }
 
-and module_type_declaration m =
+and module_type_declaration ~filename m =
   {
     mtdname = m.pmtd_name;
-    mtdtype = Option.map module_type m.pmtd_type;
+    mtdtype = Option.map (module_type ~filename) m.pmtd_type;
     mtdattributes = m.pmtd_attributes;
     mtdloc = m.pmtd_loc;
   }

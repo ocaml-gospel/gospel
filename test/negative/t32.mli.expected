@@ -24,7 +24,7 @@ val f : 'a -> 'a
 (*@ x = f y
     with ...
      *)
-File "_none_", line 2, characters 13-18:
+File "t32.mli", line 19, characters 13-18:
 Error: This pattern has type int * int * int but is expected to have type (@192@,
                                                                     @193@) 
 tuple2
