@@ -39,7 +39,7 @@ We designed Gospel to provide a tool-agnostic frontend for bringing formal
 methods into the OCaml ecosystem, meaning that we make no assumptions on the
 future use of the specifications.
 
-You can us Gospel specifications to complete and precise your documentation
+You can use Gospel specifications to complete and precise your documentation
 comments with non-ambiguous annotations and use a type-checker to ensure they
 always remain in sync. Other tools also rely on these annotations to provide
 additional features such as automated deductive verification or runtime
@@ -118,5 +118,8 @@ laboratory](https://lmf.cnrs.fr/), [Tarides](https://tarides.com/), and [NOVA
 LINCS](https://nova-lincs.di.fct.unl.pt/).
 
 The development is supported by:
-- The [VOCaL project](https://vocal.lri.fr). ANR grant No. [ANR-15-CE25-0008](https://anr.fr/Project-ANR-15-CE25-0008), 1/10/2015 - 31/3/2021.
-- The HORIZON 2020 Cameleer project (Marie Skłodowska-Curie grant agreement ID:897873) and NOVA LINCS (Ref. UIDB/04516/2020).
+- The [VOCaL project](https://vocal.lri.fr). ANR grant No.
+  [ANR-15-CE25-0008](https://anr.fr/Project-ANR-15-CE25-0008), 1/10/2015 -
+  31/3/2021.
+- The HORIZON 2020 Cameleer project (Marie Skłodowska-Curie grant agreement
+  ID:897873) and NOVA LINCS (Ref. UIDB/04516/2020).
