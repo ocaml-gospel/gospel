@@ -13,7 +13,7 @@ open Ppxlib
 exception Ocaml_syntax_error of Location.t
 
 let () =
-  let open Location_error in
+  let open Location.Error in
   register_error_of_exn (function
       | Ocaml_syntax_error loc ->
          Some (make ~loc ~sub:[] "OCaml syntax error")
@@ -39,8 +39,7 @@ let with_loadpath load_path file =
 let parse_ocaml_signature_lb lb =
   let lb_pps = Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
-  try Parser.interface Lexer.token lb_pps with
-    Parser.Error ->
+  try Parse.interface lb_pps with _ ->
     let loc_start, loc_end = lb_pps.lex_start_p, lb_pps.lex_curr_p in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)

@@ -91,8 +91,8 @@ let val_description v =
 let ghost_spec attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  try
-    Parser.interface Lexer.token lb |> function
+  let sigs = try Parse.interface lb with _ -> raise (Syntax_error loc) in
+  match sigs with
     | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
         let type_ = type_declaration t in
         if type_.tspec = None then
@@ -115,7 +115,6 @@ let ghost_spec attr =
         else Sig_ghost_val val_
     | [ { psig_desc = Psig_open od; _ } ] -> Sig_ghost_open od
     | _ -> assert false
-  with Parser.Error -> raise (Syntax_error loc)
 
 let ghost_spec_str attr =
   let spec, loc = get_spec_content attr in
