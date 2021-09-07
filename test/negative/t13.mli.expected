@@ -25,5 +25,5 @@
     requires ...
     ensures ...
      *)
-File "t13.mli", line 16, characters 12-13:
+File "t13.mli", line 18, characters 12-13:
 Error: Type mysmatch. Cannot match float with integer

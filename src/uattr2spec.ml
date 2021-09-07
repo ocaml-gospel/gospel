@@ -49,16 +49,25 @@ let () =
         Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str)) "syntax error"
     | _ -> None)
 
-let parse_gospel ~pos ~filename parse attr =
+(* XXX: Use Lexing.set_position when moving to OCaml 4.11 *)
+let set_position (lexbuf: Lexing.lexbuf) (position: Lexing.position) =
+  lexbuf.lex_curr_p  <- { position with pos_fname = lexbuf.lex_curr_p.pos_fname };
+  lexbuf.lex_abs_pos <- position.pos_cnum
+
+(* XXX: Use Lexing.set_filename when moving to OCaml 4.11 *)
+let set_filename (lexbuf: Lexing.lexbuf) (fname: string) =
+  lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = fname}
+
+let parse_gospel ~filename parse attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  Lexing.set_position lb pos;
-  Lexing.set_filename lb filename;
+  set_position lb attr.attr_loc.loc_start;
+  set_filename lb filename;
   try spec, parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
-  let parse attr = snd (parse_gospel ~filename ~pos:t.ptype_loc.loc_end Uparser.type_spec attr) in
+  let parse attr = snd (parse_gospel ~filename Uparser.type_spec attr) in
   let spec = Option.map parse spec_attr in
   {
     tname = t.ptype_name;
@@ -75,7 +84,7 @@ let type_declaration ~filename t =
 let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
   let parse attr =
-    let text, spec = parse_gospel ~filename ~pos:v.pval_loc.loc_end Uparser.val_spec attr in
+    let text, spec = parse_gospel ~filename Uparser.val_spec attr in
     { spec with sp_text = text } in
   let spec = Option.map parse spec_attr in
   {
@@ -88,7 +97,6 @@ let val_description ~filename v =
   }
 
 let ghost_spec ~filename attr =
-  let pos = attr.attr_loc.loc_start in
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
   let sigs = try Parse.interface lb with _ -> raise (Syntax_error loc) in
@@ -98,7 +106,7 @@ let ghost_spec ~filename attr =
         if type_.tspec = None then
           let tspec =
             get_inner_spec attr |> fst
-            |> Option.map (parse_gospel ~filename ~pos Uparser.type_spec)
+            |> Option.map (parse_gospel ~filename Uparser.type_spec)
             |> Option.map snd (* FIXME *)
           in
           Sig_ghost_type (r, [ { type_ with tspec } ])
@@ -108,7 +116,7 @@ let ghost_spec ~filename attr =
         if val_.vspec = None then
           let vspec =
             get_inner_spec attr |> fst
-            |> Option.map (parse_gospel ~filename ~pos Uparser.val_spec)
+            |> Option.map (parse_gospel ~filename Uparser.val_spec)
             |> Option.map snd (* FIXME *)
           in
           Sig_ghost_val { val_ with vspec }
@@ -117,18 +125,17 @@ let ghost_spec ~filename attr =
     | _ -> assert false
 
 let floating_spec ~filename a =
-  let pos = a.attr_loc.loc_start in
   try
-    let _, fun_ = parse_gospel ~filename ~pos Uparser.func a in (* FIXME *)
+    let _, fun_ = parse_gospel ~filename Uparser.func a in (* FIXME *)
     if fun_.fun_spec = None then
       let fun_spec =
-        get_inner_spec a |> fst |> Option.map (parse_gospel ~filename ~pos Uparser.func_spec)
+        get_inner_spec a |> fst |> Option.map (parse_gospel ~filename Uparser.func_spec)
         |> Option.map snd (* FIXME *)
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
   with Syntax_error _ -> (
-    try Sig_axiom (snd (parse_gospel ~filename ~pos Uparser.axiom a)) (* FIXME *)
+    try Sig_axiom (snd (parse_gospel ~filename Uparser.axiom a)) (* FIXME *)
     with Syntax_error _ -> ghost_spec ~filename a)
 
 let with_constraint c =
