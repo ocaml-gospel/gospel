@@ -1,9 +1,0 @@
-\begin{syntax}
-  type ::= ("?"? lident ":")? type "->" type      ; mapping type (right-associative)
-       | type-arg
-  \
-  type-arg ::= lqualid       ; monomorphic type symbol (sort)
-       | qident              ; type variable
-       | type-arg+ lqualid   ; polymorphic type symbol
-       | type ("*" type)+    ; tuple type
-\end{syntax}

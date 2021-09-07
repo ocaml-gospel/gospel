@@ -1,7 +1,0 @@
-\begin{syntax}
-  type-spec ::= "(*@" type-spec-content* "*)"
-  \
-  type-spec-content ::= "ephemeral" ;
-                    | "mutable"? "model" lident-ext ":" type ;
-                    | "invariant" term
-\end{syntax}
