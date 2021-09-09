@@ -1,6 +1,0 @@
-:orphan:
-
-Documentation TODOs
-===================
-
-.. todolist::
