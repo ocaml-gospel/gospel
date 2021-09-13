@@ -111,6 +111,16 @@ This project is licensed under the **MIT license**.
 
 See the [LICENSE](LICENSE) file for more information.
 
+## Authors
+
+Gospel was initially developed by Cláudio Lourenço (LRI postdoctorate).
+
+It is now maintained by Clément Pascutto, Mário Pereira, and Jean-Christophe
+Filliâtre.
+
+The full list of contributors is available
+[here](https://github.com/ocaml-gospel/gospel/graphs/contributors).
+
 ## Acknowledgements
 
 This project is part of a collaboration between the [LMF

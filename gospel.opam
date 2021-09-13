@@ -27,4 +27,4 @@ depends: [
   "ppxlib" {>= "0.23.0"}
 ]
 
-synopsis: "GOSPEL -- Generic Ocaml SPEcification Language"
+synopsis: "Gospel -- Generic OCaml Specification Language"
