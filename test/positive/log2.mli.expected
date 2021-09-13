@@ -1,0 +1,94 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val log2 : int -> int[@@gospel
+                       {| r = log2 [i: integer] x
+    requires i >= 0
+    requires x = pow 2 i
+    ensures r = i |}]
+val log2b : int -> int
+val log2_exists : int -> int[@@gospel
+                              {| r = log2_exists x
+    requires exists i. i >= 0 /\ x = pow 2 i
+    ensures forall i. x = pow 2 i -> r = i |}]
+val log2_existsb : int -> int[@@gospel
+                               {| r = log2_existsb x
+    requires exists i. i >= 0 /\ x = pow 2 i
+    ensures x = pow 2 r |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val log2 : int -> int
+(*@ r = log2 [i : TY] x
+    requires ...
+    requires ...
+    ensures ...
+     *)
+
+val log2b : int -> int
+
+
+val log2_exists : int -> int
+(*@ r = log2_exists x
+    requires ...
+    ensures ...
+     *)
+
+val log2_existsb : int -> int
+(*@ r = log2_existsb x
+    requires ...
+    ensures ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module log2.mli
+
+  Namespace: log2.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val log2 : int -> int
+    (*@ r:int = log2 [i:integer: integer] x:int
+        requires (i:integer >= 0:integer):prop
+                 requires ((integer_of_int  x:int):integer = (pow 
+                          2:integer i:integer):integer):prop
+        ensures ((integer_of_int  r:int):integer = i:integer):prop*)
+    
+    val log2b : int -> int
+    
+    
+    val log2_exists : int -> int
+    (*@ r_1:int = log2_exists x_1:int
+        requires exists i_1:integer . (i_1:integer >= 0:integer):prop /\ ((integer_of_int 
+                 x_1:int):integer = (pow 
+                 2:integer i_1:integer):integer):prop
+        ensures forall i_2:integer . ((integer_of_int 
+                x_1:int):integer = (pow 
+                2:integer i_2:integer):integer):prop -> ((integer_of_int 
+                r_1:int):integer = i_2:integer):prop*)
+    
+    val log2_existsb : int -> int
+    (*@ r_2:int = log2_existsb x_2:int
+        requires exists i_3:integer . (i_3:integer >= 0:integer):prop /\ ((integer_of_int 
+                 x_2:int):integer = (pow 
+                 2:integer i_3:integer):integer):prop
+        ensures ((integer_of_int  x_2:int):integer = (pow 
+                2:integer (integer_of_int  r_2:int):integer):integer):prop*)
+
+OK

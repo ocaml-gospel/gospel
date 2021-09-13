@@ -143,6 +143,42 @@
  (action (diff %{dep:exceptions.mli.expected} %{dep:exceptions.mli.output})))
 
 (rule
+ (targets fib.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:fib.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:fib.mli.expected} %{dep:fib.mli.output})))
+
+(rule
+ (targets log2.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:log2.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:log2.mli.expected} %{dep:log2.mli.output})))
+
+(rule
+ (targets logical.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:logical.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:logical.mli.expected} %{dep:logical.mli.output})))
+
+(rule
  (targets modules.mli.output)
  (action
    (with-outputs-to %{targets}
