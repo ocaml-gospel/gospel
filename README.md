@@ -75,6 +75,7 @@ starting with the `@` symbol:
 ```ocaml
 val max_array: int array -> int
 (*@ m = max_array a
+    requires Array.length a > 0
     ensures forall i. 0 <= i < Array.length a -> a.(i) <= m 
     ensures exists i. 0 <= i < Array.length a /\ a.(i) = m *)
 ```
