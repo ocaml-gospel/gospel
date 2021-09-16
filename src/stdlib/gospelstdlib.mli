@@ -1,33 +1,18 @@
-(**************************************************************************)
-(*                                                                        *)
-(*  GOSPEL -- A Specification Language for OCaml                          *)
-(*                                                                        *)
-(*  Copyright (c) 2018- The VOCaL Project                                 *)
-(*                                                                        *)
-(*  This software is free software, distributed under the MIT license     *)
-(*  (as described in file LICENSE enclosed).                              *)
-(**************************************************************************)
-
 (* This file contains the GOSPEL standard library.
    It is automatically opened.
-
    The following are built-in in GOSPEL:
-
    type unit
    type string
    type char
    type float
    type bool
    type integer
-
    type 'a option
    function None: 'a option
    function Some (x: 'a) : 'a option
-
    type 'a list
    function ([]): 'a list
    function (::) (x: 'a) (l: 'a list) : 'a list
-
    predicate (=) (x y: 'a)
 *)
 
