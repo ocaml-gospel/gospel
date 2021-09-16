@@ -53,11 +53,12 @@ type val_spec = {
     sp_pure    : bool;
     sp_equiv   : string list;
     sp_text    : string;
+    sp_loc     : Location.t
 }
 
 exception DuplicatedArg of vsymbol
 
-let val_spec args ret pre checks post xpost wr cs dv pure equiv text = {
+let val_spec args ret pre checks post xpost wr cs dv pure equiv text loc = {
     sp_args    = args;
     sp_ret     = ret;
     sp_pre     = pre;
@@ -72,6 +73,7 @@ let val_spec args ret pre checks post xpost wr cs dv pure equiv text = {
     sp_pure    = pure;
     sp_equiv   = equiv;
     sp_text    = text;
+    sp_loc     = loc
 }
 
 (* Checks the following:

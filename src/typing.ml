@@ -666,7 +666,7 @@ let process_val_spec kid crcm ns id args ret vs =
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions";
   );
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text
+  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args = {
   sp_header  = Some { sp_hd_nm = preid; sp_hd_ret = ret; sp_hd_args = args };
@@ -680,11 +680,12 @@ let empty_spec preid ret args = {
   sp_pure    = false;
   sp_equiv   = [];
   sp_text    = "";
+  sp_loc     = Location.none
 }
 
-let mk_dummy_var i (ty, arg) = 
+let mk_dummy_var i (ty, arg) =
   match arg with
-  | _ when ty_equal ty ty_unit -> Uast.Lunit  
+  | _ when ty_equal ty ty_unit -> Uast.Lunit
   | Nolabel -> Uast.Lnone (Preid.create ("$x" ^ string_of_int i))
   | Labelled s -> Uast.Lnamed (Preid.create s)
   | Optional s -> Uast.Loptional (Preid.create s)

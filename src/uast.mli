@@ -109,6 +109,7 @@ type val_spec = {
   sp_pure    : bool;
   sp_equiv   : string list;
   sp_text    : string; (* the attribute string *)
+  sp_loc     : Location.t
 }
 
 type field = {
