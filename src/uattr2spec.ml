@@ -85,7 +85,7 @@ let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
   let parse attr =
     let text, spec = parse_gospel ~filename Uparser.val_spec attr in
-    { spec with sp_text = text } in
+    { spec with sp_text = text; sp_loc = attr.attr_loc } in
   let spec = Option.map parse spec_attr in
   {
     vname = v.pval_name;

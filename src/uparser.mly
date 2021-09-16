@@ -52,6 +52,7 @@
     sp_pure = false;
     sp_equiv = [];
     sp_text = "";
+    sp_loc = Location.none;
   }
 
   let empty_fspec = {
