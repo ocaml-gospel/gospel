@@ -19,8 +19,7 @@ let () =
     | _ -> None)
 
 let gospelstdlib = "Gospelstdlib"
-let _gospelstdlib_file = "gospelstdlib.mli"
-let gospelstdlib_file_ml = "gospelstdlib.ml"
+let gospelstdlib_file = "gospelstdlib.mli"
 
 let with_loadpath load_path file =
   let exception Break of string in
@@ -83,7 +82,7 @@ let default_open =
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.psig_attribute
 
-let _default_open_str =
+let default_open_str =
   let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.pstr_attribute
@@ -103,7 +102,7 @@ let parse_structure_gospel ~filename structure name =
 let parse_structure_gospel structure name =
   (if name = gospelstdlib then structure else
   (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str ::  *)structure)
+     default_open_str :: structure)
   |> Uattr2spec.structure
 
 let path2module p =
