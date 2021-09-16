@@ -20,8 +20,7 @@ let () =
       | _ -> None )
 
 let gospelstdlib = "Gospelstdlib"
-let _gospelstdlib_file = "gospelstdlib.mli"
-let gospelstdlib_file_ml = "gospelstdlib.ml"
+let gospelstdlib_file = "gospelstdlib.mli"
 
 let with_loadpath load_path file =
   let exception Break of string in
@@ -30,7 +29,7 @@ let with_loadpath load_path file =
       let f = Filename.concat d file in
       if Sys.file_exists f then raise (Break f)
     with Sys_error _ -> () in
-  if file = gospelstdlib_file_ml then file
+  if file = gospelstdlib_file then file
   else if Filename.is_relative file then
     try List.iter try_open load_path; raise Not_found
     with Break c -> c
@@ -57,7 +56,7 @@ let parse_ocaml_structure_lb lb =
 
 let parse_ocaml_signature file =
   let lb =
-    if file = gospelstdlib_file_ml then
+    if file = gospelstdlib_file then
       Lexing.from_string Gospelstdlib.contents
     else
       open_in file |> Lexing.from_channel
@@ -74,7 +73,7 @@ let default_open =
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.psig_attribute
 
-let _default_open_str =
+let default_open_str =
   let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.pstr_attribute
@@ -87,7 +86,7 @@ let parse_signature_gospel signature name =
 let parse_structure_gospel structure name =
   (if name = gospelstdlib then structure else
   (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str ::  *)structure)
+     default_open_str :: structure)
   |> Uattr2spec.structure
 
 let path2module p =
