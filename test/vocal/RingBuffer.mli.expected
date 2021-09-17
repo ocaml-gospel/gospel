@@ -144,7 +144,7 @@ module RingBuffer.mli
              mutable model sequence : 'a seq
              model capacity : integer
              invariant ((length 
-                       (sequence_1 ):'a191 seq):integer <= (capacity_1 ):
+                       (sequence_1 ):'a39 seq):integer <= (capacity_1 ):
                        integer):prop /\ ((capacity_1 ):integer <= (max_array_length ):
                        integer):prop *)
     

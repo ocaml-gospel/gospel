@@ -12,7 +12,7 @@
 (*@ open Map *)
 
 type 'a elem
-  
+
 (*@ type 'a uf *)
 (*@ mutable model dom : 'a elem set
     mutable model rep : 'a elem -> 'a elem
@@ -33,7 +33,7 @@ val make : 'a -> 'a elem
       (* requires $ O(1) *)
       modifies uf
       ensures  not (mem e (old (dom uf)))
-      ensures  dom uf = old (dom uf) `union` {:e:}
+      ensures  dom uf = Set.add e (old (dom uf))
       ensures  rep uf = (old (rep uf))[e <- e]
       ensures  img uf = (old (img uf))[e <- v]
 *)

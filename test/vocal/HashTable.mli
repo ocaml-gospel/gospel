@@ -26,8 +26,6 @@ end
 
 module Make (K : HashedType) : sig
 
-  (*@ open Set *)
-
   type key = K.t
 
   type 'a table
@@ -59,7 +57,7 @@ module Make (K : HashedType) : sig
     ensures  forall k: key. view h2 k = view h1 k *)
 
   (*@ function pop (h: 'a t) : integer =
-    sum (fun k -> length (view h k)) (dom h) *)
+    Set.fold (fun k c -> List.length (view h k) + c) (dom h) 0 *)
 
   val population: 'a t -> int
   (*@ n = population h

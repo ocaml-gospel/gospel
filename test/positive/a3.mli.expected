@@ -43,16 +43,14 @@ module a3.mli
           Namespace: Gospelstdlib
             Type symbols
               ('a) array
+              ('a) bag
                int
               ('a) ref
               ('a) seq
+              ('a) set
               
             Logic Symbols
               function abs (_:integer) : integer
-              function array_length (_:'a array) : integer
-              function contents (_:'a array) : 'a seq
-              function elts (_:'a array) : 'a seq
-              function empty  : 'a seq
               function fst (_:'a * 'b) : 'a
               function infix * (_:integer) (_:integer) : integer
               function infix + (_:integer) (_:integer) : integer
@@ -65,7 +63,6 @@ module a3.mli
               predicate infix > (_:integer) (_:integer)
               predicate infix >= (_:integer) (_:integer)
               function integer_of_int (_:int) : integer
-              function length (_:'a seq) : integer
               function logand (_:integer) (_:integer) : integer
               function lognot (_:integer) : integer
               function logor (_:integer) (_:integer) : integer
@@ -75,16 +72,18 @@ module a3.mli
               function min (_:integer) (_:integer) : integer
               function min_int  : integer
               function mixfix [.._] (_:'a seq) (_:integer) : 'a seq
+              function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
               function mixfix [_..] (_:'a seq) (_:integer) : 'a seq
               function mixfix [_.._] (_:'a seq) (_:integer) (_:integer) : 'a 
               seq
               function mixfix [_] (_:'a seq) (_:integer) : 'a
+              function mixfix {}  : 'a set
               function mod (_:integer) (_:integer) : integer
               function pow (_:integer) (_:integer) : integer
               function pred (_:integer) : integer
               function prefix ! (_:'a ref) : 'a
               function prefix - (_:integer) : integer
-              function seq_of_list (_:'a list) : 'a seq
+              function ref_1 (_:'a) : 'a ref
               function shift_left (_:integer) (_:integer) : integer
               function shift_right (_:integer) (_:integer) : integer
               function shift_right_trunc (_:integer) (_:integer) : integer
@@ -98,24 +97,39 @@ module a3.mli
             Namespaces
               Namespace: Array
                 Type symbols
+                  ('a) t_1 [='a array]
                   
                 Logic Symbols
-                  function length_1 (_:'a array) : integer
-                  function mixfix [_]_1 (_:'a array) (_:integer) : 'a
-                  
-                Exception Symbols
-                  
-                Namespaces
-                  
-                Type Namespaces
-                  
-              Namespace: ArrayPermut
-                Type symbols
-                  
-                Logic Symbols
-                  predicate permut_all (_:'a array) (_:'a array)
+                  predicate _exists (_:'a -> bool) (_:'a array)
+                  predicate _exists2 (_:'a -> 'b -> bool) (_:'a array)
+                                     (_:'b array)
+                  function append (_:'a array) (_:'a array) : 'a array
+                  function concat (_:'a array list) : 'a array
+                  function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b array) : 'a
+                  function fold_right (_:'b -> 'a -> 'a) (_:'b array) (_:'a) : 'a
+                  predicate for_all (_:'a -> bool) (_:'a array)
+                  predicate for_all2 (_:'a -> 'b -> bool) (_:'a array)
+                                     (_:'b array)
+                  function get (_:'a array) (_:integer) : 'a
+                  function init (_:integer) (_:integer -> 'a) : 'a array
+                  function length (_:'a array) : integer
+                  function make (_:integer) (_:'a) : 'a array
+                  function map (_:'a -> 'b) (_:'a array) : 'b array
+                  function map2 (_:'a -> 'b -> 'c) (_:'a array) (_:'b array) : 'c 
+                  array
+                  function mapi (_:integer -> 'a -> 'b) (_:'a array) : 'b 
+                  array
+                  predicate mem (_:'a) (_:'a array)
+                  function of_list (_:'a list) : 'a array
+                  function of_seq (_:'a seq) : 'a array
+                  predicate permut (_:'a array) (_:'a array)
                   predicate permut_sub (_:'a array) (_:'a array) (_:integer)
                                        (_:integer)
+                  function sub (_:'a array) (_:integer) (_:integer) : 'a 
+                  array
+                  function to_bag (_:'a array) : 'a bag
+                  function to_list (_:'a array) : 'a list
+                  function to_seq (_:'a array) : 'a seq
                   
                 Exception Symbols
                   
@@ -125,18 +139,39 @@ module a3.mli
                   
               Namespace: Bag
                 Type symbols
-                  ('a) bag
+                  ('a) t_2 [='a bag]
                   
                 Logic Symbols
+                  predicate _exists_1 (_:'a -> bool) (_:'a bag)
                   function add (_:'a) (_:'a bag) : 'a bag
-                  function card (_:'a bag) : integer
-                  function choose (_:'a bag) : 'a
+                  function cardinal (_:'a bag) : int
+                  function choose (_:'a bag) : integer
+                  function choose_opt (_:'a bag) : 'a option
+                  function compare (_:'a bag) (_:'a bag) : int
                   function diff (_:'a bag) (_:'a bag) : 'a bag
-                  function empty_bag  : 'a bag
-                  predicate eq_bag (_:'a bag) (_:'a bag)
-                  predicate mem (_:'a) (_:'a bag)
-                  function nb_occ (_:'a) (_:'a bag) : integer
+                  predicate disjoint (_:'a bag) (_:'a bag)
+                  function elements (_:'a bag) : 'a list
+                  function empty  : 'a bag
+                  function filter (_:'a -> bool) (_:'a bag) : 'a bag
+                  function filter_map (_:'a -> 'a option) (_:'a bag) : 'a bag
+                  function fold (_:'a -> 'b -> 'b) (_:'a bag) : 'b
+                  predicate for_all_1 (_:'a -> bool) (_:'a bag)
+                  function inter (_:'a bag) (_:'a bag) : 'a bag
+                  predicate is_empty (_:'a bag)
+                  function map_1 (_:'a -> 'b) (_:'a bag) : 'b bag
+                  predicate mem_1 (_:'a) (_:'a bag)
+                  function occurrences (_:'a) (_:'a bag) : integer
+                  function of_array (_:'a array) : 'a bag
+                  function of_list_1 (_:'a list) : 'a bag
+                  function of_seq_1 (_:'a seq) : 'a bag
+                  function partition (_:'a -> bool) (_:'a bag) : 'a bag *
+                                                                 'a bag
+                  function remove (_:'a) (_:'a bag) : 'a bag
                   function singleton (_:'a) : 'a bag
+                  predicate subset (_:'a bag) (_:'a bag)
+                  function sum (_:'a bag) (_:'a bag) : 'a bag
+                  function to_list_1 (_:'a bag) : 'a list
+                  function to_seq_1 (_:'a bag) : 'a seq
                   function union (_:'a bag) (_:'a bag) : 'a bag
                   
                 Exception Symbols
@@ -147,11 +182,32 @@ module a3.mli
                   
               Namespace: List
                 Type symbols
+                  ('a) t_3 [='a list]
                   
                 Logic Symbols
-                  function length_2 (_:'a list) : integer
-                  function map (_:'a -> 'b) (_:'a list) : 'b list
+                  predicate _exists_2 (_:'a -> bool) (_:'a list)
+                  predicate _exists2_1 (_:'a -> 'b -> bool) (_:'a list)
+                                       (_:'b list)
+                  function fold_left_1 (_:'a -> 'b -> 'a) (_:'a) (_:'b list) : 'a
+                  function fold_right_1 (_:'b -> 'a -> 'a) (_:'b list) (_:'a) : 'a
+                  predicate for_all_2 (_:'a -> bool) (_:'a list)
+                  predicate for_all2_1 (_:'a -> 'b -> bool) (_:'a list)
+                                       (_:'b list)
+                  function hd (_:'a list) : 'a
+                  function init_1 (_:integer) (_:integer -> 'a) : 'a list
+                  function length_1 (_:'a list) : integer
+                  function map_2 (_:'a -> 'b) (_:'a list) : 'b list
+                  function map2_1 (_:'a -> 'b -> 'c) (_:'a list) (_:'b list) : 'c 
+                  list
+                  function mapi_1 (_:integer -> 'a -> 'b) (_:'a list) : 'b 
+                  list
+                  predicate mem_2 (_:'a) (_:'a list)
                   function nth (_:'a list) (_:integer) : 'a
+                  function nth_opt (_:'a list) (_:integer) : 'a option
+                  function of_seq_2 (_:'a seq) : 'a list
+                  function rev (_:'a list) : 'a list
+                  function tl (_:'a list) : 'a list
+                  function to_seq_2 (_:'a list) : 'a seq
                   
                 Exception Symbols
                   
@@ -163,8 +219,6 @@ module a3.mli
                 Type symbols
                   
                 Logic Symbols
-                  function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
-                  function mixfix [_]_2 (_:'a -> 'b) (_:'a) : 'b
                   
                 Exception Symbols
                   
@@ -184,57 +238,33 @@ module a3.mli
                   
                 Type Namespaces
                   
-              Namespace: Peano
-                Type symbols
-                   t_1
-                  
-                Logic Symbols
-                  function int_of_peano (_:t_1) : integer
-                  function v (_:t_1) : integer
-                  
-                Exception Symbols
-                  
-                Namespaces
-                  
-                Type Namespaces
-                  
               Namespace: Seq
                 Type symbols
+                  ('a) t_4 [='a seq]
                   
                 Logic Symbols
+                  function append_1 (_:'a seq) (_:'a seq) : 'a seq
                   function cons (_:'a) (_:'a seq) : 'a seq
-                  function create (_:integer) (_:integer -> 'a) : 'a seq
-                  predicate distinct (_:'a seq)
-                  function fold_left (_:'a -> 'b -> 'a) (_:'a) (_:'b seq) : 'a
-                  function fold_right (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
-                  function get (_:'a seq) (_:integer) : 'a
-                  function hd (_:'a seq) : 'a
-                  function len (_:'a seq) : integer
-                  function map_1 (_:'a -> 'b) (_:'a seq) : 'b seq
-                  predicate mem_1 (_:'a seq) (_:'a)
+                  function empty_1  : 'a seq
+                  function filter_1 (_:'a -> bool) (_:'a seq) : 'a seq
+                  function filter_map_1 (_:'a -> 'b option) (_:'a seq) : 'b 
+                  seq
+                  function fold_left_2 (_:'a -> 'b -> 'a) (_:'a) (_:'b seq) : 'a
+                  function fold_right_2 (_:'a -> 'b -> 'b) (_:'a seq) (_:'b) : 'b
+                  function get_1 (_:'a seq) (_:integer) : 'a
+                  function hd_1 (_:'a seq) : 'a
+                  function init_2 (_:integer) (_:integer -> 'a) : 'a seq
+                  function length_2 (_:'a seq) : integer
+                  function map_3 (_:'a -> 'b) (_:'a seq) : 'b seq
+                  predicate mem_3 (_:'a seq) (_:'a)
                   function mixfix [<-]_1 (_:'a seq) (_:integer) (_:'a) : 'a 
                   seq
-                  function rev (_:'a seq) : 'a seq
+                  function return (_:'a) : 'a seq
+                  function rev_1 (_:'a seq) : 'a seq
+                  function set_1 (_:'a seq) (_:integer) (_:'a) : 'a seq
+                  function singleton_1 (_:'a) : 'a seq
                   function snoc (_:'a seq) (_:'a) : 'a seq
-                  predicate sorted (_:int seq)
-                  predicate sorted_sub (_:int seq) (_:integer) (_:integer)
-                  function tl (_:'a seq) : 'a seq
-                  
-                Exception Symbols
-                  
-                Namespaces
-                  
-                Type Namespaces
-                  
-              Namespace: SeqPerm
-                Type symbols
-                  
-                Logic Symbols
-                  function occ (_:'a seq) (_:'a) (_:integer) (_:integer) : 
-                  integer
-                  predicate permut (_:'a seq) (_:'a seq) (_:integer)
-                                   (_:integer)
-                  predicate permut_all_1 (_:'a seq) (_:'a seq)
+                  function tl_1 (_:'a seq) : 'a seq
                   
                 Exception Symbols
                   
@@ -244,13 +274,39 @@ module a3.mli
                   
               Namespace: Set
                 Type symbols
-                  ('a) set
+                  ('a) t_5 [='a set]
                   
                 Logic Symbols
-                  predicate mem_2 (_:'a) (_:'a set)
-                  function mixfix {:_:} (_:'a) : 'a set
-                  function mixfix {}  : 'a set
-                  function sum (_:'a -> integer) (_:'a set) : integer
+                  predicate _exists_3 (_:'a -> bool) (_:'a set)
+                  function add_1 (_:'a) (_:'a set) : 'a set
+                  function cardinal_1 (_:'a set) : integer
+                  function choose_1 (_:'a set) : integer
+                  function choose_opt_1  : 'a set -> 'a option
+                  function compare_1 (_:'a set) (_:'a set) : int
+                  function diff_1 (_:'a set) (_:'a set) : 'a set
+                  predicate disjoint_1 (_:'a set) (_:'a set)
+                  function elements_1 (_:'a set) : 'a list
+                  function empty_2  : 'a set
+                  function filter_2 (_:'a -> bool) (_:'a set) : 'a set
+                  function filter_map_2 (_:'a -> 'a option) (_:'a set) : 'a 
+                  set
+                  function fold_1 (_:'a -> 'b -> 'b) (_:'a set) (_:'b) : 'b
+                  predicate for_all_3 (_:'a -> bool) (_:'a set)
+                  function inter_1 (_:'a set) (_:'a set) : 'a set
+                  predicate is_empty_1 (_:'a set)
+                  function map_4 (_:'a -> 'b) (_:'a set) : 'b set
+                  predicate mem_4 (_:'a) (_:'a set)
+                  function of_list_2 (_:'a list) : 'a set
+                  function of_seq_3 (_:'a seq) : 'a set
+                  function partition_1 (_:'a -> bool) (_:'a set) : 'a 
+                                                                   set *
+                                                                   'a 
+                                                                   set
+                  function remove_1 (_:'a) (_:'a set) : 'a set
+                  function singleton_2 (_:'a) : 'a set
+                  predicate subset_1 (_:'a set) (_:'a set)
+                  function to_list_2 (_:'a set) : 'a list
+                  function to_seq_3 (_:'a set) : 'a seq
                   function union_1 (_:'a set) (_:'a set) : 'a set
                   
                 Exception Symbols

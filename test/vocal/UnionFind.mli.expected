@@ -25,7 +25,7 @@ val make : 'a -> 'a elem[@@gospel
       (* requires $ O(1) *)
       modifies uf
       ensures  not (mem e (old (dom uf)))
-      ensures  dom uf = old (dom uf) `union` {:e:}
+      ensures  dom uf = Set.add e (old (dom uf))
       ensures  rep uf = (old (rep uf))[e <- e]
       ensures  img uf = (old (img uf))[e <- v]
 |}]
@@ -279,9 +279,8 @@ module UnionFind.mli
     val make : 'a -> 'a elem
     (*@ e:'a elem = make [uf_3:'a uf: 'a uf] v:'a
         ensures not (mem  e:'a elem old ((uf_3:'a uf).dom)):prop
-                ensures ((uf_3:'a uf).dom = old ((union 
-                        (uf_3:'a uf).dom (mixfix {:_:} 
-                        e:'a elem):'a elem set):'a elem set)):prop
+                ensures ((uf_3:'a uf).dom = (add 
+                        e:'a elem old ((uf_3:'a uf).dom)):'a elem set):prop
                 ensures ((uf_3:'a uf).rep = (mixfix [<-] 
                         old ((uf_3:'a uf).rep) e:'a elem e:'a elem):'a 
                                                                     elem ->
@@ -340,8 +339,8 @@ module UnionFind.mli
                         (uf_7:'a uf).img x_4:'a elem):'a)):prop
         writes uf_7:'a uf*)
     
-    val union_1 : 'a elem -> 'a elem -> unit
-    (*@  union_1 [uf_8:'a uf: 'a uf] e1_1:'a elem e2_1:'a elem
+    val union : 'a elem -> 'a elem -> unit
+    (*@  union [uf_8:'a uf: 'a uf] e1_1:'a elem e2_1:'a elem
         requires (mem  e1_1:'a elem (uf_8:'a uf).dom):prop
                  requires (mem  e2_1:'a elem (uf_8:'a uf).dom):prop
         ensures ((uf_8:'a uf).dom = old ((uf_8:'a uf).dom)):prop
@@ -366,7 +365,7 @@ module UnionFind.mli
     (*@
     val join : 'a uf -> 'a uf -> unit
     (*@  join uf1:'a uf uf2:'a uf
-        ensures ((uf1:'a uf).dom = old ((union 
+        ensures ((uf1:'a uf).dom = old ((union_1 
                 (uf1:'a uf).dom old ((uf2:'a uf).dom)):'a elem set)):prop
                 ensures forall x_6:'a elem . ((apply 
                         (uf1:'a uf).rep x_6:'a elem):'a elem = if (mem 

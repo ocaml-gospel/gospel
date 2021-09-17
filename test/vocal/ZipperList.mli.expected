@@ -2,22 +2,21 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel {| open Seq |}]
 [@@@ocaml.text " Zippers for lists "]
 type 'a t[@@gospel
            {| model seq: 'a seq
     model idx: integer
-    invariant 0 <= idx <= length seq |}]
+    invariant 0 <= idx <= Seq.length seq |}]
 val empty : unit -> 'a t[@@gospel
                           {| z = empty ()
-    ensures z.seq == empty
+    ensures z.seq == Seq.empty
     ensures z.idx = 0 |}]
 val is_empty : 'a t -> bool[@@gospel
                              {| b = is_empty z
-    ensures b <-> z.seq == empty |}]
+    ensures b <-> z.seq == Seq.empty |}]
 val length : 'a t -> int[@@gospel
                           {| r = length z
-    ensures r = length z.seq |}]
+    ensures r = Seq.length z.seq |}]
 val to_list : 'a t -> 'a list[@@gospel
                                {| l = to_list z
     ensures z.seq == l |}]
@@ -45,37 +44,35 @@ val move_all_left : 'a t -> 'a t[@@gospel
       ensures r.idx = 0 |}]
 val move_right : 'a t -> 'a t[@@gospel
                                {| r = move_right z
-    requires z.idx < length z.seq
+    requires z.idx < Seq.length z.seq
     ensures  r.seq == z.seq
     ensures  r.idx = z.idx + 1 |}]
 val insert_right : 'a -> 'a t -> 'a t[@@gospel
                                        {| r = insert_right x z
-    ensures  r.seq == z.seq[.. z.idx] ++ cons x z.seq[z.idx ..]
+    ensures  r.seq == z.seq[.. z.idx] ++ Seq.cons x z.seq[z.idx ..]
     ensures  r.idx = z.idx |}]
 val remove_right : 'a t -> 'a t[@@gospel
                                  {| r = remove_right z
-    requires z.idx < length z.seq
+    requires z.idx < Seq.length z.seq
     ensures  r.seq == z.seq[.. z.idx] ++ z.seq[z.idx + 1 ..]
     ensures  r.idx = z.idx |}]
 val move_all_right : 'a t -> 'a t[@@gospel
                                    {| r = move_all_right z
     ensures r.seq == z.seq
-    ensures r.idx = length z.seq |}]
+    ensures r.idx = Seq.length z.seq |}]
 val is_focused : 'a t -> bool[@@gospel
                                {| b = is_focused z
-    ensures b <-> z.idx < length z.seq |}]
+    ensures b <-> z.idx < Seq.length z.seq |}]
 val focused : 'a t -> 'a option[@@gospel
                                  {| r = focused z
     ensures match r with
-            | None   -> z.idx = length z.seq
-            | Some x -> z.idx < length z.seq /\ x = z.seq[z.idx] |}]
+            | None   -> z.idx = Seq.length z.seq
+            | Some x -> z.idx < Seq.length z.seq /\ x = z.seq[z.idx] |}]
 
 *******************************
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
-
-(*@ open Seq *)
 
 [@@@ocaml.text " Zippers for lists "]
 
@@ -196,8 +193,6 @@ module ZipperList.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ open Seq *)
-    
     [@@@ocaml.text " Zippers for lists "]
     
     type 'a t
@@ -205,8 +200,7 @@ module ZipperList.mli
              model seq : 'a seq_1
              model idx : integer
              invariant (0:integer <= (idx_1 ):integer):prop /\ ((idx_1 ):
-                       integer <= (length 
-                       (seq_2 ):'a191 seq_1):integer):prop *)
+                       integer <= (length  (seq_2 ):'a39 seq_1):integer):prop *)
     
     val empty : unit -> 'a t
     (*@ z:'a t = empty ()
@@ -225,11 +219,11 @@ module ZipperList.mli
     
     val to_list : 'a t -> 'a list
     (*@ l:'a list = to_list z_3:'a t
-        ensures ((z_3:'a t).seq == (seq_of_list  l:'a list):'a seq_1):prop*)
+        ensures ((z_3:'a t).seq == (to_seq  l:'a list):'a seq_1):prop*)
     
     val make : 'a list -> 'a t
     (*@ z_4:'a t = make l_1:'a list
-        ensures ((z_4:'a t).seq == (seq_of_list  l_1:'a list):'a seq_1):prop
+        ensures ((z_4:'a t).seq == (to_seq  l_1:'a list):'a seq_1):prop
                 ensures ((z_4:'a t).idx = 0:integer):prop*)
     
     val move_left : 'a t -> 'a t

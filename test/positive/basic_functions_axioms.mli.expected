@@ -372,8 +372,8 @@ module basic_functions_axioms.mli
         end::'a
     *)
     
-    (*@ axiom ax1: forall x_15:'a218 t2 y_4:'a218 . (y_4:'a218 = (f_6 
-    x_15:'a218 t2):'a218):prop *)
+    (*@ axiom ax1: forall x_15:'a66 t2 y_4:'a66 . (y_4:'a66 = (f_6 
+    x_15:'a66 t2):'a66):prop *)
     
     val f_7 : int -> int -> int
     (*@ r:int = f_7 x_16:int y_5:int

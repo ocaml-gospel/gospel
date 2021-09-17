@@ -31,242 +31,539 @@
    predicate (=) (x y: 'a)
 *)
 
-(** Arithmetic
+(*@ type 'a seq *)
+(** The type for finite sequences. *)
 
-   The type [integer] is built-in. This is the type of arbitrary
-   precision integers, not to be confused with OCaml's type [int]
-   (machine integers).
+(*@ type 'a bag *)
+(** The type for finite unordered multisets. *)
 
-   There is a coercion from type [int] to type [integer], so that
-   GOSPEL specifications can be written using type [integer] only, and
-   yet use OCaml's variables of type [int].  *)
+(*@ type 'a ref *)
+(** The type for references. *)
 
-(*@ function (+)               (x y: integer) : integer *)
-(*@ function (-)               (x y: integer) : integer *)
-(*@ function ( * )             (x y: integer) : integer *)
-(*@ function (/)               (x y: integer) : integer *)
-(*@ function mod               (x y: integer) : integer *)
-(*@ function pow               (x y: integer) : integer *)
-(*@ function logand            (x y: integer) : integer *)
-(*@ function logor             (x y: integer) : integer *)
-(*@ function logxor            (x y: integer) : integer *)
-(*@ function lognot            (x: integer)   : integer *)
+(*@ type 'a array *)
+(** The type for arrays. *)
 
-(*@ function shift_left        (x y: integer) : integer *)
-(* Shifts to the left, equivalent to a multiplication by a power of two *)
+(*@ type 'a set *)
+(** The type for finite unordered sets. *)
 
-(*@ function shift_right       (x y: integer) : integer *)
-(* Shifts to the right, equivalent to a multiplication by a power of two
-   with rounding toward -oo *)
+(** {1 Arithmetic}
+
+    The type [integer] is built-in. This is the type of arbitrary precision
+    integers, not to be confused with OCaml's type [int] (machine, bounded
+    integers). *)
+
+(*@ function succ (x: integer) : integer *)
+(*@ function pred (x: integer) : integer *)
+
+(*@ function (-_) (x: integer) : integer *)
+(*@ function (+) (x y: integer) : integer *)
+(*@ function (-) (x y: integer) : integer *)
+(*@ function ( * ) (x y: integer) : integer *)
+(*@ function (/) (x y: integer) : integer *)
+(*@ function mod (x y: integer) : integer *)
+
+(*@ function pow (x y: integer) : integer *)
+(*@ function abs (x:integer) : integer *)
+
+(*@ function min (x y : integer) : integer *)
+(*@ function max (x y : integer) : integer *)
+
+(** {2 Comparisons} *)
+
+(*@ predicate (>) (x y: integer) *)
+(*@ predicate (>=) (x y: integer) *)
+(*@ predicate (<) (x y: integer) *)
+(*@ predicate (<=) (x y: integer) *)
+
+(** {2 Bitwise operations} *)
+
+(*@ function logand (x y: integer) : integer *)
+(*@ function logor (x y: integer) : integer *)
+(*@ function logxor (x y: integer) : integer *)
+(*@ function lognot (x: integer) : integer *)
+
+(*@ function shift_left (x y: integer) : integer *)
+(** Shifts to the left, equivalent to a multiplication by a power of two *)
+
+(*@ function shift_right (x y: integer) : integer *)
+(** Shifts to the right, equivalent to a multiplication by a power of two with
+    rounding toward -oo *)
 
 (*@ function shift_right_trunc (x y: integer) : integer *)
-(* Shift to the right with truncation, equivalent to a multiplication
-   by a power of two with rounding toward 0 *)
+(** Shift to the right with truncation, equivalent to a multiplication by a
+    power of two with rounding toward 0 *)
 
-(*@ function (-_)              (x: integer)   : integer *)
-(*@ predicate (>)              (x y: integer) *)
-(*@ predicate (>=)             (x y: integer) *)
-(*@ predicate (<)              (x y: integer) *)
-(*@ predicate (<=)             (x y: integer) *)
+(** {2 Machine integers}
+
+    There is a coercion from type [int] to type [integer], so that Gospel
+    specifications can be written using type [integer] only, and yet use OCaml's
+    variables of type [int]. The Gospel typechecker will automatically apply
+    [integer_of_int] whenever necessary. *)
 
 type int
 
 (*@ function integer_of_int (x: int) : integer *)
 (*@ coercion *)
 
-(*@ function abs (x:integer) : integer = if x >= 0 then x else -x *)
-
-(*@ function min (x y : integer) : integer
-    = if x <= y then x else y *)
-
-(*@ function max (x y : integer) : integer
-    = if x <= y then y else x *)
-
-(*@ function succ (x: integer) : integer = x + 1 *)
-(*@ function pred (x: integer) : integer = x - 1 *)
-
 (*@ function max_int : integer *)
 (*@ function min_int : integer *)
 
-
-(** Tuples *)
+(** {1 Couples} *)
 
 (*@ function fst (p: 'a * 'b) : 'a *)
+(** [fst (x, y)] is [x]. *)
+
 (*@ function snd (p: 'a * 'b) : 'b *)
+(** [snd (x, y)] is [y]. *)
 
-(** References *)
+(** {1 References} *)
 
-type 'a ref
-(*@ ephemeral
-    mutable model contents: 'a *)
+(*@ function (!_) (r: 'a ref) : 'a *)
+(** Reference content access operator. *)
 
-(*@ function (!_) (r: 'a ref) : 'a = r.contents *)
+(*@ function ref (x: 'a) : 'a ref *)
+(** Reference creation. *)
 
-(** Sequences
+(** {1 Sequences} *)
 
-    They are used in the following to model lists and arrays, and possibly other
-    data structures (queues, etc.).
-*)
+(*@ predicate (==) (s1 s2: 'a seq) *)
 
-(*@ type 'a seq *)
+(*@ function (++) (s s': 'a seq) : 'a seq *)
+(** [s ++ s'] is the sequence [s] followed by the sequence [s']. *)
 
-(*@ function length (s: 'a seq): integer *)
-
-(*@ function ([_]) (s: 'a seq) (i:integer): 'a *)
-
-(*@ predicate (==) (s1 s2: 'a seq) =
-      length s1 = length s2 &&
-      forall i. 0 <= i < length s1 -> s1[i] = s2[i] *)
+(*@ function ([_]) (s: 'a seq) (i: integer): 'a *)
+(** [s\[i\]] is the [i]th element of the sequence [s]. *)
 
 (*@ function ([_.._]) (s: 'a seq) (i1: integer) (i2: integer): 'a seq *)
 (*@ function ([_..]) (s: 'a seq) (i: integer): 'a seq *)
 (*@ function ([.._]) (s: 'a seq) (i: integer): 'a seq *)
 
-(*@ function empty: 'a seq *)
-
-(*@ function (++) (s1: 'a seq) (s2: 'a seq): 'a seq *)
-
 module Seq : sig
+  (*@ type 'a t = 'a seq *)
+  (** An alias for {!'a seq} *)
 
-  (* re-export type t and functions length and [_], so that we can refer to them
-     using qualified identifiers (Seq.t, Seq.len, and Seq.get, respectively). *)
-  (*@ function len (s: 'a seq): integer = length s *)
-  (*@ function get (s: 'a seq) (i: integer) : 'a = s[i] *)
+  (*@ function length (s: 'a t): integer *)
+  (** [length s] is the length of the sequence [s]. *)
 
-  (*@ function create (x: integer) (f: integer -> 'a): 'a seq *)
-  (*@ axiom create_len : forall n, f. n >= 0 ->
-        length (create n f) = n *)
-  (*@ axiom create_def : forall n, f. n >= 0 ->
-        forall i. 0 <= i < n -> (create n f)[i] = f i *)
+  (*@ function empty : 'a t *)
+  (** [empty] is the empty sequence. *)
 
-  (* TODO : DO WE WANT SOMETHING LIKE THIS ? *)
-  (*@ function create (n: integer) (f: integer -> 'a) : 'a seq *)
-  (*@ requires 0 <= n
-      ensures  length result = n
-      ensures  forall i. 0 <= i < n -> result[i] = f i *)
+  (*@ function return (x: 'a) : 'a t *)
+  (** [return x] is the sequence containing only [x]. *)
+
+  (*@ function singleton (x: 'a) : 'a t *)
+  (** [singleton] is an alias for {!return}. *)
+
+  (*@ function init (n: integer) (f: integer -> 'a) : 'a seq *)
+  (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
+
+  (*@ function cons (x: 'a) (s: 'a t): 'a t *)
+  (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
+
+  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
+  (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
+
+  (*@ function hd (s: 'a t) : 'a *)
+  (** When [s] contains one or more elements, [hd s] is the first element of
+      [s]. *)
+
+  (*@ function tl (s: 'a t) : 'a t *)
+  (** When [s] contains one or more elements, [tl s] is the sequence of the
+      elements of [s], starting at position 2. *)
+
+  (*@ function append (s s': 'a t) : 'a t *)
+  (** [append s s'] is [s ++ s']. *)
+
+  (*@ predicate mem (s: 'a seq) (x: 'a) *)
+  (** [mem s x] holds iff [x] is in [s]. *)
+
+  (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
+  (** [map f s] is a sequence whose elements are the elements of [s],
+      transformed by [f]. *)
+
+  (*@ function filter (f: 'a -> bool) (s: 'a t) : 'a t *)
+  (** [filter f s] is a sequence whose elements are the elements of [s], that
+      satisfy [f]. *)
+
+  (*@ function filter_map (f: 'a -> 'b option) (s: 'a t) : 'b t *)
+  (** [filter_map f s] is a sequence whose elements are the elements of [s],
+      transformed by [f]. An element [x] is dropped whenever [f x] is [None]. *)
+
+  (*@ function get (s: 'a t) (i: integer) : 'a *)
+  (** [get s i] is [s\[i\]]. *)
+
+  (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
+  (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
 
   (*@ function ([<-]) (s: 'a seq) (i: integer) (x: 'a): 'a seq *)
+  (** [s\[i\] <- x] is [set s i x]. *)
 
-  (*@ function cons (x: 'a) (s: 'a seq): 'a seq *)
-  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
+  (*@ function rev (s: 'a seq) : 'a seq *)
+  (** [rev s] is the sequence containing the same elements as [s], in reverse
+      order. *)
 
-  (* FIXME singleton? *)
+  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b seq) : 'a *)
+  (** [fold_left f acc s] is [f (... (f (f acc s\[0\]) s\[1\]) ...) s\[n-1\]],
+      where [n] is the length of [s]. *)
 
-  (*@ predicate mem (s: 'a seq) (x: 'a) =
-        exists i. 0 <= i < length s && s[i] = x *)
-
-  (*@ predicate distinct (s: 'a seq) =
-        forall i j. 0 <= i < length s -> 0 <= j < length s ->
-        i <> j -> s[i] <> s[j] *)
-
-  (*@ function rev (s: 'a seq) : 'a seq =
-        create (length s) (fun i -> s[length s - 1 - i]) *)
-
-  (*@ function map (f: 'a -> 'b) (s: 'a seq) : 'b seq =
-        create (length s) (fun i -> f s[i]) *)
-
-  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b seq) : 'a =
-        if length s = 0 then acc
-        else fold_left f (f acc s[0]) s[1 ..] *)
-
-  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b =
-        if length s = 0 then acc
-        else f s[0] (fold_right f s[1 ..] acc) *)
-
-  (*@ function hd (s: 'a seq) : 'a = s[0] *)
-  (*@ function tl (s: 'a seq) : 'a seq = s[1 ..] *)
-
-  (* Sorted sequences of int values *)
-  (*@ predicate sorted_sub (s: int seq) (l u: integer) =
-        forall i1 i2. l <= i1 <= i2 < u -> s[i1] <= s[i2] *)
-  (*@ predicate sorted (s: int seq) =
-        sorted_sub s 0 (length s) *)
-
-  (* hd, tl, rev, mem *)
-  (* higher-order: map, fold, exists, forall, find, partition *)
-  (* assoc, mem_assoc? split, combine? *)
-end
-
-module SeqPerm : sig
-
-  (*@ function occ (s1: 'a seq) (v: 'a) (l u: integer) : integer *)
-
-  (*@ axiom occ_base: forall s1 v l u.
-        u <= l -> occ s1 v l u = 0 *)
-
-  (*@ axiom occ_ind: forall s1 v l u. 0 <= l <= v < u <= length s1 ->
-        occ s1 v l u = (if v = s1[l] then 1 else 0) + occ s1 v (l+1) u *)
-
-  (*@ predicate permut (s1 s2: 'a seq) (l u: integer) =
-        length s1 = length s2 &&
-        forall x. occ x s1 l u = occ x s2 l u *)
-
-  (*@ predicate permut_all (s1 s2: 'a seq) =
-        permut s1 s2 0 (length s1) *)
-
+  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b *)
+  (** [fold_right f s acc] is [f s\[1\] (f s\[2\] (... (f s\[n\] acc) ...))]
+     where [n] is the length of [s]. *)
 end
 
 (** Lists
 
-     Type 'a list, [] and (::) constructors are built-in *)
-
-(*@ function seq_of_list (l: 'a list): 'a seq *)
-(*@ coercion *)
+    The type ['a list] and the constructors [\[\]] and [(::)] are built-in. *)
 
 module List : sig
+  (*@ type 'a t = 'a list *)
+  (** An alias for ['a list]. *)
 
-  (*@ function nth (l: 'a list) (i: integer) : 'a = Seq.get l i *)
+  (*@ function length (l: 'a t) : integer *)
+  (** [length l] is the number of elements of [l]. *)
 
-  (*@ function length (l: 'a list) : integer = Seq.len l *)
+  (*@ function hd (l: 'a t) : 'a *)
+  (** When [l] contains one or more elements, [hd s] is the first element of
+      [l]. *)
 
-  (*@ function map (f: 'a -> 'b) (l: 'a list) : 'b list *)
+  (*@ function tl (l: 'a t) : 'a t *)
+  (** When [l] contains one or more elements, [tl l] is the list of the elements
+     of [l], starting at position 2. *)
 
+  (*@ function nth (l: 'a t) (i: integer) : 'a *)
+  (** [nth l i] is the [i]th element of [l]. *)
+
+  (*@ function nth_opt (l: 'a t) (i: integer) : 'a option *)
+  (** [nth l i] is the [i]th element of [l] if [i] is within the bounds of [l],
+      and [None] otherwise. *)
+
+  (*@ function rev (l: 'a t) : 'a t *)
+  (** [rev l] contains the same elements as [l] in a reverse order. *)
+
+  (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
+  (** [init n f] is a list of length [n], with element number [i] initialized
+      with [f i]. *)
+
+  (*@ function map (f: 'a -> 'b) (l: 'a t) : 'b t *)
+  (** [map f l] applies function [f] to all the elements of [l], and builds a
+      list with the results returned by [f] *)
+
+  (*@ function mapi (f: integer -> 'a -> 'b) (l: 'a t) : 'b t *)
+  (** Same as {!map}, but the function is applied to the index of the element as
+      first argument, and the element itself as second argument. *)
+
+  (*@ function fold_left (f: 'a -> 'b -> 'a) (init: 'a) (l: 'b t) : 'a *)
+  (** [fold_left f init t] is [f (... (f (f init a\[0\]) a\[1\]) ...) a\[n-1\]],
+      where [n] is the length of [t]. *)
+
+  (*@ function fold_right (f: 'b -> 'a -> 'a) (l: 'b t) (init: 'a) : 'a *)
+  (** [fold_right f t init] is
+      [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
+      length of [t]. *)
+
+  (*@ function map2 (f: 'a -> 'b -> 'c) (l: 'a t) (l': 'b t) : 'c t *)
+  (** [map2 f l l'] applies function [f] to all the elements of [l] and [l'],
+      and builds a list with the results returned by [f]. *)
+
+  (*@ predicate for_all (f: 'a -> bool) (l: 'a t) *)
+  (** [for_all f l] holds iff all elements of [l] satisfy the predicate [f]. *)
+
+  (*@ predicate _exists (f: 'a -> bool) (l: 'a t) *)
+  (** [_exists f l] holds iff at least one element of [l] satisfies [f]. *)
+
+  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
+  (** Same as {!for_all}, but for a two-argument predicate. *)
+
+  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
+  (** Same as {!_exists}, but for a two-argument predicate. *)
+
+  (*@ predicate mem (x: 'a) (l: 'a t) *)
+  (** [mem x l] holds iff [x] is equal to an element of [l] *)
+
+  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
+  (*@ coercion *)
+
+  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
 end
 
-(** Arrays *)
-
-type 'a array
-(*@ ephemeral
-    mutable model contents: 'a seq
-    model array_length: integer
-    invariant array_length = length contents *)
-
-(*@ function elts (a: 'a array): 'a seq = a.contents *)
-(*@ coercion *)
+(** {1 Arrays} *)
 
 module Array : sig
+  (*@ type 'a t = 'a array *)
+  (** An alias for the type of arrays. *)
 
-  (* OCaml-like syntax a.(i) is mapped to Array.([_]) *)
-  (*@ function ([_]) (a: 'a array) (i: integer) : 'a = Seq.get a i *)
+  (*@ function length (a: 'a t) : integer *)
+  (** [length a] is the number of elements of [a]. *)
 
-  (*@ function length (a: 'a array) : integer = Seq.len a *)
+  (*@ function get (a: 'a t) (i: integer) : 'a *)
+  (** [get a i] is the element number [i] of array [a]. *)
+
+  (*@ function make (n: integer) (x: 'a) : 'a t *)
+  (** [make n x] is an array of length [n], initialized with [x]. *)
+
+  (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
+  (** [init n f] is an array of length [n], with element number [i] initialized
+      to the result of [f i]. *)
+
+  (*@ function append (a b: 'a t) : 'a t *)
+  (** [append v1 v2] returns an array containing the concatenation of [v1] and
+      [v2]. *)
+
+  (*@ function concat (a: 'a t list) : 'a t *)
+  (** Same as {!append}, but concatenates a list of arrays. *)
+
+  (*@ function sub (a: 'a t) (i len: integer) : 'a t *)
+  (** [sub a pos len] is the array of length [len], containing the elements
+      number [pos] to [pos + len - 1] of array [a]. *)
+
+  (*@ function map (f: 'a -> 'b) (a: 'a t) : 'b t *)
+  (** [map f a] applies function [f] to all the elements of [a], and builds an
+      array with the results returned by [f] *)
+
+  (*@ function mapi (f: integer -> 'a -> 'b) (a: 'a t) : 'b t *)
+  (** Same as {!map}, but the function is applied to the index of the element as
+      first argument, and the element itself as second argument. *)
+
+  (*@ function fold_left (f: 'a -> 'b -> 'a) (init: 'a) (a: 'b t) : 'a *)
+  (** [fold_left f init a] is [f (... (f (f init a\[0\]) a\[1\]) ...) a\[n-1\]],
+      where [n] is the length of [a]. *)
+
+  (*@ function fold_right (f: 'b -> 'a -> 'a) (a: 'b t) (init: 'a) : 'a *)
+  (** [fold_right f a init] is
+      [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
+      length of [a]. *)
+
+  (*@ function map2 (f: 'a -> 'b -> 'c) (a: 'a t) (b: 'b t) : 'c t *)
+  (** [map2 f a b] applies function [f] to all the elements of [a] and [b], and
+      builds an array with the results returned by [f]. *)
+
+  (*@ predicate for_all (f: 'a -> bool) (a: 'a t) *)
+  (** [for_all f a] holds iff all elements of [a] satisfy the predicate [f]. *)
+
+  (*@ predicate _exists (f: 'a -> bool) (a: 'a t) *)
+  (** [_exists f a] holds iff at least one element of [a] satisfies [f]. *)
+
+  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (a: 'a t) (b: 'b t) *)
+  (** Same as {!for_all}, but for a two-argument predicate. *)
+
+  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (a: 'a t) (b: 'b t) *)
+  (** Same as {!_exists}, but for a two-argument predicate. *)
+
+  (*@ predicate mem (x: 'a) (a: 'a t) *)
+  (** [mem x a] holds iff [x] is equal to an element of [a] *)
+
+  (*@ function to_list (a: 'a t) : 'a list *)
+  (*@ function of_list (l: 'a list) : 'a t *)
+
+  (*@ function to_seq (a: 'a t) : 'a Seq.t *)
+  (*@ coercion *)
+  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+
+  (*@ function to_bag (a: 'a t) : 'a bag *)
+
+  (*@ predicate permut (a b: 'a array) *)
+  (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
 
 end
 
-module ArrayPermut : sig
+(** {1 Bags} *)
 
-  (*@ predicate permut_sub (a b: 'a array) (i j: integer) *)
-  (*@ predicate permut_all (a b: 'a array) *)
+module Bag : sig
+  (*@ type 'a t = 'a bag *)
+  (** An alias for ['a bag]. *)
+
+  (*@ function occurrences (x: 'a) (b: 'a t): integer *)
+  (** [occurrences x b] is the number of occurrences of [x] in [s]. *)
+
+  (*@ function compare (b b': 'a t) : int *)
+  (** A comparison function over bags. *)
+
+  (*@ function empty : 'a t *)
+  (** [empty] is the empty bag. *)
+
+  (*@ predicate is_empty (b: 'a t) *)
+  (** [is_empty b] is [b = empty]. *)
+
+  (*@ predicate mem (x: 'a) (b: 'a t) *)
+  (** [mem x b] holds iff [b] contains [x] at least once. *)
+
+  (*@ function add (x: 'a) (b: 'a t) : 'a t *)
+  (** [add x b] is [b] when an occurence of [x] was added. *)
+
+  (*@ function singleton (x: 'a) : 'a t *)
+  (** [singleton x] is a bag containing one occurence of [x]. *)
+
+  (*@ function remove (x: 'a) (b: 'a t) : 'a t *)
+  (** [remove x b] is [b] where an occurence of [x] was removed. *)
+
+  (*@ function union (b b': 'a t) : 'a t *)
+  (** [union b b'] is a bag where for all element [x], [occurences x b = max
+      (occurences x b1) (occurences x b2)]. *)
+
+  (*@ function sum (b b': 'a t) : 'a t *)
+  (** [sum b b'] is a bag where for all element [x], [occurences x b =
+      (occurences x b1) + (occurences x b2)]. *)
+
+  (*@ function inter (b b': 'a t) : 'a t *)
+  (** [inter b b'] is a bag where for all element [x], [occurences x b =
+      min (occurences x b1) (occurences x b2)]. *)
+
+  (*@ predicate disjoint (b b': 'a t) *)
+  (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
+
+  (*@ function diff (b b': 'a t) : 'a t *)
+  (** [diff b b'] is a bag where for all element [x], [occurences x b =
+      max 0 (occurences x b1 - occurences x b2)]. *)
+
+  (*@ predicate subset (b b': 'a t) *)
+  (** [subset b b'] holds iff for all element [x], [occurences x b <= occurences
+      x b']. *)
+
+  (*@ function choose (b: 'a t) : integer *)
+  (** [choose b] is an arbitrary element of [b]. *)
+
+  (*@ function choose_opt (b: 'a t) : 'a option *)
+  (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty. *)
+
+  (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
+  (** [map f b] is a fresh set which elements are [f x1 ... f xN], where
+      [x1 ...
+      xN] are the elements of [b]. *)
+
+  (*@ function fold (f: 'a -> 'b -> 'b) (b: 'a t) : 'b *)
+  (** [fold f b] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
+      elements of [b]. *)
+
+  (*@ predicate for_all (f: 'a -> bool) (b: 'a t) *)
+  (** [for_all f b] holds iff [f x] is [true] for all elements in [b]. *)
+
+  (*@ predicate _exists (f: 'a -> bool) (b: 'a t) *)
+  (** [for_all f b] holds iff [f x] is [true] for at least one element in [b]. *)
+
+  (*@ function filter (f: 'a -> bool) (b: 'a t) : 'a t *)
+  (** [filter f b] is the bag of all elements in [b] that satisfy [f]. *)
+
+  (*@ function filter_map (f: 'a -> 'a option) (b: 'a t) : 'a t *)
+  (** [filter_map f b] is the bag of all [v] such that [f x = Some v] for some
+      element [x] of [b]. *)
+
+  (*@ function partition (f: 'a -> bool) (b: 'a t) : ('a t * 'a t) *)
+  (** [partition f b] is the pair of bags [(b1, b2)], where [b1] is the bag of
+      all the elements of [b] that satisfy [f], and [b2] is the bag of all the
+      elements of [b] that do not satisfy [f]. *)
+
+  (*@ function cardinal (b: 'a t) : int *)
+  (** [cardinal b] is the number of distinct elements in [b]. *)
+
+  (*@ function elements (b: 'a t) : 'a list *)
+  (** [elements b] is the list of all elements in [b]. *)
+
+  (*@ function to_list (b: 'a t) : 'a list *)
+  (*@ function of_list (l: 'a list) : 'a t *)
+
+  (*@ function to_seq (b: 'a t) : 'a Seq.t *)
+  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+
+  (*@ function of_array (a: 'a array) : 'a t *)
 
 end
 
-(** Other OCaml built-in stuff *)
+(** {1 Sets} *)
 
-exception Not_found
-exception Invalid_argument of string
+(*@ function ({}) : 'a set *)
+(** [\{\}] is the empty set. *)
 
-module Sys : sig
+module Set : sig
+  (*@ type 'a t = 'a set *)
+  (** An alias for ['a set]. *)
 
-  (*@ function word_size : integer *)
+  (*@ function compare (s s': 'a t) : int *)
+  (** A comparison function over sets. *)
 
-  (*@ function int_size : integer *)
+  (*@ function empty : 'a t *)
+  (** [empty] is [∅]. *)
 
-  (*@ function big_endian : bool *)
+  (*@ predicate is_empty (s: 'a t) *)
+  (** [is_empty s] is [s = ∅]. *)
 
-  (*@ function max_string_length : integer *)
+  (*@ predicate mem (x: 'a) (s: 'a t) *)
+  (** [mem x s] is [x ∈ s]. *)
 
-  (*@ function max_array_length : integer *)
+  (*@ function add (x: 'a) (s: 'a t) : 'a t *)
+  (** [add x s] is [s ∪ {x}]. *)
 
+  (*@ function singleton (x: 'a) : 'a t *)
+  (** [singleton x] is [{x}]. *)
+
+  (*@ function remove (x: 'a) (s: 'a t) : 'a t *)
+  (** [remove x s] is [s ∖ {x}]. *)
+
+  (*@ function union (s s': 'a t) : 'a t *)
+  (** [union s s'] is [s ∪ s']. *)
+
+  (*@ function inter (s s': 'a t) : 'a t *)
+  (** [inter s s'] is [s ∩ s']. *)
+
+  (*@ predicate disjoint (s s': 'a t) *)
+  (** [disjoint s s'] is [s ∩ s' = ∅]. *)
+
+  (*@ function diff (s s': 'a t) : 'a t *)
+  (** [diff s s'] is [s ∖ s']. *)
+
+  (*@ predicate subset (s s': 'a t) *)
+  (** [subset s s'] is [s ⊂ s']. *)
+
+  (*@ function cardinal (s: 'a t) : integer *)
+  (** [cardinal s] is the number of elements in [s]. *)
+
+  (*@ function choose (s: 'a t) : integer *)
+  (** [choose s] is an arbitrary element of [s]. *)
+
+  (*@ function choose_opt: 'a t -> 'a option *)
+  (** [choose_opt s] is an arbitrary element of [s] or [None] if [s] is empty. *)
+
+  (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
+  (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
+      [x1 ...
+      xN] are the elements of [s]. *)
+
+  (*@ function fold (f: 'a -> 'b -> 'b) (s: 'a t) (a: 'b) : 'b *)
+  (** [fold f s a] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
+      elements of [s]. *)
+
+  (*@ predicate for_all (f: 'a -> bool) (s: 'a t) *)
+  (** [for_all f s] holds iff [f x] is [true] for all elements in [s]. *)
+
+  (*@ predicate _exists (f: 'a -> bool) (s: 'a t) *)
+  (** [_exists f s] holds iff [f x] is [true] for at least one element in [s]. *)
+
+  (*@ function filter (f: 'a -> bool) (s: 'a t) : 'a t *)
+  (** [filter f s] is the set of all elements in [s] that satisfy [f]. *)
+
+  (*@ function filter_map (f: 'a -> 'a option) (s: 'a t) : 'a t *)
+  (** [filter_map f s] is the set of all [v] such that [f x = Some v] for some
+      element [x] of [s]. *)
+
+  (*@ function partition (f: 'a -> bool) (s: 'a t) : ('a t * 'a t) *)
+  (** [partition f s] is the pair of sets [(s1, s2)], where [s1] is the set of
+      all the elements of [s] that satisfy the predicate [f], and [s2] is the
+      set of all the elements of [s] that do not satisfy [f]. *)
+
+  (*@ function elements (s: 'a t) : 'a list *)
+  (** [elements s] is the list of all elements in [s]. *)
+
+  (*@ function to_list (s: 'a t) : 'a list *)
+  (*@ function of_list (l: 'a list) : 'a t *)
+
+  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
+  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+end
+
+(*@ function ( [<-] ) (m: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+
+module Map : sig
+  (* the type ('a, 'b) map is defined internally in GOSPEL and can be
+     written as 'a -> 'b *)
 end
 
 module Order : sig
@@ -282,108 +579,20 @@ module Order : sig
 
 end
 
-module Bag : sig
+(** Other OCaml built-in stuff *)
 
-  (*@ type 'a bag *)
+exception Not_found
 
-  (*@ function nb_occ (x: 'a) (b: 'a bag): integer *)
+exception Invalid_argument of string
 
-  (*@ axiom occ_non_negative: forall b: 'a bag, x: 'a.
-        nb_occ x b >= 0 *)
+module Sys : sig
+  (*@ function word_size : integer *)
 
-  (*@ predicate mem (x: 'a) (b: 'a bag) =
-        nb_occ x b > 0 *)
+  (*@ function int_size : integer *)
 
-  (*@ predicate eq_bag (a b: 'a bag) =
-        forall x:'a. nb_occ x a = nb_occ x b *)
+  (*@ function big_endian : bool *)
 
-  (*@ axiom bag_extensionality: forall a b: 'a bag.
-        eq_bag a b -> a = b *)
+  (*@ function max_string_length : integer *)
 
-  (*@ function empty_bag: 'a bag *)
-
-  (*@ axiom occ_empty: forall x: 'a. nb_occ x empty_bag = 0 *)
-
-  (*@ function singleton (x: 'a) : 'a bag *)
-
-  (*@ axiom occ_singleton: forall x y: 'a.
-        nb_occ y (singleton x) = if x = y then 1 else 0 *)
-
-  (*@ function union (x:'a bag) (y:'a bag) : 'a bag *)
-
-  (* axiom occ_union: forall x: 'a, a b: 'a bag.
-      nb_occ x (union a b) = nb_occ x a + nb_occ x b *)
-
-    (** add operation *)
-
-  (*@ function add (x: 'a) (b: 'a bag) : 'a bag =
-        union (singleton x) b *)
-
-  (** cardinality of bags *)
-
-  (*@ function card (x:'a bag): integer *)
-
-  (*@ axiom card_nonneg: forall x: 'a bag.
-        card x >= 0 *)
-
-  (*@ axiom card_empty: card (empty_bag: 'a bag) = 0 *)
-
-  (*@ axiom card_zero_empty: forall x: 'a bag.
-        card x = 0 -> x = empty_bag *)
-
-  (*@ axiom card_singleton: forall x:'a.
-        card (singleton x) = 1 *)
-
-  (*@ axiom card_union: forall x y: 'a bag.
-        card (union x y) = card x + card y *)
-
-  (** bag difference *)
-
-  (*@ function diff (x: 'a bag) (y: 'a bag) : 'a bag *)
-
-  (*@ axiom diff_occ: forall b1 b2: 'a bag, x:'a.
-      nb_occ x (diff b1 b2) = max 0 (nb_occ x b1 - nb_occ x b2) *)
-
-  (** arbitrary element *)
-
-  (*@ function choose (b: 'a bag) : 'a *)
-
-  (*@ axiom choose_mem: forall b: 'a bag.
-        empty_bag <> b -> mem (choose b) b *)
-
-end
-
-module Set : sig
-
-  (*@ type 'a set *)
-
-  (*@ predicate mem (x: 'a) (s: 'a set) *)
-
-  (*@ function ( {} ) : 'a set *)
-
-  (*@ function ( {:_:} ) (x: 'a) : 'a set *)
-
-  (*@ function union (x:'a set) (y:'a set) : 'a set *)
-
-  (*@ function sum (f:'a -> integer) (x: 'a set) : integer *)
-
-end
-
-module Map : sig
-
-  (* the type ('a, 'b) map is defined internally in GOSPEL and can be
-     written as 'a -> 'b *)
-
-  (*@ function ( [<-] ) (m: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
-
-  (*@ function ( [_] ) (m: 'a -> 'b) (x: 'a) : 'b *)
-
-end
-
-module Peano : sig
-  type t
-  (*@ model v: integer *)
-
-  (*@ function int_of_peano (t: t) : integer = t.v *)
-  (*@ coercion *)
+  (*@ function max_array_length : integer *)
 end
