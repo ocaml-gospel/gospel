@@ -18,22 +18,22 @@ val push: 'a -> 'a t -> unit
 
 val pop: 'a t -> 'a
 (*@ v = pop q
-    requires q.view <> empty
+    requires q.view <> Seq.empty
     modifies q
-    ensures  old q.view = q.view ++ (Seq.cons v empty) *)
+    ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
 
 val is_empty: 'a t -> bool
 (*@ b = is_empty q
-    ensures b <-> q.view = empty *)
+    ensures b <-> q.view = Seq.empty *)
 
 val create: unit -> 'a t
 (*@ q = create ()
-    ensures q.view = empty *)
+    ensures q.view = Seq.empty *)
 
 val in_place_concat: 'a t -> 'a t -> unit
 (*@ in_place_concat q1 q2
     modifies q1, q2
-    ensures  q1.view = empty
+    ensures  q1.view = Seq.empty
     ensures  q2.view = old q1.view ++ old q2.view *)
 
 val in_place_destructive_concat: 'a t -> 'a t -> unit
@@ -47,8 +47,8 @@ val nondestructive_concat: 'a t -> 'a t -> 'a t
 
 val map: ('a -> 'b) -> 'a t -> 'b t
 (*@ r = map f q
-    ensures length r.view = length q.view
-    ensures forall i. 0 <= i < length q.view ->
+    ensures Seq.length r.view = Seq.length q.view
+    ensures forall i. 0 <= i < Seq.length q.view ->
                       r.view[i] = f q.view[i] *)
 
 (*@ function power (x y: integer): integer *)
@@ -67,20 +67,18 @@ val random_int: rand_state -> int -> int
 (*@ n = random_int s m
     requires m > 0  modifies s  ensures  0 <= n < m *)
 
-(*@ open Set *)
-(*@ open Map *)
-
 type elem
+
 (*@ type uf_instance *)
 (*@ mutable model dom: elem set
     mutable model rep: elem -> elem
     mutable model internal: unit
-    invariant forall x. mem x dom -> mem (rep x) dom
-    invariant forall x. mem x dom -> rep (rep x) = rep x *)
+    invariant forall x. Set.mem x dom -> Set.mem (rep x) dom
+    invariant forall x. Set.mem x dom -> rep (rep x) = rep x *)
 
 val equiv: elem -> elem -> bool
 (*@ b = equiv [uf: uf_instance] e1 e2
-    requires mem e1 uf.dom && mem e2 uf.dom
+    requires Set.mem e1 uf.dom && Set.mem e2 uf.dom
     modifies uf.internal
     ensures  b <-> uf.rep e1 = uf.rep e2 *)
 
@@ -91,8 +89,8 @@ val equiv: elem -> elem -> bool
 val make: unit -> elem
 (*@ e = make [uf: uf_instance] ()
     modifies uf
-    ensures  not (mem e (old uf.dom))
-    ensures  uf.dom = union (old uf.dom) {:e:}
+    ensures  not (Set.mem e (old uf.dom))
+    ensures  uf.dom = Set.union (old uf.dom) (Set.singleton e)
     ensures  uf.rep = (old uf.rep)[e <- e] *)
 
 type type1

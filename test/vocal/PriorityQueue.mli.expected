@@ -2,7 +2,6 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel {| open Bag |}]
 [@@@ocaml.text
   " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
 module Make :
@@ -20,57 +19,56 @@ functor (X :
     type elt = X.t
     type heap[@@gospel {| mutable model bag : elt bag |}][@@gospel
                                                            {| invariant card bag <= Sys.max_array_length |}]
-    [@@@gospel {| predicate mem (x: elt) (h: heap) = nb_occ x h.bag > 0 |}]
+    [@@@gospel
+      {| predicate mem (x: elt) (h: heap) = Bag.occurrences x h.bag > 0 |}]
     val create : unit -> heap[@@gospel
                                {| h = create ()
-      ensures h.bag = empty_bag  |}]
+      ensures h.bag = Bag.empty  |}]
     val is_empty : heap -> bool[@@gospel
                                  {| b = is_empty h
-      ensures b <-> h.bag = empty_bag |}]
+      ensures b <-> Bag.is_empty h.bag |}]
     val size : heap -> int[@@gospel
                             {| x = size h
-      ensures x = card h.bag |}]
+      ensures x = Bag.cardinal h.bag |}]
     [@@@gospel {| function minimum (h: heap) : elt |}]
     [@@@gospel
       {| predicate is_minimum (x: elt) (h: heap) =
         mem x h && forall e. mem e h -> X.cmp x e <= 0 |}]
     [@@@gospel
       {| axiom min_def:
-        forall h. 0 < card h.bag -> is_minimum (minimum h) h |}]
+        forall h. 0 < Bag.cardinal h.bag -> is_minimum (minimum h) h |}]
     val find_min : heap -> elt option[@@gospel
                                        {| r = find_min h
       ensures match r with
-      | None   -> card h.bag = 0
-      | Some x -> card h.bag > 0 && x = minimum h |}]
+      | None   -> Bag.cardinal h.bag = 0
+      | Some x -> Bag.cardinal h.bag > 0 && x = minimum h |}]
     exception Empty 
     val find_min_exn : heap -> elt[@@gospel
                                     {| x = find_min_exn h
-      raises  Empty -> card h.bag = 0
-      ensures card h.bag > 0 && x = minimum h |}]
+      raises  Empty -> Bag.cardinal h.bag = 0
+      ensures Bag.cardinal h.bag > 0 && x = minimum h |}]
     val delete_min_exn : heap -> unit[@@gospel
                                        {| delete_min_exn h
       modifies h
-      raises  Empty -> card h.bag = 0 && h.bag = old h.bag
-      ensures (old h).bag = add (minimum (old h)) h.bag |}]
+      raises  Empty -> Bag.cardinal h.bag = 0 && h.bag = old h.bag
+      ensures (old h).bag = Bag.add (minimum (old h)) h.bag |}]
     val extract_min_exn : heap -> elt[@@gospel
                                        {| x = extract_min_exn h
       modifies h
-      raises  Empty -> card h.bag = 0 && h.bag = old h.bag
+      raises  Empty -> Bag.cardinal h.bag = 0 && h.bag = old h.bag
       ensures x = minimum (old h)
-      ensures (old h).bag = add x h.bag |}]
+      ensures (old h).bag = Bag.add x h.bag |}]
     val insert : elt -> heap -> unit[@@gospel
                                       {| insert x h
-       checks   card h.bag < Sys.max_array_length
+       checks   Bag.cardinal h.bag < Sys.max_array_length
        modifies h
-       ensures  h.bag = add x (old h).bag |}]
+       ensures  h.bag = Bag.add x (old h).bag |}]
   end
 
 *******************************
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
-
-(*@ open Bag *)
 
 [@@@ocaml.text
   " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
@@ -172,8 +170,6 @@ module PriorityQueue.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ open Bag *)
-    
     [@@@ocaml.text
       " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
     
@@ -199,19 +195,18 @@ module PriorityQueue.mli
              (*@ ephemeral
                  mutable model bag : t bag_1 *)
         (*@ predicate mem (x_1:t) (h:heap) =
-            ((nb_occ  x_1:t (h:heap).bag):integer > 0:integer):prop
+            ((occurrences  x_1:t (h:heap).bag):integer > 0:integer):prop
         *)
         val create : unit -> heap
         (*@ h_1:heap = create ()
-            ensures ((h_1:heap).bag = (empty_bag ):t bag_1):prop*)
+            ensures ((h_1:heap).bag = (empty ):t bag_1):prop*)
         val is_empty : heap -> bool
         (*@ b:bool = is_empty h_2:heap
-            ensures (b:bool = (True ):bool):prop <-> ((h_2:heap).bag = (empty_bag ):
-                    t bag_1):prop*)
+            ensures (b:bool = (True ):bool):prop <-> (is_empty_1 
+                    (h_2:heap).bag):prop*)
         val size : heap -> int
         (*@ x_2:int = size h_3:heap
-            ensures ((integer_of_int  x_2:int):integer = (card 
-                    (h_3:heap).bag):integer):prop*)
+            ensures (x_2:int = (cardinal  (h_3:heap).bag):int):prop*)
         (*@ function minimum (h_4:heap): t *)
         (*@ predicate is_minimum (x_3:t) (h_5:heap) =
             (mem  x_3:t h_5:heap):prop && forall e:t . (mem 
@@ -219,49 +214,55 @@ module PriorityQueue.mli
             (apply  (apply  (cmp ):t -> t -> int x_3:t):t -> int e:t):int):
             integer <= 0:integer):prop
         *)
-        (*@ axiom min_def: forall h_6:heap . (0:integer < (card 
-        (h_6:heap).bag):integer):prop -> (is_minimum 
+        (*@ axiom min_def: forall h_6:heap . (0:integer < (integer_of_int 
+        (cardinal  (h_6:heap).bag):int):integer):prop -> (is_minimum 
         (minimum  h_6:heap):t h_6:heap):prop *)
         val find_min : heap -> elt option
         (*@ r_1:t option = find_min h_7:heap
             ensures (match r_1:t option with
-                    | None -> if ((card 
-                              (h_7:heap).bag):integer = 0:integer):prop then (True ):
-                              bool else (False ):bool
-                    | Some x_4:t -> if ((card 
-                                    (h_7:heap).bag):integer > 0:integer):prop && (
-                                    x_4:t = (minimum 
+                    | None -> if ((integer_of_int 
+                              (cardinal  (h_7:heap).bag):int):integer = 0:
+                              integer):prop then (True ):bool else (False ):
+                              bool
+                    | Some x_4:t -> if ((integer_of_int 
+                                    (cardinal  (h_7:heap).bag):int):integer > 0:
+                                    integer):prop && (x_4:t = (minimum 
                                     h_7:heap):t):prop then (True ):bool else (False ):
                                     bool
                     end::bool = (True ):bool):prop*)
         exception Empty
         val find_min_exn : heap -> elt
         (*@ x_5:t = find_min_exn h_8:heap
-            ensures ((card 
-                    (h_8:heap).bag):integer > 0:integer):prop && (x_5:t = (minimum 
-                    h_8:heap):t):prop
-            raisesEmpty  -> ((card  (h_8:heap).bag):integer = 0:integer):prop*)
+            ensures ((integer_of_int 
+                    (cardinal  (h_8:heap).bag):int):integer > 0:integer):prop && (
+                    x_5:t = (minimum  h_8:heap):t):prop
+            raisesEmpty  -> ((integer_of_int 
+                            (cardinal  (h_8:heap).bag):int):integer = 0:
+                            integer):prop*)
         val delete_min_exn : heap -> unit
         (*@  delete_min_exn h_9:heap
             ensures ((old (h_9:heap)).bag = (add 
                     (minimum  old (h_9:heap)):t (h_9:heap).bag):t bag_1):prop
-            raisesEmpty  -> ((card 
-                            (h_9:heap).bag):integer = 0:integer):prop && ((
-                            h_9:heap).bag = old ((h_9:heap).bag)):prop
+            raisesEmpty  -> ((integer_of_int 
+                            (cardinal  (h_9:heap).bag):int):integer = 0:
+                            integer):prop && ((h_9:heap).bag = old ((
+                            h_9:heap).bag)):prop
             writes h_9:heap*)
         val extract_min_exn : heap -> elt
         (*@ x_6:t = extract_min_exn h_10:heap
             ensures (x_6:t = (minimum  old (h_10:heap)):t):prop
                     ensures ((old (h_10:heap)).bag = (add 
                             x_6:t (h_10:heap).bag):t bag_1):prop
-            raisesEmpty  -> ((card 
-                            (h_10:heap).bag):integer = 0:integer):prop && ((
-                            h_10:heap).bag = old ((h_10:heap).bag)):prop
+            raisesEmpty  -> ((integer_of_int 
+                            (cardinal  (h_10:heap).bag):int):integer = 0:
+                            integer):prop && ((h_10:heap).bag = old ((
+                            h_10:heap).bag)):prop
             writes h_10:heap*)
         val insert : elt -> heap -> unit
         (*@  insert x_7:t h_11:heap
-            checks ((card 
-                   (h_11:heap).bag):integer < (max_array_length ):integer):prop
+            checks ((integer_of_int 
+                   (cardinal  (h_11:heap).bag):int):integer < (max_array_length ):
+                   integer):prop
             ensures ((h_11:heap).bag = (add 
                     x_7:t (old (h_11:heap)).bag):t bag_1):prop
             writes h_11:heap*)

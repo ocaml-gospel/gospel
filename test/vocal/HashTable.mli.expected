@@ -22,7 +22,6 @@ module type HashedType  =
 module Make :
 functor (K : HashedType) ->
   sig
-    [@@@gospel {| open Set |}]
     type key = K.t
     type 'a table[@@gospel
                    {| ephemeral
@@ -48,7 +47,7 @@ functor (K : HashedType) ->
     ensures  forall k: key. view h2 k = view h1 k |}]
     [@@@gospel
       {| function pop (h: 'a t) : integer =
-    sum (fun k -> length (view h k)) (dom h) |}]
+    Set.fold (fun k c -> List.length (view h k) + c) (dom h) 0 |}]
     val population : 'a t -> int[@@gospel
                                   {| n = population h
     ensures n = pop h |}]
@@ -118,7 +117,7 @@ module type HashedType  =
 
 module Make : functor (K : HashedType) ->
 sig
-  (*@ open Set *)type key = K.t
+  type key = K.t
     type 'a table
     (*@ ephemeral
         model ...
@@ -282,7 +281,6 @@ module HashTable.mli
     module Make :
     functor (K : HashedType) ->
       sig
-        (*@ open Set *)
         type key = t
              
         type 'a table
@@ -295,7 +293,7 @@ module HashTable.mli
                            x_8:t y_5:t):prop -> (x_8:t = y_5:t):propinvariant
                            forall k:t . not (mem 
                            k:t (dom_1 ):t set):prop -> ((apply 
-                           (view_1 ):t -> 'a196 list k:t):'a196 list = ([] ):'a196 
+                           (view_1 ):t -> 'a44 list k:t):'a44 list = ([] ):'a44 
                            list):prop *)
         type 'a t_1 = 'a table
              
@@ -320,10 +318,10 @@ module HashTable.mli
                     (h2:'a table).view k_4:t):'a list = (apply 
                     (h1:'a table).view k_4:t):'a list):prop*)
         (*@ function pop (h_4:'a table): integer =
-            (sum 
-            fun k_5:t . (length 
-            (seq_of_list  (apply  (h_4:'a table).view k_5:t):'a list):'a seq):
-            integer (h_4:'a table).dom):integer
+            (fold 
+            fun k_5:t c:integer . ((length 
+            (apply  (h_4:'a table).view k_5:t):'a list):integer + c:integer):
+            integer (h_4:'a table).dom 0:integer):integer
         *)
         val population : 'a t -> int
         (*@ n_1:int = population h_5:'a table
@@ -335,7 +333,7 @@ module HashTable.mli
                     h_6:'a table):integer):prop*)
         val iter : (key -> 'a -> unit) -> 'a t -> unit
         
-        val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+        val fold_1 : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
         
         type statistics = {num_bindings:int; num_buckets:int;
                            max_bucket_length:int; bucket_histogram:int 

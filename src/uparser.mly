@@ -32,7 +32,7 @@
   let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
   let array_get l =
-    Qdot (Qpreid (mk_pid "Array" l), mk_pid (mixfix "[_]") l)
+    Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
 
 (*
     sp_hd_ret = [];
@@ -150,7 +150,6 @@
 val_spec:
 | hd=val_spec_header? bd=val_spec_body EOF
   { { bd with sp_header = hd } }
-(* TODO: pure or diverges only *)
 ;
 
 axiom:

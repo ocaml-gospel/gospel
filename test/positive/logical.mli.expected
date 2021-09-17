@@ -78,8 +78,8 @@ module logical.mli
         forall i:integer j:integer . (0:integer <= i:integer):prop /\ (
         i:integer <= j:integer):prop /\ (j:integer < (length 
         a:int array):integer):prop -> ((integer_of_int 
-        (mixfix [_]  a:int array i:integer):int):integer <= (integer_of_int 
-        (mixfix [_]  a:int array j:integer):int):integer):prop
+        (get  a:int array i:integer):int):integer <= (integer_of_int 
+        (get  a:int array j:integer):int):integer):prop
     *)
     
     val merge : int array -> int array -> int array

@@ -8,8 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Bag   *)
-
 module Make (X: sig (* FIXME: use ComparableType.S instead *)
   type t
 
@@ -29,40 +27,40 @@ end) : sig
 
   val empty : unit -> t
   (*@ h = empty ()
-        ensures card h.bag = 0
-        ensures forall x. nb_occ x h.bag = 0 *)
+        ensures Bag.cardinal h.bag = 0
+        ensures forall x. Bag.occurrences x h.bag = 0 *)
 
   val is_empty : t -> bool
   (*@ b = is_empty h
-        ensures b <-> h.bag = empty_bag *)
+        ensures b <-> Bag.is_empty h.bag *)
 
   val merge : t -> t -> t
   (*@ h = merge h1 h2
-        ensures card h.bag = card h1.bag + card h2.bag
-        ensures forall x. nb_occ x h.bag = nb_occ x h1.bag + nb_occ x h2.bag *)
+        ensures Bag.cardinal h.bag = Bag.cardinal h1.bag + Bag.cardinal h2.bag
+        ensures forall x. Bag.occurrences x h.bag = Bag.occurrences x h1.bag + Bag.occurrences x h2.bag *)
 
   val insert : elt -> t -> t
   (*@ h' = insert x h
-        ensures nb_occ x h'.bag = nb_occ x h.bag + 1
-        ensures forall y. y <> x -> nb_occ y h'.bag = nb_occ y h.bag
-        ensures card h'.bag = card h.bag + 1 *)
+        ensures Bag.occurrences x h'.bag = Bag.occurrences x h.bag + 1
+        ensures forall y. y <> x -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures Bag.cardinal h'.bag = Bag.cardinal h.bag + 1 *)
 
-  (*@ predicate mem        (x: elt) (h: t) = nb_occ x h.bag > 0 *)
+  (*@ predicate mem        (x: elt) (h: t) = Bag.occurrences x h.bag > 0 *)
   (*@ predicate is_minimum (x: elt) (h: t) =
         mem x h /\ forall e. mem e h -> X.cmp x e <= 0 *)
 
   (*@ function minimum (h: t) : elt *)
-  (*@ axiom min_def: forall h. 0 < card h.bag -> is_minimum (minimum h) h *)
+  (*@ axiom min_def: forall h. 0 < Bag.cardinal h.bag -> is_minimum (minimum h) h *)
 
   val find_min : t -> elt
   (*@ x = find_min h
-        requires card h.bag > 0
+        requires Bag.cardinal h.bag > 0
         ensures  x = minimum h *)
 
   val delete_min : t -> t
   (*@ h' = delete_min h
-        requires card h.bag > 0
-        ensures  let x = minimum h in nb_occ x h'.bag = nb_occ x h.bag - 1
-        ensures  forall y. y <> minimum h -> nb_occ y h'.bag = nb_occ y h.bag
-        ensures  card h'.bag = card h.bag - 1 *)
+        requires Bag.cardinal h.bag > 0
+        ensures  let x = minimum h in Bag.occurrences x h'.bag = Bag.occurrences x h.bag - 1
+        ensures  forall y. y <> minimum h -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures  Bag.cardinal h'.bag = Bag.cardinal h.bag - 1 *)
 end

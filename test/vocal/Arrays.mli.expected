@@ -7,48 +7,48 @@ val binary_search : ('a -> 'a -> int) -> 'a array -> int -> int -> 'a -> int
 [@@gospel
   {| r = binary_search cmp a fromi toi v
       requires Order.is_pre_order cmp
-      requires 0 <= fromi <= toi <= length a
-      requires forall i j. fromi <= i <= j < toi -> cmp a[i] a[j] <= 0
-      ensures  fromi <= r < toi && cmp a[r] v = 0
-      raises   Not_found -> forall i. fromi <= i < toi -> cmp a[i] v <> 0 |}]
+      requires 0 <= fromi <= toi <= Array.length a
+      requires forall i j. fromi <= i <= j < toi -> cmp a.(i) a.(j) <= 0
+      ensures  fromi <= r < toi && cmp a.(r) v = 0
+      raises   Not_found -> forall i. fromi <= i < toi -> cmp a.(i) v <> 0 |}]
 val binary_search_left :
   ('a -> 'a -> int) -> 'a array -> int -> int -> 'a -> int[@@gospel
                                                             {| r = binary_search_left cmp a fromi toi v
       requires Order.is_pre_order cmp
-      requires 0 <= fromi <= toi <= length a
-      requires forall i j. fromi <= i <= j < toi -> cmp a[i] a[j] <= 0
+      requires 0 <= fromi <= toi <= Array.length a
+      requires forall i j. fromi <= i <= j < toi -> cmp a.(i) a.(j) <= 0
       ensures  fromi <= r <= toi
-      ensures  forall i. fromi <= i < r   -> cmp a[i] v <  0
-      ensures  forall i. r     <= i < toi -> cmp a[i] v >= 0 |}]
+      ensures  forall i. fromi <= i < r   -> cmp a.(i) v <  0
+      ensures  forall i. r     <= i < toi -> cmp a.(i) v >= 0 |}]
 val binary_search_right :
   ('a -> 'a -> int) -> 'a array -> int -> int -> 'a -> int[@@gospel
                                                             {| r = binary_search_right cmp a fromi toi v
       requires Order.is_pre_order cmp
-      checks   0 <= fromi <= toi <= length a
-      requires forall i j. fromi <= i <= j < toi -> cmp a[i] a[j] <= 0
+      checks   0 <= fromi <= toi <= Array.length a
+      requires forall i j. fromi <= i <= j < toi -> cmp a.(i) a.(j) <= 0
       ensures  fromi <= r <= toi
-      ensures  forall i. fromi <= i < r   -> cmp a[i] v <= 0
-      ensures  forall i. r     <= i < toi -> cmp a[i] v >  0 |}]
+      ensures  forall i. fromi <= i < r   -> cmp a.(i) v <= 0
+      ensures  forall i. r     <= i < toi -> cmp a.(i) v >  0 |}]
 val binary_sort : ('a -> 'a -> int) -> 'a array -> int -> int -> unit
 [@@gospel
   {| binary_sort cmp a fromi toi
       requires Order.is_pre_order cmp
-      requires 0 <= fromi <= toi <= length a
+      requires 0 <= fromi <= toi <= Array.length a
       modifies a
-      ensures  forall i j. fromi <= i <= j < toi -> cmp a[i] a[j] <= 0
-      ensures  ArrayPermut.permut_sub (old a) a fromi toi |}]
+      ensures  forall i j. fromi <= i <= j < toi -> cmp a.(i) a.(j) <= 0
+      ensures  Array.permut_sub (old a) a fromi toi |}]
 val swap : 'a array -> int -> int -> unit[@@gospel
                                            {| swap a i j
-      requires 0 <= i < length a && 0 <= j < length a
+      requires 0 <= i < Array.length a && 0 <= j < Array.length a
       modifies a
-      ensures  a[i] = (old a)[j]
-      ensures  a[j] = (old a)[i]
-      ensures  forall k. 0 <= k < length a ->
-               k <> i -> k <> j -> a[k] = (old a)[k] |}]
+      ensures  a.(i) = old a.(j)
+      ensures  a.(j) = old a.(i)
+      ensures  forall k. 0 <= k < Array.length a ->
+               k <> i -> k <> j -> a.(k) = old a.(k) |}]
 val knuth_shuffle : 'a array -> unit[@@gospel
                                       {| knuth_shuffle a
       modifies a
-      ensures  ArrayPermut.permut_all (old a) a |}]
+      ensures  Array.permut (old a) a |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -142,36 +142,35 @@ module Arrays.mli
                           fromi:int):integer <= (integer_of_int 
                           toi:int):integer):prop /\ ((integer_of_int 
                           toi:int):integer <= (length 
-                          (elts  a_1:'a array):'a seq):integer):prop
+                          a_1:'a array):integer):prop
                  requires forall i:integer j:integer . ((integer_of_int 
                           fromi:int):integer <= i:integer):prop /\ (i:integer <= 
                           j:integer):prop /\ (j:integer < (integer_of_int 
                           toi:int):integer):prop -> ((integer_of_int 
                           (apply 
                           (apply 
-                          cmp:'a -> 'a -> int (mixfix [_] 
-                          (elts  a_1:'a array):'a seq i:integer):'a):
-                          'a -> int (mixfix [_] 
-                          (elts  a_1:'a array):'a seq j:integer):'a):
-                          int):integer <= 0:integer):prop
+                          cmp:'a -> 'a -> int (get 
+                          a_1:'a array i:integer):'a):'a -> int (get 
+                          a_1:'a array j:integer):'a):int):integer <= 0:
+                          integer):prop
         ensures ((integer_of_int  fromi:int):integer <= (integer_of_int 
                 r:int):integer):prop /\ ((integer_of_int 
                 r:int):integer < (integer_of_int 
                 toi:int):integer):prop && ((integer_of_int 
                 (apply 
                 (apply 
-                cmp:'a -> 'a -> int (mixfix [_] 
-                (elts  a_1:'a array):'a seq (integer_of_int  r:int):integer):'a):
-                'a -> int v:'a):int):integer = 0:integer):prop
+                cmp:'a -> 'a -> int (get 
+                a_1:'a array (integer_of_int  r:int):integer):'a):'a -> int
+                v:'a):int):integer = 0:integer):prop
         raisesNot_found  -> forall i_1:integer . ((integer_of_int 
                             fromi:int):integer <= i_1:integer):prop /\ (
                             i_1:integer < (integer_of_int 
                             toi:int):integer):prop -> not ((integer_of_int 
                             (apply 
                             (apply 
-                            cmp:'a -> 'a -> int (mixfix [_] 
-                            (elts  a_1:'a array):'a seq i_1:integer):'a):
-                            'a -> int v:'a):int):integer = 0:integer):prop*)
+                            cmp:'a -> 'a -> int (get 
+                            a_1:'a array i_1:integer):'a):'a -> int v:'a):
+                            int):integer = 0:integer):prop*)
     
     val binary_search_left :
     ('a -> 'a -> int) -> 'a array -> int -> int -> 'a -> int
@@ -183,18 +182,17 @@ module Arrays.mli
                           fromi_1:int):integer <= (integer_of_int 
                           toi_1:int):integer):prop /\ ((integer_of_int 
                           toi_1:int):integer <= (length 
-                          (elts  a_2:'a array):'a seq):integer):prop
+                          a_2:'a array):integer):prop
                  requires forall i_2:integer j_1:integer . ((integer_of_int 
                           fromi_1:int):integer <= i_2:integer):prop /\ (
                           i_2:integer <= j_1:integer):prop /\ (j_1:integer < (integer_of_int 
                           toi_1:int):integer):prop -> ((integer_of_int 
                           (apply 
                           (apply 
-                          cmp_1:'a -> 'a -> int (mixfix [_] 
-                          (elts  a_2:'a array):'a seq i_2:integer):'a):
-                          'a -> int (mixfix [_] 
-                          (elts  a_2:'a array):'a seq j_1:integer):'a):
-                          int):integer <= 0:integer):prop
+                          cmp_1:'a -> 'a -> int (get 
+                          a_2:'a array i_2:integer):'a):'a -> int (get 
+                          a_2:'a array j_1:integer):'a):int):integer <= 0:
+                          integer):prop
         ensures ((integer_of_int  fromi_1:int):integer <= (integer_of_int 
                 r_1:int):integer):prop /\ ((integer_of_int 
                 r_1:int):integer <= (integer_of_int  toi_1:int):integer):prop
@@ -204,17 +202,17 @@ module Arrays.mli
                         r_1:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
-                        cmp_1:'a -> 'a -> int (mixfix [_] 
-                        (elts  a_2:'a array):'a seq i_3:integer):'a):
-                        'a -> int v_1:'a):int):integer < 0:integer):prop
+                        cmp_1:'a -> 'a -> int (get 
+                        a_2:'a array i_3:integer):'a):'a -> int v_1:'a):
+                        int):integer < 0:integer):prop
                 ensures forall i_4:integer . ((integer_of_int 
                         r_1:int):integer <= i_4:integer):prop /\ (i_4:integer < (integer_of_int 
                         toi_1:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
-                        cmp_1:'a -> 'a -> int (mixfix [_] 
-                        (elts  a_2:'a array):'a seq i_4:integer):'a):
-                        'a -> int v_1:'a):int):integer >= 0:integer):prop*)
+                        cmp_1:'a -> 'a -> int (get 
+                        a_2:'a array i_4:integer):'a):'a -> int v_1:'a):
+                        int):integer >= 0:integer):prop*)
     
     val binary_search_right :
     ('a -> 'a -> int) -> 'a array -> int -> int -> 'a -> int
@@ -227,17 +225,15 @@ module Arrays.mli
                           toi_2:int):integer):prop -> ((integer_of_int 
                           (apply 
                           (apply 
-                          cmp_2:'a -> 'a -> int (mixfix [_] 
-                          (elts  a_3:'a array):'a seq i_5:integer):'a):
-                          'a -> int (mixfix [_] 
-                          (elts  a_3:'a array):'a seq j_2:integer):'a):
-                          int):integer <= 0:integer):prop
+                          cmp_2:'a -> 'a -> int (get 
+                          a_3:'a array i_5:integer):'a):'a -> int (get 
+                          a_3:'a array j_2:integer):'a):int):integer <= 0:
+                          integer):prop
         checks (0:integer <= (integer_of_int 
                fromi_2:int):integer):prop /\ ((integer_of_int 
                fromi_2:int):integer <= (integer_of_int 
                toi_2:int):integer):prop /\ ((integer_of_int 
-               toi_2:int):integer <= (length 
-               (elts  a_3:'a array):'a seq):integer):prop
+               toi_2:int):integer <= (length  a_3:'a array):integer):prop
                checks forall i_6:integer j_3:integer . ((integer_of_int 
                       fromi_2:int):integer <= i_6:integer):prop /\ (i_6:
                                                                     integer <= 
@@ -245,11 +241,10 @@ module Arrays.mli
                       toi_2:int):integer):prop -> ((integer_of_int 
                       (apply 
                       (apply 
-                      cmp_2:'a -> 'a -> int (mixfix [_] 
-                      (elts  a_3:'a array):'a seq i_6:integer):'a):'a -> int
-                      (mixfix [_] 
-                      (elts  a_3:'a array):'a seq j_3:integer):'a):int):
-                      integer <= 0:integer):prop
+                      cmp_2:'a -> 'a -> int (get 
+                      a_3:'a array i_6:integer):'a):'a -> int (get 
+                      a_3:'a array j_3:integer):'a):int):integer <= 0:
+                      integer):prop
         ensures ((integer_of_int  fromi_2:int):integer <= (integer_of_int 
                 r_2:int):integer):prop /\ ((integer_of_int 
                 r_2:int):integer <= (integer_of_int  toi_2:int):integer):prop
@@ -259,17 +254,17 @@ module Arrays.mli
                         r_2:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
-                        cmp_2:'a -> 'a -> int (mixfix [_] 
-                        (elts  a_3:'a array):'a seq i_7:integer):'a):
-                        'a -> int v_2:'a):int):integer <= 0:integer):prop
+                        cmp_2:'a -> 'a -> int (get 
+                        a_3:'a array i_7:integer):'a):'a -> int v_2:'a):
+                        int):integer <= 0:integer):prop
                 ensures forall i_8:integer . ((integer_of_int 
                         r_2:int):integer <= i_8:integer):prop /\ (i_8:integer < (integer_of_int 
                         toi_2:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
-                        cmp_2:'a -> 'a -> int (mixfix [_] 
-                        (elts  a_3:'a array):'a seq i_8:integer):'a):
-                        'a -> int v_2:'a):int):integer > 0:integer):prop*)
+                        cmp_2:'a -> 'a -> int (get 
+                        a_3:'a array i_8:integer):'a):'a -> int v_2:'a):
+                        int):integer > 0:integer):prop*)
     
     val binary_sort : ('a -> 'a -> int) -> 'a array -> int -> int -> unit
     (*@  binary_sort cmp_3:'a -> 'a -> int a_4:'a array fromi_3:int toi_3:int
@@ -279,17 +274,16 @@ module Arrays.mli
                           fromi_3:int):integer <= (integer_of_int 
                           toi_3:int):integer):prop /\ ((integer_of_int 
                           toi_3:int):integer <= (length 
-                          (elts  a_4:'a array):'a seq):integer):prop
+                          a_4:'a array):integer):prop
         ensures forall i_9:integer j_4:integer . ((integer_of_int 
                 fromi_3:int):integer <= i_9:integer):prop /\ (i_9:integer <= 
                 j_4:integer):prop /\ (j_4:integer < (integer_of_int 
                 toi_3:int):integer):prop -> ((integer_of_int 
                 (apply 
                 (apply 
-                cmp_3:'a -> 'a -> int (mixfix [_] 
-                (elts  a_4:'a array):'a seq i_9:integer):'a):'a -> int
-                (mixfix [_]  (elts  a_4:'a array):'a seq j_4:integer):'a):
-                int):integer <= 0:integer):prop
+                cmp_3:'a -> 'a -> int (get  a_4:'a array i_9:integer):'a):
+                'a -> int (get  a_4:'a array j_4:integer):'a):int):integer <= 0:
+                integer):prop
                 ensures (permut_sub 
                         old (a_4:'a array) a_4:'a array (integer_of_int 
                         fromi_3:int):integer (integer_of_int 
@@ -301,33 +295,27 @@ module Arrays.mli
         requires (0:integer <= (integer_of_int 
                  i_10:int):integer):prop /\ ((integer_of_int 
                  i_10:int):integer < (length 
-                 (elts  a_5:'a array):'a seq):integer):prop && (0:integer <= (integer_of_int 
+                 a_5:'a array):integer):prop && (0:integer <= (integer_of_int 
                  j_5:int):integer):prop /\ ((integer_of_int 
-                 j_5:int):integer < (length 
-                 (elts  a_5:'a array):'a seq):integer):prop
-        ensures ((mixfix [_] 
-                (elts  a_5:'a array):'a seq (integer_of_int 
-                i_10:int):integer):'a = (mixfix [_] 
-                (elts  old (a_5:'a array)):'a seq (integer_of_int 
-                j_5:int):integer):'a):prop
-                ensures ((mixfix [_] 
-                        (elts  a_5:'a array):'a seq (integer_of_int 
-                        j_5:int):integer):'a = (mixfix [_] 
-                        (elts  old (a_5:'a array)):'a seq (integer_of_int 
-                        i_10:int):integer):'a):prop
+                 j_5:int):integer < (length  a_5:'a array):integer):prop
+        ensures ((get 
+                a_5:'a array (integer_of_int  i_10:int):integer):'a = old ((get 
+                a_5:'a array (integer_of_int  j_5:int):integer):'a)):prop
+                ensures ((get 
+                        a_5:'a array (integer_of_int  j_5:int):integer):'a = old ((get 
+                        a_5:'a array (integer_of_int  i_10:int):integer):'a)):prop
                 ensures forall k:integer . (0:integer <= k:integer):prop /\ (
                         k:integer < (length 
-                        (elts  a_5:'a array):'a seq):integer):prop -> not (
-                        k:integer = (integer_of_int 
+                        a_5:'a array):integer):prop -> not (k:integer = (integer_of_int 
                         i_10:int):integer):prop -> not (k:integer = (integer_of_int 
-                        j_5:int):integer):prop -> ((mixfix [_] 
-                        (elts  a_5:'a array):'a seq k:integer):'a = (mixfix [_] 
-                        (elts  old (a_5:'a array)):'a seq k:integer):'a):prop
+                        j_5:int):integer):prop -> ((get 
+                        a_5:'a array k:integer):'a = old ((get 
+                        a_5:'a array k:integer):'a)):prop
         writes a_5:'a array*)
     
     val knuth_shuffle : 'a array -> unit
     (*@  knuth_shuffle a_6:'a array
-        ensures (permut_all  old (a_6:'a array) a_6:'a array):prop
+        ensures (permut  old (a_6:'a array) a_6:'a array):prop
         writes a_6:'a array*)
 
 OK

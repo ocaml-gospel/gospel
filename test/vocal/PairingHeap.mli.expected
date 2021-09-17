@@ -2,7 +2,6 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel {| open Bag   |}]
 module Make :
 functor (X :
   sig
@@ -18,46 +17,44 @@ functor (X :
     type t[@@gospel {| model bag : elt bag |}]
     val empty : unit -> t[@@gospel
                            {| h = empty ()
-        ensures card h.bag = 0
-        ensures forall x. nb_occ x h.bag = 0 |}]
+        ensures Bag.cardinal h.bag = 0
+        ensures forall x. Bag.occurrences x h.bag = 0 |}]
     val is_empty : t -> bool[@@gospel
                               {| b = is_empty h
-        ensures b <-> h.bag = empty_bag |}]
+        ensures b <-> Bag.is_empty h.bag |}]
     val merge : t -> t -> t[@@gospel
                              {| h = merge h1 h2
-        ensures card h.bag = card h1.bag + card h2.bag
-        ensures forall x. nb_occ x h.bag = nb_occ x h1.bag + nb_occ x h2.bag |}]
+        ensures Bag.cardinal h.bag = Bag.cardinal h1.bag + Bag.cardinal h2.bag
+        ensures forall x. Bag.occurrences x h.bag = Bag.occurrences x h1.bag + Bag.occurrences x h2.bag |}]
     val insert : elt -> t -> t[@@gospel
                                 {| h' = insert x h
-        ensures nb_occ x h'.bag = nb_occ x h.bag + 1
-        ensures forall y. y <> x -> nb_occ y h'.bag = nb_occ y h.bag
-        ensures card h'.bag = card h.bag + 1 |}]
+        ensures Bag.occurrences x h'.bag = Bag.occurrences x h.bag + 1
+        ensures forall y. y <> x -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures Bag.cardinal h'.bag = Bag.cardinal h.bag + 1 |}]
     [@@@gospel
-      {| predicate mem        (x: elt) (h: t) = nb_occ x h.bag > 0 |}]
+      {| predicate mem        (x: elt) (h: t) = Bag.occurrences x h.bag > 0 |}]
     [@@@gospel
       {| predicate is_minimum (x: elt) (h: t) =
         mem x h /\ forall e. mem e h -> X.cmp x e <= 0 |}]
     [@@@gospel {| function minimum (h: t) : elt |}]
     [@@@gospel
-      {| axiom min_def: forall h. 0 < card h.bag -> is_minimum (minimum h) h |}]
+      {| axiom min_def: forall h. 0 < Bag.cardinal h.bag -> is_minimum (minimum h) h |}]
     val find_min : t -> elt[@@gospel
                              {| x = find_min h
-        requires card h.bag > 0
+        requires Bag.cardinal h.bag > 0
         ensures  x = minimum h |}]
     val delete_min : t -> t[@@gospel
                              {| h' = delete_min h
-        requires card h.bag > 0
-        ensures  let x = minimum h in nb_occ x h'.bag = nb_occ x h.bag - 1
-        ensures  forall y. y <> minimum h -> nb_occ y h'.bag = nb_occ y h.bag
-        ensures  card h'.bag = card h.bag - 1 |}]
+        requires Bag.cardinal h.bag > 0
+        ensures  let x = minimum h in Bag.occurrences x h'.bag = Bag.occurrences x h.bag - 1
+        ensures  forall y. y <> minimum h -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures  Bag.cardinal h'.bag = Bag.cardinal h.bag - 1 |}]
   end
 
 *******************************
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
-
-(*@ open Bag *)
 
 module Make : functor (X :
 sig
@@ -145,8 +142,6 @@ module PairingHeap.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ open Bag *)
-    
     module Make :
     functor (X :
       sig
@@ -168,33 +163,38 @@ module PairingHeap.mli
                  model bag : t bag_1 *)
         val empty : unit -> t
         (*@ h:t_1 = empty ()
-            ensures ((card  (h:t_1).bag):integer = 0:integer):prop
-                    ensures forall x_1:t . ((nb_occ 
+            ensures ((integer_of_int 
+                    (cardinal  (h:t_1).bag):int):integer = 0:integer):prop
+                    ensures forall x_1:t . ((occurrences 
                             x_1:t (h:t_1).bag):integer = 0:integer):prop*)
         val is_empty : t -> bool
         (*@ b:bool = is_empty h_1:t_1
-            ensures (b:bool = (True ):bool):prop <-> ((h_1:t_1).bag = (empty_bag ):
-                    t bag_1):prop*)
+            ensures (b:bool = (True ):bool):prop <-> (is_empty_1 
+                    (h_1:t_1).bag):prop*)
         val merge : t -> t -> t
         (*@ h_2:t_1 = merge h1:t_1 h2:t_1
-            ensures ((card  (h_2:t_1).bag):integer = ((card 
-                    (h1:t_1).bag):integer + (card 
-                    (h2:t_1).bag):integer):integer):prop
-                    ensures forall x_2:t . ((nb_occ 
-                            x_2:t (h_2:t_1).bag):integer = ((nb_occ 
-                            x_2:t (h1:t_1).bag):integer + (nb_occ 
+            ensures ((integer_of_int 
+                    (cardinal  (h_2:t_1).bag):int):integer = ((integer_of_int 
+                    (cardinal  (h1:t_1).bag):int):integer + (integer_of_int 
+                    (cardinal  (h2:t_1).bag):int):integer):integer):prop
+                    ensures forall x_2:t . ((occurrences 
+                            x_2:t (h_2:t_1).bag):integer = ((occurrences 
+                            x_2:t (h1:t_1).bag):integer + (occurrences 
                             x_2:t (h2:t_1).bag):integer):integer):prop*)
         val insert : elt -> t -> t
         (*@ h':t_1 = insert x_3:t h_3:t_1
-            ensures ((nb_occ  x_3:t (h':t_1).bag):integer = ((nb_occ 
+            ensures ((occurrences 
+                    x_3:t (h':t_1).bag):integer = ((occurrences 
                     x_3:t (h_3:t_1).bag):integer + 1:integer):integer):prop
-                    ensures forall y_1:t . not (y_1:t = x_3:t):prop -> ((nb_occ 
-                            y_1:t (h':t_1).bag):integer = (nb_occ 
+                    ensures forall y_1:t . not (y_1:t = x_3:t):prop -> ((occurrences 
+                            y_1:t (h':t_1).bag):integer = (occurrences 
                             y_1:t (h_3:t_1).bag):integer):prop
-                    ensures ((card  (h':t_1).bag):integer = ((card 
-                            (h_3:t_1).bag):integer + 1:integer):integer):prop*)
+                    ensures ((integer_of_int 
+                            (cardinal  (h':t_1).bag):int):integer = ((integer_of_int 
+                            (cardinal  (h_3:t_1).bag):int):integer + 1:
+                            integer):integer):prop*)
         (*@ predicate mem (x_4:t) (h_4:t_1) =
-            ((nb_occ  x_4:t (h_4:t_1).bag):integer > 0:integer):prop
+            ((occurrences  x_4:t (h_4:t_1).bag):integer > 0:integer):prop
         *)
         (*@ predicate is_minimum (x_5:t) (h_5:t_1) =
             (mem  x_5:t h_5:t_1):prop /\ forall e:t . (mem 
@@ -203,25 +203,29 @@ module PairingHeap.mli
             integer <= 0:integer):prop
         *)
         (*@ function minimum (h_6:t_1): t *)
-        (*@ axiom min_def: forall h_7:t_1 . (0:integer < (card 
-        (h_7:t_1).bag):integer):prop -> (is_minimum 
+        (*@ axiom min_def: forall h_7:t_1 . (0:integer < (integer_of_int 
+        (cardinal  (h_7:t_1).bag):int):integer):prop -> (is_minimum 
         (minimum  h_7:t_1):t h_7:t_1):prop *)
         val find_min : t -> elt
         (*@ x_6:t = find_min h_8:t_1
-            requires ((card  (h_8:t_1).bag):integer > 0:integer):prop
+            requires ((integer_of_int 
+                     (cardinal  (h_8:t_1).bag):int):integer > 0:integer):prop
             ensures (x_6:t = (minimum  h_8:t_1):t):prop*)
         val delete_min : t -> t
         (*@ h'_1:t_1 = delete_min h_9:t_1
-            requires ((card  (h_9:t_1).bag):integer > 0:integer):prop
-            ensures let x_7:t = (minimum  h_9:t_1):t in ((nb_occ 
-                    x_7:t (h'_1:t_1).bag):integer = ((nb_occ 
+            requires ((integer_of_int 
+                     (cardinal  (h_9:t_1).bag):int):integer > 0:integer):prop
+            ensures let x_7:t = (minimum  h_9:t_1):t in ((occurrences 
+                    x_7:t (h'_1:t_1).bag):integer = ((occurrences 
                     x_7:t (h_9:t_1).bag):integer - 1:integer):integer):prop
                     ensures forall y_2:t . not (y_2:t = (minimum 
-                            h_9:t_1):t):prop -> ((nb_occ 
-                            y_2:t (h'_1:t_1).bag):integer = (nb_occ 
+                            h_9:t_1):t):prop -> ((occurrences 
+                            y_2:t (h'_1:t_1).bag):integer = (occurrences 
                             y_2:t (h_9:t_1).bag):integer):prop
-                    ensures ((card  (h'_1:t_1).bag):integer = ((card 
-                            (h_9:t_1).bag):integer - 1:integer):integer):prop*)
+                    ensures ((integer_of_int 
+                            (cardinal  (h'_1:t_1).bag):int):integer = ((integer_of_int 
+                            (cardinal  (h_9:t_1).bag):int):integer - 1:
+                            integer):integer):prop*)
       end
 
 OK

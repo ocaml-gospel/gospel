@@ -2,35 +2,32 @@
 *******************************
 ********** Parsed file ********
 *******************************
-[@@@gospel {| open Seq |}]
 type 'a t[@@gospel {| mutable model view: 'a seq |}]
 val create : unit -> 'a t[@@gospel
                            {| q = create ()
-      ensures q.view == empty |}]
+      ensures q.view == Seq.empty |}]
 val push : 'a -> 'a t -> unit[@@gospel
                                {| push x q
       modifies q
       ensures  q.view == Seq.snoc (old q.view) x |}]
 val pop : 'a t -> 'a[@@gospel
                       {| r = pop q
-      requires q.view <> empty
+      requires q.view <> Seq.empty
       modifies q
       ensures  old q.view == Seq.cons r q.view |}]
 val is_empty : 'a t -> bool[@@gospel
                              {| b = is_empty q
-      ensures b <-> q.view = empty |}]
+      ensures b <-> q.view = Seq.empty |}]
 val transfer : 'a t -> 'a t -> unit[@@gospel
                                      {| transfer q1 q2
       modifies q1.view, q2.view
-      ensures  q1.view == empty
+      ensures  q1.view == Seq.empty
       ensures  q2.view == old q2.view ++ old q1.view |}]
 
 *******************************
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
-
-(*@ open Seq *)
 
 type 'a t
   (*@ ephemeral
@@ -88,8 +85,6 @@ module Queue.mli
       
   Signatures
     (*@ open Gospelstdlib *)
-    
-    (*@ open Seq *)
     
     type 'a t
          (*@ ephemeral

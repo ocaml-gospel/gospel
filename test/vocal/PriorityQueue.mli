@@ -8,8 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Bag *)
-
 (** This module implements a priority queue based on a minimal binary heap.
 The heap is modelized by a dynamic array, taken from the module Vector **)
 
@@ -33,19 +31,19 @@ end) : sig
   (*@ mutable model bag : elt bag *)
   (*@ invariant card bag <= Sys.max_array_length *)
 
-  (*@ predicate mem (x: elt) (h: heap) = nb_occ x h.bag > 0 *)
+  (*@ predicate mem (x: elt) (h: heap) = Bag.occurrences x h.bag > 0 *)
 
   val create : unit -> heap
   (*@ h = create ()
-      ensures h.bag = empty_bag  *)
+      ensures h.bag = Bag.empty  *)
 
   val is_empty : heap -> bool
   (*@ b = is_empty h
-      ensures b <-> h.bag = empty_bag *)
+      ensures b <-> Bag.is_empty h.bag *)
 
   val size : heap -> int
   (*@ x = size h
-      ensures x = card h.bag *)
+      ensures x = Bag.cardinal h.bag *)
 
   (*@ function minimum (h: heap) : elt *)
 
@@ -53,38 +51,38 @@ end) : sig
         mem x h && forall e. mem e h -> X.cmp x e <= 0 *)
 
   (*@ axiom min_def:
-        forall h. 0 < card h.bag -> is_minimum (minimum h) h *)
+        forall h. 0 < Bag.cardinal h.bag -> is_minimum (minimum h) h *)
 
   val find_min : heap -> elt option
   (*@ r = find_min h
       ensures match r with
-      | None   -> card h.bag = 0
-      | Some x -> card h.bag > 0 && x = minimum h *)
+      | None   -> Bag.cardinal h.bag = 0
+      | Some x -> Bag.cardinal h.bag > 0 && x = minimum h *)
 
   exception Empty
 
   val find_min_exn : heap -> elt
   (*@ x = find_min_exn h
-      raises  Empty -> card h.bag = 0
-      ensures card h.bag > 0 && x = minimum h *)
+      raises  Empty -> Bag.cardinal h.bag = 0
+      ensures Bag.cardinal h.bag > 0 && x = minimum h *)
 
   val delete_min_exn : heap -> unit
   (*@ delete_min_exn h
       modifies h
-      raises  Empty -> card h.bag = 0 && h.bag = old h.bag
-      ensures (old h).bag = add (minimum (old h)) h.bag *)
+      raises  Empty -> Bag.cardinal h.bag = 0 && h.bag = old h.bag
+      ensures (old h).bag = Bag.add (minimum (old h)) h.bag *)
 
   val extract_min_exn : heap -> elt
   (*@ x = extract_min_exn h
       modifies h
-      raises  Empty -> card h.bag = 0 && h.bag = old h.bag
+      raises  Empty -> Bag.cardinal h.bag = 0 && h.bag = old h.bag
       ensures x = minimum (old h)
-      ensures (old h).bag = add x h.bag *)
+      ensures (old h).bag = Bag.add x h.bag *)
 
   val insert : elt -> heap -> unit
    (*@ insert x h
-       checks   card h.bag < Sys.max_array_length
+       checks   Bag.cardinal h.bag < Sys.max_array_length
        modifies h
-       ensures  h.bag = add x (old h).bag *)
+       ensures  h.bag = Bag.add x (old h).bag *)
 
 end

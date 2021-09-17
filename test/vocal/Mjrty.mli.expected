@@ -9,14 +9,14 @@
       forall a v lo hi. hi <= lo -> num a v lo hi = 0 |}]
 [@@@gospel
   {| axiom num_ind:
-      forall a v lo hi. 0 <= lo < hi <= length a ->
+      forall a v lo hi. 0 <= lo < hi <= Seq.length a ->
       num a v lo hi = (if a[lo] = v then 1 else 0) + num a v (lo+1) hi |}]
 val mjrty : string array -> string[@@gospel
                                     {| r = mjrty a
-      requires 1 <= length a
-      ensures  2 * num a r 0 (length a) > length a
-      raises   Not_found -> forall c. 2 * num a c 0 (length a) <= length a
-|}]
+      requires 1 <= Array.length a
+      ensures  2 * num a r 0 (Array.length a) > Array.length a
+      raises   Not_found ->
+               forall c. 2 * num a c 0 (Array.length a) <= Array.length a |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -78,18 +78,15 @@ module Mjrty.mli
     
     val mjrty : string array -> string
     (*@ r:string = mjrty a_3:string array
-        requires (1:integer <= (length 
-                 (elts  a_3:string array):string seq):integer):prop
+        requires (1:integer <= (length_1  a_3:string array):integer):prop
         ensures ((2:integer * (num 
-                (elts  a_3:string array):string seq r:string 0:integer
-                (length  (elts  a_3:string array):string seq):integer):
-                integer):integer > (length 
-                (elts  a_3:string array):string seq):integer):prop
+                (to_seq  a_3:string array):string seq r:string 0:integer
+                (length_1  a_3:string array):integer):integer):integer > (length_1 
+                a_3:string array):integer):prop
         raisesNot_found  -> forall c:string . ((2:integer * (num 
-                            (elts  a_3:string array):string seq c:string
-                            0:integer (length 
-                            (elts  a_3:string array):string seq):integer):
-                            integer):integer <= (length 
-                            (elts  a_3:string array):string seq):integer):prop*)
+                            (to_seq  a_3:string array):string seq c:string
+                            0:integer (length_1  a_3:string array):integer):
+                            integer):integer <= (length_1 
+                            a_3:string array):integer):prop*)
 
 OK
