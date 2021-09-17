@@ -215,6 +215,18 @@
  (action (diff %{dep:no_header.mli.expected} %{dep:no_header.mli.output})))
 
 (rule
+ (targets open_existing_type.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:open_existing_type.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:open_existing_type.mli.expected} %{dep:open_existing_type.mli.output})))
+
+(rule
  (targets pattern_matching.mli.output)
  (action
    (with-outputs-to %{targets}
