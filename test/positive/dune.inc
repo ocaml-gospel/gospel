@@ -95,6 +95,18 @@
  (action (diff %{dep:basic_functions_axioms.mli.expected} %{dep:basic_functions_axioms.mli.output})))
 
 (rule
+ (targets bitvector.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:bitvector.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:bitvector.mli.expected} %{dep:bitvector.mli.output})))
+
+(rule
  (targets c.mli.output)
  (action
    (with-outputs-to %{targets}
