@@ -44,7 +44,6 @@ exception E10 of {x : int -> int -> float;
 val f : 'a -> 'a
 (*@ x = f y
     raises E1 x -> integer_of_int x = 1 | E1 _ -> false
-    raises E2 _ -> true
     raises E2 (x, y) -> true
     raises E2 (_, _) -> true
     raises E2pair _ -> true

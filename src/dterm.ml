@@ -165,12 +165,14 @@ exception TermExpected
    to be given properly -- based on why3 *)
 
 let app_unify ls unify l dtyl2 =
-  try List.iter2 unify l dtyl2 with Invalid_argument _ ->
-    raise (BadArity (ls, List.length l))
+  if List.length l <> List.length dtyl2 then
+    raise (BadArity (ls, List.length l));
+  List.iter2 unify l dtyl2
 
 let app_unify_map ls unify l dtyl =
-  try List.map2 unify l dtyl with Invalid_argument _ ->
-    raise (BadArity (ls, List.length l))
+  if List.length l <> List.length dtyl then
+    raise (BadArity (ls, List.length l));
+  List.map2 unify l dtyl
 
 let dpattern_unify dp dty =
   try unify dp.dp_dty dty with Exit ->
