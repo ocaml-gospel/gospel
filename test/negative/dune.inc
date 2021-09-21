@@ -11,6 +11,42 @@
  (action (diff %{dep:char1.mli.expected} %{dep:char1.mli.output})))
 
 (rule
+ (targets constructor_arity1.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:constructor_arity1.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:constructor_arity1.mli.expected} %{dep:constructor_arity1.mli.output})))
+
+(rule
+ (targets constructor_arity2.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:constructor_arity2.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:constructor_arity2.mli.expected} %{dep:constructor_arity2.mli.output})))
+
+(rule
+ (targets exn_arity.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:exn_arity.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:exn_arity.mli.expected} %{dep:exn_arity.mli.output})))
+
+(rule
  (targets t1.mli.output)
  (action
    (with-outputs-to %{targets}

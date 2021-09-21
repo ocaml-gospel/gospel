@@ -136,13 +136,18 @@ let parse_record ~loc kid ns fll =
 let rec dpattern kid ns {pat_desc;pat_loc=loc} =
   let mk_dpattern ?loc dp_node dp_dty dp_vars =
     {dp_node;dp_dty;dp_vars;dp_loc=loc} in
-  let mk_papp ?loc cs dpl =
-    let dtyl, dty = specialize_cs ?loc cs in
-    app_unify cs dpattern_unify dpl dtyl;
-    let check_duplicate s _ _ = error ?loc (DuplicatedVar s) in
-    let vars = List.fold_left (fun acc dp ->
-      Mstr.union check_duplicate acc dp.dp_vars) Mstr.empty dpl in
-    mk_dpattern ?loc (DPapp (cs,dpl)) dty vars
+  let rec mk_papp ?loc cs dpl =
+    let n = List.length cs.ls_args in
+    match dpl with
+    | [{dp_node = DPapp (ls, dpl)}] when ls_equal ls (fs_tuple n) && cs.ls_constr ->
+      mk_papp ?loc cs dpl
+    | _ ->
+      let dtyl, dty = specialize_cs ?loc cs in
+      app_unify cs dpattern_unify dpl dtyl;
+      let check_duplicate s _ _ = error ?loc (DuplicatedVar s) in
+      let vars = List.fold_left (fun acc dp ->
+        Mstr.union check_duplicate acc dp.dp_vars) Mstr.empty dpl in
+      mk_dpattern ?loc (DPapp (cs,dpl)) dty vars
   in
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
@@ -208,13 +213,19 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
     let dtyl, dty = specialize_ls ls in
     let dtl = app_unify_map ls (dterm_expected crcm) dtl dtyl in
     mk_dterm ?loc (DTapp (ls,dtl)) dty in
-  let fun_app ?loc ls tl =
-    if List.length tl < List.length ls.ls_args
-      then raise (PartialApplication ls);
-    let args, extra = split_at_i (List.length ls.ls_args) tl in
-    let dtl = List.map (dterm kid crcm ns denv) args in
-    let dt = mk_app ?loc ls dtl in
-    if extra = [] then dt else map_apply dt extra in
+  let rec fun_app ?loc ls tl =
+    let n = List.length ls.ls_args in
+    match tl with
+    | [{term_desc = Ttuple tl}] when List.length tl = n && ls.ls_constr ->
+      fun_app ?loc ls tl
+    | _ when List.length tl < n ->
+      error ?loc (PartialApplication ls);
+    | _ ->
+      let args, extra = split_at_i (List.length ls.ls_args) tl in
+      let dtl = List.map (dterm kid crcm ns denv) args in
+      let dt = mk_app ?loc ls dtl in
+      if extra = [] then dt else map_apply dt extra
+  in
   let qualid_app q tl = match q with
     | Qpreid ({pid_loc = loc; pid_str = s; _} as pid) ->
         (match denv_get_opt denv s with
@@ -222,7 +233,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
            let dtv =
              mk_dterm ~loc:loc (DTvar pid) (Some dty) in
            map_apply dtv tl
-        | None -> fun_app (find_q_ls ns q) tl)
+        | None -> fun_app ~loc (find_q_ls ns q) tl)
     | _ -> fun_app (find_q_ls ns q) tl in
   let rec unfold_app t1 t2 tl = match t1.term_desc with
     | Uast.Tpreid q -> qualid_app q (t2::tl)
@@ -490,10 +501,7 @@ let type_type_declaration kid crcm ns tdl =
       let cd_cs,cd_ld = match cd.pcd_args with
         | Pcstr_tuple ctl ->
            let tyl = List.map (parse_core alias tvl) ctl in
-           let arg = match tyl with
-             | [] | [_] -> tyl
-             | _ -> [ty_app (ts_tuple (List.length tyl)) tyl] in
-           fsymbol ~constr:true ~field:false cs_id arg ty, []
+           fsymbol ~constr:true ~field:false cs_id tyl ty, []
         | Pcstr_record ldl ->
            let add ld (ldl,tyl) =
              let id = Ident.create ld.pld_name.txt in
@@ -630,15 +638,17 @@ let process_val_spec kid crcm ns id args ret vs =
       | Some (p,t) ->
          let dp = dpattern kid ns p in
          let ty = match p.pat_desc, xs.xs_type with
-           | Pwild, Exn_tuple [] ->
+           | (Pvar _ | Pwild), Exn_tuple [] ->
               error_report ~loc "exception pattern not expected"
            | (Pvar _ | Pwild | Ptuple _), Exn_tuple [ty] -> ty
-           | (Pwild | Ptuple _), Exn_tuple tyl ->
+           | (Pvar _ | Pwild), Exn_tuple (_ :: _ :: _) ->
+             error_report ~loc "exception pattern doesn't match its type"
+           | Ptuple _, Exn_tuple tyl ->
               ty_app (ts_tuple (List.length tyl)) tyl
            | Prec _, Exn_record _ -> (* TODO unify types and field names *)
               error_report ~loc "Unsupported record type in exceptions"
            | _, _ ->
-              error_report ~loc "exception pattern doesn't match its type" in
+             error_report ~loc "exception pattern doesn't match its type" in
          dpattern_unify dp (dty_of_ty ty);
          let p,vars = pattern dp in
          let choose_snd _ _ vs = Some vs in

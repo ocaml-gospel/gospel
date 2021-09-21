@@ -27,7 +27,6 @@ exception E10 of {
 val f : 'a -> 'a[@@gospel
                   {| x = f y
     raises E1 x -> integer_of_int x = 1 | E1 _ -> false
-    raises E2 _ -> true
     raises E2 (x, y) -> true
     raises E2 (_, _) -> true
     raises E2pair _ -> true
@@ -87,7 +86,6 @@ exception E10 of {
 
 val f : 'a -> 'a
 (*@ x = f y
-    with ...
     with ...
     with ...
     with ...
@@ -190,7 +188,6 @@ module exceptions.mli
         raisesE2pair _ -> true:prop
         raisesE2 _, _ -> true:prop
         raisesE2 x_4:int, y_4:int -> true:prop
-        raisesE2 _ -> true:prop
         raisesE1 _ -> false:prop
               | E1 x_5:int -> ((integer_of_int 
                               x_5:int):integer = 1:integer):prop*)

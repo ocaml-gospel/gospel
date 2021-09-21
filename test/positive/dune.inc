@@ -310,3 +310,15 @@
  (alias runtest)
  (action (diff %{dep:vals.mli.expected} %{dep:vals.mli.output})))
 
+(rule
+ (targets variant_patterns.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:variant_patterns.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:variant_patterns.mli.expected} %{dep:variant_patterns.mli.output})))
+
