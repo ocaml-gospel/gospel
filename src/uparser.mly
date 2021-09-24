@@ -333,10 +333,10 @@ term_:
     { Tcase ($2, $4) }
 | MATCH comma_list2(term) WITH match_cases(term)
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
-| quant comma_list1(quant_vars) triggers DOT term
-    { Tquant ($1, List.concat $2, $3, $5) }
+| quant comma_list1(quant_vars) DOT term
+    { Tquant ($1, List.concat $2, $4) }
 | FUN args = quant_vars ARROW t = term
-    { Tquant (Tlambda, args, [], t) }
+    { Tquant (Tlambda, args, t) }
 | attr term %prec prec_named
     { Tattr ($1, $2) }
 | term cast
@@ -361,11 +361,6 @@ match_cases(X):
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }
-;
-
-triggers:
-| (* epsilon *)                                                 { [] }
-| LEFTSQ separated_nonempty_list(BAR,comma_list1(term)) RIGHTSQ { $2 }
 ;
 
 attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }

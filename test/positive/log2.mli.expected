@@ -75,17 +75,17 @@ module log2.mli
     
     val log2_exists : int -> int
     (*@ r_1:int = log2_exists x_1:int
-        requires exists i_1:integer . (i_1:integer >= 0:integer):prop /\ ((integer_of_int 
+        requires exists i_1:integer. (i_1:integer >= 0:integer):prop /\ ((integer_of_int 
                  x_1:int):integer = (pow 
                  2:integer i_1:integer):integer):prop
-        ensures forall i_2:integer . ((integer_of_int 
+        ensures forall i_2:integer. ((integer_of_int 
                 x_1:int):integer = (pow 
                 2:integer i_2:integer):integer):prop -> ((integer_of_int 
                 r_1:int):integer = i_2:integer):prop*)
     
     val log2_existsb : int -> int
     (*@ r_2:int = log2_existsb x_2:int
-        requires exists i_3:integer . (i_3:integer >= 0:integer):prop /\ ((integer_of_int 
+        requires exists i_3:integer. (i_3:integer >= 0:integer):prop /\ ((integer_of_int 
                  x_2:int):integer = (pow 
                  2:integer i_3:integer):integer):prop
         ensures ((integer_of_int  x_2:int):integer = (pow 

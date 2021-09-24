@@ -244,12 +244,12 @@ module UnionFind.mli
                  mutable model dom : 'a elem set
                  mutable model rep : 'a elem -> 'a elem
                  mutable model img : 'a elem -> 'a
-                 invariant forall x:'a elem . (mem 
+                 invariant forall x:'a elem. (mem 
                            x:'a elem (dom_1 ):'a elem set):prop -> ((apply 
                            (img_1 ):'a elem -> 'a x:'a elem):'a = (apply 
                            (img_1 ):'a elem -> 'a (apply 
                            (rep_1 ):'a elem -> 'a elem x:'a elem):'a 
-                           elem):'a):propinvariantforall x_1:'a elem . (mem 
+                           elem):'a):propinvariantforall x_1:'a elem. (mem 
                                                   x_1:'a elem
                                                   (dom_1 ):'a elem set):prop -> ((apply 
                                                   (rep_1 ):'a elem -> 'a elem
@@ -259,7 +259,7 @@ module UnionFind.mli
                                                   elem = (apply 
                                                   (rep_1 ):'a elem -> 'a elem
                                                   x_1:'a elem):'a elem):propinvariant
-                           forall x_2:'a elem . (mem 
+                           forall x_2:'a elem. (mem 
                            x_2:'a elem (dom_1 ):'a elem set):prop -> (mem 
                            (apply 
                            (rep_1 ):'a elem -> 'a elem x_2:'a elem):'a 
@@ -332,7 +332,7 @@ module UnionFind.mli
         requires (mem  e_3:'a elem (uf_7:'a uf).dom):prop
         ensures ((uf_7:'a uf).dom = old ((uf_7:'a uf).dom)):prop
                 ensures ((uf_7:'a uf).rep = old ((uf_7:'a uf).rep)):prop
-                ensures forall x_4:'a elem . ((apply 
+                ensures forall x_4:'a elem. ((apply 
                         (uf_7:'a uf).img x_4:'a elem):'a = if (equiv 
                         uf_7:'a uf x_4:'a elem e_3:'a elem):prop then 
                         v_2:'a else old ((apply 
@@ -344,11 +344,11 @@ module UnionFind.mli
         requires (mem  e1_1:'a elem (uf_8:'a uf).dom):prop
                  requires (mem  e2_1:'a elem (uf_8:'a uf).dom):prop
         ensures ((uf_8:'a uf).dom = old ((uf_8:'a uf).dom)):prop
-                ensures exists r_1:'a elem . (r_1:'a elem = old ((apply 
+                ensures exists r_1:'a elem. (r_1:'a elem = old ((apply 
                         (uf_8:'a uf).rep e1_1:'a elem):'a elem)):prop || (
                         r_1:'a elem = old ((apply 
                         (uf_8:'a uf).rep e2_1:'a elem):'a elem)):prop && forall 
-                        x_5:'a elem . (mem 
+                        x_5:'a elem. (mem 
                         x_5:'a elem (uf_8:'a uf).dom):prop -> ((apply 
                         (uf_8:'a uf).rep x_5:'a elem):'a elem = if old ((equiv 
                         uf_8:'a uf x_5:'a elem e1_1:'a elem):prop || (equiv 
@@ -367,12 +367,12 @@ module UnionFind.mli
     (*@  join uf1:'a uf uf2:'a uf
         ensures ((uf1:'a uf).dom = old ((union_1 
                 (uf1:'a uf).dom old ((uf2:'a uf).dom)):'a elem set)):prop
-                ensures forall x_6:'a elem . ((apply 
+                ensures forall x_6:'a elem. ((apply 
                         (uf1:'a uf).rep x_6:'a elem):'a elem = if (mem 
                         x_6:'a elem old ((uf1:'a uf).dom)):prop then old ((apply 
                         (uf1:'a uf).rep x_6:'a elem):'a elem) else old ((apply 
                         (uf2:'a uf).rep x_6:'a elem):'a elem)):prop
-                ensures forall x_7:'a elem . ((apply 
+                ensures forall x_7:'a elem. ((apply 
                         (uf1:'a uf).img x_7:'a elem):'a = if (mem 
                         x_7:'a elem old ((uf1:'a uf).dom)):prop then old ((apply 
                         (uf1:'a uf).img x_7:'a elem):'a) else old ((apply 

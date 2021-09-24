@@ -75,7 +75,7 @@ module logical.mli
     *)
     
     (*@ predicate is_sorted (a:int array) =
-        forall i:integer j:integer . (0:integer <= i:integer):prop /\ (
+        forall i:integer j:integer. (0:integer <= i:integer):prop /\ (
         i:integer <= j:integer):prop /\ (j:integer < (length 
         a:int array):integer):prop -> ((integer_of_int 
         (get  a:int array i:integer):int):integer <= (integer_of_int 

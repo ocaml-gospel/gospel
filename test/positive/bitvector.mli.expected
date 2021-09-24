@@ -106,7 +106,7 @@ module bitvector.mli
                n:int):integer):prop /\ ((integer_of_int 
                n:int):integer <= 63:integer):prop
         ensures ((bv_1:t).size = n:int):prop
-                ensures forall i_1:integer . (0:integer <= i_1:integer):prop /\ (
+                ensures forall i_1:integer. (0:integer <= i_1:integer):prop /\ (
                         i_1:integer < (integer_of_int 
                         n:int):integer):prop -> not (mem 
                         i_1:integer bv_1:t):prop*)
@@ -117,8 +117,7 @@ module bitvector.mli
                i_2:int):integer):prop /\ ((integer_of_int 
                i_2:int):integer < (integer_of_int 
                (bv_2:t).size):integer):prop
-        ensures forall j:integer . (0:integer <= j:integer):prop /\ (
-                j:integer < (integer_of_int 
+        ensures forall j:integer. (0:integer <= j:integer):prop /\ (j:integer < (integer_of_int 
                 (bv_2:t).size):integer):prop -> (mem 
                 j:integer bv_2:t):prop <-> ((integer_of_int 
                 i_2:int):integer = j:integer):prop \/ (mem 

@@ -108,7 +108,7 @@ and dterm_node =
   | DTif    of dterm * dterm * dterm
   | DTlet   of Preid.t * dterm * dterm
   | DTcase  of dterm * (dpattern * dterm) list
-  | DTquant of quant * dbinder list * dterm list list * dterm
+  | DTquant of quant * dbinder list * dterm
   | DTbinop of binop * dterm * dterm
   | DTnot   of dterm
   | DTold   of dterm
@@ -390,15 +390,13 @@ and term_node ?loc env prop dty dterm_node =
      let t = term env prop dt in
      t_attr_set ?loc at t
   | DTold dt -> t_old (term env prop dt)
-  | DTquant (q,bl,dtl,dt) ->
+  | DTquant (q,bl,dt) ->
      let add_var (env,vsl) (pid,dty) =
        let vs = create_vsymbol pid (ty_of_dty dty) in
        Mstr.add pid.pid_str vs env, vs::vsl in
      let env,vsl = List.fold_left add_var (env,[]) bl in
-     (* CHECK not sure if we want prop in triggers *)
-     let tl = List.map (List.map (term env false)) dtl in
      let t = term env prop dt in
-     t_quant q (List.rev vsl) tl t (Option.map ty_of_dty dty)
+     t_quant q (List.rev vsl) t (Option.map ty_of_dty dty)
   | DTcase (dt,ptl) ->
      let t = term env false dt in
      let branch (dp,dt) =
@@ -479,13 +477,12 @@ let rec print_dterm fmt {dt_node; dt_dty; _} =
                           print_dterm t1 print_dterm t2
   | DTbinop (op,t1,t2) -> pp fmt "%a %a %a" print_binop op
                             print_dterm t1 print_dterm t2
-  | DTquant (q,vl,trl,dt) ->
+  | DTquant (q,vl,dt) ->
      let print_quant_v fmt (pid,dty) =
        pp fmt "%a%a" Preid.pp pid print_dty (Some dty) in
-     pp fmt "%a %a %a. %a"
+     pp fmt "%a %a. %a"
        print_quantifier q
        (list ~sep:sp print_quant_v) vl
-       (fun _ _ -> ()) trl
        print_dterm dt
   | DTcase (dt, dptl) ->
      let print_branch fmt (dp,dt) =

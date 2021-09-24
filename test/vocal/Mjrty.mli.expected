@@ -62,12 +62,12 @@ module Mjrty.mli
     *)
     
     (*@ axiom num_base: forall a_1:string seq v_1:string lo_1:integer
-                               hi_1:integer . (hi_1:integer <= lo_1:integer):prop -> ((num 
+                               hi_1:integer. (hi_1:integer <= lo_1:integer):prop -> ((num 
     a_1:string seq v_1:string lo_1:integer hi_1:integer):integer = 0:
     integer):prop *)
     
     (*@ axiom num_ind: forall a_2:string seq v_2:string lo_2:integer
-                              hi_2:integer . (0:integer <= lo_2:integer):prop /\ (
+                              hi_2:integer. (0:integer <= lo_2:integer):prop /\ (
     lo_2:integer < hi_2:integer):prop /\ (hi_2:integer <= (length 
     a_2:string seq):integer):prop -> ((num 
     a_2:string seq v_2:string lo_2:integer hi_2:integer):integer = (if ((mixfix [_] 
@@ -83,7 +83,7 @@ module Mjrty.mli
                 (to_seq  a_3:string array):string seq r:string 0:integer
                 (length_1  a_3:string array):integer):integer):integer > (length_1 
                 a_3:string array):integer):prop
-        raisesNot_found  -> forall c:string . ((2:integer * (num 
+        raisesNot_found  -> forall c:string. ((2:integer * (num 
                             (to_seq  a_3:string array):string seq c:string
                             0:integer (length_1  a_3:string array):integer):
                             integer):integer <= (length_1 

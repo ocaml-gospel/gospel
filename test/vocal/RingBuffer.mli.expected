@@ -212,7 +212,7 @@ module RingBuffer.mli
         ensures ((length  (b_7:'a buffer).sequence):integer = (length 
                 (r_3:'a buffer).sequence):integer):prop
                 ensures ((b_7:'a buffer).capacity = (r_3:'a buffer).capacity):prop
-                ensures forall i_1:integer . (0:integer <= i_1:integer):prop /\ (
+                ensures forall i_1:integer. (0:integer <= i_1:integer):prop /\ (
                         i_1:integer < (length 
                         (r_3:'a buffer).sequence):integer):prop -> ((mixfix [_] 
                         (b_7:'a buffer).sequence i_1:integer):'a = (mixfix [_] 

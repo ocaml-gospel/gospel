@@ -52,7 +52,7 @@ module Lists.mli
     (*@ r:'b list = map f:'a -> 'b l:'a list
         ensures ((length  r:'b list):integer = (length 
                 l:'a list):integer):prop
-                ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                ensures forall i:integer. (0:integer <= i:integer):prop /\ (
                         i:integer < (length 
                         l:'a list):integer):prop -> ((nth 
                         r:'b list i:integer):'b = (apply 
