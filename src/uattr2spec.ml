@@ -10,7 +10,6 @@
 
 open Ppxlib
 open Utils
-open Parsetree
 open Uast
 
 let is_spec attr = attr.attr_name.txt = "gospel"
@@ -120,31 +119,30 @@ let ghost_spec_str attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
   Location.init lb loc.loc_start.pos_fname;
-  try
-    Parser.implementation Lexer.token lb |> function
-    | [ { pstr_desc = Pstr_type (r, [ t ]); _ } ] ->
-        let type_ = type_declaration t in
-        if type_.tspec = None then
-          let tspec =
-            get_inner_spec attr |> fst
-            |> Option.map (parse_gospel Uparser.type_spec)
-            |> Option.map snd
-          in
-          Str_ghost_type (r, [ { type_ with tspec } ])
-        else Str_ghost_type (r, [ type_ ])
-    | [ { pstr_desc = Pstr_primitive vd; _ } ] ->
-        let val_ = val_description vd in
-        if val_.vspec = None then
-          let vspec =
-            get_inner_spec attr |> fst
-            |> Option.map (parse_gospel Uparser.val_spec)
-            |> Option.map snd
-          in
-          Str_ghost_val { val_ with vspec }
-        else Str_ghost_val val_
-    | [ { pstr_desc = Pstr_open od; _ } ] -> Str_ghost_open od
-    | _ -> assert false
-  with Parser.Error -> raise (Syntax_error loc)
+  let impls = try Parse.implementation lb with _ -> raise (Syntax_error loc) in
+  match impls with
+  | [ { pstr_desc = Pstr_type (r, [ t ]); _ } ] ->
+    let type_ = type_declaration t in
+    if type_.tspec = None then
+      let tspec =
+        get_inner_spec attr |> fst
+        |> Option.map (parse_gospel Uparser.type_spec)
+        |> Option.map snd
+      in
+      Str_ghost_type (r, [ { type_ with tspec } ])
+    else Str_ghost_type (r, [ type_ ])
+  | [ { pstr_desc = Pstr_primitive vd; _ } ] ->
+    let val_ = val_description vd in
+    if val_.vspec = None then
+      let vspec =
+        get_inner_spec attr |> fst
+        |> Option.map (parse_gospel Uparser.val_spec)
+        |> Option.map snd
+      in
+      Str_ghost_val { val_ with vspec }
+    else Str_ghost_val val_
+  | [ { pstr_desc = Pstr_open od; _ } ] -> Str_ghost_open od
+  | _ -> assert false
 
 let floating_spec a =
   try
