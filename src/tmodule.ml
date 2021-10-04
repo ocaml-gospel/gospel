@@ -43,7 +43,7 @@ let add ~allow_duplicate ~equal ~loc ns s x =
   else
     match Mstr.find s ns with
     | t when not (equal t x) -> error ~loc (NameClash s)
-    | _ | exception Not_found -> Mstr.add s x ns
+    | _ | (exception Not_found) -> Mstr.add s x ns
 
 let ns_add_ts ~allow_duplicate ns s ts =
   let ns_ts =
@@ -53,7 +53,8 @@ let ns_add_ts ~allow_duplicate ns s ts =
 
 let ns_add_ls ~allow_duplicate:_ ns s ls =
   let ns_ls =
-    add ~allow_duplicate:true ~equal:ls_equal ~loc:ls.ls_name.id_loc ns.ns_ls s ls
+    add ~allow_duplicate:true ~equal:ls_equal ~loc:ls.ls_name.id_loc ns.ns_ls s
+      ls
   in
   { ns with ns_ls }
 
@@ -65,8 +66,11 @@ let ns_add_xs ~allow_duplicate ns s xs =
 
 (* FIXME: Adding multiple modules with the same name to the export should not be
    allowed either. *)
-let ns_add_ns ~allow_duplicate:_ ns s new_ns = { ns with ns_ns = Mstr.add s new_ns ns.ns_ns }
-let ns_add_tns ~allow_duplicate:_ ns s tns = { ns with ns_tns = Mstr.add s tns ns.ns_tns }
+let ns_add_ns ~allow_duplicate:_ ns s new_ns =
+  { ns with ns_ns = Mstr.add s new_ns ns.ns_ns }
+
+let ns_add_tns ~allow_duplicate:_ ns s tns =
+  { ns with ns_tns = Mstr.add s tns ns.ns_tns }
 
 let merge_ns from_ns to_ns =
   let choose_fst _ x _ = Some x in
@@ -173,7 +177,9 @@ let ns_with_primitives =
     ]
   in
   let ns =
-    List.fold_left (fun ns (s, ts) -> ns_add_ts ~allow_duplicate:true ns s ts) empty_ns primitive_tys
+    List.fold_left
+      (fun ns (s, ts) -> ns_add_ts ~allow_duplicate:true ns s ts)
+      empty_ns primitive_tys
   in
   List.fold_left
     (fun ns (s, ls) -> ns_add_ls ~allow_duplicate:true ns s ls)
@@ -206,9 +212,9 @@ type module_uc = {
 let muc_add ?(export = false) add muc s x =
   match (muc.muc_import, muc.muc_export) with
   | i0 :: il, e0 :: el ->
-    let i = add ~allow_duplicate:true i0 s x in
-    let e = if export then add ~allow_duplicate:false e0 s x else e0 in
-    { muc with muc_import = i :: il; muc_export = e :: el }
+      let i = add ~allow_duplicate:true i0 s x in
+      let e = if export then add ~allow_duplicate:false e0 s x else e0 in
+      { muc with muc_import = i :: il; muc_export = e :: el }
   | _ -> assert false
 
 let add_ts ?(export = false) = muc_add ~export ns_add_ts

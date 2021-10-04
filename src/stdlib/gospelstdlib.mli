@@ -208,7 +208,7 @@ module Seq : sig
 
   (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b *)
   (** [fold_right f s acc] is [f s\[1\] (f s\[2\] (... (f s\[n\] acc) ...))]
-     where [n] is the length of [s]. *)
+      where [n] is the length of [s]. *)
 end
 
 (** Lists
@@ -228,7 +228,7 @@ module List : sig
 
   (*@ function tl (l: 'a t) : 'a t *)
   (** When [l] contains one or more elements, [tl l] is the list of the elements
-     of [l], starting at position 2. *)
+      of [l], starting at position 2. *)
 
   (*@ function nth (l: 'a t) (i: integer) : 'a *)
   (** [nth l i] is the [i]th element of [l]. *)
@@ -363,7 +363,6 @@ module Array : sig
 
   (*@ predicate permut (a b: 'a array) *)
   (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
-
 end
 
 (** {1 Bags} *)
@@ -397,26 +396,31 @@ module Bag : sig
   (** [remove x b] is [b] where an occurence of [x] was removed. *)
 
   (*@ function union (b b': 'a t) : 'a t *)
-  (** [union b b'] is a bag where for all element [x], [occurences x b = max
+  (** [union b b'] is a bag where for all element [x],
+      [occurences x b = max
       (occurences x b1) (occurences x b2)]. *)
 
   (*@ function sum (b b': 'a t) : 'a t *)
-  (** [sum b b'] is a bag where for all element [x], [occurences x b =
+  (** [sum b b'] is a bag where for all element [x],
+      [occurences x b =
       (occurences x b1) + (occurences x b2)]. *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
-  (** [inter b b'] is a bag where for all element [x], [occurences x b =
+  (** [inter b b'] is a bag where for all element [x],
+      [occurences x b =
       min (occurences x b1) (occurences x b2)]. *)
 
   (*@ predicate disjoint (b b': 'a t) *)
   (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
 
   (*@ function diff (b b': 'a t) : 'a t *)
-  (** [diff b b'] is a bag where for all element [x], [occurences x b =
+  (** [diff b b'] is a bag where for all element [x],
+      [occurences x b =
       max 0 (occurences x b1 - occurences x b2)]. *)
 
   (*@ predicate subset (b b': 'a t) *)
-  (** [subset b b'] holds iff for all element [x], [occurences x b <= occurences
+  (** [subset b b'] holds iff for all element [x],
+      [occurences x b <= occurences
       x b']. *)
 
   (*@ function choose (b: 'a t) : integer *)
@@ -465,7 +469,6 @@ module Bag : sig
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
 
   (*@ function of_array (a: 'a array) : 'a t *)
-
 end
 
 (** {1 Sets} *)
@@ -567,7 +570,6 @@ module Map : sig
 end
 
 module Order : sig
-
   (*@ predicate is_pre_order (cmp: 'a -> 'a -> int) =
       (forall x. cmp x x = 0) /\
       (forall x y. cmp x y <= 0 <-> cmp y x >= 0) /\
@@ -576,13 +578,11 @@ module Order : sig
          (cmp x y <= 0 -> cmp y z <  0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <= 0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <  0 -> cmp x z <  0)) *)
-
 end
 
 (** Other OCaml built-in stuff *)
 
 exception Not_found
-
 exception Invalid_argument of string
 
 module Sys : sig

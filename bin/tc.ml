@@ -16,7 +16,6 @@ open Parser_frontend
 type config = { verbose : bool; load_path : string list }
 
 let fmt = Format.std_formatter
-
 let pp = Format.fprintf
 
 let path2module p =
