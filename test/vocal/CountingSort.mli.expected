@@ -74,7 +74,7 @@ module CountingSort.mli
     (*@ open Gospelstdlib *)
     
     (*@ predicate k_values (k:int) (a:int array) =
-        forall i:integer . (0:integer <= i:integer):prop /\ (i:integer < (length 
+        forall i:integer. (0:integer <= i:integer):prop /\ (i:integer < (length 
         a:int array):integer):prop -> (0:integer <= (integer_of_int 
         (get  a:int array i:integer):int):integer):prop /\ ((integer_of_int 
         (get  a:int array i:integer):int):integer < (integer_of_int 
@@ -82,7 +82,7 @@ module CountingSort.mli
     *)
     
     (*@ predicate sorted (a_1:int array) =
-        forall i_1:integer j:integer . (0:integer <= i_1:integer):prop /\ (
+        forall i_1:integer j:integer. (0:integer <= i_1:integer):prop /\ (
         i_1:integer <= j:integer):prop /\ (j:integer < (length 
         a_1:int array):integer):prop -> ((integer_of_int 
         (get  a_1:int array i_1:integer):int):integer <= (integer_of_int 

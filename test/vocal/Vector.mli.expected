@@ -392,7 +392,7 @@ module Vector.mli
                  n:int):integer <= (max_array_length ):integer):prop
         ensures ((length  (a_2:'a t).view):integer = (integer_of_int 
                 n:int):integer):prop
-                ensures forall i:integer . (0:integer <= i:integer):prop /\ (
+                ensures forall i:integer. (0:integer <= i:integer):prop /\ (
                         i:integer < (integer_of_int 
                         n:int):integer):prop -> ((mixfix [_] 
                         (a_2:'a t).view i:integer):'a = x:'a):prop*)
@@ -404,7 +404,7 @@ module Vector.mli
                  n_1:int):integer <= (max_array_length ):integer):prop
         ensures ((length  (a_3:'a t).view):integer = (integer_of_int 
                 n_1:int):integer):prop
-                ensures forall i_1:int . (0:integer <= (integer_of_int 
+                ensures forall i_1:int. (0:integer <= (integer_of_int 
                         i_1:int):integer):prop /\ ((integer_of_int 
                         i_1:int):integer < (integer_of_int 
                         n_1:int):integer):prop -> ((mixfix [_] 
@@ -418,7 +418,7 @@ module Vector.mli
                n_2:int):integer <= (max_array_length ):integer):prop
         ensures ((length  (a_4:'a t).view):integer = (integer_of_int 
                 n_2:int):integer):prop
-                ensures forall i_2:integer . (0:integer <= i_2:integer):prop /\ (
+                ensures forall i_2:integer. (0:integer <= i_2:integer):prop /\ (
                         i_2:integer < (min 
                         (length  old ((a_4:'a t).view)):integer
                         (integer_of_int  n_2:int):integer):integer):prop -> ((mixfix [_] 
@@ -461,7 +461,7 @@ module Vector.mli
                 ensures ((mixfix [_] 
                         (a_9:'a t).view (integer_of_int  i_4:int):integer):'a = 
                         x_2:'a):prop
-                ensures forall j:integer . (0:integer <= j:integer):prop /\ (
+                ensures forall j:integer. (0:integer <= j:integer):prop /\ (
                         j:integer < (length 
                         (a_9:'a t).view):integer):prop -> not (j:integer = (integer_of_int 
                         i_4:int):integer):prop -> ((mixfix [_] 
@@ -479,7 +479,7 @@ module Vector.mli
                  (a_10:'a t).view):integer):prop
         ensures ((length  (r_1:'a t).view):integer = (integer_of_int 
                 n_4:int):integer):prop
-                ensures forall i_5:integer . (0:integer <= i_5:integer):prop /\ (
+                ensures forall i_5:integer. (0:integer <= i_5:integer):prop /\ (
                         i_5:integer < (integer_of_int 
                         n_4:int):integer):prop -> ((mixfix [_] 
                         (r_1:'a t).view i_5:integer):'a = (mixfix [_] 
@@ -494,7 +494,7 @@ module Vector.mli
                  ofs_1:int):integer + (integer_of_int 
                  n_5:int):integer):integer <= (length 
                  (a_11:'a t).view):integer):prop
-        ensures forall i_6:integer . (0:integer <= i_6:integer):prop /\ (
+        ensures forall i_6:integer. (0:integer <= i_6:integer):prop /\ (
                 i_6:integer < (integer_of_int 
                 ofs_1:int):integer):prop \/ (((integer_of_int 
                 ofs_1:int):integer + (integer_of_int 
@@ -503,7 +503,7 @@ module Vector.mli
                 (a_11:'a t).view):integer):prop -> ((mixfix [_] 
                 (a_11:'a t).view i_6:integer):'a = (mixfix [_] 
                 (old (a_11:'a t)).view i_6:integer):'a):prop
-                ensures forall i_7:integer . ((integer_of_int 
+                ensures forall i_7:integer. ((integer_of_int 
                         ofs_1:int):integer <= i_7:integer):prop /\ (i_7:
                                                                     integer < ((integer_of_int 
                         ofs_1:int):integer + (integer_of_int 
@@ -524,7 +524,7 @@ module Vector.mli
                           ofs2:int):integer + (integer_of_int 
                           n_6:int):integer):integer <= (length 
                           (a2:'a t).view):integer):prop
-        ensures forall i_8:integer . (0:integer <= i_8:integer):prop /\ (
+        ensures forall i_8:integer. (0:integer <= i_8:integer):prop /\ (
                 i_8:integer < (integer_of_int 
                 ofs2:int):integer):prop \/ (((integer_of_int 
                 ofs2:int):integer + (integer_of_int 
@@ -533,7 +533,7 @@ module Vector.mli
                 (a2:'a t).view):integer):prop -> ((mixfix [_] 
                 (a2:'a t).view i_8:integer):'a = (mixfix [_] 
                 (old (a2:'a t)).view i_8:integer):'a):prop
-                ensures forall i_9:integer . ((integer_of_int 
+                ensures forall i_9:integer. ((integer_of_int 
                         ofs2:int):integer <= i_9:integer):prop /\ (i_9:
                                                                    integer < ((integer_of_int 
                         ofs2:int):integer + (integer_of_int 
@@ -552,12 +552,12 @@ module Vector.mli
         ensures ((length  (a3:'a t).view):integer = ((length 
                 (a1_1:'a t).view):integer + (length 
                 (a2_1:'a t).view):integer):integer):prop
-                ensures forall i_10:integer . (0:integer <= i_10:integer):prop /\ (
+                ensures forall i_10:integer. (0:integer <= i_10:integer):prop /\ (
                         i_10:integer < (length 
                         (a1_1:'a t).view):integer):prop -> ((mixfix [_] 
                         (a3:'a t).view i_10:integer):'a = (mixfix [_] 
                         (a1_1:'a t).view i_10:integer):'a):prop
-                ensures forall i_11:integer . (0:integer <= i_11:integer):prop /\ (
+                ensures forall i_11:integer. (0:integer <= i_11:integer):prop /\ (
                         i_11:integer < (length 
                         (a2_1:'a t).view):integer):prop -> ((mixfix [_] 
                         (a3:'a t).view ((length 
@@ -573,12 +573,12 @@ module Vector.mli
                 ensures ((length  (a1_2:'a t).view):integer = ((length 
                         (old (a1_2:'a t)).view):integer + (length 
                         (old (a2_2:'a t)).view):integer):integer):prop
-                ensures forall i_12:integer . (0:integer <= i_12:integer):prop /\ (
+                ensures forall i_12:integer. (0:integer <= i_12:integer):prop /\ (
                         i_12:integer < (length 
                         (old (a1_2:'a t)).view):integer):prop -> ((mixfix [_] 
                         (a1_2:'a t).view i_12:integer):'a = (mixfix [_] 
                         (old (a1_2:'a t)).view i_12:integer):'a):prop
-                ensures forall i_13:integer . (0:integer <= i_13:integer):prop /\ (
+                ensures forall i_13:integer. (0:integer <= i_13:integer):prop /\ (
                         i_13:integer < (length 
                         (old (a2_2:'a t)).view):integer):prop -> ((mixfix [_] 
                         (a1_2:'a t).view ((length 
@@ -592,7 +592,7 @@ module Vector.mli
     (*@ a2_3:'b t = map ~dummy_3:'b a1_3:'a t f_1:'a -> 'b
         ensures ((length  (a2_3:'b t).view):integer = (length 
                 (a1_3:'a t).view):integer):prop
-                ensures forall i_14:integer . (0:integer <= i_14:integer):prop /\ (
+                ensures forall i_14:integer. (0:integer <= i_14:integer):prop /\ (
                         i_14:integer < (length 
                         (a1_3:'a t).view):integer):prop -> ((mixfix [_] 
                         (a2_3:'b t).view i_14:integer):'b = (apply 
@@ -603,7 +603,7 @@ module Vector.mli
     (*@ a2_4:'b t = mapi ~dummy_4:'b a1_4:'a t f_2:int -> 'a -> 'b
         ensures ((length  (a2_4:'b t).view):integer = (length 
                 (a1_4:'a t).view):integer):prop
-                ensures forall i_15:int . (0:integer <= (integer_of_int 
+                ensures forall i_15:int. (0:integer <= (integer_of_int 
                         i_15:int):integer):prop /\ ((integer_of_int 
                         i_15:int):integer < (length 
                         (a1_4:'a t).view):integer):prop -> ((mixfix [_] 
@@ -616,7 +616,7 @@ module Vector.mli
     (*@ a2_5:'a t = copy a1_5:'a t
         ensures ((length  (a2_5:'a t).view):integer = (length 
                 (a1_5:'a t).view):integer):prop
-                ensures forall i_16:integer . (0:integer <= i_16:integer):prop /\ (
+                ensures forall i_16:integer. (0:integer <= i_16:integer):prop /\ (
                         i_16:integer < (length 
                         (a1_5:'a t).view):integer):prop -> ((mixfix [_] 
                         (a2_5:'a t).view i_16:integer):'a = (mixfix [_] 
@@ -645,7 +645,7 @@ module Vector.mli
                         (a_14:'a t).view ((length 
                         (a_14:'a t).view):integer - 1:integer):integer):'a = 
                         x_4:'a):prop
-                ensures forall i_17:integer . (0:integer <= i_17:integer):prop /\ (
+                ensures forall i_17:integer. (0:integer <= i_17:integer):prop /\ (
                         i_17:integer < (length 
                         old ((a_14:'a t).view)):integer):prop -> ((mixfix [_] 
                         (a_14:'a t).view i_17:integer):'a = (mixfix [_] 
@@ -661,7 +661,7 @@ module Vector.mli
                 ensures (x_5:'a = (mixfix [_] 
                         (old (a_15:'a t)).view (length 
                         (a_15:'a t).view):integer):'a):prop
-                ensures forall i_18:integer . (0:integer <= i_18:integer):prop /\ (
+                ensures forall i_18:integer. (0:integer <= i_18:integer):prop /\ (
                         i_18:integer < (length 
                         (a_15:'a t).view):integer):prop -> ((mixfix [_] 
                         (a_15:'a t).view i_18:integer):'a = (mixfix [_] 
@@ -684,7 +684,7 @@ module Vector.mli
                                  integer):integer):prop /\ (x_6:'a = (mixfix [_] 
                                  (old (a_16:'a t)).view (length 
                                  (a_16:'a t).view):integer):'a):prop /\ forall 
-                                 i_19:integer . (0:integer <= i_19:integer):prop /\ (
+                                 i_19:integer. (0:integer <= i_19:integer):prop /\ (
                                  i_19:integer < (length 
                                  (a_16:'a t).view):integer):prop -> ((mixfix [_] 
                                  (a_16:'a t).view i_19:integer):'a = (mixfix [_] 

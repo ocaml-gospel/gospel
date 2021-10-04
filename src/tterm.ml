@@ -150,14 +150,12 @@ and term_node =
   | Tif    of term * term * term
   | Tlet   of vsymbol * term * term
   | Tcase  of term * (pattern * term) list
-  | Tquant of quant * vsymbol list * trigger * term
+  | Tquant of quant * vsymbol list * term
   | Tbinop of binop * term * term
   | Tnot   of term
   | Told   of term
   | Ttrue
   | Tfalse
-
-and trigger = term list list
 
 let rec p_vars p = match p.p_node with
   | Pwild -> Svs.empty
@@ -183,11 +181,7 @@ let rec t_free_vars t = match t.t_node with
      let pl_fvs = List.fold_left (fun _ (p,t) ->
        Svs.diff (t_free_vars t) (p_vars p)) Svs.empty pl in
      Svs.union t_fvs pl_fvs
-  | Tquant (_,vl,tr,t) ->
-     let vars acc t = Svs.union (t_free_vars t) acc in
-     let vars = List.fold_left (fun acc tl ->
-       List.fold_left vars acc tl) (t_free_vars t) tr in
-     Svs.diff vars (Svs.of_list vl)
+  | Tquant (_,vl,t) -> Svs.diff (t_free_vars t) (Svs.of_list vl)
   | Tbinop (_,t1,t2) -> Svs.union (t_free_vars t1) (t_free_vars t2)
   | Tnot t -> t_free_vars t
   | Told t -> t_free_vars t
@@ -283,7 +277,7 @@ let t_let vs t1 t2     = mk_term (Tlet (vs,t1,t2)) t2.t_ty
 let t_case t1 ptl      = match ptl with
   | [] -> error ?loc:t1.t_loc EmptyCase
   | (_,t) :: _ -> mk_term (Tcase (t1,ptl)) t.t_ty
-let t_quant q vsl tr t ty = mk_term (Tquant (q,vsl,tr,t)) ty
+let t_quant q vsl t ty = mk_term (Tquant (q,vsl,t)) ty
 let t_binop b t1 t2    = mk_term (Tbinop (b,t1,t2)) None
 let t_not t            = mk_term (Tnot t) None
 let t_old t            = mk_term (Told t) t.t_ty
@@ -305,13 +299,13 @@ let t_neq t1 t2 = t_not (t_equ t1 t2)
 let f_binop op f1 f2  = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)
 
-let t_quant q vsl tr t ty = match q,vsl with
+let t_quant q vsl t ty = match q,vsl with
   | Tlambda, [] -> t
   | _, []       -> t_prop t
-  | Tlambda, _  -> t_quant q vsl tr t ty
+  | Tlambda, _  -> t_quant q vsl t ty
   | _, _        ->
      check_report (ty = None) "Quantifiers terms must be of type prop.";
-     t_quant q vsl tr (t_prop t) None
+     t_quant q vsl (t_prop t) None
 
 let f_forall = t_quant Tforall
 let f_exists = t_quant Texists
@@ -422,11 +416,10 @@ let rec print_term fmt {t_node; t_ty; t_attrs; _ } =
     | Tbinop (op,t1,t2) ->
        pp fmt "%a %a %a" print_term t1
          print_binop op print_term t2
-    | Tquant (q,vsl,trl,t) ->
-       pp fmt "%a %a %a. %a"
+    | Tquant (q,vsl,t) ->
+       pp fmt "%a %a. %a"
          print_quantifier q
          (list ~sep:sp print_vs) vsl
-         (fun _ _ -> ()) trl
          print_term t
     | Tcase (t, ptl) ->
        let print_branch fmt (p,t) =

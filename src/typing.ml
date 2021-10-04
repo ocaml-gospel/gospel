@@ -318,13 +318,12 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
      let dt2 = dterm kid crcm ns denv t2 in
      dfmla_unify dt1; dfmla_unify dt2;
      mk_dterm (DTbinop (binop op,dt1,dt2)) None
-  | Uast.Tquant (q,vl,trl,t) ->
+  | Uast.Tquant (q,vl,t) ->
      let get_dty pty = match pty with
        | None -> dty_fresh ()
        | Some pty -> dty_of_pty ns pty in
      let vl = List.map (fun (pid,pty) -> pid,get_dty pty) vl in
      let denv = denv_add_var_quant denv vl in
-     let dtrl = List.map (List.map (dterm kid crcm ns denv)) trl in
      let dt = dterm kid crcm ns denv t in
      let dty, q = match q with
      | Uast.Tforall -> dfmla_unify dt; None, Tforall
@@ -333,7 +332,7 @@ let rec dterm kid crcm ns denv {term_desc;term_loc=loc}: dterm =
         let dty = Option.value dt.dt_dty ~default:dty_bool in
         let apply (_,dty1) dty2 = Dterm.Tapp (ts_arrow,[dty1;dty2]) in
         Some (List.fold_right apply vl dty), Tlambda in
-     mk_dterm (DTquant (q,vl,dtrl,dt)) dty
+     mk_dterm (DTquant (q,vl,dt)) dty
   | Uast.Tcase (t,ptl) ->
      let dt = dterm kid crcm ns denv t in
      let dt_dty = dty_of_dterm dt in

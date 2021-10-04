@@ -143,7 +143,7 @@ module Arrays.mli
                           toi:int):integer):prop /\ ((integer_of_int 
                           toi:int):integer <= (length 
                           a_1:'a array):integer):prop
-                 requires forall i:integer j:integer . ((integer_of_int 
+                 requires forall i:integer j:integer. ((integer_of_int 
                           fromi:int):integer <= i:integer):prop /\ (i:integer <= 
                           j:integer):prop /\ (j:integer < (integer_of_int 
                           toi:int):integer):prop -> ((integer_of_int 
@@ -162,7 +162,7 @@ module Arrays.mli
                 cmp:'a -> 'a -> int (get 
                 a_1:'a array (integer_of_int  r:int):integer):'a):'a -> int
                 v:'a):int):integer = 0:integer):prop
-        raisesNot_found  -> forall i_1:integer . ((integer_of_int 
+        raisesNot_found  -> forall i_1:integer. ((integer_of_int 
                             fromi:int):integer <= i_1:integer):prop /\ (
                             i_1:integer < (integer_of_int 
                             toi:int):integer):prop -> not ((integer_of_int 
@@ -183,7 +183,7 @@ module Arrays.mli
                           toi_1:int):integer):prop /\ ((integer_of_int 
                           toi_1:int):integer <= (length 
                           a_2:'a array):integer):prop
-                 requires forall i_2:integer j_1:integer . ((integer_of_int 
+                 requires forall i_2:integer j_1:integer. ((integer_of_int 
                           fromi_1:int):integer <= i_2:integer):prop /\ (
                           i_2:integer <= j_1:integer):prop /\ (j_1:integer < (integer_of_int 
                           toi_1:int):integer):prop -> ((integer_of_int 
@@ -196,7 +196,7 @@ module Arrays.mli
         ensures ((integer_of_int  fromi_1:int):integer <= (integer_of_int 
                 r_1:int):integer):prop /\ ((integer_of_int 
                 r_1:int):integer <= (integer_of_int  toi_1:int):integer):prop
-                ensures forall i_3:integer . ((integer_of_int 
+                ensures forall i_3:integer. ((integer_of_int 
                         fromi_1:int):integer <= i_3:integer):prop /\ (
                         i_3:integer < (integer_of_int 
                         r_1:int):integer):prop -> ((integer_of_int 
@@ -205,7 +205,7 @@ module Arrays.mli
                         cmp_1:'a -> 'a -> int (get 
                         a_2:'a array i_3:integer):'a):'a -> int v_1:'a):
                         int):integer < 0:integer):prop
-                ensures forall i_4:integer . ((integer_of_int 
+                ensures forall i_4:integer. ((integer_of_int 
                         r_1:int):integer <= i_4:integer):prop /\ (i_4:integer < (integer_of_int 
                         toi_1:int):integer):prop -> ((integer_of_int 
                         (apply 
@@ -219,7 +219,7 @@ module Arrays.mli
     (*@ r_2:int = binary_search_right
         cmp_2:'a -> 'a -> int a_3:'a array fromi_2:int toi_2:int v_2:'a
         requires (is_pre_order  cmp_2:'a -> 'a -> int):prop
-                 requires forall i_5:integer j_2:integer . ((integer_of_int 
+                 requires forall i_5:integer j_2:integer. ((integer_of_int 
                           fromi_2:int):integer <= i_5:integer):prop /\ (
                           i_5:integer <= j_2:integer):prop /\ (j_2:integer < (integer_of_int 
                           toi_2:int):integer):prop -> ((integer_of_int 
@@ -234,7 +234,7 @@ module Arrays.mli
                fromi_2:int):integer <= (integer_of_int 
                toi_2:int):integer):prop /\ ((integer_of_int 
                toi_2:int):integer <= (length  a_3:'a array):integer):prop
-               checks forall i_6:integer j_3:integer . ((integer_of_int 
+               checks forall i_6:integer j_3:integer. ((integer_of_int 
                       fromi_2:int):integer <= i_6:integer):prop /\ (i_6:
                                                                     integer <= 
                       j_3:integer):prop /\ (j_3:integer < (integer_of_int 
@@ -248,7 +248,7 @@ module Arrays.mli
         ensures ((integer_of_int  fromi_2:int):integer <= (integer_of_int 
                 r_2:int):integer):prop /\ ((integer_of_int 
                 r_2:int):integer <= (integer_of_int  toi_2:int):integer):prop
-                ensures forall i_7:integer . ((integer_of_int 
+                ensures forall i_7:integer. ((integer_of_int 
                         fromi_2:int):integer <= i_7:integer):prop /\ (
                         i_7:integer < (integer_of_int 
                         r_2:int):integer):prop -> ((integer_of_int 
@@ -257,7 +257,7 @@ module Arrays.mli
                         cmp_2:'a -> 'a -> int (get 
                         a_3:'a array i_7:integer):'a):'a -> int v_2:'a):
                         int):integer <= 0:integer):prop
-                ensures forall i_8:integer . ((integer_of_int 
+                ensures forall i_8:integer. ((integer_of_int 
                         r_2:int):integer <= i_8:integer):prop /\ (i_8:integer < (integer_of_int 
                         toi_2:int):integer):prop -> ((integer_of_int 
                         (apply 
@@ -275,7 +275,7 @@ module Arrays.mli
                           toi_3:int):integer):prop /\ ((integer_of_int 
                           toi_3:int):integer <= (length 
                           a_4:'a array):integer):prop
-        ensures forall i_9:integer j_4:integer . ((integer_of_int 
+        ensures forall i_9:integer j_4:integer. ((integer_of_int 
                 fromi_3:int):integer <= i_9:integer):prop /\ (i_9:integer <= 
                 j_4:integer):prop /\ (j_4:integer < (integer_of_int 
                 toi_3:int):integer):prop -> ((integer_of_int 
@@ -304,7 +304,7 @@ module Arrays.mli
                 ensures ((get 
                         a_5:'a array (integer_of_int  j_5:int):integer):'a = old ((get 
                         a_5:'a array (integer_of_int  i_10:int):integer):'a)):prop
-                ensures forall k:integer . (0:integer <= k:integer):prop /\ (
+                ensures forall k:integer. (0:integer <= k:integer):prop /\ (
                         k:integer < (length 
                         a_5:'a array):integer):prop -> not (k:integer = (integer_of_int 
                         i_10:int):integer):prop -> not (k:integer = (integer_of_int 

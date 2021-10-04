@@ -76,7 +76,7 @@ and term_desc =
   | Tbinop  of term * binop * term
   | Tnot    of term
   | Tif     of term  * term * term
-  | Tquant  of quant * binder list * term list list * term
+  | Tquant  of quant * binder list * term
   | Tattr   of string * term
   | Tlet    of Preid.t * term * term
   | Tcase   of term  * (pattern * term) list

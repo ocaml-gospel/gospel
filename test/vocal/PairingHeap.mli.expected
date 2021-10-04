@@ -165,7 +165,7 @@ module PairingHeap.mli
         (*@ h:t_1 = empty ()
             ensures ((integer_of_int 
                     (cardinal  (h:t_1).bag):int):integer = 0:integer):prop
-                    ensures forall x_1:t . ((occurrences 
+                    ensures forall x_1:t. ((occurrences 
                             x_1:t (h:t_1).bag):integer = 0:integer):prop*)
         val is_empty : t -> bool
         (*@ b:bool = is_empty h_1:t_1
@@ -177,7 +177,7 @@ module PairingHeap.mli
                     (cardinal  (h_2:t_1).bag):int):integer = ((integer_of_int 
                     (cardinal  (h1:t_1).bag):int):integer + (integer_of_int 
                     (cardinal  (h2:t_1).bag):int):integer):integer):prop
-                    ensures forall x_2:t . ((occurrences 
+                    ensures forall x_2:t. ((occurrences 
                             x_2:t (h_2:t_1).bag):integer = ((occurrences 
                             x_2:t (h1:t_1).bag):integer + (occurrences 
                             x_2:t (h2:t_1).bag):integer):integer):prop*)
@@ -186,7 +186,7 @@ module PairingHeap.mli
             ensures ((occurrences 
                     x_3:t (h':t_1).bag):integer = ((occurrences 
                     x_3:t (h_3:t_1).bag):integer + 1:integer):integer):prop
-                    ensures forall y_1:t . not (y_1:t = x_3:t):prop -> ((occurrences 
+                    ensures forall y_1:t. not (y_1:t = x_3:t):prop -> ((occurrences 
                             y_1:t (h':t_1).bag):integer = (occurrences 
                             y_1:t (h_3:t_1).bag):integer):prop
                     ensures ((integer_of_int 
@@ -197,13 +197,13 @@ module PairingHeap.mli
             ((occurrences  x_4:t (h_4:t_1).bag):integer > 0:integer):prop
         *)
         (*@ predicate is_minimum (x_5:t) (h_5:t_1) =
-            (mem  x_5:t h_5:t_1):prop /\ forall e:t . (mem 
+            (mem  x_5:t h_5:t_1):prop /\ forall e:t. (mem 
             e:t h_5:t_1):prop -> ((integer_of_int 
             (apply  (apply  (cmp ):t -> t -> int x_5:t):t -> int e:t):int):
             integer <= 0:integer):prop
         *)
         (*@ function minimum (h_6:t_1): t *)
-        (*@ axiom min_def: forall h_7:t_1 . (0:integer < (integer_of_int 
+        (*@ axiom min_def: forall h_7:t_1. (0:integer < (integer_of_int 
         (cardinal  (h_7:t_1).bag):int):integer):prop -> (is_minimum 
         (minimum  h_7:t_1):t h_7:t_1):prop *)
         val find_min : t -> elt
@@ -218,7 +218,7 @@ module PairingHeap.mli
             ensures let x_7:t = (minimum  h_9:t_1):t in ((occurrences 
                     x_7:t (h'_1:t_1).bag):integer = ((occurrences 
                     x_7:t (h_9:t_1).bag):integer - 1:integer):integer):prop
-                    ensures forall y_2:t . not (y_2:t = (minimum 
+                    ensures forall y_2:t. not (y_2:t = (minimum 
                             h_9:t_1):t):prop -> ((occurrences 
                             y_2:t (h'_1:t_1).bag):integer = (occurrences 
                             y_2:t (h_9:t_1).bag):integer):prop
