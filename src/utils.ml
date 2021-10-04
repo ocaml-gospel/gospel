@@ -11,82 +11,64 @@
 open Ppxlib
 
 let rec split_at_f f = function
-  | [] -> [], []
+  | [] -> ([], [])
   | x :: xs when f x ->
-    let xs', ys' = split_at_f f xs in
-    x::xs', ys'
-  | l -> [], l
+      let xs', ys' = split_at_f f xs in
+      (x :: xs', ys')
+  | l -> ([], l)
 
 let rec split_at_i i = function
-  | [] -> [], []
-  | l when i <= 0 -> [], l
+  | [] -> ([], [])
+  | l when i <= 0 -> ([], l)
   | x :: xs ->
-    let xs', ys' = split_at_i (pred i) xs in
-    x::xs', ys'
+      let xs', ys' = split_at_i (pred i) xs in
+      (x :: xs', ys')
 
 module Fmt = struct
   include Fmt
 
-  let list ?(first=nop) ?(last=nop) ?sep pp_v =
-    fun ppf l ->
-      if List.length l = 0 then ()
-      else pf ppf "%a@[%a@]%a" first () (list ?sep pp_v) l last ()
+  let list ?(first = nop) ?(last = nop) ?sep pp_v ppf l =
+    if List.length l = 0 then ()
+    else pf ppf "%a@[%a@]%a" first () (list ?sep pp_v) l last ()
 
   let pp = pf
-
   let full ppf _ = pf ppf ".@ "
-
   let arrow ppf _ = pf ppf " ->@ "
-
   let star ppf _ = pf ppf " *@ "
-
   let newline ppf _ = pf ppf "@\n"
-
   let lparens ppf _ = pf ppf "@[<1>("
-
   let rparens ppf _ = pf ppf ")@]"
-
   let lbracket ppf _ = pf ppf "@[<1>["
-
   let rbracket ppf _ = pf ppf "]@]"
-
   let lbrace ppf _ = pf ppf "@[<1>{"
-
   let rbrace ppf _ = pf ppf "}@]"
 end
 
-module Sstr = Set.Make(String)
+module Sstr = Set.Make (String)
 
 exception TypeCheckingError of string
 exception NotSupported of string
 exception Located of Location.t * exn
 
-let error ?loc e = match loc with
-  | None -> raise e
-  | Some loc -> raise (Located (loc,e))
+let error ?loc e =
+  match loc with None -> raise e | Some loc -> raise (Located (loc, e))
 
-let check ?loc c exn =
-  if not c then error ?loc exn
-
-let error_report ?loc s =
-  error ?loc (TypeCheckingError s)
-
-let check_report ?loc c s =
-  check ?loc c (TypeCheckingError s)
-
-let not_supported ?loc s =
-  error ?loc (NotSupported s)
+let check ?loc c exn = if not c then error ?loc exn
+let error_report ?loc s = error ?loc (TypeCheckingError s)
+let check_report ?loc c s = check ?loc c (TypeCheckingError s)
+let not_supported ?loc s = error ?loc (NotSupported s)
 
 let () =
   let open Location.Error in
   register_error_of_exn (function
-      | Located (loc, exn) ->
-        of_exn exn
-        |> Option.map (fun t -> Location.Error.update_loc t loc)
-      | TypeCheckingError s ->
-        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+    | Located (loc, exn) ->
+        of_exn exn |> Option.map (fun t -> Location.Error.update_loc t loc)
+    | TypeCheckingError s ->
+        Fmt.kstr
+          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "Type checking error: %s" s
-      | NotSupported s ->
-        Fmt.kstr (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+    | NotSupported s ->
+        Fmt.kstr
+          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "Not supported: %s" s
-      | _ -> None)
+    | _ -> None)

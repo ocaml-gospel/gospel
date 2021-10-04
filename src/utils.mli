@@ -10,7 +10,9 @@ val split_at_i : int -> 'a list -> 'a list * 'a list
     first i elements. The order of the elements is not changed. *)
 
 module Fmt : sig
-  include module type of struct include Fmt end
+  include module type of struct
+    include Fmt
+  end
 
   val list : ?first:unit t -> ?last:unit t -> ?sep:unit t -> 'a t -> 'a list t
 
@@ -53,9 +55,7 @@ module Fmt : sig
 end
 
 exception TypeCheckingError of string
-
 exception NotSupported of string
-
 exception Located of Location.t * exn
 
 val error : ?loc:Location.t -> exn -> 'a
@@ -76,5 +76,5 @@ val not_supported : ?loc:Location.t -> string -> 'a
 (** [not_supported ?loc s] raises [NotSupported s], wrapped in [Located(loc, e)]
     if [loc] is provided. *)
 
-(** String sets. *)
 module Sstr : Set.S with type elt = string
+(** String sets. *)

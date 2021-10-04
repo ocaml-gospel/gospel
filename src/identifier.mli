@@ -66,27 +66,17 @@ end
 (** Hard-coded identifiers *)
 
 val eq : Ident.t
-
 val neq : Ident.t
-
 val none : Ident.t
-
 val some : Ident.t
-
 val nil : Ident.t
-
 val cons : Ident.t
 
 (* Utils *)
 
 val prefix : string -> string
-
 val infix : string -> string
-
 val mixfix : string -> string
-
 val is_prefix : string -> bool
-
 val is_infix : string -> bool
-
 val is_mixfix : string -> bool
