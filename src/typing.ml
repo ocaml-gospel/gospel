@@ -14,6 +14,7 @@ open Identifier
 open Uast
 open Ttypes
 open Tmodule
+open Tast_helper
 
 (** Utils *)
 
