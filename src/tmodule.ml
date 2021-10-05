@@ -14,6 +14,7 @@ open Identifier
 open Ttypes
 open Tterm
 open Tast
+open Tast_helper
 
 (** Namespace *)
 
@@ -447,6 +448,7 @@ let wrap_up_muc muc =
 (** Pretty printing *)
 
 open Utils.Fmt
+open Tast_printer
 
 let rec tree_ns f fmt ns =
   Mstr.iter
