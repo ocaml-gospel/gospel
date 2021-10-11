@@ -5,24 +5,24 @@
 type 'a t[@@gospel {| mutable model view: 'a seq |}]
 val create : unit -> 'a t[@@gospel
                            {| q = create ()
-      ensures q.view == Seq.empty |}]
+      ensures q.view = Seq.empty |}]
 val push : 'a -> 'a t -> unit[@@gospel
                                {| push x q
       modifies q
-      ensures  q.view == Seq.snoc (old q.view) x |}]
+      ensures  q.view = Seq.snoc (old q.view) x |}]
 val pop : 'a t -> 'a[@@gospel
                       {| r = pop q
       requires q.view <> Seq.empty
       modifies q
-      ensures  old q.view == Seq.cons r q.view |}]
+      ensures  old q.view = Seq.cons r q.view |}]
 val is_empty : 'a t -> bool[@@gospel
                              {| b = is_empty q
       ensures b <-> q.view = Seq.empty |}]
 val transfer : 'a t -> 'a t -> unit[@@gospel
                                      {| transfer q1 q2
       modifies q1.view, q2.view
-      ensures  q1.view == Seq.empty
-      ensures  q2.view == old q2.view ++ old q1.view |}]
+      ensures  q1.view = Seq.empty
+      ensures  q2.view = old q2.view ++ old q1.view |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -92,18 +92,18 @@ module Queue.mli
     
     val create : unit -> 'a t
     (*@ q:'a t = create ()
-        ensures ((q:'a t).view == (empty ):'a seq):prop*)
+        ensures ((q:'a t).view = (empty ):'a seq):prop*)
     
     val push : 'a -> 'a t -> unit
     (*@  push x:'a q_1:'a t
-        ensures ((q_1:'a t).view == (snoc 
+        ensures ((q_1:'a t).view = (snoc 
                 old ((q_1:'a t).view) x:'a):'a seq):prop
         writes q_1:'a t*)
     
     val pop : 'a t -> 'a
     (*@ r:'a = pop q_2:'a t
         requires not ((q_2:'a t).view = (empty ):'a seq):prop
-        ensures (old ((q_2:'a t).view) == (cons 
+        ensures (old ((q_2:'a t).view) = (cons 
                 r:'a (q_2:'a t).view):'a seq):prop
         writes q_2:'a t*)
     
@@ -114,8 +114,8 @@ module Queue.mli
     
     val transfer : 'a t -> 'a t -> unit
     (*@  transfer q1:'a t q2:'a t
-        ensures ((q1:'a t).view == (empty ):'a seq):prop
-                ensures ((q2:'a t).view == old (((q2:'a t).view ++ old ((
+        ensures ((q1:'a t).view = (empty ):'a seq):prop
+                ensures ((q2:'a t).view = old (((q2:'a t).view ++ old ((
                         q1:'a t).view)):'a seq)):prop
         writes (q1:'a t).view
                writes (q2:'a t).view*)
