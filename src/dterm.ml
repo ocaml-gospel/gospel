@@ -101,11 +101,7 @@ and dpattern_node =
 
 type dbinder = Preid.t * dty
 
-type dterm = {
-  dt_node : dterm_node;
-  dt_dty : dty option;
-  dt_loc : Location.t option;
-}
+type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 
 and dterm_node =
   | DTattr of dterm * string list
@@ -189,15 +185,15 @@ let dty_unify ?loc dty1 dty2 =
 
 let dterm_unify dt dty =
   match dt.dt_dty with
-  | Some dt_dty -> dty_unify ?loc:dt.dt_loc dt_dty dty
+  | Some dt_dty -> dty_unify ~loc:dt.dt_loc dt_dty dty
   | None -> (
-      try unify dty_bool dty with Exit -> error ?loc:dt.dt_loc TermExpected)
+      try unify dty_bool dty with Exit -> error ~loc:dt.dt_loc TermExpected)
 
 let dfmla_unify dt =
   match dt.dt_dty with
   | None -> ()
   | Some dt_dty -> (
-      try unify dt_dty dty_bool with Exit -> error ?loc:dt.dt_loc FmlaExpected)
+      try unify dt_dty dty_bool with Exit -> error ~loc:dt.dt_loc FmlaExpected)
 
 let unify dt dty =
   match dty with None -> dfmla_unify dt | Some dt_dty -> dterm_unify dt dt_dty
@@ -337,16 +333,17 @@ let pattern dp =
   (p, !vars)
 
 let rec term env prop dt =
-  let t = term_node ?loc:dt.dt_loc env prop dt.dt_dty dt.dt_node in
+  let loc = dt.dt_loc in
+  let t = term_node env prop dt.dt_dty dt.dt_node dt.dt_loc in
   match t.t_ty with
   | Some _ when prop -> (
-      try t_equ t t_bool_true
+      try t_equ t (t_bool_true loc) loc
       with TypeMismatch (ty1, ty2) ->
-        error ?loc:dt.dt_loc (BadType (dty_of_ty ty1, dty_of_ty ty2)))
-  | None when not prop -> t_if t t_bool_true t_bool_false
+        error ~loc:dt.dt_loc (BadType (dty_of_ty ty1, dty_of_ty ty2)))
+  | None when not prop -> t_if t (t_bool_true loc) (t_bool_false loc) loc
   | _ -> t
 
-and term_node ?loc env prop dty dterm_node =
+and term_node env prop dty dterm_node =
   match dterm_node with
   | DTvar pid ->
       let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in
@@ -383,7 +380,7 @@ and term_node ?loc env prop dty dterm_node =
   | DTfalse -> if prop then t_false else t_bool_false
   | DTattr (dt, at) ->
       let t = term env prop dt in
-      t_attr_set ?loc at t
+      fun (_ : Location.t) -> t_attr_set at t
   | DTold dt -> t_old (term env prop dt)
   | DTquant (q, bl, dt) ->
       let add_var (env, vsl) (pid, dty) =

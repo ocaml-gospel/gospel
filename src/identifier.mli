@@ -10,8 +10,10 @@
 
 open Ppxlib
 
-(** Pre-identifiers: these are not unique identifier; they come out of the
-    parser and are used in the untyped AST. *)
+(** {1 Pre-identifiers}
+
+    These are not unique identifier; they come out of the parser and are used in
+    the untyped AST. *)
 module Preid : sig
   type t = private {
     pid_str : string;  (** The identifier name. *)
@@ -32,7 +34,9 @@ module Preid : sig
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
 end
 
-(** Identifiers: uniquely tagged identifiers produced by the typing. *)
+(** {1 Identifiers}
+
+    These are uniquely tagged identifiers produced by the typing. *)
 module Ident : sig
   type t = private {
     id_str : string;  (** The identifier name. *)
@@ -63,7 +67,7 @@ module Ident : sig
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
 end
 
-(** Hard-coded identifiers *)
+(** {2 Hard-coded identifiers} *)
 
 val eq : Ident.t
 val neq : Ident.t
