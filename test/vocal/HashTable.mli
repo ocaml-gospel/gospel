@@ -40,24 +40,24 @@ module Make (K : HashedType) : sig
   val create: int -> 'a t
   (*@ h = create n
     requires n >= 0
-    ensures  forall k: key. view h k = [] *)
+    ensures  forall k: key. h.view k = [] *)
 
   val clear: 'a t -> unit
   (*@ clear h
     modifies h
-    ensures  forall k: key. view h k = [] *)
+    ensures  forall k: key. h.view k = [] *)
 
   val reset: 'a t -> unit
   (*@ reset h
     modifies h
-    ensures  forall k: key. view h k = [] *)
+    ensures  forall k: key. h.view k = [] *)
 
   val copy: 'a t -> 'a t
   (*@ h2 = copy h1
-    ensures  forall k: key. view h2 k = view h1 k *)
+    ensures  forall k: key. h2.view k = h1.view k *)
 
   (*@ function pop (h: 'a t) : integer =
-    Set.fold (fun k c -> List.length (view h k) + c) (dom h) 0 *)
+    Set.fold (fun k c -> List.length (h.view k) + c) h.dom 0 *)
 
   val population: 'a t -> int
   (*@ n = population h
@@ -84,8 +84,8 @@ module Make (K : HashedType) : sig
   (*@ add h k v
     modifies h
     ensures  forall k': key.
-             view h k = if K.equiv k' k then v :: old (view h k')
-                        else old (view h k') *)
+             h.view k = if K.equiv k' k then v :: old (h.view k')
+                        else old (h.view k') *)
 
   (*@ function tail (l: 'a list) : 'a list =
         match l with [] -> [] | _ :: s -> s*)
@@ -94,25 +94,25 @@ module Make (K : HashedType) : sig
   (*@ remove h k
     modifies h
     ensures  forall k': key.
-             view h k = if K.equiv k' k then tail (old (view h k'))
-                        else old (view h k') *)
+             h.view k = if K.equiv k' k then tail (old (h.view k'))
+                        else old (h.view k') *)
 
   val find: 'a t -> key -> 'a option
   (*@ r = find h k
-    ensures r = match view h k with [] -> None | x :: _ -> Some x*)
+    ensures r = match h.view k with [] -> None | x :: _ -> Some x*)
 
   val find_all: 'a t -> key -> 'a list
   (*@ l = find_all h k
-    ensures l = view h k *)
+    ensures l = h.view k *)
 
   val replace: 'a t -> key -> 'a -> unit
   (*@ replace h k v
     modifies h
     ensures  forall k': key.
-             view h k = if K.equiv k' k then v :: tail (old (view h k))
-                        else old (view h k') *)
+             h.view k = if K.equiv k' k then v :: tail (old (h.view k))
+                        else old (h.view k') *)
 
   val mem: 'a t -> key -> bool
   (*@ b = mem h k
-    ensures b <-> view h k <> [] *)
+    ensures b <-> h.view k <> [] *)
 end
