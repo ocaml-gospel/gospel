@@ -126,8 +126,6 @@ type int
 
 (** {1 Sequences} *)
 
-(*@ predicate (==) (s1 s2: 'a seq) *)
-
 (*@ function (++) (s s': 'a seq) : 'a seq *)
 (** [s ++ s'] is the sequence [s] followed by the sequence [s']. *)
 
@@ -194,9 +192,6 @@ module Seq : sig
 
   (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
   (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
-
-  (*@ function ([<-]) (s: 'a seq) (i: integer) (x: 'a): 'a seq *)
-  (** [s\[i\] <- x] is [set s i x]. *)
 
   (*@ function rev (s: 'a seq) : 'a seq *)
   (** [rev s] is the sequence containing the same elements as [s], in reverse
