@@ -362,7 +362,11 @@ module Array : sig
   (*@ function to_bag (a: 'a t) : 'a bag *)
 
   (*@ predicate permut (a b: 'a array) *)
+  (** [permut a b] is true iff [a] and [b] contains the same elements with the
+      same number of occurrences *)
+
   (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
+  (** [permut_sub a b lo hi] is [permut (sub a lo hi) (sub b lo hi)] *)
 end
 
 (** {1 Bags} *)
