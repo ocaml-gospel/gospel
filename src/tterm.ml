@@ -133,7 +133,7 @@ type term = {
   t_node : term_node;
   t_ty : ty option;
   t_attrs : string list;
-  t_loc : Location.t option;
+  t_loc : Location.t;
 }
 
 and term_node =
@@ -191,17 +191,19 @@ exception FreeVariables of Svs.t
 
 let t_free_vs_in_set svs t =
   let diff = Svs.diff (t_free_vars t) svs in
-  check ?loc:t.t_loc (Svs.is_empty diff) (FreeVariables diff)
+  check ~loc:t.t_loc (Svs.is_empty diff) (FreeVariables diff)
 
 (** type checking *)
 
 exception TermExpected of term
 exception FmlaExpected of term
 
-let t_prop t = if t.t_ty = None then t else raise (FmlaExpected t)
+let t_prop t = if t.t_ty = None then t else error ~loc:t.t_loc (FmlaExpected t)
 
 let t_type t =
-  match t.t_ty with Some ty -> ty | None -> raise (TermExpected t)
+  match t.t_ty with
+  | Some ty -> ty
+  | None -> error ~loc:t.t_loc (TermExpected t)
 
 let t_ty_check t ty =
   match (ty, t.t_ty) with
@@ -210,21 +212,18 @@ let t_ty_check t ty =
   | None, Some _ -> raise (FmlaExpected t)
   | None, None -> ()
 
-(** smart-constructors for terms *)
-
 exception BadArity of lsymbol * int
 exception PredicateSymbolExpected of lsymbol
 exception FunctionSymbolExpected of lsymbol
 
-let mk_term n ty = { t_node = n; t_ty = ty; t_attrs = []; t_loc = None }
-
-(* TODO: missing locations when reporting errors *)
 let ls_arg_inst ls tl =
   try
     List.fold_left2
       (fun tvm ty t -> ty_match tvm ty (t_type t))
       Mtv.empty ls.ls_args tl
-  with Invalid_argument _ -> raise (BadArity (ls, List.length tl))
+  with Invalid_argument _ ->
+    let loc = (List.hd tl).t_loc in
+    error ~loc (BadArity (ls, List.length tl))
 
 let ls_app_inst ls tl ty =
   let s = ls_arg_inst ls tl in
@@ -234,7 +233,9 @@ let ls_app_inst ls tl ty =
   | Some vty, Some ty -> ty_match s vty ty
   | None, None -> s
 
-let mk_pattern pn ty vl = { p_node = pn; p_ty = ty; p_vars = vl; p_loc = None }
+(** Pattern constructors *)
+
+let mk_pattern p_node p_ty p_vars = { p_node; p_ty; p_vars; p_loc = None }
 
 exception PDuplicatedVar of vsymbol
 exception EmptyCase
@@ -258,15 +259,18 @@ let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars
 let p_as p vs = mk_pattern (Pas (p, vs)) p.p_ty p.p_vars
 (* CHECK type vs = type p *)
 
+(** Terms constructors *)
+
+let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
 let t_app ls tl ty =
-  ignore (ls_app_inst ls tl ty);
+  ignore (ls_app_inst ls tl ty : ty Mtv.t);
   mk_term (Tapp (ls, tl)) ty
 
 let t_field t ls ty =
-  ignore (ls_app_inst ls [ t ] ty);
+  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
   mk_term (Tfield (t, ls)) ty
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
@@ -274,7 +278,7 @@ let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
 
 let t_case t1 ptl =
   match ptl with
-  | [] -> error ?loc:t1.t_loc EmptyCase
+  | [] -> error ~loc:t1.t_loc EmptyCase
   | (_, t) :: _ -> mk_term (Tcase (t1, ptl)) t.t_ty
 
 let t_quant q vsl t ty = mk_term (Tquant (q, vsl, t)) ty
@@ -283,29 +287,25 @@ let t_not t = mk_term (Tnot t) None
 let t_old t = mk_term (Told t) t.t_ty
 let t_true = mk_term Ttrue None
 let t_false = mk_term Tfalse None
-
-let t_attr_set ?loc attr t =
-  let t_loc = if loc = None then t.t_loc else loc in
-  { t with t_attrs = attr; t_loc }
-
+let t_attr_set attr t = { t with t_attrs = attr }
 let t_bool_true = mk_term (Tapp (fs_bool_true, [])) (Some ty_bool)
 let t_bool_false = mk_term (Tapp (fs_bool_false, [])) (Some ty_bool)
 let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] None
-let t_neq t1 t2 = t_not (t_equ t1 t2)
+let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
 
 (* smart-constructors with type checking *)
 
 let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)
 
-let t_quant q vsl t ty =
+let t_quant q vsl t ty loc =
   match (q, vsl) with
   | Tlambda, [] -> t
   | _, [] -> t_prop t
-  | Tlambda, _ -> t_quant q vsl t ty
+  | Tlambda, _ -> t_quant q vsl t ty loc
   | _, _ ->
       check_report (ty = None) "Quantifiers terms must be of type prop.";
-      t_quant q vsl (t_prop t) None
+      t_quant q vsl (t_prop t) None loc
 
 let f_forall = t_quant Tforall
 let f_exists = t_quant Texists
