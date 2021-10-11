@@ -5,7 +5,14 @@ open Ttypes
 
 val ty_of_lb_arg : lb_arg -> ty
 val vs_of_lb_arg : lb_arg -> vsymbol
-val type_spec : bool -> (lsymbol * bool) list -> term list -> type_spec
+
+val type_spec :
+  bool ->
+  (lsymbol * bool) list ->
+  term list ->
+  string ->
+  Location.t ->
+  type_spec
 
 val label_declaration :
   'a -> mutable_flag -> Location.t -> attributes -> 'a label_declaration
@@ -26,7 +33,14 @@ val mk_val_spec :
   Location.t ->
   val_spec
 
-val mk_fun_spec : term list -> term list -> term list -> bool -> fun_spec
+val mk_fun_spec :
+  term list ->
+  term list ->
+  term list ->
+  bool ->
+  string ->
+  Location.t ->
+  fun_spec
 
 val mk_function :
   ?result:vsymbol ->
@@ -36,9 +50,10 @@ val mk_function :
   term option ->
   fun_spec option ->
   Location.t ->
+  string ->
   function_
 
-val mk_axiom : Ident.t -> term -> Location.t -> axiom
+val mk_axiom : Ident.t -> term -> Location.t -> string -> axiom
 
 val mk_val_description :
   Ident.t ->

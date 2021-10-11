@@ -57,8 +57,8 @@ let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
     vd_loc =
   { vd_name; vd_type; vd_prim; vd_attrs; vd_args; vd_ret; vd_spec; vd_loc }
 
-let type_spec ty_ephemeral ty_fields ty_invariants =
-  { ty_ephemeral; ty_fields; ty_invariants }
+let type_spec ty_ephemeral ty_fields ty_invariants ty_text ty_loc =
+  { ty_ephemeral; ty_fields; ty_invariants; ty_text; ty_loc }
 
 let label_declaration ld_field ld_mut ld_loc ld_attrs =
   { ld_field; ld_mut; ld_loc; ld_attrs }
@@ -80,14 +80,14 @@ let type_declaration td_ts td_params td_cstrs td_kind td_private td_manifest
     td_loc;
   }
 
-let axiom ax_name ax_term ax_loc = { ax_name; ax_term; ax_loc }
+let axiom ax_name ax_term ax_loc ax_text = { ax_name; ax_term; ax_text; ax_loc }
 
 let mk_axiom id t l =
   t_ty_check t None;
   axiom id t l
 
-let fun_spec fun_req fun_ens fun_variant fun_coer =
-  { fun_req; fun_ens; fun_variant; fun_coer }
+let fun_spec fun_req fun_ens fun_variant fun_coer fun_text fun_loc =
+  { fun_req; fun_ens; fun_variant; fun_coer; fun_text; fun_loc }
 
 let mk_fun_spec req ens var coer =
   let t_ty_check ty t = t_ty_check t ty in
@@ -99,8 +99,8 @@ let mk_fun_spec req ens var coer =
   List.iter (t_ty_check (Some ty_integer)) var;
   fun_spec req ens var coer
 
-let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc =
-  { fun_ls; fun_rec; fun_params; fun_def; fun_spec; fun_loc }
+let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
+  { fun_ls; fun_rec; fun_params; fun_def; fun_spec; fun_loc; fun_text }
 
 (* For
    (*@ function rec f (x:ty1) (y:ty2):ty3 = t

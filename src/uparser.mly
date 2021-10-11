@@ -60,12 +60,16 @@
     fun_ens = [];
     fun_variant = [];
     fun_coer = false;
+    fun_text = "";
+    fun_loc = Location.none;
   }
 
   let empty_tspec = {
     ty_ephemeral = false;
     ty_field = [];
     ty_invariant = [];
+    ty_text = "";
+    ty_loc = Location.none;
   }
 
   let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
@@ -154,18 +158,18 @@ val_spec:
 
 axiom:
 | AXIOM id=lident COLON t=term EOF
-  { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc} }
+  { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc; ax_text = ""} }
 ;
 
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
   { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc } }
+      fun_loc = mk_loc $loc; fun_text = "" } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
     fun_def=preceded(EQUAL, term)? EOF
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc } }
+      fun_loc = mk_loc $loc; fun_text = "" } }
 ;
 
 func_name:
