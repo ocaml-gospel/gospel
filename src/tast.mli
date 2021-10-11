@@ -54,6 +54,9 @@ type type_spec = {
   ty_ephemeral : bool;  (** Ephemeral *)
   ty_fields : (lsymbol * bool) list;  (** Models (field symbol * mutable) *)
   ty_invariants : term list;  (** Invariants *)
+  ty_text : string;
+      (** String containing the original specificaion as written by the user *)
+  ty_loc : Location.t;  (** Specification location *)
 }
 
 type mutable_flag = Immutable | Mutable
@@ -107,6 +110,8 @@ type axiom = {
   ax_name : Ident.t;  (** Name *)
   ax_term : term;  (** Definition *)
   ax_loc : Location.t;  (** Location *)
+  ax_text : string;
+      (** String containing the original specificaion as written by the user *)
 }
 
 type fun_spec = {
@@ -114,6 +119,9 @@ type fun_spec = {
   fun_ens : term list;  (** Postconditions *)
   fun_variant : term list;  (** Variant *)
   fun_coer : bool;  (** Coercion *)
+  fun_text : string;
+      (** String containing the original specificaion as written by the user *)
+  fun_loc : Location.t;  (** Specification location *)
 }
 
 type function_ = {
@@ -122,6 +130,8 @@ type function_ = {
   fun_params : vsymbol list;  (** Arguments *)
   fun_def : term option;  (** Definition *)
   fun_spec : fun_spec option;  (** Specification *)
+  fun_text : string;
+      (** String containing the original specificaion as written by the user *)
   fun_loc : Location.t;  (** Location *)
 }
 

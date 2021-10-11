@@ -68,7 +68,10 @@ let parse_gospel ~filename parse attr =
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
-  let parse attr = snd (parse_gospel ~filename Uparser.type_spec attr) in
+  let parse attr =
+    let ty_text, spec = parse_gospel ~filename Uparser.type_spec attr in
+    { spec with ty_text; ty_loc = attr.attr_loc }
+  in
   let spec = Option.map parse spec_attr in
   {
     tname = t.ptype_name;
@@ -85,8 +88,8 @@ let type_declaration ~filename t =
 let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
   let parse attr =
-    let text, spec = parse_gospel ~filename Uparser.val_spec attr in
-    { spec with sp_text = text; sp_loc = attr.attr_loc }
+    let sp_text, spec = parse_gospel ~filename Uparser.val_spec attr in
+    { spec with sp_text; sp_loc = attr.attr_loc }
   in
   let spec = Option.map parse spec_attr in
   {
@@ -110,8 +113,8 @@ let ghost_spec ~filename attr =
           get_inner_spec attr
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.type_spec)
-          |> Option.map snd
-          (* FIXME *)
+          |> Option.map (fun (ty_text, spec) ->
+                 { spec with ty_text; ty_loc = attr.attr_loc })
         in
         Sig_ghost_type (r, [ { type_ with tspec } ])
       else Sig_ghost_type (r, [ type_ ])
@@ -122,8 +125,8 @@ let ghost_spec ~filename attr =
           get_inner_spec attr
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.val_spec)
-          |> Option.map snd
-          (* FIXME *)
+          |> Option.map (fun (sp_text, spec) ->
+                 { spec with sp_text; sp_loc = attr.attr_loc })
         in
         Sig_ghost_val { val_ with vspec }
       else Sig_ghost_val val_
@@ -132,20 +135,22 @@ let ghost_spec ~filename attr =
 
 let floating_spec ~filename a =
   try
-    let _, fun_ = parse_gospel ~filename Uparser.func a in
-    (* FIXME *)
+    let fun_text, fun_ = parse_gospel ~filename Uparser.func a in
+    let fun_ = { fun_ with fun_text } in
     if fun_.fun_spec = None then
       let fun_spec =
         get_inner_spec a
         |> fst
         |> Option.map (parse_gospel ~filename Uparser.func_spec)
-        |> Option.map snd
-        (* FIXME *)
+        |> Option.map (fun (fun_text, (spec : fun_spec)) ->
+               { spec with fun_text; fun_loc = a.attr_loc })
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
   with Syntax_error _ -> (
-    try Sig_axiom (snd (parse_gospel ~filename Uparser.axiom a)) (* FIXME *)
+    try
+      let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
+      Sig_axiom { axiom with ax_text }
     with Syntax_error _ -> ghost_spec ~filename a)
 
 let with_constraint c =

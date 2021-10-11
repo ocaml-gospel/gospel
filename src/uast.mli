@@ -102,7 +102,6 @@ type val_spec = {
   sp_pure : bool;
   sp_equiv : string list;
   sp_text : string;
-  (* the attribute string *)
   sp_loc : Location.t;
 }
 
@@ -117,6 +116,8 @@ type type_spec = {
   ty_ephemeral : bool;
   ty_field : field list;
   ty_invariant : term list;
+  ty_text : string;
+  ty_loc : Location.t;
 }
 
 type fun_spec = {
@@ -124,6 +125,8 @@ type fun_spec = {
   fun_ens : term list;
   fun_variant : term list;
   fun_coer : bool;
+  fun_text : string;
+  fun_loc : Location.t;
 }
 
 (* type param  = Location.t * Preid.t * pty *)
@@ -135,9 +138,15 @@ type function_ = {
   fun_def : term option;
   fun_spec : fun_spec option;
   fun_loc : Location.t;
+  fun_text : string;
 }
 
-type axiom = { ax_name : Preid.t; ax_term : term; ax_loc : Location.t }
+type axiom = {
+  ax_name : Preid.t;
+  ax_term : term;
+  ax_loc : Location.t;
+  ax_text : string;
+}
 
 (* Modified OCaml constructs with specification attached *)
 

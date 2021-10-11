@@ -456,7 +456,7 @@ let process_type_spec kid crcm ns ty spec =
   let fields = List.rev fields in
   let env = Mstr.empty in
   let invariant = List.map (fmla kid crcm ns env) spec.ty_invariant in
-  type_spec spec.ty_ephemeral fields invariant
+  type_spec spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
 
 exception CyclicTypeDecl of string
 
@@ -860,16 +860,18 @@ let process_function kid crcm ns f =
         let variant =
           List.map (term_with_unify kid crcm ty_integer ns env) spec.fun_variant
         in
-        mk_fun_spec req ens variant spec.fun_coer)
+        mk_fun_spec req ens variant spec.fun_coer spec.fun_text spec.fun_loc)
       f.fun_spec
   in
-  let f = mk_function ?result ls f.fun_rec params def spec f.fun_loc in
+  let f =
+    mk_function ?result ls f.fun_rec params def spec f.fun_loc f.fun_text
+  in
   mk_sig_item (Sig_function f) f.fun_loc
 
 let process_axiom loc kid crcm ns a =
   let id = Ident.of_preid a.Uast.ax_name in
   let t = fmla kid crcm ns Mstr.empty a.Uast.ax_term in
-  let ax = mk_axiom id t a.ax_loc in
+  let ax = mk_axiom id t a.ax_loc a.ax_text in
   mk_sig_item (Sig_axiom ax) loc
 
 let process_exception_sig loc ns te =
