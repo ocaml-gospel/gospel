@@ -47,6 +47,18 @@
  (action (diff %{dep:exn_arity.mli.expected} %{dep:exn_arity.mli.output})))
 
 (rule
+ (targets field_application.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:field_application.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:field_application.mli.expected} %{dep:field_application.mli.output})))
+
+(rule
  (targets t1.mli.output)
  (action
    (with-outputs-to %{targets}
