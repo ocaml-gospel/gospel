@@ -618,8 +618,13 @@ let rec val_parse_core_type ns cty =
 let process_val_spec kid crcm ns id args ret vs =
   let header = Option.get vs.sp_header in
   let loc = header.sp_hd_nm.pid_loc in
+  let cmp_infix s1 s2 = match String.split_on_char ' ' s2 with
+    | ["infix"; s] -> String.equal s s1
+    | _ -> false in
+  let id_val = id.Ident.id_str in
+  let id_spec = header.sp_hd_nm.pid_str in
   check_report ~loc
-    (id.Ident.id_str = header.sp_hd_nm.pid_str)
+    (id_val = id_spec || cmp_infix id_val id_spec)
     "val specification header does not match name";
 
   let add_arg la env lal =
