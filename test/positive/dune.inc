@@ -167,6 +167,18 @@
  (action (diff %{dep:fib.mli.expected} %{dep:fib.mli.output})))
 
 (rule
+ (targets infix.mli.output)
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:infix.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:infix.mli.expected} %{dep:infix.mli.output})))
+
+(rule
  (targets log2.mli.output)
  (action
    (with-outputs-to %{targets}
@@ -322,14 +334,3 @@
  (alias runtest)
  (action (diff %{dep:variant_patterns.mli.expected} %{dep:variant_patterns.mli.output})))
 
-(rule
- (targets infix.mli.output)
- (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:infix.mli}")))))
-
-(rule
- (alias runtest)
- (action (diff %{dep:infix.mli.expected} %{dep:infix.mli.output})))
