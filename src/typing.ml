@@ -104,6 +104,7 @@ exception EmptyRecord
 exception BadRecordField of lsymbol
 exception DuplicateRecordField of lsymbol
 exception RecordFieldMissing of lsymbol
+exception FieldApplication of lsymbol
 
 let find_constructors kid ts =
   match (Mid.find ts.ts_ident kid).sig_desc with
@@ -230,17 +231,21 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     let dtl = app_unify_map ls (dterm_expected crcm) dtl dtyl in
     mk_dterm ?loc (DTapp (ls, dtl)) dty
   in
-  let rec fun_app ?loc ls tl =
+  let rec gen_app ?loc ls tl =
     let n = List.length ls.ls_args in
     match tl with
     | [ { term_desc = Ttuple tl } ] when List.length tl = n && ls.ls_constr ->
-        fun_app ?loc ls tl
+        gen_app ?loc ls tl
     | _ when List.length tl < n -> error ?loc (PartialApplication ls)
     | _ ->
         let args, extra = split_at_i (List.length ls.ls_args) tl in
         let dtl = List.map (dterm kid crcm ns denv) args in
         let dt = mk_app ?loc ls dtl in
         if extra = [] then dt else map_apply dt extra
+  in
+  let fun_app ?loc ls tl =
+    if ls.ls_field && ls.ls_args <> [] then error ?loc (FieldApplication ls);
+    gen_app ?loc ls tl
   in
   let qualid_app q tl =
     match q with
@@ -282,6 +287,10 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let _, dty = specialize_ls ls in
       let node, dty = (DTapp (ls, []), dty) in
       mk_dterm node dty
+  | Uast.Tfield (t, q) ->
+      let ls = find_q_ls ns q in
+      if not ls.ls_field then error ~loc (BadRecordField ls);
+      gen_app ~loc ls [ t ]
   | Uast.Tidapp (q, tl) -> qualid_app q tl
   | Uast.Tapply (t1, t2) -> unfold_app t1 t2 []
   | Uast.Tnot t ->
@@ -1175,6 +1184,10 @@ let () =
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "Duplicated record field %a" print_ls_nm ls
+    | FieldApplication ls ->
+        Fmt.kstr
+          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Record field %a cannot be applied" print_ls_nm ls
     | Circular m ->
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))

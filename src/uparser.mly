@@ -404,9 +404,12 @@ term_block_:
 ;
 
 term_sub_:
-| term_block_                                       { $1 }
-| uqualid DOT mk_term(term_block_)                  { Tscope ($1, $3) }
-| term_dot DOT lqualid_rich                         { Tidapp ($3,[$1]) }
+| term_block_
+    { $1 }
+| uqualid DOT mk_term(term_block_)
+    { Tscope ($1, $3) }
+| term_dot DOT lqualid_rich
+    { Tfield ($1, $3) }
 | term_arg LEFTSQ term RIGHTSQ
     { Tidapp (get_op $loc($2), [$1;$3]) }
 | term_arg LEFTSQ term LARROW term RIGHTSQ
