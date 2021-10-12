@@ -36,6 +36,8 @@ module Lists.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

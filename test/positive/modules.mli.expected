@@ -102,6 +102,8 @@ module modules.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -114,6 +116,8 @@ module modules.mli
           function int_of_integer (_:integer) : int
           function integer_of_int (_:int) : integer
           
+        Field Symbols
+          
         Exception Symbols
           
         Namespaces
@@ -124,6 +128,8 @@ module modules.mli
               function fb (_:integer) (_:integer) : ta
               function float_of_int (_:int) : float
               function int_of_float (_:float) : int
+              
+            Field Symbols
               
             Exception Symbols
               
@@ -136,6 +142,8 @@ module modules.mli
                   function constr#tc (_:int) (_:float) : tc
                   function fc (_:tc) : ta
                   function fcc (_:ta) : tc
+                  
+                Field Symbols
                   function x (_:tc) : int
                   function y (_:tc) : float
                   
@@ -150,6 +158,8 @@ module modules.mli
                   
                 Logic Symbols
                   function td (_:ta) (_:tc) : integer
+                  
+                Field Symbols
                   
                 Exception Symbols
                   
@@ -172,6 +182,8 @@ module modules.mli
           function int_of_integer (_:integer) : int
           function integer_of_int (_:int) : integer
           
+        Field Symbols
+          
         Exception Symbols
           
         Namespaces
@@ -182,6 +194,8 @@ module modules.mli
               function fb (_:integer) (_:integer) : ta
               function float_of_int (_:int) : float
               function int_of_float (_:float) : int
+              
+            Field Symbols
               
             Exception Symbols
               
@@ -194,6 +208,8 @@ module modules.mli
                   function constr#tc (_:int) (_:float) : tc
                   function fc (_:tc) : ta
                   function fcc (_:ta) : tc
+                  
+                Field Symbols
                   function x (_:tc) : int
                   function y (_:tc) : float
                   
@@ -208,6 +224,8 @@ module modules.mli
                   
                 Logic Symbols
                   function td (_:ta) (_:tc) : integer
+                  
+                Field Symbols
                   
                 Exception Symbols
                   
@@ -230,6 +248,8 @@ module modules.mli
           predicate fp1 (_:ft)
           predicate fp2 (_:ft)
           
+        Field Symbols
+          
         Exception Symbols
           
         Namespaces
@@ -246,6 +266,8 @@ module modules.mli
           function ff (_:ft) : ft
           predicate fp1 (_:ft)
           predicate fp2 (_:ft)
+          
+        Field Symbols
           
         Exception Symbols
           

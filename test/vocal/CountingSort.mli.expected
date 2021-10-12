@@ -64,6 +64,8 @@ module CountingSort.mli
       predicate k_values (_:int) (_:int array)
       predicate sorted (_:int array)
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

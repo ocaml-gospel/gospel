@@ -38,6 +38,8 @@ module test2.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -46,6 +48,8 @@ module test2.mli
           ('a) t_1 [='a t_2]
           
         Logic Symbols
+          
+        Field Symbols
           
         Exception Symbols
           
@@ -62,6 +66,8 @@ module test2.mli
           
         Logic Symbols
           function f (_:'a t_2) : float
+          
+        Field Symbols
           
         Exception Symbols
           

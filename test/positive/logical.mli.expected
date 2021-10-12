@@ -61,6 +61,8 @@ module logical.mli
       predicate is_sorted_list (_:int list)
       function powm (_:integer) (_:integer) (_:integer) : integer
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

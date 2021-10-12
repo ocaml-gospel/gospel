@@ -30,6 +30,8 @@ module pure.mli
     Logic Symbols
       function f (_:int) : int
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

@@ -181,6 +181,8 @@ module ZipperList.mli
       ('a) t
       
     Logic Symbols
+      
+    Field Symbols
       function idx (_:'a t) : integer
       function seq (_:'a t) : 'a seq_1
       

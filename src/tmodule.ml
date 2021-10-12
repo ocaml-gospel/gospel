@@ -23,6 +23,7 @@ module Mstr = Map.Make (String)
 type namespace = {
   ns_ts : tysymbol Mstr.t;
   ns_ls : lsymbol Mstr.t;
+  ns_fd : lsymbol Mstr.t;
   ns_xs : xsymbol Mstr.t;
   ns_ns : namespace Mstr.t;
   ns_tns : namespace Mstr.t;
@@ -32,6 +33,7 @@ let empty_ns =
   {
     ns_ts = Mstr.empty;
     ns_ls = Mstr.empty;
+    ns_fd = Mstr.empty;
     ns_xs = Mstr.empty;
     ns_ns = Mstr.empty;
     ns_tns = Mstr.empty;
@@ -59,6 +61,13 @@ let ns_add_ls ~allow_duplicate:_ ns s ls =
   in
   { ns with ns_ls }
 
+let ns_add_fd ~allow_duplicate:_ ns s fd =
+  let ns_fd =
+    add ~allow_duplicate:true ~equal:ls_equal ~loc:fd.ls_name.id_loc ns.ns_fd s
+      fd
+  in
+  { ns with ns_fd }
+
 let ns_add_xs ~allow_duplicate ns s xs =
   let ns_xs =
     add ~allow_duplicate ~equal:xs_equal ~loc:xs.xs_ident.id_loc ns.ns_xs s xs
@@ -79,6 +88,7 @@ let merge_ns from_ns to_ns =
   {
     ns_ts = union from_ns.ns_ts to_ns.ns_ts;
     ns_ls = union from_ns.ns_ls to_ns.ns_ls;
+    ns_fd = union from_ns.ns_fd to_ns.ns_fd;
     ns_xs = union from_ns.ns_xs to_ns.ns_xs;
     ns_ns = union from_ns.ns_ns to_ns.ns_ns;
     ns_tns = union from_ns.ns_tns to_ns.ns_tns;
@@ -91,6 +101,7 @@ let rec ns_find get_map ns = function
 
 let ns_find_ts ns s = ns_find (fun ns -> ns.ns_ts) ns s
 let ns_find_ls ns s = ns_find (fun ns -> ns.ns_ls) ns s
+let ns_find_fd ns s = ns_find (fun ns -> ns.ns_fd) ns s
 let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
 let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
 let ns_find_tns ns s = ns_find (fun ns -> ns.ns_tns) ns s
@@ -112,19 +123,23 @@ let rec ns_replace_ts new_ts sl ns =
       let ns_ns = ns_replace_ts new_ts xs ns_ns in
       { ns with ns_ns = Mstr.add x ns_ns ns.ns_ns }
 
-let rec ns_subst_ts old_ns new_ts { ns_ts; ns_ls; ns_xs; ns_ns; ns_tns } =
+let rec ns_subst_ts old_ns new_ts { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns }
+    =
   {
     ns_ts = Mstr.map (ts_subst_ts old_ns new_ts) ns_ts;
     ns_ls = Mstr.map (ls_subst_ts old_ns new_ts) ns_ls;
+    ns_fd = Mstr.map (ls_subst_ts old_ns new_ts) ns_fd;
     ns_xs = Mstr.map (xs_subst_ts old_ns new_ts) ns_xs;
     ns_ns = Mstr.map (ns_subst_ts old_ns new_ts) ns_ns;
     ns_tns = Mstr.map (ns_subst_ts old_ns new_ts) ns_tns;
   }
 
-let rec ns_subst_ty old_ts new_ts ty { ns_ts; ns_ls; ns_xs; ns_ns; ns_tns } =
+let rec ns_subst_ty old_ts new_ts ty
+    { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
   {
     ns_ts = Mstr.map (ts_subst_ty old_ts new_ts ty) ns_ts;
     ns_ls = Mstr.map (ls_subst_ty old_ts new_ts ty) ns_ls;
+    ns_fd = Mstr.map (ls_subst_ty old_ts new_ts ty) ns_fd;
     ns_xs = Mstr.map (xs_subst_ty old_ts new_ts ty) ns_xs;
     ns_ns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_ns;
     ns_tns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_tns;
@@ -220,6 +235,7 @@ let muc_add ?(export = false) add muc s x =
 
 let add_ts ?(export = false) = muc_add ~export ns_add_ts
 let add_ls ?(export = false) = muc_add ~export ns_add_ls
+let add_fd ?(export = false) = muc_add ~export ns_add_fd
 let add_xs ?(export = false) = muc_add ~export ns_add_xs
 let add_ns ?(export = false) = muc_add ~export ns_add_ns
 let add_tns ?(export = false) = muc_add ~export ns_add_tns
@@ -238,6 +254,7 @@ let add_ns_top ?(export = false) muc ns =
   let add f muc map = Mstr.fold (fun s v muc -> f muc s v) map muc in
   let muc = add (add_ts ~export) muc ns.ns_ts in
   let muc = add (add_ls ~export) muc ns.ns_ls in
+  let muc = add (add_fd ~export) muc ns.ns_fd in
   let muc = add (add_xs ~export) muc ns.ns_xs in
   let muc = add (add_ns ~export) muc ns.ns_ns in
   let muc = add (add_tns ~export) muc ns.ns_tns in
@@ -398,7 +415,9 @@ let add_sig_contents muc sig_ =
         let csl = get_cs_pjs td.td_kind in
         let muc =
           List.fold_left
-            (fun muc cs -> add_ls ~export:true muc cs.ls_name.id_str cs)
+            (fun muc cs ->
+              (if cs.ls_field then add_fd else add_ls)
+                ~export:true muc cs.ls_name.id_str cs)
             muc csl
         in
         let fields =
@@ -408,7 +427,9 @@ let add_sig_contents muc sig_ =
         in
         let muc =
           List.fold_left
-            (fun muc ls -> add_ls ~export:true muc ls.ls_name.id_str ls)
+            (fun muc ls ->
+              (if ls.ls_field then add_fd else add_ls)
+                ~export:true muc ls.ls_name.id_str ls)
             muc fields
         in
         add_kid muc td.td_ts.ts_ident sig_
@@ -467,12 +488,14 @@ let rec print_nested_ns fmt ns =
   let print_elem nm e = pp fmt "@[%a@]@\n" (print_ns nm) e in
   Mstr.iter (fun nm ns -> print_elem nm ns) ns
 
-and print_ns nm fmt { ns_ts; ns_ls; ns_xs; ns_ns; ns_tns } =
+and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
   pp fmt
     "@[@[<hv2>@[Namespace: %s@]@\n\
      @[<hv2>Type symbols@\n\
      %a@]@\n\
      @[<hv2>Logic Symbols@\n\
+     %a@]@\n\
+     @[<hv2>Field Symbols@\n\
      %a@]@\n\
      @[<hv2>Exception Symbols@\n\
      %a@]@\n\
@@ -482,7 +505,9 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_xs; ns_ns; ns_tns } =
      %a@]@]@]"
     nm (print_mstr_vals print_ts) ns_ts
     (print_mstr_vals print_ls_decl)
-    ns_ls (print_mstr_vals print_xs) ns_xs print_nested_ns ns_ns print_nested_ns
+    ns_ls
+    (print_mstr_vals print_ls_decl)
+    ns_fd (print_mstr_vals print_xs) ns_xs print_nested_ns ns_ns print_nested_ns
     ns_tns
 (* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
  * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)

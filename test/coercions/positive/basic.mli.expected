@@ -33,6 +33,8 @@ module basic.mli
     Logic Symbols
       function c (_:t1) : t2
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

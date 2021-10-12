@@ -48,6 +48,8 @@ module Mjrty.mli
       function num (_:string seq) (_:string) (_:integer) (_:integer) : 
       integer
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

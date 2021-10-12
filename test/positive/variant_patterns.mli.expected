@@ -69,6 +69,8 @@ module variant_patterns.mli
       function C (_:int) (_:int) : t
       function D (_:int * int) : t
       
+    Field Symbols
+      
     Exception Symbols
       E
       F

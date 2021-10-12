@@ -203,6 +203,8 @@ module HashTable.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -214,15 +216,17 @@ module HashTable.mli
           ('a) table
           
         Logic Symbols
-          function bucket_histogram (_:statistics) : int array
           function constr#statistics (_:int) (_:int) (_:int) (_:int array) : 
           statistics
+          function pop (_:'a table) : integer
+          function tail (_:'a list) : 'a list
+          
+        Field Symbols
+          function bucket_histogram (_:statistics) : int array
           function dom (_:'a table) : t set
           function max_bucket_length (_:statistics) : int
           function num_bindings (_:statistics) : int
           function num_buckets (_:statistics) : int
-          function pop (_:'a table) : integer
-          function tail (_:'a list) : 'a list
           function view (_:'a table) : t -> 'a list
           
         Exception Symbols
@@ -240,6 +244,8 @@ module HashTable.mli
         Logic Symbols
           predicate equiv (_:t) (_:t)
           function hash_f (_:t) : integer
+          
+        Field Symbols
           
         Exception Symbols
           

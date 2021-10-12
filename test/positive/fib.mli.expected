@@ -37,6 +37,8 @@ module fib.mli
     Logic Symbols
       function fibonacci (_:integer) : integer
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

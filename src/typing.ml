@@ -42,6 +42,7 @@ let ns_find ?loc f ns sl =
 
 let find_ts ?loc = ns_find ?loc ns_find_ts
 let find_ls ?loc = ns_find ?loc ns_find_ls
+let find_fd ?loc = ns_find ?loc ns_find_fd
 let find_xs ?loc = ns_find ?loc ns_find_xs
 let find_ns ?loc = ns_find ?loc ns_find_ns
 let find_tns ?loc = ns_find ?loc ns_find_tns
@@ -52,6 +53,7 @@ let find_q (f : ?loc:Location.t -> 'a) ns q =
 
 let find_q_ts = find_q find_ts
 let find_q_ls = find_q find_ls
+let find_q_fd = find_q find_fd
 let find_q_xs = find_q find_xs
 let find_q_ns = find_q find_ns
 
@@ -116,7 +118,7 @@ let find_constructors kid ts =
   | _ -> assert false
 
 let parse_record ~loc kid ns fll =
-  let fll = List.map (fun (q, v) -> (find_q_ls ns q, v)) fll in
+  let fll = List.map (fun (q, v) -> (find_q_fd ns q, v)) fll in
   let fs = match fll with [] -> error ~loc EmptyRecord | (fs, _) :: _ -> fs in
   let ts =
     match fs.ls_args with
@@ -286,7 +288,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let node, dty = (DTapp (ls, []), dty) in
       mk_dterm ~loc node dty
   | Uast.Tfield (t, q) ->
-      let ls = find_q_ls ns q in
+      let ls = find_q_fd ns q in
       if not ls.ls_field then error ~loc (BadRecordField ls);
       gen_app ~loc ls [ t ]
   | Uast.Tidapp (q, tl) -> qualid_app q tl

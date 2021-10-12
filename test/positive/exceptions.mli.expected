@@ -109,6 +109,8 @@ module exceptions.mli
       function int_of_integer (_:integer) : int
       function integer_of_int (_:int) : integer
       
+    Field Symbols
+      
     Exception Symbols
       E
       E1

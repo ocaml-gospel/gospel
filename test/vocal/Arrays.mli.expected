@@ -121,6 +121,8 @@ module Arrays.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

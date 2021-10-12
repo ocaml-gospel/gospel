@@ -22,6 +22,8 @@ module no_header.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

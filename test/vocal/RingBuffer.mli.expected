@@ -125,6 +125,8 @@ module RingBuffer.mli
       ('a) buffer
       
     Logic Symbols
+      
+    Field Symbols
       function capacity (_:'a buffer) : integer
       function sequence (_:'a buffer) : 'a seq
       
