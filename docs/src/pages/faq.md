@@ -13,8 +13,8 @@ answer it and add it here.
 **Sometimes.** Logic and programs are two separated worlds, and using programs
 in our logic can introduce inconsistencies, so you cannot use OCaml values in
 your specifications. If you need to write functions as shortcuts in your
-functions, you may want to add [logical functions or
-predicates](language/logical) instead
+specifications, you may want to add [logical functions or
+predicates](language/logical) instead.
 
 However, some OCaml functions are also safe to use in the specifications. We
 call them *pure*. You can read the [dedicated documentation
@@ -45,7 +45,7 @@ val total_weight : weight:('a array -> int) -> ('a array) list -> int
 ## Are formulae typechecked by the OCaml compiler?
 
 **No.** The OCaml compiler does not know about Gospel specifications at all, so
-it simply ignores them. 
+it simply ignores them.
 
 **But...** we, however, provide a typechecker for Gospel annotations. It reads
 your interface file and performs typechecking and some sanity checks to verify
@@ -66,19 +66,27 @@ runtime assertion checking for your code, you might want to use
 ## Are formulae verified by Gospel?
 
 **No.** Gospel does not feature deductive verification, it can only check if
-your specifications are well-formed. External tools will let you invoke SMT
-solvers to verify GOspel specifications though:
-- [Why3gospel](https://github.com/ocaml-gospel/why3gospel) if your 
+your specifications are well-formed. External tools will let you
+verify Gospel specifications though:
+- [Why3gospel](https://github.com/ocaml-gospel/why3gospel) if your
   implementation is written using [Why3](http://why3.lri.fr).
 - [Cameleer](https://github.com/ocaml-gospel/cameleer) if your implementation
   is written using OCaml.
 
 <hr />
 
-## What if I write `x / 0` in a formula?
+## What if I write `1 / 0` in a formula?
 
-**You can.**
+**You can.** Indeed, the logic of Gospel is _total_, which means that
+`1 / 0` is a legal term of type `integer`. Yet, we do not know its
+value, nor if its value is the same as `2 / 0`. Similarly, we can
+access an array out of its bounds but the result is unspecified.
 
+Using such unspecified terms in specifications is considered bad
+practice, and is even likely to be errors in your specifications.
+Note that when using runtime assertion checking tools such as
+[Ortac](https://github.com/ocaml-gospel/ortac), the evaluation of
+terms such as `1 / 0` will be signaled as a runtime error.
 
 <hr />
 
@@ -114,7 +122,7 @@ argument by some of your OCaml functions:
 (*@ type t *)
 
 val f : int -> int
-(*@ y = f [t : t] x 
+(*@ y = f [t : t] x
     pure
     ... *)
 ```
@@ -125,8 +133,8 @@ to actually instantiate such a value and pass it directly:
 
 ```ocaml
 val g : int -> int
-(*@ y = g x 
-    requires let t = make () in 
+(*@ y = g x
+    requires let t = make () in
              f t x = y *)
 ```
 
@@ -136,4 +144,3 @@ declare it as a ghost value:
 ```ocaml
 (*@ val make : unit -> t *)
 ```
-

@@ -149,7 +149,7 @@ explicitly, or the contract may imply that `u.dom` was modified (in an
 unspecified way).
 
 ```ocaml {3-4,6}
-val union : 'a elem -> 'a elem -> unit
+val union : 'a element -> 'a element -> unit
 (*@ union [u: 'a universe] x y
     requires Set.mem x u.dom
     requires Set.mem y u.dom
@@ -164,20 +164,20 @@ mentioned elements representatives at all. Each element in the universe has a
 representative in the set, so we may represent this using a `'a element -> 'a
 element` function. We can also add two invariants:
 
-- the representative of an element must live in the same universe as the 
+- the representative of an element must live in the same universe as the
   element itself.
-- the `rep` function is idempotent: the representative of an element is its own 
+- the `rep` function is idempotent: the representative of an element is its own
   representative.
 
 ```ocaml {3-5}
 (*@ type 'a universe *)
-(*@ mutable model dom : 'a element set 
+(*@ mutable model dom : 'a element set
     mutable model rep : 'a element -> 'a element
-    invariant forall e. Set.mem e dom -> Set.mem (rep e) dom 
+    invariant forall e. Set.mem e dom -> Set.mem (rep e) dom
     invariant forall e. Set.mem e dom -> rep (rep e) = rep e *)
 ```
 
-:::caution 
+:::caution
 
 Notice how in both cases, speaking of the representative of an element only
 makes sense for elements that are in the universe. However, Gospel's logic is
@@ -195,11 +195,11 @@ val make : 'a -> 'a element
 (*@ e = make [u: 'a universe] v
     modifies u.dom
     ensures not (Set.mem e (old u.dom))
-    ensures u.dom = Set.add e (old u.dom) 
+    ensures u.dom = Set.add e (old u.dom)
     ensures u.rep = (old u.rep)[e <- e] *)
 ```
 
-:::note 
+:::note
 
 The `_[_ <- _]` operator is defined in the [standard library](../stdlib). The
 notation `f[x <- y]` is a shorthand notation for the function defined as `fun i
@@ -214,7 +214,7 @@ representative of the input element:
 val find : 'a element -> 'a element
 (*@ e = find [u: 'a universe] x
     requires Set.mem x u.dom
-    ensures Set.mem e u.dom 
+    ensures Set.mem e u.dom
     ensures e = u.rep x *)
 ```
 
@@ -228,7 +228,7 @@ are in the same subset (or equivalence class). This is the case iff they have
 the same subset representative:
 
 ```ocaml
-(*@ predicate equivalent (u: 'a universe) (x y: 'a element) = 
+(*@ predicate equivalent (u: 'a universe) (x y: 'a element) =
       u.rep x = u.rep y *)
 ```
 
@@ -236,14 +236,14 @@ We can now use that to state that elements that are not equivalent to `x` or `y`
 have the same representative:
 
 ```ocaml {7-9}
-val union : 'a elem -> 'a elem -> unit
+val union : 'a elements -> 'a elements -> unit
 (*@ union [u: 'a universe] x y
     requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
-    ensures u.dom = old u.dom 
-    ensures forall e. 
-      not (old (equivalent u x e \/ equivalent u y e)) 
+    ensures u.dom = old u.dom
+    ensures forall e.
+      not (old (equivalent u x e \/ equivalent u y e))
       -> u.rep e = old (u.rep e) *)
 ```
 
@@ -251,14 +251,14 @@ And finally, elements that were in the unioned subsets now must all have the
 same representative, and that element is either the old `x` representative, or
 the old `y` representative.
 
-```ocaml {10-13}
-val union : 'a elem -> 'a elem -> unit
+```ocaml {9-13}
+val union : 'a element -> 'a element -> unit
 (*@ union [u: 'a universe] x y
     requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
-    ensures u.dom = old u.dom 
-    ensures forall e. not (old (equivalent u x e \/ equivalent u y e)) 
+    ensures u.dom = old u.dom
+    ensures forall e. not (old (equivalent u x e \/ equivalent u y e))
                       -> u.rep e = old (u.rep e)
     ensures exists r. (r = old (u.rep x) \/ r = old (u.rep y))
       /\ forall e. old (equivalent u x e \/ equivalent u y e)

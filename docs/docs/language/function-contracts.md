@@ -51,6 +51,7 @@ clause = "requires" formula
        | "modifies" expr ("," expr)*
        | "equivalent" string_literal
        | "diverges"
+       | "pure"
        | "consumes" expr ("," expr)*
 exception_case = qualid "->" formula
                | qualid pattern "->" formula
@@ -364,6 +365,22 @@ val inplace_map : ('a -> 'a) -> 'a t -> unit
 ```
 
 :::
+
+## Pure functions
+
+An OCaml function can be declared as `pure`, which means
+- it has no side effect;
+- it raises no exception;
+- it terminates.
+
+```ocaml {2}
+val length : 'a t -> int
+(*@ pure *)
+```
+
+Pure functions can be used in further Gospel specifications.
+On the contrary, OCaml functions not declared as `pure` cannot be used
+in specifications.
 
 ## Data consumption
 
