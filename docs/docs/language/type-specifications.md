@@ -69,7 +69,7 @@ Of course, a type that has a mutable model is considered mutable, so the
 
 ## Invariants
 
-Type annotation may also contain invariants that hold at every entry and exit
+Type annotations may also contain invariants that hold at every entry and exit
 point of every fonction that manipulates their values. Formulae expressing these
 properties may be added after the `invariant` keyword:
 
@@ -80,5 +80,5 @@ type 'a t
     invariant Set.cardinal contents <= capacity *)
 ```
 
-Note that function may break these invariants internally, but must restore them
+Note that functions may break these invariants internally, but must restore them
 so that they still hold at the function exit.

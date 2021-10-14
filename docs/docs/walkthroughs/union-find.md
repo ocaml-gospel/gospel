@@ -56,10 +56,10 @@ mutable: so long as elements are added, for instance, it will be modified.
 (*@ ephemeral *)
 ```
 
-Now, our three function still apply to set elements, but they also apply _in the
+Now, our three functions still apply to set elements, but they also apply _in the
 context of an universe_: you create a new singleton subset in the context of the
 greater set, or find the representative of an element in the rest of universe
-for instance. This translates into our three function taking a value of type `'a
+for instance. This translates into our three functions taking a value of type `'a
 universe` as argument. Of course, `'a universe` is ghost, and you do not want to
 modify the signature of the functions anyway, so this argument is ghost too[^1].
 We can also already get a sense that `make` and `union` will modify the

@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Now what?
 
-You've written your first specfication. Now what can you do with it?
+You've written your first specification. Now what can you do with it?
 
 Well, your specification alone is already helpful, as it completes the
 docstring, which may be incomplete or ambiguous, leading to wrong
