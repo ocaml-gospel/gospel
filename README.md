@@ -14,12 +14,10 @@
 
 </div>
 
-
-
 <div align="center">
 
-  :warning: **Disclamer:** This project is still experimental.
-  No support will be provided at this point, and its behaviour is still unstable.
+:warning: **Disclamer:** This project is still experimental.
+No support will be provided at this point, and its behaviour is still unstable.
 
 </div>
 
@@ -32,7 +30,7 @@ function pre-conditions and post-conditions, effects, exceptions, and [much
 more](https://ocaml-gospel.github.io/gospel/language.html)!
 
 <div align="center">
-<img src="doc/images/screenshot.png" title="Gospel specification">
+<img src="screenshot.png" title="Gospel specification">
 </div>
 
 We designed Gospel to provide a tool-agnostic frontend for bringing formal
@@ -54,12 +52,13 @@ Gospel!
 ### Installation
 
 Gospel is not yet available on Opam repositories. You can install it via pinning:
+
 ```shell
 $ opam pin add gospel.dev git@github.com:ocaml-gospel/gospel
 $ opam install gospel
 ```
 
-This will install the ``gospel`` tool binary, as well as the developer library if you
+This will install the `gospel` tool binary, as well as the developer library if you
 wish to build your software on top of Gospel. You may check the installation with.
 
 ```shell
@@ -129,6 +128,7 @@ laboratory](https://lmf.cnrs.fr/), [Tarides](https://tarides.com/), and [NOVA
 LINCS](https://nova-lincs.di.fct.unl.pt/).
 
 The development is supported by:
+
 - The [VOCaL project](https://vocal.lri.fr). ANR grant No.
   [ANR-15-CE25-0008](https://anr.fr/Project-ANR-15-CE25-0008), 1/10/2015 -
   31/3/2021.
