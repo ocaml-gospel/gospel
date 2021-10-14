@@ -9,7 +9,8 @@ const katex = require('rehype-katex');
     url: 'https://ocaml-gospel.github.io',
     baseUrl: '/gospel/',
     organizationName: 'ocaml-gospel', // Usually your GitHub org/user name.
-    projectName: 'gospel', // Usually your repo name.
+    projectName: '/gospel/', // Usually your repo name.
+    trailingSlash: false,
 
     presets: [
         [
@@ -34,7 +35,6 @@ const katex = require('rehype-katex');
                 sitemap: {
                     changefreq: 'weekly',
                     priority: 0.5,
-                    trailingSlash: false,
                 },
             }),
         ],

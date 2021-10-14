@@ -17,10 +17,10 @@ to get you started with formal specifications for your OCaml programs.
   language features.
 - More detailed explanations of the language features are available in the
   [Language Specification](language/locations) section.
-- Short questions sometimes deserve short answers. You can also head out to the 
-  [FAQ](../faq) section for common questions you may have about Gospel's design,
+- Short questions sometimes deserve short answers. You can also head out to the
+  [FAQ](faq) section for common questions you may have about Gospel's design,
   semantics and features.
- 
+
 We are dedicated to making Gospel an easy-to-use specification language for
 OCaml developers. Any comment or suggestion on the language or its documentation
 is welcome, please feel free to [open a
