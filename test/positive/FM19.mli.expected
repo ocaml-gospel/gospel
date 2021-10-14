@@ -232,10 +232,12 @@ module FM19.mli
        uf_instance
       
     Logic Symbols
+      function power (_:integer) (_:integer) : integer
+      
+    Field Symbols
       function dom (_:uf_instance) : elem set
       function internal (_:uf_instance) : unit
       function left (_:tt) : type1
-      function power (_:integer) (_:integer) : integer
       function rep (_:uf_instance) : elem -> elem
       function right (_:tt) : type2
       function view (_:'a t) : 'a seq

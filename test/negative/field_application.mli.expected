@@ -21,4 +21,4 @@ val f : t -> int
     ensures ...
      *)
 File "field_application.mli", line 5, characters 18-19:
-Error: Record field a cannot be applied
+Error: Symbol a not found

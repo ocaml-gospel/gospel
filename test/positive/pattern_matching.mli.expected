@@ -49,6 +49,8 @@ module pattern_matching.mli
       function O  : t
       function S (_:t) : t
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

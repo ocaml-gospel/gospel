@@ -116,6 +116,8 @@ module PairingHeap.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -125,10 +127,12 @@ module PairingHeap.mli
            t_1
           
         Logic Symbols
-          function bag (_:t_1) : t bag_1
           predicate is_minimum (_:t) (_:t_1)
           predicate mem (_:t) (_:t_1)
           function minimum (_:t_1) : t
+          
+        Field Symbols
+          function bag (_:t_1) : t bag_1
           
         Exception Symbols
           

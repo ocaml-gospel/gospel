@@ -242,6 +242,8 @@ module basic_functions_axioms.mli
       function p (_:integer) : integer
       predicate pred (_:bool)
       function to_integer (_:int) : integer
+      
+    Field Symbols
       function x (_:'a t5) : int
       function xx (_:'a t6) : 'a
       function y (_:'a t5) : 'a

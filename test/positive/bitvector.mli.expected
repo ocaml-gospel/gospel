@@ -67,8 +67,10 @@ module bitvector.mli
       
     Logic Symbols
       function constr#t (_:int) (_:int) : t
-      function mask (_:t) : int
       predicate mem (_:integer) (_:t)
+      
+    Field Symbols
+      function mask (_:t) : int
       function size (_:t) : int
       
     Exception Symbols

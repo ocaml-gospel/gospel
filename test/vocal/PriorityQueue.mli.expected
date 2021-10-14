@@ -143,6 +143,8 @@ module PriorityQueue.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -152,10 +154,12 @@ module PriorityQueue.mli
            heap
           
         Logic Symbols
-          function bag (_:heap) : t bag_1
           predicate is_minimum (_:t) (_:heap)
           predicate mem (_:t) (_:heap)
           function minimum (_:heap) : t
+          
+        Field Symbols
+          function bag (_:heap) : t bag_1
           
         Exception Symbols
           Empty

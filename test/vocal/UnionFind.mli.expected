@@ -218,8 +218,10 @@ module UnionFind.mli
       
     Logic Symbols
       function alpha  : integer -> integer
-      function dom (_:'a uf) : 'a elem set
       predicate equiv (_:'a uf) (_:'a elem) (_:'a elem)
+      
+    Field Symbols
+      function dom (_:'a uf) : 'a elem set
       function img (_:'a uf) : 'a elem -> 'a
       function rep (_:'a uf) : 'a elem -> 'a elem
       

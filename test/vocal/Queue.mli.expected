@@ -75,6 +75,8 @@ module Queue.mli
       ('a) t
       
     Logic Symbols
+      
+    Field Symbols
       function view (_:'a t) : 'a seq
       
     Exception Symbols

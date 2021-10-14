@@ -26,6 +26,8 @@ module open_existing_type.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces

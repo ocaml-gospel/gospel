@@ -2,6 +2,8 @@
 *******************************
 ********** Parsed file ********
 *******************************
+type t = {
+  f: int }
 val f : int -> int[@@gospel {| pure |}]
 val g : int -> int[@@gospel {| y = g x
     requires f x > 0 |}]
@@ -10,6 +12,10 @@ val g : int -> int[@@gospel {| y = g x
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
+
+type t = {
+f: int }
+  
 
 val f : int -> int
 (*@  *)
@@ -26,9 +32,14 @@ module pure.mli
 
   Namespace: pure.mli
     Type symbols
+       t
       
     Logic Symbols
+      function constr#t (_:int) : t
       function f (_:int) : int
+      
+    Field Symbols
+      function f_1 (_:t) : int
       
     Exception Symbols
       
@@ -38,6 +49,11 @@ module pure.mli
       
   Signatures
     (*@ open Gospelstdlib *)
+    
+    type t = {f_1:int}
+          function constr#t (_:int) : t
+          function f_1 (_:t) : int
+         
     
     val f : int -> int
     (*@ result:int = f $x0:int*)

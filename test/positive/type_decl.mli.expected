@@ -250,6 +250,8 @@ module type_decl.mli
       function constr#t10 (_:int) : t10
       function constr#t11 (_:int) (_:float) : t11
       function constr#t12 (_:'a) (_:'a * int) : 'a t12
+      
+    Field Symbols
       function x_1 (_:'a t12) : 'a
       function y (_:'a t12) : 'a * int
       
