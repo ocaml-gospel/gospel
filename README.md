@@ -9,7 +9,7 @@
 [![license](https://img.shields.io/github/license/ocaml-gospel/gospel.svg?style=flat-square)](LICENSE)
 
 [![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-gospel%2Fgospel%2Fmain&logo=ocaml&style=flat-square)](https://ci.ocamllabs.io/github/ocaml-gospel/gospel)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ocaml-gospel/gospel?style=flat-square)](https://github.com/ocaml-gospel/gospel/releases/latest) 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ocaml-gospel/gospel?style=flat-square)](https://github.com/ocaml-gospel/gospel/releases/latest)
 [![documentation](https://img.shields.io/badge/documentation-online-blue?style=flat-square)](https://ocaml-gospel.github.io/gospel)
 
 </div>
@@ -18,7 +18,7 @@
 
 <div align="center">
 
-  :warning: **Disclamer:** This project is still experimental. 
+  :warning: **Disclamer:** This project is still experimental.
   No support will be provided at this point, and its behaviour is still unstable.
 
 </div>
@@ -32,7 +32,7 @@ function pre-conditions and post-conditions, effects, exceptions, and [much
 more](https://ocaml-gospel.github.io/gospel/language.html)!
 
 <div align="center">
-<img src="doc/images/screenshot.png" title="Gospel specification"> 
+<img src="doc/images/screenshot.png" title="Gospel specification">
 </div>
 
 We designed Gospel to provide a tool-agnostic frontend for bringing formal
@@ -76,7 +76,7 @@ starting with the `@` symbol:
 val max_array: int array -> int
 (*@ m = max_array a
     requires Array.length a > 0
-    ensures forall i. 0 <= i < Array.length a -> a.(i) <= m 
+    ensures forall i. 0 <= i < Array.length a -> a.(i) <= m
     ensures exists i. 0 <= i < Array.length a /\ a.(i) = m *)
 ```
 
@@ -108,7 +108,7 @@ guarantees to your programs:
 
 ## License
 
-This project is licensed under the **MIT license**. 
+This project is licensed under the **MIT license**.
 
 See the [LICENSE](LICENSE) file for more information.
 
