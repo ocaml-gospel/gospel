@@ -11,4 +11,4 @@
 
 (*@ function rec f ... *)
 File "t8.mli", line 2, characters 35-36:
-Error: Type mysmatch. Cannot match integer with bool
+Error: Type mismatch. Cannot match integer with bool

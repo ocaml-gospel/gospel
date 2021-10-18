@@ -26,4 +26,4 @@
     ensures ...
      *)
 File "t13.mli", line 18, characters 12-13:
-Error: Type mysmatch. Cannot match float with integer
+Error: Type mismatch. Cannot match float with integer

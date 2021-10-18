@@ -505,7 +505,7 @@ let () =
     | BadType (dty1, dty2) ->
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type mysmatch. Cannot match %a with %a" print_dty dty1 print_dty dty2
+          "Type mismatch. Cannot match %a with %a" print_dty dty1 print_dty dty2
     | DuplicatedVar s ->
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))

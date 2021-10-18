@@ -11,4 +11,4 @@
 
 (*@ axiom ... *)
 File "t2.mli", line 11, characters 11-12:
-Error: Type mysmatch. Cannot match integer with bool
+Error: Type mismatch. Cannot match integer with bool

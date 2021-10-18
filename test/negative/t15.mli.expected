@@ -32,4 +32,4 @@ type 'a t2 =
 
 (*@ function f ... *)
 File "t15.mli", line 23, characters 18-19:
-Error: Type mysmatch. Cannot match 'a with bool
+Error: Type mismatch. Cannot match 'a with bool

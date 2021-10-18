@@ -23,4 +23,4 @@
     ensures ...
      *)
 File "t7.mli", line 14, characters 12-13:
-Error: Type mysmatch. Cannot match integer with bool
+Error: Type mismatch. Cannot match integer with bool
