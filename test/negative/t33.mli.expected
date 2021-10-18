@@ -19,4 +19,4 @@ x: int }
 
 (*@ function f ... *)
 File "t33.mli", lines 14-15, characters 4-16:
-Error: Type mysmatch. Cannot match t with int
+Error: Type mismatch. Cannot match t with int

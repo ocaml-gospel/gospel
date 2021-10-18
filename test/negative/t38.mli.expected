@@ -26,4 +26,4 @@ type ('a, 'b) t2 = 'a t1
 
 (*@ function f ... *)
 File "t38.mli", lines 16-17, characters 4-20:
-Error: Type mysmatch. Cannot match 'a t1 with 'b t1
+Error: Type mismatch. Cannot match 'a t1 with 'b t1
