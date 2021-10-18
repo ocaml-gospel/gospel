@@ -110,7 +110,7 @@ language, this function is *pure*.
 val is_empty: t -> bool
 (*@ b = is_empty t
     pure
-    ensures b <-> t.capacity = Set.empty *)
+    ensures b <-> t.contents = Set.empty *)
 ```
 
 The specification for `mem` is similar:
