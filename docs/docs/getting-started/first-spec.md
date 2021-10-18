@@ -101,7 +101,7 @@ val create: int -> t
 
 Now on to `is_empty` and `mem`.
 
-`is_empty t` returns true if and only if `t` is empty; this is a post-condition. This
+`is_empty t` is true if and only if `t` is empty; this is a post-condition. This
 function also (hopefully) has no side-effect: it does not modify `t`, does not
 depend on any internal state, and does not raise exceptions. In Gospel's
 language, this function is *pure*.
