@@ -27,7 +27,7 @@ Gospel is a behavioural specification language for OCaml program. It provides
 developers with a non-invasive and easy-to-use syntax to annotate their module
 interfaces with formal contracts that describe type invariants, mutability,
 function pre-conditions and post-conditions, effects, exceptions, and [much
-more](https://ocaml-gospel.github.io/gospel/language.html)!
+more](https://ocaml-gospel.github.io/gospel/)!
 
 <div align="center">
 <img src="screenshot.png" title="Gospel specification">
