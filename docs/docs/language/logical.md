@@ -6,7 +6,7 @@ sidebar_position: 7
 
 ## Functions and Predicates
 
-It is often convenient to introduce shortcuts for terms and formulas and avoid
+It is often convenient to introduce shortcuts for terms and formulas to avoid
 repetitions. *Predicates* let you write named formulae definitions in Gospel
 comments. Here is a typical example:
 
@@ -17,7 +17,7 @@ comments. Here is a typical example:
 ```
 
 We can then reuse the predicate `is_sorted` inside any Gospel annotations such
-as function contracts.
+as function contracts:
 
 ```ocaml
 val merge: int array -> int array -> int array
@@ -33,8 +33,8 @@ Similarly, one can define a shortcut for terms using Gospel's *functions*.
 (*@ function powm (x y m: integer) : integer = mod (pow x y) m *)
 ```
 
-Such a definition may be recursive. In this case, the `rec` keyword is
-necessary.
+Both predicate definitions and function definitions may be
+recursive. A recursive definition requires the `rec` keyword like in OCaml:
 
 ```ocaml
 (*@ predicate rec is_sorted_list (l: int list) = match l with
@@ -65,13 +65,13 @@ follows:
 ```ocaml
 (*@ function fibonacci (n: integer) : integer *)
 
-(*@ axiom fibonacci_def : forall n. n >= 0 -> 
-      fibonacci n = 
-        if n <= 1 then n 
+(*@ axiom fibonacci_def : forall n. n >= 0 ->
+      fibonacci n =
+        if n <= 1 then n
         else fibonacci (n-2) + fibonacci (n-1) *)
 ```
 
-Logical symbols can also come with postconditions. For instance, we can assert
+Logical symbols can also come with post-conditions. For instance, we can assert
 that Fibonacci numbers are non-negative:
 
 ```ocaml {4}
@@ -86,18 +86,18 @@ that Fibonacci numbers are non-negative:
 Note that as opposed to OCaml function contracts, logical function contracts do
 not have a header. Consequently, a variable called `result` is automatically
 introduced in the context by Gospel to refer to the value returned by the
-function in a postcondition.
+function in a post-condition.
 
 :::
 
-The postcondition of `fibonacci` is equivalent to adding an axiom along with an
+The post-condition of `fibonacci` is equivalent to adding an axiom along with an
 uninterpreted counterpart.
 
 ```ocaml
 (*@ axiom fibonacci_post : forall n. n >= 0 -> fibonacci n >= 0 *)
 ```
 
-Note that the postcondition holds only when the precondition holds.
+Note that the post-condition holds only when the pre-condition holds.
 
 :::danger
 
