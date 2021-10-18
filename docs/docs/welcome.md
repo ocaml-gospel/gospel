@@ -6,8 +6,8 @@ title: Welcome!
 
 # Welcome!
 
-Welcome to the Gospel documentation. We've provided you with several resources
-to get you started with formal specifications for your OCaml programs.
+Welcome to the Gospel documentation. We provide several resources
+to get you started with formal specifications of your OCaml programs.
 
 - If you are entirely new to Gospel, please head out to the [Getting
   Started](getting-started/installation) section. You'll learn how to install

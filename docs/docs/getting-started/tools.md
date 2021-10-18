@@ -17,13 +17,13 @@ guarantees to your programs.
 
 ## Cameleer
 
-Cameleer is a tool for the deductive verification of OCaml code.
+Cameleer is a tool for deductive verification of OCaml code.
 
-It extents Gospel to implementation files, where you may add logical annotations
+It extends Gospel to implementation files, where you may add logical annotations
 like logical assertions, loop invariants, or termination arguments. The
 verification relies on the [Why3](https://why3.lri.fr) framework: `cameleer`
 translates the OCaml code into an equivalent WhyML program. It then lets you
-analyse this program whithin the framework (and its IDE!) to prove the
+analyse this program within the framework (and its IDE!) to prove the
 assertions via semi-automated techniques based on SMT provers.
 
 For more information, please visit the project page [on
@@ -36,7 +36,7 @@ Ortac is a runtime verification tool for OCaml programs.
 It reads the Gospel annotations in the interfaces and generates code that
 automatically checks them at runtime. It is implementation-agnostic and quite
 flexible: you may use it to trigger exceptions when violations occur, monitor
-your program execution by logging unexpected events or generate testing suites
+your program execution by logging unexpected events, or generate testing suites
 and fuzzers.
 
 For more information, please visit the project page [on
