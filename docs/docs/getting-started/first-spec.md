@@ -14,7 +14,7 @@ type 'a t
 exception Full
 
 val create: int -> 'a t
-(** [create capacity] is an empty container which maximum capacity
+(** [create capacity] is an empty container whose maximum capacity
     is [capacity]. *)
 
 val is_empty: 'a t -> bool
@@ -40,7 +40,7 @@ provide a specification for the signature item they are attached to.
 Let's start by specifying the abstract type `'a t`. As a container with fixed
 capacity, we can model it with two bits of information: a fixed integer
 capacity, and a set of `'a` values, representing its contents. Note that the
-capacity is not mutable, while the contents are. This logical modelisation of
+capacity is not mutable, while the contents are. This logical model of
 the container directly translates into Gospel:
 
 ```ocaml
@@ -51,10 +51,10 @@ type 'a t
 ```
 
 Notice that documentation comments and Gospel specifications can coexist and
-even often help understand each other! However, for the sake of brevity, we will
+often even help understand each other! However, for the sake of brevity, we will
 omit docstrings in the rest of this section.
 
-One may also note that the capacity must be positive, and the number of values
+One may also note that the capacity must be positive and that the number of values
 in the `contents` set may not exceed `capacity`. Those are type invariants:
 
 ```ocaml
@@ -67,7 +67,7 @@ type 'a t
 
 The `Set` module is part of the [Gospel standard library](../stdlib). Although it
 tries to mimic familiar interfaces from the OCaml standard library, those two
-should not be confused: logical declarations only can appear in specifications.
+should not be confused: logical declarations can only appear in specifications.
 
 Now that we annotated our type with its models and invariants, we can attach
 specifications to the functions to show how they interact with the container.
@@ -101,7 +101,7 @@ val create: int -> t
 
 Now on to `is_empty` and `mem`.
 
-`is_empty t` is true if and only if `t` is empty; this is a post-condition. This
+`is_empty t` returns true if and only if `t` is empty; this is a post-condition. This
 function also (hopefully) has no side-effect: it does not modify `t`, does not
 depend on any internal state, and does not raise exceptions. In Gospel's
 language, this function is *pure*.
@@ -127,7 +127,7 @@ val mem: 'a t -> 'a -> bool
 Finally, let us specify `clear` and `add`, which are functions that mutate the
 container.
 
-Function `clear` removes any element in its argument: it is empty after the
+The function `clear` removes all elements from its argument: it is empty after the
 call. Obviously, it modifies the `contents` model of its argument. After its
 execution, the container should be empty. Note that we are only allowed to
 mention `is_empty` in the specification because it is a pure function;
@@ -170,7 +170,7 @@ Since we have a `modifies` clause, the contents of `t` may be mutated even when
 `Full` is raised. The last line of specification forbids such a behavior.
 
 Notice how we did not need to repeat that `S.cardinal t.contents <= t.capacity`
-in every contract; as a type invariant, this property implicitely holds in every
+in every contract; as a type invariant, this property implicitly holds in every
 function's pre-state and post-state.
 
 ## Type-checking your specification
