@@ -176,8 +176,10 @@ function's pre-state and post-state.
 ## Type-checking your specification
 
 We're done! Our module interface is fully specified, independently of any
-implementation. Let's finish by verifying that these are well-typed, and call
-Gospel's type-checker:
+implementation. The full example is available in
+[container.mli](./container.mli) in case you want to play with it.
+Let's finish by verifying that these are well-typed, and call Gospel's
+type-checker:
 
 ```shell
 $ gospel check ./container.mli
