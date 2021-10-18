@@ -2,7 +2,7 @@
 sidebar_position: 4
 ---
 
-# Types specifications
+# Type specifications
 
 OCaml types can be annotated with Gospel specifications in order to model their
 contents and express invariants. Consider the following example of a container
@@ -20,12 +20,12 @@ The specification of this type contains three elements:
    domain. `capacity` is an immutable model of type `int` representing the
    maximum length of the data-structure, and `contents` is a mutable set
    representing its contents. Note that `Set.t` references a logical set
-   provided by Gospel standard library. Models do not give any information on
-   the actual implementation of `t`.
+   provided by Gospel's [standard library](../stdlib). Models do not
+   give any information on the actual implementation of `t`.
  - the last line is a clause denoting a type invariant. At all times, values of
    type `t` should contain less elements that their maximum capacity.
 
-Types specifications can contain models, invariants, and mutability information.
+Type specifications can contain models, invariants, and mutability information.
 
 ```ebnf title="Type specification syntax"
 type_specification = type-specification-clause*
@@ -39,7 +39,7 @@ type_specification_clause =
 
 Type models are logical projections of OCaml types. They help specify the type
 invariants and contents at several locations of the program, without actually
-exposing them and leaking implementations details.
+exposing them and leaking implementation details.
 
 The keyword `model` is used to introduce a new model. It may be preceded by the
 keyword `mutable` to denote that the model may be mutated during the execution
@@ -70,7 +70,7 @@ Of course, a type that has a mutable model is considered mutable, so the
 ## Invariants
 
 Type annotations may also contain invariants that hold at every entry and exit
-point of every fonction that manipulates their values. Formulae expressing these
+point of every function that manipulates their values. Formulae expressing these
 properties may be added after the `invariant` keyword:
 
 ```ocaml {4}
