@@ -63,6 +63,8 @@ module Ident = struct
 
   let set_loc t loc = { t with id_loc = loc }
   let add_attr t attr = { t with id_attrs = attr :: t.id_attrs }
+  let equal = ( == )
+  let hash x = x.id_tag
 end
 
 let prefix s = "prefix " ^ s

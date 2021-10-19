@@ -146,9 +146,6 @@ module Seq : sig
   (*@ function empty : 'a t *)
   (** [empty] is the empty sequence. *)
 
-  (*@ function return (x: 'a) : 'a t *)
-  (** [return x] is the sequence containing only [x]. *)
-
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton] is an alias for {!return}. *)
 
@@ -361,7 +358,9 @@ module Array : sig
       same number of occurrences *)
 
   (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
-  (** [permut_sub a b lo hi] is [permut (sub a lo hi) (sub b lo hi)] *)
+  (** [permut_sub a b lo hi] is true iff the segment `a1.(lo..hi-1)` is a
+      permutation of the segment `a2.(lo..hi-1)` and values outside of the
+      interval are equal. *)
 end
 
 (** {1 Bags} *)
