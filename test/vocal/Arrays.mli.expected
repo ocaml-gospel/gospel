@@ -236,36 +236,25 @@ module Arrays.mli
                fromi_2:int):integer <= (integer_of_int 
                toi_2:int):integer):prop /\ ((integer_of_int 
                toi_2:int):integer <= (length  a_3:'a array):integer):prop
-               checks forall i_6:integer j_3:integer. ((integer_of_int 
-                      fromi_2:int):integer <= i_6:integer):prop /\ (i_6:
-                                                                    integer <= 
-                      j_3:integer):prop /\ (j_3:integer < (integer_of_int 
-                      toi_2:int):integer):prop -> ((integer_of_int 
-                      (apply 
-                      (apply 
-                      cmp_2:'a -> 'a -> int (get 
-                      a_3:'a array i_6:integer):'a):'a -> int (get 
-                      a_3:'a array j_3:integer):'a):int):integer <= 0:
-                      integer):prop
         ensures ((integer_of_int  fromi_2:int):integer <= (integer_of_int 
                 r_2:int):integer):prop /\ ((integer_of_int 
                 r_2:int):integer <= (integer_of_int  toi_2:int):integer):prop
-                ensures forall i_7:integer. ((integer_of_int 
-                        fromi_2:int):integer <= i_7:integer):prop /\ (
-                        i_7:integer < (integer_of_int 
+                ensures forall i_6:integer. ((integer_of_int 
+                        fromi_2:int):integer <= i_6:integer):prop /\ (
+                        i_6:integer < (integer_of_int 
                         r_2:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
                         cmp_2:'a -> 'a -> int (get 
-                        a_3:'a array i_7:integer):'a):'a -> int v_2:'a):
+                        a_3:'a array i_6:integer):'a):'a -> int v_2:'a):
                         int):integer <= 0:integer):prop
-                ensures forall i_8:integer. ((integer_of_int 
-                        r_2:int):integer <= i_8:integer):prop /\ (i_8:integer < (integer_of_int 
+                ensures forall i_7:integer. ((integer_of_int 
+                        r_2:int):integer <= i_7:integer):prop /\ (i_7:integer < (integer_of_int 
                         toi_2:int):integer):prop -> ((integer_of_int 
                         (apply 
                         (apply 
                         cmp_2:'a -> 'a -> int (get 
-                        a_3:'a array i_8:integer):'a):'a -> int v_2:'a):
+                        a_3:'a array i_7:integer):'a):'a -> int v_2:'a):
                         int):integer > 0:integer):prop*)
     
     val binary_sort : ('a -> 'a -> int) -> 'a array -> int -> int -> unit
@@ -277,14 +266,14 @@ module Arrays.mli
                           toi_3:int):integer):prop /\ ((integer_of_int 
                           toi_3:int):integer <= (length 
                           a_4:'a array):integer):prop
-        ensures forall i_9:integer j_4:integer. ((integer_of_int 
-                fromi_3:int):integer <= i_9:integer):prop /\ (i_9:integer <= 
-                j_4:integer):prop /\ (j_4:integer < (integer_of_int 
+        ensures forall i_8:integer j_3:integer. ((integer_of_int 
+                fromi_3:int):integer <= i_8:integer):prop /\ (i_8:integer <= 
+                j_3:integer):prop /\ (j_3:integer < (integer_of_int 
                 toi_3:int):integer):prop -> ((integer_of_int 
                 (apply 
                 (apply 
-                cmp_3:'a -> 'a -> int (get  a_4:'a array i_9:integer):'a):
-                'a -> int (get  a_4:'a array j_4:integer):'a):int):integer <= 0:
+                cmp_3:'a -> 'a -> int (get  a_4:'a array i_8:integer):'a):
+                'a -> int (get  a_4:'a array j_3:integer):'a):int):integer <= 0:
                 integer):prop
                 ensures (permut_sub 
                         old (a_4:'a array) a_4:'a array (integer_of_int 
@@ -293,24 +282,24 @@ module Arrays.mli
         writes a_4:'a array*)
     
     val swap : 'a array -> int -> int -> unit
-    (*@  swap a_5:'a array i_10:int j_5:int
+    (*@  swap a_5:'a array i_9:int j_4:int
         requires (0:integer <= (integer_of_int 
-                 i_10:int):integer):prop /\ ((integer_of_int 
-                 i_10:int):integer < (length 
+                 i_9:int):integer):prop /\ ((integer_of_int 
+                 i_9:int):integer < (length 
                  a_5:'a array):integer):prop && (0:integer <= (integer_of_int 
-                 j_5:int):integer):prop /\ ((integer_of_int 
-                 j_5:int):integer < (length  a_5:'a array):integer):prop
+                 j_4:int):integer):prop /\ ((integer_of_int 
+                 j_4:int):integer < (length  a_5:'a array):integer):prop
         ensures ((get 
-                a_5:'a array (integer_of_int  i_10:int):integer):'a = old ((get 
-                a_5:'a array (integer_of_int  j_5:int):integer):'a)):prop
+                a_5:'a array (integer_of_int  i_9:int):integer):'a = old ((get 
+                a_5:'a array (integer_of_int  j_4:int):integer):'a)):prop
                 ensures ((get 
-                        a_5:'a array (integer_of_int  j_5:int):integer):'a = old ((get 
-                        a_5:'a array (integer_of_int  i_10:int):integer):'a)):prop
+                        a_5:'a array (integer_of_int  j_4:int):integer):'a = old ((get 
+                        a_5:'a array (integer_of_int  i_9:int):integer):'a)):prop
                 ensures forall k:integer. (0:integer <= k:integer):prop /\ (
                         k:integer < (length 
                         a_5:'a array):integer):prop -> not (k:integer = (integer_of_int 
-                        i_10:int):integer):prop -> not (k:integer = (integer_of_int 
-                        j_5:int):integer):prop -> ((get 
+                        i_9:int):integer):prop -> not (k:integer = (integer_of_int 
+                        j_4:int):integer):prop -> ((get 
                         a_5:'a array k:integer):'a = old ((get 
                         a_5:'a array k:integer):'a)):prop
         writes a_5:'a array*)

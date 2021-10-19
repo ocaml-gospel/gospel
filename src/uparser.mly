@@ -235,7 +235,7 @@ val_spec_body:
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }
 | CHECKS t=term bd=val_spec_body
-  { { bd with sp_checks = t :: bd.sp_pre } }
+  { { bd with sp_checks = t :: bd.sp_checks } }
 | ENSURES t=term bd=val_spec_body
   { { bd with sp_post = t :: bd.sp_post} }
 | RAISES r=bar_list1(raises) bd=val_spec_body
