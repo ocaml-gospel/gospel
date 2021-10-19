@@ -272,7 +272,6 @@ module a3.mli
                   function length_2 (_:'a seq) : integer
                   function map_3 (_:'a -> 'b) (_:'a seq) : 'b seq
                   predicate mem_3 (_:'a seq) (_:'a)
-                  function return (_:'a) : 'a seq
                   function rev_1 (_:'a seq) : 'a seq
                   function set_1 (_:'a seq) (_:integer) (_:'a) : 'a seq
                   function singleton_1 (_:'a) : 'a seq
