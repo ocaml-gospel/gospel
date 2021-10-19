@@ -21,7 +21,7 @@ type lb_arg =
   | Lghost of vsymbol  (** \[x: t\] *)
 
 type val_spec = {
-  sp_args : lb_arg list;  (** Arguements *)
+  sp_args : lb_arg list;  (** Arguments *)
   sp_ret : lb_arg list;
       (** Return values. This is a list because of tuple destruction. *)
   sp_pre : term list;  (** Preconditions *)
