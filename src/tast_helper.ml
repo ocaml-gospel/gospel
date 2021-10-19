@@ -3,6 +3,9 @@ open Tast
 open Ttypes
 open Tterm (* Svs *)
 
+open Tterm_printer
+open Tterm_helper
+
 exception DuplicatedArg of vsymbol
 
 let vs_of_lb_arg = function

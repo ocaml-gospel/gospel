@@ -13,6 +13,8 @@ open Utils
 open Identifier
 open Ttypes
 open Tterm
+open Tterm_printer
+open Tterm_helper
 
 (* types *)
 

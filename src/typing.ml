@@ -98,6 +98,7 @@ let rec ty_of_core ns cty =
 
 open Dterm
 open Tterm
+open Tterm_helper
 open Tast
 
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
@@ -1173,6 +1174,7 @@ and type_sig_item penv muc sig_item =
 
 let () =
   let open Location.Error in
+  let open Tterm_printer in
   register_error_of_exn (function
     | PartialApplication ls ->
         Fmt.kstr
