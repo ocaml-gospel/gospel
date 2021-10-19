@@ -72,7 +72,7 @@ let default_open =
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.psig_attribute
 
-let default_open_str =
+let _default_open_str =
   let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
   let name = { txt = "gospel"; loc = Location.none } in
   B.attribute ~name ~payload |> B.pstr_attribute
