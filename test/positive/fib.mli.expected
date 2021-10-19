@@ -58,10 +58,6 @@ module fib.mli
                  requires ((integer_of_int  b:int):integer = (fibonacci 
                           (i:integer + 1:integer):integer):integer):prop
         checks ((integer_of_int  n_1:int):integer >= 0:integer):prop
-               checks ((integer_of_int  a:int):integer = (fibonacci 
-                      i:integer):integer):prop
-               checks ((integer_of_int  b:int):integer = (fibonacci 
-                      (i:integer + 1:integer):integer):integer):prop
         ensures ((integer_of_int  r:int):integer = (fibonacci 
                 (i:integer + (integer_of_int  n_1:int):integer):integer):
                 integer):prop*)
