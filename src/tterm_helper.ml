@@ -3,6 +3,8 @@ open Ttypes
 open Utils
 module Ident = Identifier.Ident
 
+let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
+
 let lsymbol ?(constr = false) ~field ls_name ls_args ls_value =
   { ls_name; ls_args; ls_value; ls_constr = constr; ls_field = field }
 

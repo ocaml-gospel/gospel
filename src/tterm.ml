@@ -16,8 +16,6 @@ module Ident = Identifier.Ident
 
 type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
 
-let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
-
 module Vs = struct
   type t = vsymbol
 
@@ -63,11 +61,11 @@ type pattern = {
 [@@deriving show]
 
 and pattern_node =
-  | Pwild
-  | Pvar of vsymbol
-  | Papp of lsymbol * pattern list
-  | Por of pattern * pattern
-  | Pas of pattern * vsymbol
+  | Pwild  (** _ *)
+  | Pvar of vsymbol  (** x *)
+  | Papp of lsymbol * pattern list  (** Constructor *)
+  | Por of pattern * pattern  (** p1 | p2 *)
+  | Pas of pattern * vsymbol  (** p as vs *)
 [@@deriving show]
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
