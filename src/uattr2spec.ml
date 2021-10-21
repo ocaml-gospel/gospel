@@ -116,7 +116,7 @@ let ghost_spec ~filename attr =
           |> Option.map (fun (ty_text, spec) ->
                  { spec with ty_text; ty_loc = attr.attr_loc })
         in
-        Sig_ghost_type (r, [ { type_ with tspec } ])
+        Sig_ghost_type (r, [ { type_ with tspec; tloc = attr.attr_loc } ])
       else Sig_ghost_type (r, [ type_ ])
   | [ { psig_desc = Psig_value vd; _ } ] ->
       let val_ = val_description ~filename vd in
@@ -128,7 +128,7 @@ let ghost_spec ~filename attr =
           |> Option.map (fun (sp_text, spec) ->
                  { spec with sp_text; sp_loc = attr.attr_loc })
         in
-        Sig_ghost_val { val_ with vspec }
+        Sig_ghost_val { val_ with vspec; vloc = attr.attr_loc }
       else Sig_ghost_val val_
   | [ { psig_desc = Psig_open od; _ } ] -> Sig_ghost_open od
   | _ -> assert false
@@ -150,7 +150,7 @@ let floating_spec ~filename a =
   with Syntax_error _ -> (
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
-      Sig_axiom { axiom with ax_text }
+      Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
     with Syntax_error _ -> ghost_spec ~filename a)
 
 let with_constraint c =

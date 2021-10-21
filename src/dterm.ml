@@ -34,7 +34,7 @@ let ty_of_dty =
     let get_var id =
       try Hashtbl.find tyvars id
       with Not_found ->
-        let ty = fresh_ty_var ("a" ^ string_of_int id) in
+        let ty = fresh_ty_var ~loc:Location.none ("a" ^ string_of_int id) in
         Hashtbl.add tyvars id ty;
         ty
     in
@@ -75,8 +75,8 @@ let specialize_ls ls =
 
 exception ConstructorExpected of lsymbol
 
-let specialize_cs ?loc cs =
-  if cs.ls_constr = false then error ?loc (ConstructorExpected cs);
+let specialize_cs ~loc cs =
+  if cs.ls_constr = false then error ~loc (ConstructorExpected cs);
   let dtyl, dty = specialize_ls cs in
   (dtyl, Option.get dty)
 
@@ -88,7 +88,7 @@ type dpattern = {
   dp_node : dpattern_node;
   dp_dty : dty;
   dp_vars : dty Mstr.t;
-  dp_loc : Location.t option;
+  dp_loc : Location.t;
 }
 
 and dpattern_node =
@@ -178,10 +178,10 @@ let app_unify_map ls unify l dtyl =
 
 let dpattern_unify dp dty =
   try unify dp.dp_dty dty
-  with Exit -> error ?loc:dp.dp_loc (PatternBadType (dp.dp_dty, dty))
+  with Exit -> error ~loc:dp.dp_loc (PatternBadType (dp.dp_dty, dty))
 
-let dty_unify ?loc dty1 dty2 =
-  try unify dty1 dty2 with Exit -> error ?loc (BadType (dty1, dty2))
+let dty_unify ~loc dty1 dty2 =
+  try unify dty1 dty2 with Exit -> error ~loc (BadType (dty1, dty2))
 
 let dterm_unify dt dty =
   match dt.dt_dty with
@@ -205,8 +205,8 @@ type denv = dty Mstr.t
 exception DuplicatedVar of string
 exception UnboundVar of string
 
-let denv_find ?loc s denv =
-  try Mstr.find s denv with Not_found -> error ?loc (UnboundVar s)
+let denv_find ~loc s denv =
+  try Mstr.find s denv with Not_found -> error ~loc (UnboundVar s)
 
 let is_in_denv denv s = Mstr.mem s denv
 let denv_empty = Mstr.empty
@@ -247,7 +247,7 @@ let ts_of_dty = function Some dt_dty -> ts_of_dty dt_dty | None -> ts_bool
 let rec ty_of_dty_raw = function
   | Tvar { dtv_def = Some (Tty ty) } -> ty
   | Tvar { dtv_def = Some dty } -> ty_of_dty_raw dty
-  | Tvar _ -> fresh_ty_var "xi"
+  | Tvar _ -> fresh_ty_var ~loc:Location.none "xi"
   | Tapp (ts, dl) -> ty_app ts (List.map ty_of_dty_raw dl)
   | Tty ty -> ty
 
@@ -275,7 +275,7 @@ let max_dty crcmap dtl =
         try (dty, ts_of_dty dty, ty_of_dty_raw dty) :: acc with Exit -> acc)
       [] dtl
   in
-  if l == [] then (List.hd dtl).dt_dty else aux l
+  if l = [] then (List.hd dtl).dt_dty else aux l
 
 let max_dty crcmap dtl =
   match max_dty crcmap dtl with
@@ -319,14 +319,14 @@ let pattern dp =
   let rec pattern_node dp =
     let ty = ty_of_dty dp.dp_dty in
     match dp.dp_node with
-    | DPwild -> p_wild ty
-    | DPvar pid -> p_var (get_var pid ty)
-    | DPapp (ls, dpl) -> p_app ls (List.map pattern_node dpl) ty
+    | DPwild -> p_wild ty dp.dp_loc
+    | DPvar pid -> p_var (get_var pid ty) dp.dp_loc
+    | DPapp (ls, dpl) -> p_app ls (List.map pattern_node dpl) ty dp.dp_loc
     | DPor (dp1, dp2) ->
         let dp1 = pattern_node dp1 in
         let dp2 = pattern_node dp2 in
-        p_or dp1 dp2
-    | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty)
+        p_or dp1 dp2 dp.dp_loc
+    | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty) dp.dp_loc
     | DPcast _ -> assert false
   in
   let p = pattern_node dp in
