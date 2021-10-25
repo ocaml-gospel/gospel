@@ -1,6 +1,7 @@
 open Ppxlib
 open Tast
 open Tterm
+open Symbols
 open Ttypes
 
 val ty_of_lb_arg : lb_arg -> ty

@@ -1,9 +1,8 @@
 open Utils
 open Tast
 open Ttypes
-open Tterm (* Svs *)
-
 open Tterm_printer
+open Symbols
 open Tterm_helper
 
 exception DuplicatedArg of vsymbol

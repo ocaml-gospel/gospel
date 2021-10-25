@@ -12,6 +12,7 @@ open Ppxlib
 open Utils
 open Identifier
 open Ttypes
+open Symbols
 open Tterm
 open Tterm_printer
 open Tterm_helper

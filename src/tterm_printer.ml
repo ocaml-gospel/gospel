@@ -1,5 +1,6 @@
 open Ppxlib
 open Tterm
+open Symbols
 
 open Tterm_helper
 (** Pretty printing *)

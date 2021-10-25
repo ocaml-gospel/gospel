@@ -1,58 +1,16 @@
 module Ident = Identifier.Ident
 open Tterm
 open Ttypes
-module Sls : Set.S with type elt = lsymbol
-module Mls : Map.S with type key = lsymbol
-
-val create_vsymbol : Identifier.Preid.t -> Ttypes.ty -> Tterm.vsymbol
-val ls_equal : lsymbol -> lsymbol -> bool
-
-val lsymbol :
-  ?constr:bool ->
-  field:bool ->
-  Ident.t ->
-  Ttypes.ty list ->
-  Ttypes.ty option ->
-  Tterm.lsymbol
-
-val fsymbol :
-  ?constr:bool ->
-  field:bool ->
-  Ident.t ->
-  Ttypes.ty list ->
-  Ttypes.ty ->
-  Tterm.lsymbol
-
-val psymbol : Ident.t -> Ttypes.ty list -> Tterm.lsymbol
-
-val ls_subst_ts :
-  Ttypes.tysymbol -> Ttypes.tysymbol -> Tterm.lsymbol -> Tterm.lsymbol
-
-val ls_subst_ty :
-  Ttypes.tysymbol ->
-  Ttypes.tysymbol ->
-  Ttypes.ty ->
-  Tterm.lsymbol ->
-  Tterm.lsymbol
-
-val ps_equ : Tterm.lsymbol
-val fs_unit : Tterm.lsymbol
-val fs_bool_true : Tterm.lsymbol
-val fs_bool_false : Tterm.lsymbol
-val fs_apply : Tterm.lsymbol
-val fs_tuple_ids : (Ident.t, Tterm.lsymbol) Hashtbl.t
-val fs_tuple : int -> Tterm.lsymbol
-val is_fs_tuple : Tterm.lsymbol -> bool
-val p_vars : Tterm.pattern -> Tterm.Svs.t
+open Symbols
 
 exception FreeVariables of Svs.t
 
-val t_free_vars : Tterm.term -> Tterm.Svs.t
+val t_free_vars : Tterm.term -> Svs.t
 
 exception TermExpected of term
 exception FmlaExpected of term
 
-val t_free_vs_in_set : Tterm.Svs.t -> Tterm.term -> unit
+val t_free_vs_in_set : Svs.t -> Tterm.term -> unit
 val t_prop : Tterm.term -> Tterm.term
 val t_type : term -> ty
 val t_ty_check : term -> ty option -> unit

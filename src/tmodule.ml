@@ -12,9 +12,8 @@ open Ppxlib
 open Utils
 open Identifier
 open Ttypes
-open Tterm
+open Symbols
 open Tterm_printer
-open Tterm_helper
 open Tast
 open Tast_helper
 

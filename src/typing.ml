@@ -15,6 +15,7 @@ open Uast
 open Ttypes
 open Tmodule
 open Tast_helper
+open Symbols
 
 (** Utils *)
 
@@ -98,7 +99,6 @@ let rec ty_of_core ns cty =
 
 open Dterm
 open Tterm
-open Tterm_helper
 open Tast
 
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)

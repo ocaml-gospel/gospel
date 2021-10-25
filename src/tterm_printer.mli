@@ -1,4 +1,5 @@
 open Tterm
+open Symbols
 
 val print_vs : Format.formatter -> vsymbol -> unit
 val print_ls_decl : Format.formatter -> lsymbol -> unit

@@ -10,7 +10,7 @@
 (********************************************************************)
 
 open Ttypes
-open Tterm
+open Symbols
 
 type t
 (** a set of coercions *)

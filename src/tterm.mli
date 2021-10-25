@@ -1,19 +1,17 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
 open Ppxlib
 open Ttypes
+open Symbols
 module Ident = Identifier.Ident
-
-type vsymbol = { vs_name : Ident.t; vs_ty : ty }
-
-module Svs : Set.S with type elt = vsymbol
-
-type lsymbol = {
-  ls_name : Ident.t;
-  ls_args : ty list;
-  ls_value : ty option;
-  ls_constr : bool;
-  (* true if it is a construct, false otherwise*)
-  ls_field : bool; (* true if it is a record/model field *)
-}
 
 type pattern = {
   p_node : pattern_node;
