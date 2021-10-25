@@ -394,43 +394,41 @@ module Bag : sig
   (** [remove x b] is [b] where an occurence of [x] was removed. *)
 
   (*@ function union (b b': 'a t) : 'a t *)
-  (** [union b b'] is a bag where for all element [x],
-      [occurences x b = max
-      (occurences x b1) (occurences x b2)]. *)
+  (** [union b b'] is a bag [br] where for all element [x],
+      [occurences x br = max
+      (occurences x b) (occurences x b')]. *)
 
   (*@ function sum (b b': 'a t) : 'a t *)
-  (** [sum b b'] is a bag where for all element [x],
-      [occurences x b =
-      (occurences x b1) + (occurences x b2)]. *)
+  (** [sum b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      (occurences x b) + (occurences x b')]. *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
-  (** [inter b b'] is a bag where for all element [x],
-      [occurences x b =
-      min (occurences x b1) (occurences x b2)]. *)
+  (** [inter b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      min (occurences x b) (occurences x b')]. *)
 
   (*@ predicate disjoint (b b': 'a t) *)
   (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
 
   (*@ function diff (b b': 'a t) : 'a t *)
-  (** [diff b b'] is a bag where for all element [x],
-      [occurences x b =
-      max 0 (occurences x b1 - occurences x b2)]. *)
+  (** [diff b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      max 0 (occurences x b - occurences x b')]. *)
 
   (*@ predicate subset (b b': 'a t) *)
   (** [subset b b'] holds iff for all element [x],
-      [occurences x b <= occurences
-      x b']. *)
+      [occurences x b <= occurences x b']. *)
 
-  (*@ function choose (b: 'a t) : integer *)
+  (*@ function choose (b: 'a t) : 'a *)
   (** [choose b] is an arbitrary element of [b]. *)
 
   (*@ function choose_opt (b: 'a t) : 'a option *)
   (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty. *)
 
   (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
-  (** [map f b] is a fresh set which elements are [f x1 ... f xN], where
-      [x1 ...
-      xN] are the elements of [b]. *)
+  (** [map f b] is a fresh bag which elements are [f x1 ... f xN], where
+      [x1 ... xN] are the elements of [b]. *)
 
   (*@ function fold (f: 'a -> 'b -> 'b) (b: 'a t) : 'b *)
   (** [fold f b] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
