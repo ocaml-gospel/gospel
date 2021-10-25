@@ -152,7 +152,7 @@ module a3.mli
                   predicate _exists_1 (_:'a -> bool) (_:'a bag)
                   function add (_:'a) (_:'a bag) : 'a bag
                   function cardinal (_:'a bag) : int
-                  function choose (_:'a bag) : integer
+                  function choose (_:'a bag) : 'a
                   function choose_opt (_:'a bag) : 'a option
                   function compare (_:'a bag) (_:'a bag) : int
                   function diff (_:'a bag) (_:'a bag) : 'a bag
