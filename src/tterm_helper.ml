@@ -3,6 +3,17 @@ open Ttypes
 open Utils
 module Ident = Identifier.Ident
 
+module LS = struct
+  type t = lsymbol
+
+  let compare l1 l2 = Ident.compare l1.ls_name l2.ls_name
+  let equal = ls_equal
+  let hash = (Hashtbl.hash : lsymbol -> int)
+end
+
+module Sls = Set.Make (LS)
+module Mls = Map.Make (LS)
+
 let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
 
 let lsymbol ?(constr = false) ~field ls_name ls_args ls_value =

@@ -1,6 +1,8 @@
 module Ident = Identifier.Ident
 open Tterm
 open Ttypes
+module Sls : Set.S with type elt = lsymbol
+module Mls : Map.S with type key = lsymbol
 
 val create_vsymbol : Identifier.Preid.t -> Ttypes.ty -> Tterm.vsymbol
 

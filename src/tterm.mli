@@ -17,9 +17,6 @@ type lsymbol = {
 
 val ls_equal : lsymbol -> lsymbol -> bool
 
-module Sls : Set.S with type elt = lsymbol
-module Mls : Map.S with type key = lsymbol
-
 type pattern = {
   p_node : pattern_node;
   p_ty : ty;

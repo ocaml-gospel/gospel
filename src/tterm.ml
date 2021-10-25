@@ -37,20 +37,8 @@ type lsymbol = {
 }
 [@@deriving show]
 
-let ls_equal l1 l2 = Ident.equal l1.ls_name l2.ls_name
-
-module LS = struct
-  type t = lsymbol
-
-  let compare l1 l2 = Ident.compare l1.ls_name l2.ls_name
-  let equal = ls_equal
-  let hash = (Hashtbl.hash : lsymbol -> int)
-end
-
-module Sls = Set.Make (LS)
-
-module Mls = Map.Make (LS)
 (** terms *)
+let ls_equal : lsymbol -> lsymbol -> bool = ( == )
 
 type pattern = {
   p_node : pattern_node;
