@@ -253,7 +253,7 @@ module List : sig
       [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
       length of [t]. *)
 
-  (*@ function map2 (f: 'a -> 'b -> 'c) (l l': 'a t) : 'c t *)
+  (*@ function map2 (f: 'a -> 'b -> 'c) (l: 'a t) (l': 'b t) : 'c t *)
   (** [map2 f l l'] applies function [f] to all the elements of [l] and [l'],
       and builds a list with the results returned by [f]. *)
 
@@ -263,10 +263,10 @@ module List : sig
   (*@ predicate _exists (f: 'a -> bool) (l: 'a t) *)
   (** [_exists f l] holds iff at least one element of [l] satisfies [f]. *)
 
-  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l l': 'a t) *)
+  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
   (** Same as {!for_all}, but for a two-argument predicate. *)
 
-  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (l l': 'a t) *)
+  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
   (** Same as {!_exists}, but for a two-argument predicate. *)
 
   (*@ predicate mem (x: 'a) (l: 'a t) *)
