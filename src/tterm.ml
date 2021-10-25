@@ -38,7 +38,6 @@ type lsymbol = {
 [@@deriving show]
 
 (** terms *)
-let ls_equal : lsymbol -> lsymbol -> bool = ( == )
 
 type pattern = {
   p_node : pattern_node;

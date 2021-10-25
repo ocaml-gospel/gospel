@@ -5,6 +5,7 @@ module Sls : Set.S with type elt = lsymbol
 module Mls : Map.S with type key = lsymbol
 
 val create_vsymbol : Identifier.Preid.t -> Ttypes.ty -> Tterm.vsymbol
+val ls_equal : lsymbol -> lsymbol -> bool
 
 val lsymbol :
   ?constr:bool ->

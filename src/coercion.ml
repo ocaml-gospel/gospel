@@ -12,6 +12,7 @@
 open Ppxlib
 open Ttypes
 open Tterm
+open Tterm_helper
 open Utils
 
 type coercion_kind =

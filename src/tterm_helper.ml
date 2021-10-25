@@ -11,6 +11,8 @@ module LS = struct
   let hash = (Hashtbl.hash : lsymbol -> int)
 end
 
+let ls_equal : lsymbol -> lsymbol -> bool = ( == )
+
 module Sls = Set.Make (LS)
 module Mls = Map.Make (LS)
 

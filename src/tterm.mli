@@ -15,8 +15,6 @@ type lsymbol = {
   ls_field : bool; (* true if it is a record/model field *)
 }
 
-val ls_equal : lsymbol -> lsymbol -> bool
-
 type pattern = {
   p_node : pattern_node;
   p_ty : ty;
