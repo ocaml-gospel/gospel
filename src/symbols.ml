@@ -8,11 +8,12 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+open Ppxlib
 open Ttypes
 module Ident = Identifier.Ident
 
 (* Variable Symbols *)
-type vsymbol = { vs_name : Ident.t; vs_ty : ty }
+type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
 
 let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
 
@@ -34,6 +35,7 @@ type lsymbol = {
   (* true if it is a construct, false otherwise*)
   ls_field : bool; (* true if it is a record/model field *)
 }
+[@@deriving show]
 
 (* CHECK *)
 let ls_equal : lsymbol -> lsymbol -> bool = ( == )
@@ -74,18 +76,27 @@ let ps_equ =
   let tv = fresh_ty_var "a" in
   psymbol Identifier.eq [ tv; tv ]
 
-let fs_unit = fsymbol ~constr:true ~field:false (Ident.create "unit") [] ty_unit
+let fs_unit =
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "unit")
+    [] ty_unit
 
 let fs_bool_true =
-  fsymbol ~constr:true ~field:false (Ident.create "True") [] ty_bool
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "True")
+    [] ty_bool
 
 let fs_bool_false =
-  fsymbol ~constr:true ~field:false (Ident.create "False") [] ty_bool
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "False")
+    [] ty_bool
 
 let fs_apply =
   let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
   let ty_a_to_b = ty_app ts_arrow [ ty_a; ty_b ] in
-  fsymbol ~field:false (Ident.create "apply") [ ty_a_to_b; ty_a ] ty_b
+  fsymbol ~field:false
+    (Ident.create ~loc:Location.none "apply")
+    [ ty_a_to_b; ty_a ] ty_b
 
 (* CHECK do we need two hash tables? *)
 let fs_tuple_ids = Hashtbl.create 17
@@ -95,7 +106,7 @@ let fs_tuple =
   fun n ->
     try Hashtbl.find ls_tuples n
     with Not_found ->
-      let id = Ident.create ("tuple" ^ string_of_int n) in
+      let id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
       let tyl = List.init n (fun _ -> fresh_ty_var "a") in
       let ty = ty_app (ts_tuple n) tyl in
       let ls = fsymbol ~constr:true ~field:false id tyl ty in

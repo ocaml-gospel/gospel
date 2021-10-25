@@ -1,3 +1,13 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
 open Tterm
 open Ttypes
 open Utils
@@ -157,7 +167,7 @@ let t_quant q vsl t ty loc =
   | _, [] -> t_prop t
   | Tlambda, _ -> t_quant q vsl t ty loc
   | _, _ ->
-      check_report (ty = None) "Quantifiers terms must be of type prop.";
+      check_report ~loc (ty = None) "Quantifiers terms must be of type prop.";
       t_quant q vsl (t_prop t) None loc
 
 let f_forall = t_quant Tforall
