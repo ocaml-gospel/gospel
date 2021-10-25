@@ -427,9 +427,8 @@ module Bag : sig
   (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty. *)
 
   (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
-  (** [map f b] is a fresh set which elements are [f x1 ... f xN], where
-      [x1 ...
-      xN] are the elements of [b]. *)
+  (** [map f b] is a fresh bag which elements are [f x1 ... f xN], where
+      [x1 ... xN] are the elements of [b]. *)
 
   (*@ function fold (f: 'a -> 'b -> 'b) (b: 'a t) : 'b *)
   (** [fold f b] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
