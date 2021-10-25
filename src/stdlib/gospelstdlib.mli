@@ -253,7 +253,7 @@ module List : sig
       [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
       length of [t]. *)
 
-  (*@ function map2 (f: 'a -> 'b -> 'c) (l: 'a t) (l': 'b t) : 'c t *)
+  (*@ function map2 (f: 'a -> 'b -> 'c) (l l': 'a t) : 'c t *)
   (** [map2 f l l'] applies function [f] to all the elements of [l] and [l'],
       and builds a list with the results returned by [f]. *)
 
@@ -263,10 +263,10 @@ module List : sig
   (*@ predicate _exists (f: 'a -> bool) (l: 'a t) *)
   (** [_exists f l] holds iff at least one element of [l] satisfies [f]. *)
 
-  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
+  (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l l': 'a t) *)
   (** Same as {!for_all}, but for a two-argument predicate. *)
 
-  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
+  (*@ predicate _exists2 (f: 'a -> 'b -> bool) (l l': 'a t) *)
   (** Same as {!_exists}, but for a two-argument predicate. *)
 
   (*@ predicate mem (x: 'a) (l: 'a t) *)
@@ -394,34 +394,33 @@ module Bag : sig
   (** [remove x b] is [b] where an occurence of [x] was removed. *)
 
   (*@ function union (b b': 'a t) : 'a t *)
-  (** [union b b'] is a bag where for all element [x],
-      [occurences x b = max
-      (occurences x b1) (occurences x b2)]. *)
+  (** [union b b'] is a bag [br] where for all element [x],
+      [occurences x br = max
+      (occurences x b) (occurences x b')]. *)
 
   (*@ function sum (b b': 'a t) : 'a t *)
-  (** [sum b b'] is a bag where for all element [x],
-      [occurences x b =
-      (occurences x b1) + (occurences x b2)]. *)
+  (** [sum b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      (occurences x b) + (occurences x b')]. *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
-  (** [inter b b'] is a bag where for all element [x],
-      [occurences x b =
-      min (occurences x b1) (occurences x b2)]. *)
+  (** [inter b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      min (occurences x b) (occurences x b')]. *)
 
   (*@ predicate disjoint (b b': 'a t) *)
   (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
 
   (*@ function diff (b b': 'a t) : 'a t *)
-  (** [diff b b'] is a bag where for all element [x],
-      [occurences x b =
-      max 0 (occurences x b1 - occurences x b2)]. *)
+  (** [diff b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      max 0 (occurences x b - occurences x b')]. *)
 
   (*@ predicate subset (b b': 'a t) *)
   (** [subset b b'] holds iff for all element [x],
-      [occurences x b <= occurences
-      x b']. *)
+      [occurences x b <= occurences x b']. *)
 
-  (*@ function choose (b: 'a t) : integer *)
+  (*@ function choose (b: 'a t) : 'a *)
   (** [choose b] is an arbitrary element of [b]. *)
 
   (*@ function choose_opt (b: 'a t) : 'a option *)
