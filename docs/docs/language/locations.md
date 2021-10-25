@@ -28,7 +28,7 @@ inside module signatures:
 Specification bits which are semantically attached to OCaml declarations (e.g.
 [function contracts](function-contracts.md) or [type
 specifications](type-specifications.md)) should be written in an attached
-attribute, following OCaml's attachement rules:
+attribute, following OCaml's attachment rules:
 
 ```ocaml
 val f: int -> int
@@ -59,12 +59,12 @@ starting with the `@` character[^1]:
 
 ```ocaml
 val f: int -> int           (* An OCaml value declaration *)
-(*@ y = f x         
+(*@ y = f x
     ensures x > 0 *)        (* Its Gospel specification   *)
 
 (*@ type t *)               (* A ghost type declaration   *)
-(*@ ephemeral         
-    model size: int *)      (* Its Gospel specification   *)      
+(*@ ephemeral
+    model size: int *)      (* Its Gospel specification   *)
 ```
 
 Although the preprocessor is available via the `gospel pps` command, it is also
@@ -87,7 +87,7 @@ comments, *e.g.* as follows:
 ```ocaml
 val eucl_division: int -> int -> int * int
 (** this is an implementation of Euclidean division *)
-(*@ q, r = eucl_division x y 
+(*@ q, r = eucl_division x y
     ... *)
 ```
 

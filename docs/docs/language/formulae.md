@@ -5,7 +5,7 @@ sidebar_position: 3
 # Terms and Formulae
 
 Gospel features terms (e.g. `x+1`) and formulae (e.g. `forall i. f i > 0`). This
-distinction is made during the type-checking, and not at the syntax level. In
+distinction is made during type checking, and not at the syntax level. In
 the following, `expr` stands for a Gospel expression, be it a term or a formula.
 
 ## Type expressions
@@ -14,15 +14,15 @@ Type expressions follow the OCaml syntax.
 
 ```ebnf
 typexpr = lname
-        | "'", lident
-        | "(", typexpr, ")"
-        | typexpr, lpath
-        | typexpr, { ",", typexpr }
-        | (?"?, lident, ":")?, typexpr, "->", typexpr
-        | typexpr, ("*", typexpr)+
-lpath = (upath, ".")?, lident
+        | "'" lident
+        | "(" typexpr ")"
+        | typexpr lpath
+        | typexpr, { "," typexpr }
+        | (?"? lident ":")? typexpr "->" typexpr
+        | typexpr ("*" typexpr)+
+lpath = (upath ".")? lident
 upath = uident
-      | upath, ".", uident
+      | upath "." uident
 ```
 
 ## Expressions

@@ -27,7 +27,7 @@ A function contract is composed of two parts:
    In the absence of a contract attached to a function declaration, you cannot
    make any assumptions about its behaviour.
 
-   Post-Conditions may not hold, the function may diverge, raise unlisted
+   Post-conditions may not hold, the function may diverge, raise unlisted
    exceptions, modify mutable states. However, **it still cannot break any type
    invariant.**
 
@@ -63,7 +63,7 @@ parameter = "()" | identifier | "~" identifier | "?" identifier
 ##  Default behaviour
 
 To avoid boilerplate for usual properties, Gospel applies a default contract
-whenever a function contains has a specification attached. Of course, any
+whenever a function has a specification attached. Of course, any
 explicitly declared clause overrides this implicit contract.
 
 When a function has a contract attached, the default contract contains the
@@ -77,16 +77,16 @@ following properties:
 
 ## Pre-conditions
 
-Pre-conditions are **properties that hold at the function entry**. You can use
+Pre-conditions are **properties that must hold at the function entry**. You can use
 them to describe requirements on the function's inputs, but also possibly on a
 global state that exists outside of the function arguments.
 
-You can expressed them using the keyword `requires` or `checks`, followed by a
+You can express pre-conditions using the keyword `requires` or `checks`, followed by a
 formula.
 
 ### `requires`
 
-A `requires` clause states under which conditions specified function has a
+A `requires` clause states under which conditions a specified function has a
 well-specified behaviour.
 
 Whenever a `requires` pre-condition is violated, its behaviour becomes
@@ -94,7 +94,7 @@ unspecified, and the call should be considered faulty. Even if the function
 execution terminates, any other information provided by the contract
 (post-conditions, exceptions, effects, ...) cannot be assumed.
 
-In our example, the function requires `y` to be positive to behave correctly.
+For example, the following function requires `y` to be positive to behave correctly.
 
 ```ocaml {3}
 val eucl_division: int -> int -> int * int
@@ -112,8 +112,9 @@ pre-state does not meet such a pre-condition: the function fails by raising an
 OCaml `Invalid_argument` exception, and does not modify any existing state. The
 call is not faulty, but the caller is now in charge of handling the exception.
 
-The same function contract, where `requires` is replaced with `checks`, states
-that the function raises `Invalid_argument` whenever `y <= 0`.
+For example, if we change the function contract of `eucl_division`
+above by replacing `requires` with `checks`, it now states that the
+function raises `Invalid_argument` whenever `y <= 0`.
 
 :::note Combining multiple pre-conditions
 
@@ -156,7 +157,7 @@ is equivalent to:
 
 Specification formulas can often be written using few clauses, but splitting the
 specification into several smaller clauses leads to better readability and
-maintainability and is encouraged.
+maintainability and is therefore encouraged.
 
 :::
 
@@ -253,7 +254,7 @@ this case).
 
 :::note Combining multiple exceptional post-conditions
 
-When multiple exceptional post-conditions exist, they are hold independently of
+When multiple exceptional post-conditions exist, they hold independently of
 each other, meaning that the raised exception is matched against each `raises`'s
 case list, and each matching post-condition must hold in conjunction. For
 instance, the contract:
@@ -278,7 +279,7 @@ Complementary to other specification clauses, Gospel allows you to talk about
 *code equivalence* in the function contract. It consists in a string containing
 the OCaml code the function behaves like, preceded by the `equivalent` keyword.
 
-This is useful when specifying functions which behaviour can hardly be expressed
+This is useful when specifying functions whose behaviour can hardly be expressed
 in pure logic:
 
 ```ocaml
@@ -303,7 +304,7 @@ inside the `equivalent` clauses, and will take it as-is.
 
 ## Non termination
 
-By default, OCaml functions with attached contract implicitly terminate.
+By default, OCaml functions with an attached contract implicitly terminate.
 
 If a function is allowed to not terminate (e.g. a server main loop, a function
 waiting for a signal or event, etc.), one can add this information to the
@@ -336,7 +337,7 @@ If the function only modifies a few models of a value, these may be explicitly
 added to the clause.
 
 
-If a specific model is not mentioned, the whole data-structure and its mutable
+If a specific model is not mentioned, the whole data structure and its mutable
 models are potentially mutated.
 
 ```ocaml {3}
@@ -386,14 +387,23 @@ in specifications.
 
 Gospel provides a specific syntax to specify that some data has been consumed by
 the function, and should be considered dirty — that is, not be used anymore — in
-the rest of the program.
+the rest of the program. This is expressed with the `consumes`
+keyword:
+
+```ocaml
+val destructive_transfer: 'a t -> 'a t -> unit
+(*@ destructive_transfer src dst
+    consumes src
+    ... *)
+```
+
 
 ## Ghost parameters
 
 Functions can take or return ghost values to ease the writing of function
 contracts. Such values appear within brackets in the contract header.
 
-Let us consider the following `log2` function:
+Consider the following `log2` function:
 
 ```ocaml
 val log2: int -> int
@@ -404,7 +414,7 @@ val log2: int -> int
 ```
 
 In this contract, the ghost parameter `i` is used in both the pre- and
-postcondition. By introducing it as a ghost value, we avoid using quantifiers to
+post-conditions. By introducing it as a ghost value, we avoid using quantifiers to
 state the existence of `i`.
 
 :::note
