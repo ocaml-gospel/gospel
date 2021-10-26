@@ -161,7 +161,7 @@ module a3.mli
                   function empty  : 'a bag
                   function filter (_:'a -> bool) (_:'a bag) : 'a bag
                   function filter_map (_:'a -> 'a option) (_:'a bag) : 'a bag
-                  function fold (_:'a -> 'b -> 'b) (_:'a bag) : 'b
+                  function fold (_:'a -> 'b -> 'b) (_:'a bag) (_:'b) : 'b
                   predicate for_all_1 (_:'a -> bool) (_:'a bag)
                   function inter (_:'a bag) (_:'a bag) : 'a bag
                   predicate is_empty (_:'a bag)
