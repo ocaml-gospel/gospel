@@ -130,8 +130,8 @@ let parse_record ~loc kid ns fll =
   let fll =
     List.fold_left
       (fun m (pj, v) ->
-        if not (Sls.mem pj pjs) then raise (BadRecordField pj)
-        else if Mls.mem pj m then raise (DuplicateRecordField pj)
+        if not (Sls.mem pj pjs) then error ~loc (BadRecordField pj)
+        else if Mls.mem pj m then error ~loc (DuplicateRecordField pj)
         else Mls.add pj v m)
       Mls.empty fll
   in
@@ -149,7 +149,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
         mk_papp ~loc cs dpl
     | _ ->
         let dtyl, dty = specialize_cs ~loc cs in
-        app_unify cs dpattern_unify dpl dtyl;
+        app_unify ~loc cs dpattern_unify dpl dtyl;
         let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
         let vars =
           List.fold_left
@@ -228,7 +228,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let map_apply dt tl = List.fold_left apply dt tl in
   let mk_app ~loc ls dtl =
     let dtyl, dty = specialize_ls ls in
-    let dtl = app_unify_map ls (dterm_expected crcm) dtl dtyl in
+    let dtl = app_unify_map ~loc ls (dterm_expected crcm) dtl dtyl in
     mk_dterm ~loc (DTapp (ls, dtl)) dty
   in
   let rec gen_app ~loc ls tl =
@@ -324,7 +324,9 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
          let max = max_dty crcm [ de1; de2 ] in
          try dty_unify ~loc (Option.value max ~default:dty_bool) (List.hd dtyl)
          with Exit -> ());
-        let dtl = app_unify_map ls (dterm_expected crcm) [ de1; de2 ] dtyl in
+        let dtl =
+          app_unify_map ~loc ls (dterm_expected crcm) [ de1; de2 ] dtyl
+        in
         if op.pid_str = neq.id_str then
           mk_dterm ~loc (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) dty)) None
         else mk_dterm ~loc (DTapp (ls, dtl)) dty

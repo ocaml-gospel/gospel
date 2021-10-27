@@ -215,10 +215,11 @@ let t_type t =
   | None -> error ~loc:t.t_loc (TermExpected t)
 
 let t_ty_check t ty =
+  let loc = t.t_loc in
   match (ty, t.t_ty) with
   | Some l, Some r -> ty_equal_check l r
-  | Some _, None -> raise (TermExpected t)
-  | None, Some _ -> raise (FmlaExpected t)
+  | Some _, None -> error ~loc (TermExpected t)
+  | None, Some _ -> error ~loc (FmlaExpected t)
   | None, None -> ()
 
 exception BadArity of lsymbol * int
@@ -234,11 +235,11 @@ let ls_arg_inst ls tl =
     let loc = (List.hd tl).t_loc in
     error ~loc (BadArity (ls, List.length tl))
 
-let ls_app_inst ls tl ty =
+let ls_app_inst ~loc ls tl ty =
   let s = ls_arg_inst ls tl in
   match (ls.ls_value, ty) with
-  | Some _, None -> raise (PredicateSymbolExpected ls)
-  | None, Some _ -> raise (FunctionSymbolExpected ls)
+  | Some _, None -> error ~loc (PredicateSymbolExpected ls)
+  | None, Some _ -> error ~loc (FunctionSymbolExpected ls)
   | Some vty, Some ty -> ty_match s vty ty
   | None, None -> s
 
@@ -252,14 +253,14 @@ exception EmptyCase
 let p_wild ty = mk_pattern Pwild ty Svs.empty
 let p_var vs = mk_pattern (Pvar vs) vs.vs_ty (Svs.singleton vs)
 
-let p_app ls pl ty =
+let p_app ls pl ty loc =
   let add v vars =
-    if Svs.mem v vars then raise (PDuplicatedVar v);
+    if Svs.mem v vars then error ~loc (PDuplicatedVar v);
     Svs.add v vars
   in
   let merge vars p = Svs.fold add vars p.p_vars in
   let vars = List.fold_left merge Svs.empty pl in
-  mk_pattern (Papp (ls, pl)) ty vars
+  mk_pattern (Papp (ls, pl)) ty vars loc
 
 (* CHECK ty matchs ls.ls_value *)
 let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars
@@ -274,13 +275,13 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
-let t_app ls tl ty =
-  ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty
+let t_app ls tl ty loc =
+  ignore (ls_app_inst ~loc ls tl ty : ty Mtv.t);
+  mk_term (Tapp (ls, tl)) ty loc
 
-let t_field t ls ty =
-  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
-  mk_term (Tfield (t, ls)) ty
+let t_field t ls ty loc =
+  ignore (ls_app_inst ~loc ls [ t ] ty : ty Mtv.t);
+  mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty

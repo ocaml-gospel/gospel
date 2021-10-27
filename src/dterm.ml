@@ -167,13 +167,14 @@ exception TermExpected
 (* the following functions should receive dterms for precise locations
    to be given properly -- based on why3 *)
 
-let app_unify ls unify l dtyl2 =
+let app_unify ~loc ls unify l dtyl2 =
   if List.length l <> List.length dtyl2 then
-    raise (BadArity (ls, List.length l));
+    error ~loc (BadArity (ls, List.length l));
   List.iter2 unify l dtyl2
 
-let app_unify_map ls unify l dtyl =
-  if List.length l <> List.length dtyl then raise (BadArity (ls, List.length l));
+let app_unify_map ~loc ls unify l dtyl =
+  if List.length l <> List.length dtyl then
+    error ~loc (BadArity (ls, List.length l));
   List.map2 unify l dtyl
 
 let dpattern_unify dp dty =
