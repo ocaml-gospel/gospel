@@ -949,7 +949,7 @@ and module_as_file ~loc penv muc nm =
 
 and process_open ~loc ?(ghost = false) penv muc od =
   let qd = Longident.flatten_exn od.Parsetree.popen_expr.txt in
-  let qd_loc = od.Parsetree.popen_expr.loc in
+  let qd_loc = od.Parsetree.popen_loc in
   let hd = List.hd qd in
   let muc =
     if ns_exists_ns (get_top_import muc) hd then muc

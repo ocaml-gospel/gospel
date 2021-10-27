@@ -130,7 +130,8 @@ let ghost_spec ~filename attr =
         in
         Sig_ghost_val { val_ with vspec; vloc = attr.attr_loc }
       else Sig_ghost_val val_
-  | [ { psig_desc = Psig_open od; _ } ] -> Sig_ghost_open od
+  | [ { psig_desc = Psig_open od; _ } ] ->
+      Sig_ghost_open { od with popen_loc = attr.attr_loc }
   | _ -> assert false
 
 let floating_spec ~filename a =
