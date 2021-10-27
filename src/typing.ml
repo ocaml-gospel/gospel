@@ -34,20 +34,20 @@ exception NsNotFound of string
 
 let rec q_loc = function Qpreid pid -> pid.pid_loc | Qdot (q, _) -> q_loc q
 
-let ns_find ?loc f ns sl =
+let ns_find ~loc f ns sl =
   match sl with
   | s :: _ :: _ when not (ns_exists_ns ns s) ->
-      error ?loc (NsNotFound s) (* try to find file s *)
-  | _ -> ( try f ns sl with Not_found -> error ?loc (SymbolNotFound sl))
+      error ~loc (NsNotFound s) (* try to find file s *)
+  | _ -> ( try f ns sl with Not_found -> error ~loc (SymbolNotFound sl))
 
-let find_ts ?loc = ns_find ?loc ns_find_ts
-let find_ls ?loc = ns_find ?loc ns_find_ls
-let find_fd ?loc = ns_find ?loc ns_find_fd
-let find_xs ?loc = ns_find ?loc ns_find_xs
-let find_ns ?loc = ns_find ?loc ns_find_ns
-let find_tns ?loc = ns_find ?loc ns_find_tns
+let find_ts ~loc = ns_find ~loc ns_find_ts
+let find_ls ~loc = ns_find ~loc ns_find_ls
+let find_fd ~loc = ns_find ~loc ns_find_fd
+let find_xs ~loc = ns_find ~loc ns_find_xs
+let find_ns ~loc = ns_find ~loc ns_find_ns
+let find_tns ~loc = ns_find ~loc ns_find_tns
 
-let find_q (f : ?loc:Location.t -> 'a) ns q =
+let find_q (f : loc:Location.t -> 'a) ns q =
   let ln = string_list_of_qualid q in
   f ~loc:(q_loc q) ns ln
 
