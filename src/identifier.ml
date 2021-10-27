@@ -18,7 +18,7 @@ module Preid = struct
 
   let pp ppf pid = Format.fprintf ppf "%s%a" pid.pid_str pp_attrs pid.pid_attrs
 
-  let create ?(attrs = []) ?(loc = Location.none) str =
+  let create ?(attrs = []) ~loc str =
     { pid_str = str; pid_attrs = attrs; pid_loc = loc }
 
   let add_attr t attr = { t with pid_attrs = attr :: t.pid_attrs }
@@ -54,7 +54,7 @@ module Ident = struct
 
   let create =
     let tag = ref 0 in
-    fun ?(attrs = []) ?(loc = Location.none) str ->
+    fun ?(attrs = []) ~loc str ->
       incr tag;
       { id_str = str; id_attrs = attrs; id_loc = loc; id_tag = !tag }
 
@@ -63,7 +63,8 @@ module Ident = struct
 
   let set_loc t loc = { t with id_loc = loc }
   let add_attr t attr = { t with id_attrs = attr :: t.id_attrs }
-  let equal = ( == )
+  let compare x y = Int.compare x.id_tag y.id_tag
+  let equal x y = x.id_tag = y.id_tag
   let hash x = x.id_tag
 end
 
@@ -78,9 +79,9 @@ let is_somefix f s =
 let is_prefix = is_somefix "prefix"
 let is_infix = is_somefix "infix"
 let is_mixfix = is_somefix "mixfix"
-let eq = Ident.create (infix "=")
-let neq = Ident.create (infix "<>")
-let none = Ident.create "None"
-let some = Ident.create "Some"
-let nil = Ident.create "[]"
-let cons = Ident.create (infix "::")
+let eq = Ident.create ~loc:Location.none (infix "=")
+let neq = Ident.create ~loc:Location.none (infix "<>")
+let none = Ident.create ~loc:Location.none "None"
+let some = Ident.create ~loc:Location.none "Some"
+let nil = Ident.create ~loc:Location.none "[]"
+let cons = Ident.create ~loc:Location.none (infix "::")

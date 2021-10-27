@@ -50,13 +50,11 @@ exception TypeCheckingError of string
 exception NotSupported of string
 exception Located of Location.t * exn
 
-let error ?loc e =
-  match loc with None -> raise e | Some loc -> raise (Located (loc, e))
-
-let check ?loc c exn = if not c then error ?loc exn
-let error_report ?loc s = error ?loc (TypeCheckingError s)
-let check_report ?loc c s = check ?loc c (TypeCheckingError s)
-let not_supported ?loc s = error ?loc (NotSupported s)
+let error ~loc e = raise (Located (loc, e))
+let check ~loc c exn = if not c then error ~loc exn
+let error_report ~loc s = error ~loc (TypeCheckingError s)
+let check_report ~loc c s = check ~loc c (TypeCheckingError s)
+let not_supported ~loc s = error ~loc (NotSupported s)
 
 let () =
   let open Location.Error in

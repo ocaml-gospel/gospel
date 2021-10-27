@@ -16,28 +16,28 @@ module Ident = Identifier.Ident
 
 type tvsymbol = { tv_name : Ident.t }
 
-let tv_equal : tvsymbol -> tvsymbol -> bool = ( == )
+let tv_equal x y = Ident.equal x.tv_name y.tv_name
 
 module Tvar = struct
   type t = tvsymbol
 
   let equal = tv_equal
-  let compare = Stdlib.compare
-  let hash tv = tv.tv_name.id_tag
+  let compare x y = Ident.compare x.tv_name y.tv_name
+  let hash tv = Ident.hash tv.tv_name
 end
 
 module Htv = Hashtbl.Make (Tvar)
 module Mtv = Map.Make (Tvar)
 
 let create_tv id = { tv_name = id }
-let fresh_tv s = { tv_name = Ident.create s }
+let fresh_tv ?(loc = Location.none) s = { tv_name = Ident.create ~loc s }
 
 let tv_of_string =
   let hs = Hashtbl.create 0 in
-  fun s ->
+  fun ?(loc = Location.none) s ->
     try Hashtbl.find hs s
     with Not_found ->
-      let tv = create_tv (Ident.create s) in
+      let tv = create_tv (Ident.create ~loc s) in
       Hashtbl.add hs s tv;
       tv
 
@@ -55,16 +55,20 @@ and tysymbol = {
   ts_alias : ty option;
 }
 
-let ts_equal : tysymbol -> tysymbol -> bool = ( == )
+let ts_equal x y = Ident.equal x.ts_ident y.ts_ident
 
-(* TODO use hash consing for the ty_equal *)
-let ty_equal : ty -> ty -> bool = ( = )
+let rec ty_equal x y =
+  match (x.ty_node, y.ty_node) with
+  | Tyvar tvx, Tyvar tvy -> tv_equal tvx tvy
+  | Tyapp (tsx, tylx), Tyapp (tsy, tyly) ->
+      ts_equal tsx tsy && List.for_all2 ty_equal tylx tyly
+  | _ -> false
 
 module Ts = struct
   type t = tysymbol
 
   let equal = ts_equal
-  let compare = Stdlib.compare
+  let compare x y = Ident.compare x.ts_ident y.ts_ident
 end
 
 module Mts = Map.Make (Ts)
@@ -75,7 +79,10 @@ let ts_ident ts = ts.ts_ident
 let ts_args ts = ts.ts_args
 let ts_alias ts = ts.ts_alias
 let ts_arity ts = List.length ts.ts_args
-let fresh_ty_var s = { ty_node = Tyvar { tv_name = Ident.create s } }
+
+let fresh_ty_var ?(loc = Location.none) s =
+  { ty_node = Tyvar { tv_name = Ident.create ~loc s } }
+
 let ty_of_var tv = { ty_node = Tyvar tv }
 
 (* let ty_app ts tl = {ty_node = Tyapp (ts,tl)} *)
@@ -161,14 +168,22 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
-let ts_unit = ts (Ident.create "unit") []
-let ts_integer = ts (Ident.create "integer") []
-let ts_bool = ts (Ident.create "bool") []
-let ts_float = ts (Ident.create "float") []
-let ts_char = ts (Ident.create "char") []
-let ts_string = ts (Ident.create "string") []
-let ts_option = ts (Ident.create "option") [ fresh_tv "a" ]
-let ts_list = ts (Ident.create "list") [ fresh_tv "a" ]
+let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
+let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
+let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
+let ts_float = ts (Ident.create ~loc:Location.none "float") []
+let ts_char = ts (Ident.create ~loc:Location.none "char") []
+let ts_string = ts (Ident.create ~loc:Location.none "string") []
+
+let ts_option =
+  ts
+    (Ident.create ~loc:Location.none "option")
+    [ fresh_tv ~loc:Location.none "a" ]
+
+let ts_list =
+  ts
+    (Ident.create ~loc:Location.none "list")
+    [ fresh_tv ~loc:Location.none "a" ]
 
 let ts_tuple =
   let ts_tuples = Hashtbl.create 0 in
@@ -176,20 +191,26 @@ let ts_tuple =
     (* if n = 0 then ts_unit else *)
     try Hashtbl.find ts_tuples n
     with Not_found ->
-      let ts_id = Ident.create ("tuple" ^ string_of_int n) in
-      let ts_args = List.init n (fun x -> fresh_tv ("a" ^ string_of_int x)) in
+      let ts_id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
+      let ts_args =
+        List.init n (fun x ->
+            fresh_tv ~loc:Location.none ("a" ^ string_of_int x))
+      in
       let ts = ts ts_id ts_args in
       Hashtbl.add ts_tuples n ts;
       ts
 
 let ts_arrow =
-  let ta = fresh_tv "a" in
-  let tb = fresh_tv "b" in
-  let id = Ident.create "->" in
+  let ta = fresh_tv ~loc:Location.none "a" in
+  let tb = fresh_tv ~loc:Location.none "b" in
+  let id = Ident.create ~loc:Location.none "->" in
   ts id [ ta; tb ]
 
-let is_ts_tuple ts = ts_tuple (ts_arity ts) == ts
-let is_ts_arrow ts = ts_arrow == ts
+let is_ts_tuple ts =
+  let ts_tuple = ts_tuple (ts_arity ts) in
+  Ident.equal ts_tuple.ts_ident ts.ts_ident
+
+let is_ts_arrow ts = Ident.equal ts_arrow.ts_ident ts.ts_ident
 let ty_unit = ty_app ts_unit []
 let ty_integer = ty_app ts_integer []
 let ty_bool = ty_app ts_bool []
@@ -215,13 +236,13 @@ type exn_type =
 type xsymbol = { xs_ident : Ident.t; xs_type : exn_type }
 
 let xsymbol id ty = { xs_ident = id; xs_type = ty }
-let xs_equal = ( = )
+let xs_equal x y = Ident.equal x.xs_ident y.xs_ident
 
 module Xs = struct
   type t = xsymbol
 
-  let equal = ( = )
-  let compare = Stdlib.compare
+  let equal = xs_equal
+  let compare x y = Ident.compare x.xs_ident y.xs_ident
 end
 
 module Mxs = Map.Make (Xs)

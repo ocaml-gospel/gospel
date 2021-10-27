@@ -86,22 +86,22 @@ let rec ck_eq ck_old ck_new =
   | _ -> raise Not_found
 
 (* replace an old coercion by a new one, or fail *)
-let replace ?loc c_old c_new _m1 m =
+let replace ~loc c_old c_new _m1 m =
   try
     ck_eq c_old.crc_kind c_new.crc_kind;
     m
-  with Not_found -> error ?loc (CoercionAlreadyDefined c_old)
+  with Not_found -> error ~loc (CoercionAlreadyDefined c_old)
 
 (* add a new coercion c, without making the transitive closure *)
-let insert ?loc crc m =
+let insert ~loc crc m =
   let put crc m1 m2 =
     Mts.add crc.crc_src_ts (Mts.add crc.crc_tar_ts crc m1) m2
   in
   if mem m crc.crc_tar_ts crc.crc_src_ts then
-    error ?loc (CoercionCycle (find_crc m crc.crc_tar_ts crc.crc_src_ts));
+    error ~loc (CoercionCycle (find_crc m crc.crc_tar_ts crc.crc_src_ts));
   let m1 = try Mts.find crc.crc_src_ts m with Not_found -> Mts.empty in
   if Mts.mem crc.crc_tar_ts m1 then
-    replace (Mts.find crc.crc_tar_ts m1) crc m1 m
+    replace ~loc (Mts.find crc.crc_tar_ts m1) crc m1 m
   else put crc m1 m
 
 let compose crc1 crc2 =
@@ -114,8 +114,8 @@ let compose crc1 crc2 =
   }
 
 (* add a new coercion crc, and make the transitive closure *)
-let add_crc ?loc crcmap crc =
-  let close_right c1 _ty c2 macc = insert ?loc (compose c1 c2) macc in
+let add_crc ~loc crcmap crc =
+  let close_right c1 _ty c2 macc = insert ~loc (compose c1 c2) macc in
   let close_left_right _ty1 m1 macc =
     if Mts.mem crc.crc_src_ts m1 then
       let c1 = Mts.find crc.crc_src_ts m1 in
@@ -123,7 +123,7 @@ let add_crc ?loc crcmap crc =
       Mts.fold (close_right c1) (Mts.add crc.crc_tar_ts crc m2) macc
     else macc
   in
-  let crcmap_uc1 = insert crc crcmap in
+  let crcmap_uc1 = insert ~loc crc crcmap in
   let crcmap_uc2 =
     let m1 =
       try Mts.find crc.crc_tar_ts crcmap_uc1 with Not_found -> Mts.empty
@@ -137,7 +137,7 @@ let add crcmap ls = add_crc ~loc:ls.ls_name.id_loc crcmap (create_crc ls)
 let union crcmap1 crcmap2 =
   let add _ty2 crc crcmap =
     match crc.crc_kind with
-    | CRCleaf _ -> add_crc crcmap crc
+    | CRCleaf ls -> add_crc ~loc:ls.ls_name.id_loc crcmap crc
     | CRCcomp _ -> crcmap
   in
   Mts.fold (fun _ty1 m1 crcmap -> Mts.fold add m1 crcmap) crcmap2 crcmap1

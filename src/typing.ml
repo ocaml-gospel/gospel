@@ -34,20 +34,20 @@ exception NsNotFound of string
 
 let rec q_loc = function Qpreid pid -> pid.pid_loc | Qdot (q, _) -> q_loc q
 
-let ns_find ?loc f ns sl =
+let ns_find ~loc f ns sl =
   match sl with
   | s :: _ :: _ when not (ns_exists_ns ns s) ->
-      error ?loc (NsNotFound s) (* try to find file s *)
-  | _ -> ( try f ns sl with Not_found -> error ?loc (SymbolNotFound sl))
+      error ~loc (NsNotFound s) (* try to find file s *)
+  | _ -> ( try f ns sl with Not_found -> error ~loc (SymbolNotFound sl))
 
-let find_ts ?loc = ns_find ?loc ns_find_ts
-let find_ls ?loc = ns_find ?loc ns_find_ls
-let find_fd ?loc = ns_find ?loc ns_find_fd
-let find_xs ?loc = ns_find ?loc ns_find_xs
-let find_ns ?loc = ns_find ?loc ns_find_ns
-let find_tns ?loc = ns_find ?loc ns_find_tns
+let find_ts ~loc = ns_find ~loc ns_find_ts
+let find_ls ~loc = ns_find ~loc ns_find_ls
+let find_fd ~loc = ns_find ~loc ns_find_fd
+let find_xs ~loc = ns_find ~loc ns_find_xs
+let find_ns ~loc = ns_find ~loc ns_find_ns
+let find_tns ~loc = ns_find ~loc ns_find_tns
 
-let find_q (f : ?loc:Location.t -> 'a) ns q =
+let find_q (f : loc:Location.t -> 'a) ns q =
   let ln = string_list_of_qualid q in
   f ~loc:(q_loc q) ns ln
 
@@ -61,9 +61,8 @@ let find_q_ns = find_q find_ns
 
 (* specification types *)
 let rec ty_of_pty ns = function
-  | PTtyvar { pid_str; _ } ->
-      (* CHECK following what's done in why3, attributes are ignored*)
-      { ty_node = Tyvar (tv_of_string pid_str) }
+  | PTtyvar { pid_str; pid_loc } ->
+      { ty_node = Tyvar (tv_of_string ~loc:pid_loc pid_str) }
   | PTtyapp (q, ptyl) ->
       let ts = find_q_ts ns q in
       ty_app ts (List.map (ty_of_pty ns) ptyl)
@@ -78,9 +77,10 @@ let rec ty_of_pty ns = function
 (* OCaml types *)
 let rec ty_of_core ns cty =
   let open Parsetree in
+  let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
-  | Ptyp_any -> { ty_node = Tyvar (create_tv (Ident.create "_")) }
-  | Ptyp_var s -> { ty_node = Tyvar (tv_of_string s) }
+  | Ptyp_any -> { ty_node = Tyvar (create_tv (Ident.create ~loc "_")) }
+  | Ptyp_var s -> { ty_node = Tyvar (tv_of_string ~loc s) }
   | Ptyp_tuple ctl ->
       let tyl = List.map (ty_of_core ns) ctl in
       ty_app (ts_tuple (List.length tyl)) tyl
@@ -130,33 +130,33 @@ let parse_record ~loc kid ns fll =
   let fll =
     List.fold_left
       (fun m (pj, v) ->
-        if not (Sls.mem pj pjs) then raise (BadRecordField pj)
-        else if Mls.mem pj m then raise (DuplicateRecordField pj)
+        if not (Sls.mem pj pjs) then error ~loc (BadRecordField pj)
+        else if Mls.mem pj m then error ~loc (DuplicateRecordField pj)
         else Mls.add pj v m)
       Mls.empty fll
   in
   (cs, pjl, fll)
 
 let rec dpattern kid ns { pat_desc; pat_loc = loc } =
-  let mk_dpattern ?loc dp_node dp_dty dp_vars =
+  let mk_dpattern ~loc dp_node dp_dty dp_vars =
     { dp_node; dp_dty; dp_vars; dp_loc = loc }
   in
-  let rec mk_papp ?loc cs dpl =
+  let rec mk_papp ~loc cs dpl =
     let n = List.length cs.ls_args in
     match dpl with
     | [ { dp_node = DPapp (ls, dpl) } ]
       when ls_equal ls (fs_tuple n) && cs.ls_constr ->
-        mk_papp ?loc cs dpl
+        mk_papp ~loc cs dpl
     | _ ->
-        let dtyl, dty = specialize_cs ?loc cs in
-        app_unify cs dpattern_unify dpl dtyl;
-        let check_duplicate s _ _ = error ?loc (DuplicatedVar s) in
+        let dtyl, dty = specialize_cs ~loc cs in
+        app_unify ~loc cs dpattern_unify dpl dtyl;
+        let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
         let vars =
           List.fold_left
             (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
             Mstr.empty dpl
         in
-        mk_dpattern ?loc (DPapp (cs, dpl)) dty vars
+        mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
   in
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
@@ -186,7 +186,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dp2 = dpattern kid ns p2 in
       dpattern_unify dp1 dp2.dp_dty;
       let join _ dty1 dty2 =
-        dty_unify ?loc:dp1.dp_loc dty1 dty2;
+        dty_unify ~loc:dp1.dp_loc dty1 dty2;
         Some dty1
       in
       let vars = Mstr.union join dp1.dp_vars dp2.dp_vars in
@@ -228,7 +228,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let map_apply dt tl = List.fold_left apply dt tl in
   let mk_app ~loc ls dtl =
     let dtyl, dty = specialize_ls ls in
-    let dtl = app_unify_map ls (dterm_expected crcm) dtl dtyl in
+    let dtl = app_unify_map ~loc ls (dterm_expected crcm) dtl dtyl in
     mk_dterm ~loc (DTapp (ls, dtl)) dty
   in
   let rec gen_app ~loc ls tl =
@@ -322,9 +322,11 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         let dtyl, dty = specialize_ls ls in
         (if ls_equal ls ps_equ then
          let max = max_dty crcm [ de1; de2 ] in
-         try dty_unify (Option.value max ~default:dty_bool) (List.hd dtyl)
+         try dty_unify ~loc (Option.value max ~default:dty_bool) (List.hd dtyl)
          with Exit -> ());
-        let dtl = app_unify_map ls (dterm_expected crcm) [ de1; de2 ] dtyl in
+        let dtl =
+          app_unify_map ~loc ls (dterm_expected crcm) [ de1; de2 ] dtyl
+        in
         if op.pid_str = neq.id_str then
           mk_dterm ~loc (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) dty)) None
         else mk_dterm ~loc (DTapp (ls, dtl)) dty
@@ -503,12 +505,12 @@ let type_type_declaration kid crcm ns tdl =
   (* TODO what to do with other cases? *)
   and visit ~alias s td =
     let parse_params (ct, vi) (tvl, params, vs) =
+      let loc = ct.ptyp_loc in
       match ct.ptyp_desc with
       | Ptyp_var s ->
-          let tv = tv_of_string s in
+          let tv = tv_of_string ~loc s in
           (Mstr.add s tv tvl, tv :: params, vi :: vs)
-      | Ptyp_any ->
-          not_supported ~loc:ct.ptyp_loc "_ type parameters not supported yet"
+      | Ptyp_any -> not_supported ~loc "_ type parameters not supported yet"
       | _ -> assert false
       (* should not happen -- see parser optional_type_variable *)
     in
@@ -524,13 +526,13 @@ let type_type_declaration kid crcm ns tdl =
     Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
-      let cs_id = Ident.create ("constr#" ^ s) in
+      let cs_id = Ident.create ~loc:Location.none ("constr#" ^ s) in
       let fields_ty =
         List.map (fun ld -> parse_core alias tvl ld.pld_type) ldl
       in
       let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
       let mk_ld ld (ldl, ns) =
-        let id = Ident.create ld.pld_name.txt in
+        let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
         let field = fsymbol ~field:true id [ ty ] ty_res in
         let field_inv = fsymbol ~field:true id [] ty_res in
@@ -545,7 +547,7 @@ let type_type_declaration kid crcm ns tdl =
     let process_variant ty alias cd =
       if cd.pcd_res != None then
         not_supported ~loc:cd.pcd_loc "type in constructors not supported";
-      let cs_id = Ident.create cd.pcd_name.txt in
+      let cs_id = Ident.create ~loc:cd.pcd_loc cd.pcd_name.txt in
       let cd_cs, cd_ld =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
@@ -553,7 +555,7 @@ let type_type_declaration kid crcm ns tdl =
             (fsymbol ~constr:true ~field:false cs_id tyl ty, [])
         | Pcstr_record ldl ->
             let add ld (ldl, tyl) =
-              let id = Ident.create ld.pld_name.txt in
+              let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
               let ty = parse_core alias tvl ld.pld_type in
               let field = (id, ty) in
               let mut = mutable_flag ld.pld_mutable in
@@ -772,22 +774,25 @@ let empty_spec preid ret args =
   }
 
 let mk_dummy_var i (ty, arg) =
+  let loc = Location.none in
   match arg with
   | _ when ty_equal ty ty_unit -> Uast.Lunit
-  | Nolabel -> Uast.Lnone (Preid.create ("$x" ^ string_of_int i))
-  | Labelled s -> Uast.Lnamed (Preid.create s)
-  | Optional s -> Uast.Loptional (Preid.create s)
+  | Nolabel -> Uast.Lnone (Preid.create ~loc ("$x" ^ string_of_int i))
+  | Labelled s -> Uast.Lnamed (Preid.create ~loc s)
+  | Optional s -> Uast.Loptional (Preid.create ~loc s)
 
 let process_val ~loc ?(ghost = false) kid crcm ns vd =
-  let id = Ident.set_loc (Ident.create vd.vname.txt) vd.vname.loc in
+  let id = Ident.create ~loc:vd.vloc vd.vname.txt in
   let args, ret = val_parse_core_type ns vd.vtype in
   let spec =
     match vd.vspec with
     | None | Some { sp_header = None } -> (
-        let id = Preid.create vd.vname.txt in
+        let id = Preid.create ~loc:vd.vloc vd.vname.txt in
         let ret =
           if ty_equal ret ty_unit then Uast.Lunit
-          else Uast.Lnone (if args = [] then id else Preid.create "result")
+          else
+            Uast.Lnone
+              (if args = [] then id else Preid.create ~loc:vd.vloc "result")
         in
         let args = List.mapi mk_dummy_var args in
         match vd.vspec with
@@ -845,7 +850,7 @@ let process_function kid crcm ns f =
     match f_ty with
     | None -> (env, None)
     | Some ty ->
-        let result = create_vsymbol (Preid.create "result") ty in
+        let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") ty in
         (Mstr.add "result" result env, Some result)
   in
 
@@ -879,7 +884,7 @@ let process_axiom loc kid crcm ns a =
 
 let process_exception_sig loc ns te =
   let ec = te.Parsetree.ptyexn_constructor in
-  let id = Ident.set_loc (Ident.create ec.pext_name.txt) ec.pext_name.loc in
+  let id = Ident.create ~loc:ec.pext_loc ec.pext_name.txt in
   let xs =
     match ec.pext_kind with
     | Pext_rebind lid -> find_xs ~loc:lid.loc ns (Longident.flatten_exn lid.txt)
@@ -944,7 +949,7 @@ and module_as_file ~loc penv muc nm =
 
 and process_open ~loc ?(ghost = false) penv muc od =
   let qd = Longident.flatten_exn od.Parsetree.popen_expr.txt in
-  let qd_loc = od.Parsetree.popen_expr.loc in
+  let qd_loc = od.Parsetree.popen_loc in
   let hd = List.hd qd in
   let muc =
     if ns_exists_ns (get_top_import muc) hd then muc
@@ -1069,10 +1074,10 @@ and process_modtype penv muc umty =
       in
       (muc, tmty)
   | Mod_functor (mto, mt) ->
-      let nm, mty_arg =
+      let nm, mty_arg, loc =
         match mto with
         | Unit -> not_supported ~loc:umty.mloc "functor type must be provided"
-        | Named ({ txt; _ }, mt) -> (Option.value ~default:"_" txt, mt)
+        | Named ({ txt; loc }, mt) -> (Option.value ~default:"_" txt, mt, loc)
       in
       let muc = open_module muc nm in
       let muc, tmty_arg = process_modtype penv muc mty_arg in
@@ -1080,7 +1085,7 @@ and process_modtype penv muc umty =
       let muc, tmty = process_modtype penv muc mt in
       let tmty =
         {
-          mt_desc = Mod_functor (Ident.create nm, Some tmty_arg, tmty);
+          mt_desc = Mod_functor (Ident.create ~loc nm, Some tmty_arg, tmty);
           mt_loc = umty.mloc;
           mt_attrs = umty.mattributes;
         }
@@ -1097,7 +1102,7 @@ and process_mod penv loc m muc =
   let muc, mty = process_modtype penv muc m.mdtype in
   let decl =
     {
-      md_name = Ident.create nm;
+      md_name = Ident.create ~loc:m.mdname.loc nm;
       md_type = mty;
       md_attrs = m.mdattributes;
       md_loc = m.mdloc;
@@ -1114,7 +1119,7 @@ and process_modtype_decl penv loc decl muc =
   in
   let decl =
     {
-      mtd_name = Ident.create nm;
+      mtd_name = Ident.create ~loc:decl.mtdname.loc nm;
       mtd_type = mty;
       mtd_attrs = decl.mtdattributes;
       mtd_loc = decl.mtdloc;

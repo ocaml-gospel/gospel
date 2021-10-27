@@ -22,7 +22,8 @@ let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
 module Vs = struct
   type t = vsymbol
 
-  let compare = Stdlib.compare
+  let equal x y = Ident.equal x.vs_name y.vs_name
+  let compare x y = Ident.compare x.vs_name y.vs_name
 end
 
 module Svs = Set.Make (Vs)
@@ -38,13 +39,12 @@ type lsymbol = {
   ls_field : bool; (* true if it is a record/model field *)
 }
 
-(* CHECK *)
-let ls_equal : lsymbol -> lsymbol -> bool = ( == )
+let ls_equal l1 l2 = Ident.equal l1.ls_name l2.ls_name
 
 module LS = struct
   type t = lsymbol
 
-  let compare = Stdlib.compare
+  let compare l1 l2 = Ident.compare l1.ls_name l2.ls_name
   let equal = ls_equal
   let hash = (Hashtbl.hash : lsymbol -> int)
 end
@@ -74,21 +74,32 @@ let ls_subst_ty old_ts new_ts new_ty ls =
 (** buil-in lsymbols *)
 
 let ps_equ =
-  let tv = fresh_ty_var "a" in
+  let tv = fresh_ty_var ~loc:Location.none "a" in
   psymbol Identifier.eq [ tv; tv ]
 
-let fs_unit = fsymbol ~constr:true ~field:false (Ident.create "unit") [] ty_unit
+let fs_unit =
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "unit")
+    [] ty_unit
 
 let fs_bool_true =
-  fsymbol ~constr:true ~field:false (Ident.create "True") [] ty_bool
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "True")
+    [] ty_bool
 
 let fs_bool_false =
-  fsymbol ~constr:true ~field:false (Ident.create "False") [] ty_bool
+  fsymbol ~constr:true ~field:false
+    (Ident.create ~loc:Location.none "False")
+    [] ty_bool
 
 let fs_apply =
-  let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
+  let ty_a, ty_b =
+    (fresh_ty_var ~loc:Location.none "a", fresh_ty_var ~loc:Location.none "b")
+  in
   let ty_a_to_b = ty_app ts_arrow [ ty_a; ty_b ] in
-  fsymbol ~field:false (Ident.create "apply") [ ty_a_to_b; ty_a ] ty_b
+  fsymbol ~field:false
+    (Ident.create ~loc:Location.none "apply")
+    [ ty_a_to_b; ty_a ] ty_b
 
 (* CHECK do we need two hash tables? *)
 let fs_tuple_ids = Hashtbl.create 17
@@ -98,8 +109,8 @@ let fs_tuple =
   fun n ->
     try Hashtbl.find ls_tuples n
     with Not_found ->
-      let id = Ident.create ("tuple" ^ string_of_int n) in
-      let tyl = List.init n (fun _ -> fresh_ty_var "a") in
+      let id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
+      let tyl = List.init n (fun _ -> fresh_ty_var ~loc:Location.none "a") in
       let ty = ty_app (ts_tuple n) tyl in
       let ls = fsymbol ~constr:true ~field:false id tyl ty in
       Hashtbl.add fs_tuple_ids id ls;
@@ -114,7 +125,7 @@ type pattern = {
   p_node : pattern_node;
   p_ty : ty;
   p_vars : Svs.t;
-  p_loc : Location.t option;
+  p_loc : Location.t;
 }
 
 and pattern_node =
@@ -125,8 +136,6 @@ and pattern_node =
   | Pas of pattern * vsymbol
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
-(* TODO: think about 'by' and 'so' *)
-
 type quant = Tforall | Texists | Tlambda
 
 type term = {
@@ -206,10 +215,11 @@ let t_type t =
   | None -> error ~loc:t.t_loc (TermExpected t)
 
 let t_ty_check t ty =
+  let loc = t.t_loc in
   match (ty, t.t_ty) with
   | Some l, Some r -> ty_equal_check l r
-  | Some _, None -> raise (TermExpected t)
-  | None, Some _ -> raise (FmlaExpected t)
+  | Some _, None -> error ~loc (TermExpected t)
+  | None, Some _ -> error ~loc (FmlaExpected t)
   | None, None -> ()
 
 exception BadArity of lsymbol * int
@@ -225,17 +235,17 @@ let ls_arg_inst ls tl =
     let loc = (List.hd tl).t_loc in
     error ~loc (BadArity (ls, List.length tl))
 
-let ls_app_inst ls tl ty =
+let ls_app_inst ~loc ls tl ty =
   let s = ls_arg_inst ls tl in
   match (ls.ls_value, ty) with
-  | Some _, None -> raise (PredicateSymbolExpected ls)
-  | None, Some _ -> raise (FunctionSymbolExpected ls)
+  | Some _, None -> error ~loc (PredicateSymbolExpected ls)
+  | None, Some _ -> error ~loc (FunctionSymbolExpected ls)
   | Some vty, Some ty -> ty_match s vty ty
   | None, None -> s
 
 (** Pattern constructors *)
 
-let mk_pattern p_node p_ty p_vars = { p_node; p_ty; p_vars; p_loc = None }
+let mk_pattern p_node p_ty p_vars p_loc = { p_node; p_ty; p_vars; p_loc }
 
 exception PDuplicatedVar of vsymbol
 exception EmptyCase
@@ -243,14 +253,14 @@ exception EmptyCase
 let p_wild ty = mk_pattern Pwild ty Svs.empty
 let p_var vs = mk_pattern (Pvar vs) vs.vs_ty (Svs.singleton vs)
 
-let p_app ls pl ty =
+let p_app ls pl ty loc =
   let add v vars =
-    if Svs.mem v vars then raise (PDuplicatedVar v);
+    if Svs.mem v vars then error ~loc (PDuplicatedVar v);
     Svs.add v vars
   in
   let merge vars p = Svs.fold add vars p.p_vars in
   let vars = List.fold_left merge Svs.empty pl in
-  mk_pattern (Papp (ls, pl)) ty vars
+  mk_pattern (Papp (ls, pl)) ty vars loc
 
 (* CHECK ty matchs ls.ls_value *)
 let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars
@@ -265,13 +275,13 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
-let t_app ls tl ty =
-  ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty
+let t_app ls tl ty loc =
+  ignore (ls_app_inst ~loc ls tl ty : ty Mtv.t);
+  mk_term (Tapp (ls, tl)) ty loc
 
-let t_field t ls ty =
-  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
-  mk_term (Tfield (t, ls)) ty
+let t_field t ls ty loc =
+  ignore (ls_app_inst ~loc ls [ t ] ty : ty Mtv.t);
+  mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
@@ -304,7 +314,7 @@ let t_quant q vsl t ty loc =
   | _, [] -> t_prop t
   | Tlambda, _ -> t_quant q vsl t ty loc
   | _, _ ->
-      check_report (ty = None) "Quantifiers terms must be of type prop.";
+      check_report ~loc (ty = None) "Quantifiers terms must be of type prop.";
       t_quant q vsl (t_prop t) None loc
 
 let f_forall = t_quant Tforall
@@ -373,7 +383,6 @@ let print_quantifier fmt = function
   | Texists -> pp fmt "exists"
   | Tlambda -> pp fmt "fun"
 
-(* TODO use pretty printer from why3 *)
 let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
   let print_ty fmt ty =
     match ty with None -> pp fmt ":prop" | Some ty -> pp fmt ":%a" print_ty ty
@@ -383,9 +392,7 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tconst c -> pp fmt "%a%a" Opprintast.constant c print_ty t_ty
     | Ttrue -> pp fmt "true%a" print_ty t_ty
     | Tfalse -> pp fmt "false%a" print_ty t_ty
-    | Tvar vs ->
-        pp fmt "%a" print_vs vs;
-        assert (vs.vs_ty = Option.get t_ty) (* TODO remove this *)
+    | Tvar vs -> pp fmt "%a" print_vs vs
     | Tapp (ls, [ x1; x2 ]) when Identifier.is_infix ls.ls_name.id_str ->
         let op_nm =
           match String.split_on_char ' ' ls.ls_name.id_str with

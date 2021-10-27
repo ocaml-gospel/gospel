@@ -25,7 +25,7 @@ module Preid : sig
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for pre-identifiers. *)
 
-  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  val create : ?attrs:string list -> loc:Location.t -> string -> t
   (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
       attributes [attrs] and location [loc]. Default attributes are empty, and
       default location is [Location.none]. *)
@@ -46,13 +46,14 @@ module Ident : sig
   }
   (** The type for identifiers. *)
 
+  val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int
 
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for identifiers. *)
 
-  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  val create : ?attrs:string list -> loc:Location.t -> string -> t
   (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
       attributes [attrs] and location [loc]. A unique tag is automatically
       affected to the new identifier Default attributes are empty, and default

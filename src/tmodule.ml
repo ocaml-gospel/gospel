@@ -178,14 +178,14 @@ let ns_with_primitives =
   let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in
   let primitive_ls =
     [
-      (let tv = fresh_ty_var "a" in
+      (let tv = fresh_ty_var ~loc:Location.none "a" in
        (none.id_str, fsymbol ~constr:true ~field:false none [] (ty_option tv)));
-      (let tv = fresh_ty_var "a" in
+      (let tv = fresh_ty_var ~loc:Location.none "a" in
        ( some.id_str,
          fsymbol ~constr:true ~field:false some [ tv ] (ty_option tv) ));
-      (let tv = fresh_ty_var "a" in
+      (let tv = fresh_ty_var ~loc:Location.none "a" in
        (nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv)));
-      (let tv = fresh_ty_var "a" in
+      (let tv = fresh_ty_var ~loc:Location.none "a" in
        ( cons.id_str,
          fsymbol ~constr:true ~field:false cons
            [ tv; ty_app ts_list [ tv ] ]
@@ -204,11 +204,7 @@ let ns_with_primitives =
 
 (** Modules *)
 
-module Mid = Map.Make (struct
-  type t = Ident.t
-
-  let compare = compare
-end)
+module Mid = Map.Make (Ident)
 
 type known_ids = signature_item Mid.t
 type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
@@ -313,7 +309,11 @@ let close_module_file muc =
   match (muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs) with
   | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, s0 :: sl ->
       let file =
-        { fl_nm = Ident.create p0; fl_sigs = List.rev s0; fl_export = e0 }
+        {
+          fl_nm = Ident.create ~loc:Location.none p0;
+          fl_sigs = List.rev s0;
+          fl_export = e0;
+        }
       in
       {
         muc with
@@ -451,7 +451,7 @@ let add_sig_contents muc sig_ =
 
 let init_muc s =
   {
-    muc_nm = Ident.create s;
+    muc_nm = Ident.create ~loc:Location.none s;
     muc_sigs = [ [] ];
     muc_prefix = [ s ];
     muc_import = [ ns_with_primitives ];

@@ -23,5 +23,5 @@ val f : int -> t -> unit
 (*@  f n t
     requires ...
      *)
-File "_none_", line 1:
+File "constructor_arity2.mli", line 6, characters 15-18:
 Error: Function C expects 2 arguments as opposed to 1

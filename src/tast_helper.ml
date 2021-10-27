@@ -38,12 +38,12 @@ let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
    TODO:
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
-let mk_val_spec args ret pre checks post wr cs dv equiv =
+let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
   let add args = function
     | Lunit -> args
     | a ->
         let vs = vs_of_lb_arg a in
-        check (not (Svs.mem vs args)) (DuplicatedArg vs);
+        check ~loc (not (Svs.mem vs args)) (DuplicatedArg vs);
         Svs.add vs args
   in
   let (_ : Svs.t) = List.fold_left add Svs.empty args in
@@ -51,7 +51,7 @@ let mk_val_spec args ret pre checks post wr cs dv equiv =
   List.iter (ty_check None) pre;
   List.iter (ty_check None) checks;
   List.iter (ty_check None) post;
-  val_spec args ret pre checks post wr cs dv equiv
+  val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc
 
 let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
     vd_loc =
@@ -123,7 +123,7 @@ let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
 let mk_function ?result ls r params def spec loc =
   (* check 1 *)
   let add_v s vs ty =
-    check (not (Svs.mem vs s)) (DuplicatedArg vs);
+    check ~loc (not (Svs.mem vs s)) (DuplicatedArg vs);
     ty_equal_check vs.vs_ty ty;
     Svs.add vs s
   in
