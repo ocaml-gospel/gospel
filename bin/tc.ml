@@ -29,7 +29,7 @@ let type_check load_path name sigs =
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
   wrap_up_muc md
 
-let run_file config file =
+let run_file b config file =
   try
     let ocaml = parse_ocaml file in
     if config.verbose then (
@@ -54,12 +54,18 @@ let run_file config file =
       pp fmt "@[%a@]@." print_file file);
     pp fmt "OK\n"
   with
-  | Exit -> ()
+  | Exit -> b := false
   | Not_found ->
       let open Format in
       eprintf "File %s not found.@\nLoad path: @\n%a@\n@." file
         (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
-        config.load_path
-  | e -> Location.report_exception Format.err_formatter e
+        config.load_path;
+      b := false
+  | e ->
+      Location.report_exception Format.err_formatter e;
+      b := false
 
-let run config files = List.iter (run_file config) files
+let run config files =
+  let b = ref true in
+  List.iter (run_file b config) files;
+  !b

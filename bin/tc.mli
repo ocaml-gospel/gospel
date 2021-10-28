@@ -10,4 +10,4 @@
 
 type config = { verbose : bool; load_path : string list }
 
-val run : config -> string list -> unit
+val run : config -> string list -> bool
