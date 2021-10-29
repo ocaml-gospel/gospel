@@ -127,17 +127,11 @@ let rec head = function
   | Tvar { dtv_def = Some t; _ } -> head t
   | dty -> dty
 
-(* TODO review the use of this function. Not sure if it is a good idea
-   to receive an index *)
-let rec occur i dty =
+let rec occur dtvar dty =
   match head dty with
   | Tty _ -> false
-  | Tvar { dtv_id; _ } -> i = dtv_id
-  | Tapp (_, dtys) -> (
-      try
-        List.iter (fun x -> if occur i x then raise Exit) dtys;
-        false
-      with Exit -> true)
+  | Tvar { dtv_id; _ } -> dtvar.dtv_id = dtv_id
+  | Tapp (_, dtys) -> List.exists (occur dtvar) dtys
 
 let rec unify_dty_ty dty ty =
   match (head dty, ty.ty_node) with
@@ -151,7 +145,7 @@ let rec unify dty1 dty2 =
   match (head dty1, head dty2) with
   | Tvar { dtv_id = id1 }, Tvar { dtv_id = id2 } when id1 = id2 -> ()
   | Tvar tvar, dty | dty, Tvar tvar ->
-      if occur tvar.dtv_id dty then raise Exit else tvar.dtv_def <- Some dty
+      if occur tvar dty then raise Exit else tvar.dtv_def <- Some dty
   | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 -> (
       try List.iter2 unify dtyl1 dtyl2 with Invalid_argument _ -> raise Exit)
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
