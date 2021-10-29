@@ -52,14 +52,19 @@ let run_file config file =
       pp fmt "@[********* Typed GOSPEL ********@]@.";
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." print_file file);
-    pp fmt "OK\n"
+    pp fmt "OK\n";
+    true
   with
-  | Exit -> ()
+  | Exit -> false
   | Not_found ->
       let open Format in
       eprintf "File %s not found.@\nLoad path: @\n%a@\n@." file
         (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
-        config.load_path
-  | e -> Location.report_exception Format.err_formatter e
+        config.load_path;
+      false
+  | e ->
+      Location.report_exception Format.err_formatter e;
+      false
 
-let run config files = List.iter (run_file config) files
+let run config files =
+  List.fold_right (fun file b -> run_file config file && b) files true

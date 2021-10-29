@@ -39,7 +39,8 @@ let run_tc verbose load_path file =
         if not (List.mem dir acc) then dir :: acc else acc)
       load_path file
   in
-  Tc.run { verbose; load_path } file
+  let b = Tc.run { verbose; load_path } file in
+  if not b then exit 125 else ()
 
 let tc =
   let doc = "Gospel type-checker." in
