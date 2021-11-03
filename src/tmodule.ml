@@ -461,7 +461,7 @@ let init_muc s =
     muc_crcm = Coercion.empty;
   }
 
-let wrap_up_muc muc =
+let wrap_up_muc (muc : module_uc) =
   match (muc.muc_export, muc.muc_sigs) with
   | [ e ], [ s ] -> { fl_nm = muc.muc_nm; fl_sigs = List.rev s; fl_export = e }
   | _ -> assert false
