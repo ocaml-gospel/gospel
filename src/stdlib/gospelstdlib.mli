@@ -558,7 +558,7 @@ module Set : sig
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
 end
 
-(*@ function ( [<-] ) (m: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+(*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
 
 module Map : sig
   (* the type ('a, 'b) map is defined internally in GOSPEL and can be

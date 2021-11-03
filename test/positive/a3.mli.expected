@@ -74,8 +74,8 @@ module a3.mli
               function max_int  : integer
               function min (_:integer) (_:integer) : integer
               function min_int  : integer
+              function mixfix [->] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
               function mixfix [.._] (_:'a seq) (_:integer) : 'a seq
-              function mixfix [<-] (_:'a -> 'b) (_:'a) (_:'b) : 'a -> 'b
               function mixfix [_..] (_:'a seq) (_:integer) : 'a seq
               function mixfix [_.._] (_:'a seq) (_:integer) (_:integer) : 'a 
               seq

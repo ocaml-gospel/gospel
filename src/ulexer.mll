@@ -219,8 +219,6 @@ rule token = parse
       { RIGHTPAR }
   | "->"
       { ARROW }
-  | "<-"
-      { LARROW }
   | "<->"
       { LRARROW }
   | "&&"

@@ -24,7 +24,7 @@
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
   let get_op l = Qpreid (mk_pid (mixfix "[_]") l)
-  let set_op l = Qpreid (mk_pid (mixfix "[<-]") l)
+  let set_op l = Qpreid (mk_pid (mixfix "[->]") l)
   let sub_op l = Qpreid (mk_pid (mixfix "[_.._]") l)
   let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
   let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
@@ -114,7 +114,7 @@
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
 %token MUTABLE MODEL
-%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
+%token LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
@@ -127,6 +127,7 @@
 %right COLON
 
 %right ARROW LRARROW
+%nonassoc RIGHTSQ
 %right OR BARBAR
 %right AND AMPAMP
 %nonassoc NOT
@@ -416,7 +417,7 @@ term_sub_:
     { Tfield ($1, $3) }
 | term_arg LEFTSQ term RIGHTSQ
     { Tidapp (get_op $loc($2), [$1;$3]) }
-| term_arg LEFTSQ term LARROW term RIGHTSQ
+| term_arg LEFTSQ term ARROW term RIGHTSQ
     { Tidapp (set_op $loc($2), [$1;$3;$5]) }
 | term_arg LEFTSQ term DOTDOT term RIGHTSQ
     { Tidapp (sub_op $loc($2), [$1;$3;$5]) }
@@ -427,8 +428,6 @@ term_sub_:
 | LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
 | term_dot DOT LEFTPAR term RIGHTPAR
     { Tidapp (array_get $loc($2), [$1; $4]) }
-| t1=term_dot DOT LEFTPAR t2=term LARROW t3=term  RIGHTPAR
-    { Tidapp (set_op $loc($2), [t1;t2;t3]) }
 ;
 
 %inline bin_op:
@@ -619,9 +618,8 @@ lident_op:
 | EQUAL                                       { infix "=" }
 | OPPREF UNDERSCORE?                          { prefix $1 }
 | DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
-| DOT LEFTPAR LARROW RIGHTPAR                 { mixfix ".(<-)" }
 | LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
-| LEFTSQ LARROW RIGHTSQ                       { mixfix "[<-]" }
+| LEFTSQ ARROW RIGHTSQ                        { mixfix "[->]" }
 | LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { mixfix "[_.._]" }
 | LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]" }
 | LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]" }

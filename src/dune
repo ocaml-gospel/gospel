@@ -2,7 +2,8 @@
  (modules pps ulexer))
 
 (menhir
- (modules uparser))
+ (modules uparser)
+ (flags (-v)))
 
 (library
  (public_name gospel)
