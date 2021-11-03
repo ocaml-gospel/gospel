@@ -67,7 +67,7 @@ val make : unit -> elem[@@gospel
     modifies uf
     ensures  not (Set.mem e (old uf.dom))
     ensures  uf.dom = Set.union (old uf.dom) (Set.singleton e)
-    ensures  uf.rep = (old uf.rep)[e <- e] |}]
+    ensures  uf.rep = (old uf.rep)[e -> e] |}]
 type type1
 type type2
 type tt[@@gospel
@@ -383,7 +383,7 @@ module FM19.mli
                 ensures ((uf_2:uf_instance).dom = (union 
                         old ((uf_2:uf_instance).dom) (singleton 
                         e:elem):elem set):elem set):prop
-                ensures ((uf_2:uf_instance).rep = (mixfix [<-] 
+                ensures ((uf_2:uf_instance).rep = (mixfix [->] 
                         old ((uf_2:uf_instance).rep) e:elem e:elem):elem ->
                                                                     elem):prop
         writes uf_2:uf_instance*)

@@ -196,13 +196,13 @@ val make : 'a -> 'a element
     modifies u.dom
     ensures not (Set.mem e (old u.dom))
     ensures u.dom = Set.add e (old u.dom)
-    ensures u.rep = (old u.rep)[e <- e] *)
+    ensures u.rep = (old u.rep)[e -> e] *)
 ```
 
 :::note
 
-The `_[_ <- _]` operator is defined in the [standard library](../stdlib). The
-notation `f[x <- y]` is a shorthand notation for the function defined as `fun i
+The `_[_ -> _]` operator is defined in the [standard library](../stdlib). The
+notation `f[x -> y]` is a shorthand notation for the function defined as `fun i
 -> if i = x then y else f i`
 
 :::

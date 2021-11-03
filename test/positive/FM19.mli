@@ -91,7 +91,7 @@ val make: unit -> elem
     modifies uf
     ensures  not (Set.mem e (old uf.dom))
     ensures  uf.dom = Set.union (old uf.dom) (Set.singleton e)
-    ensures  uf.rep = (old uf.rep)[e <- e] *)
+    ensures  uf.rep = (old uf.rep)[e -> e] *)
 
 type type1
 type type2

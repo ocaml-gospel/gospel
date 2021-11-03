@@ -84,11 +84,10 @@ expr = ocaml_expr
      | "old" expr
      | quantifier binders ("," binders)* "." expr
      | expr "[" expr "]"
-     | expr "[" expr "<-" expr "]"
+     | expr "[" expr "->" expr "]"
      | expr "[" expr ".." expr "]"
      | expr "[" ".." expr "]"
      | expr "[" expr ".." "]"
-     | expr "." "(" expr "<-" expr ")"
 quantifier = "forall" | "exists"
 ```
 

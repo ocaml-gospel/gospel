@@ -34,8 +34,8 @@ val make : 'a -> 'a elem
       modifies uf
       ensures  not (mem e (old uf.dom))
       ensures  uf.dom = Set.add e (old uf.dom)
-      ensures  uf.rep = (old uf.rep)[e <- e]
-      ensures  uf.img = (old uf.img)[e <- v]
+      ensures  uf.rep = (old uf.rep)[e -> e]
+      ensures  uf.img = (old uf.img)[e -> v]
 *)
 
 (** note: in functions find, eq, and get,

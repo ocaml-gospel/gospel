@@ -26,8 +26,8 @@ val make : 'a -> 'a elem[@@gospel
       modifies uf
       ensures  not (mem e (old uf.dom))
       ensures  uf.dom = Set.add e (old uf.dom)
-      ensures  uf.rep = (old uf.rep)[e <- e]
-      ensures  uf.img = (old uf.img)[e <- v]
+      ensures  uf.rep = (old uf.rep)[e -> e]
+      ensures  uf.img = (old uf.img)[e -> v]
 |}]
 [@@@ocaml.text
   " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
@@ -283,12 +283,12 @@ module UnionFind.mli
         ensures not (mem  e:'a elem old ((uf_3:'a uf).dom)):prop
                 ensures ((uf_3:'a uf).dom = (add 
                         e:'a elem old ((uf_3:'a uf).dom)):'a elem set):prop
-                ensures ((uf_3:'a uf).rep = (mixfix [<-] 
+                ensures ((uf_3:'a uf).rep = (mixfix [->] 
                         old ((uf_3:'a uf).rep) e:'a elem e:'a elem):'a 
                                                                     elem ->
                                                                     'a 
                                                                     elem):prop
-                ensures ((uf_3:'a uf).img = (mixfix [<-] 
+                ensures ((uf_3:'a uf).img = (mixfix [->] 
                         old ((uf_3:'a uf).img) e:'a elem v:'a):'a elem -> 'a):prop
         writes uf_3:'a uf*)
     
