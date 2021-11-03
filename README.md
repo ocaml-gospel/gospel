@@ -14,13 +14,6 @@
 
 </div>
 
-<div align="center">
-
-:warning: **Disclamer:** This project is still experimental.
-No support will be provided at this point, and its behaviour is still unstable.
-
-</div>
-
 ## About
 
 Gospel is a behavioural specification language for OCaml program. It provides
