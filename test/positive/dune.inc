@@ -1,5 +1,6 @@
 (rule
  (targets FM19.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -12,6 +13,7 @@
 
 (rule
  (targets a.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -24,6 +26,7 @@
 
 (rule
  (targets a1.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -36,6 +39,7 @@
 
 (rule
  (targets a2.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -48,6 +52,7 @@
 
 (rule
  (targets a3.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -60,6 +65,7 @@
 
 (rule
  (targets abstract_functions.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -72,6 +78,7 @@
 
 (rule
  (targets b.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -84,6 +91,7 @@
 
 (rule
  (targets basic_functions_axioms.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -96,6 +104,7 @@
 
 (rule
  (targets bitvector.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -108,6 +117,7 @@
 
 (rule
  (targets c.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -120,6 +130,7 @@
 
 (rule
  (targets complex_vals.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -132,6 +143,7 @@
 
 (rule
  (targets constants.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -144,6 +156,7 @@
 
 (rule
  (targets exceptions.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -156,6 +169,7 @@
 
 (rule
  (targets fib.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -168,6 +182,7 @@
 
 (rule
  (targets infix.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -180,6 +195,7 @@
 
 (rule
  (targets log2.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -192,6 +208,7 @@
 
 (rule
  (targets logical.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -204,6 +221,7 @@
 
 (rule
  (targets modules.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -216,6 +234,7 @@
 
 (rule
  (targets more_types.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -228,6 +247,7 @@
 
 (rule
  (targets no_header.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -240,6 +260,7 @@
 
 (rule
  (targets open_existing_type.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -252,6 +273,7 @@
 
 (rule
  (targets pattern_matching.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -264,6 +286,7 @@
 
 (rule
  (targets test.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -276,6 +299,7 @@
 
 (rule
  (targets test1.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -288,6 +312,7 @@
 
 (rule
  (targets test2.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -300,6 +325,7 @@
 
 (rule
  (targets type_decl.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -312,6 +338,7 @@
 
 (rule
  (targets vals.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -324,6 +351,7 @@
 
 (rule
  (targets variant_patterns.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes

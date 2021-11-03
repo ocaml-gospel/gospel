@@ -1,5 +1,6 @@
 (rule
  (targets impure1.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -12,6 +13,7 @@
 
 (rule
  (targets impure2.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -24,6 +26,7 @@
 
 (rule
  (targets impure3.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -36,6 +39,7 @@
 
 (rule
  (targets impure4.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -48,6 +52,7 @@
 
 (rule
  (targets not_pure.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes

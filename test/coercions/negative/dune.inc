@@ -1,5 +1,6 @@
 (rule
  (targets bad_type_id.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -12,6 +13,7 @@
 
 (rule
  (targets bad_type_multiple_args.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -24,6 +26,7 @@
 
 (rule
  (targets complex_cycle.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -36,6 +39,7 @@
 
 (rule
  (targets double_definition.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -48,6 +52,7 @@
 
 (rule
  (targets simple_cycle.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
