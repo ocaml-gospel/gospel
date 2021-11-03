@@ -1,5 +1,6 @@
 (rule
  (targets Arrays.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -12,6 +13,7 @@
 
 (rule
  (targets CountingSort.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -24,6 +26,7 @@
 
 (rule
  (targets HashTable.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -36,6 +39,7 @@
 
 (rule
  (targets Lists.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -48,6 +52,7 @@
 
 (rule
  (targets Mjrty.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -60,6 +65,7 @@
 
 (rule
  (targets PairingHeap.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -72,6 +78,7 @@
 
 (rule
  (targets PriorityQueue.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -84,6 +91,7 @@
 
 (rule
  (targets Queue.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -96,6 +104,7 @@
 
 (rule
  (targets RingBuffer.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -108,6 +117,7 @@
 
 (rule
  (targets UnionFind.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -120,6 +130,7 @@
 
 (rule
  (targets Vector.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes
@@ -132,6 +143,7 @@
 
 (rule
  (targets ZipperList.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes

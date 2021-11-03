@@ -1,5 +1,6 @@
 (rule
  (targets basic.mli.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %{targets}
       (with-accepted-exit-codes

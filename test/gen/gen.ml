@@ -3,6 +3,7 @@ let print_rule file =
     Printf.printf
       {|(rule
  (targets %s.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %%{targets}
       (with-accepted-exit-codes
