@@ -127,17 +127,11 @@ let rec head = function
   | Tvar { dtv_def = Some t; _ } -> head t
   | dty -> dty
 
-(* TODO review the use of this function. Not sure if it is a good idea
-   to receive an index *)
-let rec occur i dty =
+let rec occur dtvar dty =
   match head dty with
   | Tty _ -> false
-  | Tvar { dtv_id; _ } -> i = dtv_id
-  | Tapp (_, dtys) -> (
-      try
-        List.iter (fun x -> if occur i x then raise Exit) dtys;
-        false
-      with Exit -> true)
+  | Tvar { dtv_id; _ } -> dtvar.dtv_id = dtv_id
+  | Tapp (_, dtys) -> List.exists (occur dtvar) dtys
 
 let rec unify_dty_ty dty ty =
   match (head dty, ty.ty_node) with
@@ -151,7 +145,7 @@ let rec unify dty1 dty2 =
   match (head dty1, head dty2) with
   | Tvar { dtv_id = id1 }, Tvar { dtv_id = id2 } when id1 = id2 -> ()
   | Tvar tvar, dty | dty, Tvar tvar ->
-      if occur tvar.dtv_id dty then raise Exit else tvar.dtv_def <- Some dty
+      if occur tvar dty then raise Exit else tvar.dtv_def <- Some dty
   | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 -> (
       try List.iter2 unify dtyl1 dtyl2 with Invalid_argument _ -> raise Exit)
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
@@ -210,7 +204,8 @@ let denv_find ~loc s denv =
   try Mstr.find s denv with Not_found -> error ~loc (UnboundVar s)
 
 let is_in_denv denv s = Mstr.mem s denv
-let denv_empty = Mstr.empty
+
+(* let denv_empty = Mstr.empty *)
 let denv_get_opt denv s = Mstr.find_opt s denv
 let denv_add_var denv s dty = Mstr.add s dty denv
 
@@ -407,7 +402,7 @@ let term env dt = term env false dt
 
 (* Pretty printing *)
 
-open Opprintast
+(* open Opprintast *)
 open Fmt
 
 (* TODO not sure if we need this. Maybe we just need this for pretty
@@ -430,58 +425,6 @@ let rec print_dty fmt dty =
       | [ dty ] -> pp fmt "%a %a" print_dty dty print_ts_name ts
       | dtyl ->
           pp fmt "(%a) %a" (list ~sep:comma print_dty) dtyl print_ts_name ts)
-
-let rec print_dpattern fmt { dp_node; dp_dty } =
-  match dp_node with
-  | DPwild -> pp fmt "_"
-  | DPvar pid -> pp fmt "%a:%a" Preid.pp pid print_dty dp_dty
-  | DPapp (ls, dpl) when is_fs_tuple ls ->
-      pp fmt "(%a)" (list ~sep:comma print_dpattern) dpl
-  | DPapp (ls, dpl) ->
-      pp fmt "%a %a" print_ls_nm ls (list ~sep:sp print_dpattern) dpl
-  | DPor (dp1, dp2) ->
-      pp fmt "(%a | %a):%a" print_dpattern dp1 print_dty dp_dty print_dpattern
-        dp2
-  | DPas (dp, pid) ->
-      pp fmt "(%a as %a):%a" print_dpattern dp Preid.pp pid print_dty dp_dty
-  | DPcast (dp, dty) ->
-      pp fmt "(%a:%a):%a" print_dpattern dp print_dty dty print_dty dp_dty
-
-let rec print_dterm fmt { dt_node; dt_dty; _ } =
-  let print_dty fmt dty =
-    match dty with None -> () | Some dty -> pp fmt ":%a" print_dty dty
-  in
-  match dt_node with
-  | DTconst c -> pp fmt "%a%a" constant c print_dty dt_dty
-  | DTtrue -> pp fmt "true%a" print_dty dt_dty
-  | DTfalse -> pp fmt "false%a" print_dty dt_dty
-  | DTvar v -> pp fmt "%a%a" Preid.pp v print_dty dt_dty
-  | DTapp (ls, dtl) ->
-      pp fmt "(%a %a)%a" Ident.pp ls.ls_name (list ~sep:sp print_dterm) dtl
-        print_dty dt_dty
-  | DTnot t -> pp fmt "not %a" print_dterm t
-  | DTif (t1, t2, t3) ->
-      pp fmt "if %a then %a else %a" print_dterm t1 print_dterm t2 print_dterm
-        t3
-  | DTlet (pid, t1, t2) ->
-      pp fmt "let %a = %a in %a" Preid.pp pid print_dterm t1 print_dterm t2
-  | DTbinop (op, t1, t2) ->
-      pp fmt "%a %a %a" print_binop op print_dterm t1 print_dterm t2
-  | DTquant (q, vl, dt) ->
-      let print_quant_v fmt (pid, dty) =
-        pp fmt "%a%a" Preid.pp pid print_dty (Some dty)
-      in
-      pp fmt "%a %a. %a" print_quantifier q
-        (list ~sep:sp print_quant_v)
-        vl print_dterm dt
-  | DTcase (dt, dptl) ->
-      let print_branch fmt (dp, dt) =
-        pp fmt "| %a -> %a" print_dpattern dp print_dterm dt
-      in
-      pp fmt "match %a with@\n%a@\nend:%a" print_dterm dt
-        (list ~sep:newline print_branch)
-        dptl print_dty dt_dty
-  | _ -> assert false
 
 let () =
   let open Location.Error in
