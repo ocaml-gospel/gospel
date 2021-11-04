@@ -78,5 +78,5 @@ val not_supported : loc:Location.t -> string -> 'a
 module Sstr : Set.S with type elt = string
 (** String sets. *)
 
-(** Strings hash tables. *)
 module Hstr : Hashtbl.S with type key = string
+(** Strings hash tables. *)

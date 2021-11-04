@@ -50,8 +50,9 @@ let parse_ocaml_signature_lb lb =
 let parse_ocaml_structure_lb lb =
   let lb_pps = Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_curr_p.pos_fname;
-  try Parse.implementation lb_pps with _ ->
-    let loc_start, loc_end = lb.lex_start_p, lb.lex_curr_p in
+  try Parse.implementation lb_pps
+  with _ ->
+    let loc_start, loc_end = (lb.lex_start_p, lb.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)
 
@@ -83,9 +84,10 @@ let parse_signature_gospel ~filename signature name =
   |> Uattr2spec.signature ~filename
 
 let parse_structure_gospel ~filename structure name =
-  (if name = gospelstdlib then structure else
-  (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str :: *) structure)
+  (if name = gospelstdlib then structure
+  else
+    (* TODO: default open of stdlib as a structure item *)
+    (* default_open_str :: *) structure)
   |> Uattr2spec.structure ~filename
 
 let path2module p =
