@@ -92,6 +92,12 @@ type spec_header = {
 
 type val_spec = {
   sp_header : spec_header option;
+  sp_pre : term list;
+  sp_checks : term list;
+  sp_post : term list;
+  sp_xpost : xpost list;
+  sp_writes : term list;
+  sp_consumes : term list;
   sp_variant : term list;
   sp_diverge : bool;
   sp_pure : bool;
