@@ -161,16 +161,6 @@ type prop = {
   prop_kind : prop_kind;
 }
 
-(* TODO: have only one type for axioms *)
-type prop_kind = Plemma | Paxiom
-
-type prop = {
-  prop_name : Preid.t;
-  prop_term : term;
-  prop_loc  : Location.t;
-  prop_kind : prop_kind;
-}
-
 (* Modified OCaml constructs with specification attached *)
 
 type s_val_description = {
@@ -283,7 +273,6 @@ and s_functor_parameter =
 
 (* (X : MT)          Some X, MT
    (_ : MT)          None, MT *)
-
 and s_module_expr = {
   spmod_desc : s_module_expr_desc;
   spmod_loc : Location.t;

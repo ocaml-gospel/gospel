@@ -90,12 +90,6 @@ let parse_structure_gospel ~filename structure name =
     (* default_open_str :: *) structure)
   |> Uattr2spec.structure ~filename
 
-let parse_structure_gospel structure name =
-  (if name = gospelstdlib then structure else
-  (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str :: *) structure)
-  |> Uattr2spec.structure
-
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
