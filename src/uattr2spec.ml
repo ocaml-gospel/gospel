@@ -203,20 +203,6 @@ let floating_spec_str ~filename a =
     try Str_prop (snd (parse_gospel ~filename Uparser.prop a))
     with Syntax_error _ -> ghost_spec_str ~filename a)
 
-let floating_spec_str a =
-  try
-    let _, fun_ = parse_gospel Uparser.func a in
-    if fun_.fun_spec = None then
-      let fun_spec =
-        get_inner_spec a |> fst |> Option.map (parse_gospel Uparser.func_spec)
-        |> Option.map snd
-      in
-      Str_function { fun_ with fun_spec }
-    else Str_function fun_
-  with Syntax_error _ -> (
-    try Str_prop (snd (parse_gospel Uparser.prop a))
-    with Syntax_error _ -> ghost_spec_str a)
-
 let with_constraint c =
   let no_spec_type_decl t =
     {
