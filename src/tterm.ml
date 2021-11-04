@@ -15,7 +15,7 @@ module Ident = Identifier.Ident
 
 (* Variable Symbols *)
 
-type vsymbol = { vs_name : Ident.t; vs_ty : ty }
+type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
 
 let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
 
@@ -38,6 +38,7 @@ type lsymbol = {
   (* true if it is a construct, false otherwise*)
   ls_field : bool; (* true if it is a record/model field *)
 }
+[@@deriving show]
 
 let ls_equal l1 l2 = Ident.equal l1.ls_name l2.ls_name
 
@@ -124,9 +125,10 @@ let is_fs_tuple fs = fs.ls_constr = true && Hashtbl.mem fs_tuple_ids fs.ls_name
 type pattern = {
   p_node : pattern_node;
   p_ty : ty;
-  p_vars : Svs.t;
-  p_loc : Location.t;
+  p_vars : Svs.t; [@opaque]
+  p_loc : Location.t; [@opaque]
 }
+[@@deriving show]
 
 and pattern_node =
   | Pwild
@@ -134,20 +136,24 @@ and pattern_node =
   | Papp of lsymbol * pattern list
   | Por of pattern * pattern
   | Pas of pattern * vsymbol
+[@@deriving show]
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
-type quant = Tforall | Texists | Tlambda
+[@@deriving show]
+
+type quant = Tforall | Texists | Tlambda [@@deriving show]
 
 type term = {
   t_node : term_node;
   t_ty : ty option;
   t_attrs : string list;
-  t_loc : Location.t;
+  t_loc : Location.t; [@opaque]
 }
+[@@deriving show]
 
 and term_node =
   | Tvar of vsymbol
-  | Tconst of Parsetree.constant
+  | Tconst of Parsetree.constant [@printer fun fmt _ -> fprintf fmt "constant"]
   | Tapp of lsymbol * term list
   | Tfield of term * lsymbol
   | Tif of term * term * term
@@ -159,6 +165,7 @@ and term_node =
   | Told of term
   | Ttrue
   | Tfalse
+[@@deriving show]
 
 let rec p_vars p =
   match p.p_node with

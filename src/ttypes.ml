@@ -14,7 +14,7 @@ module Ident = Identifier.Ident
 
 (** type variables *)
 
-type tvsymbol = { tv_name : Ident.t }
+type tvsymbol = { tv_name : Ident.t } [@@deriving show]
 
 let tv_equal x y = Ident.equal x.tv_name y.tv_name
 
@@ -43,9 +43,10 @@ let tv_of_string =
 
 (** types *)
 
-type ty = { ty_node : ty_node }
+type ty = { ty_node : ty_node } [@@deriving show]
 
 and ty_node = Tyvar of tvsymbol | Tyapp of tysymbol * ty list
+[@@deriving show]
 
 and tysymbol = {
   ts_ident : Ident.t;
@@ -54,6 +55,7 @@ and tysymbol = {
      type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
   ts_alias : ty option;
 }
+[@@deriving show]
 
 let ts_equal x y = Ident.equal x.ts_ident y.ts_ident
 
@@ -232,8 +234,9 @@ type exn_type =
      exception E of (int*int)
        -> Exn_tuple [Tyapp (ts_tuple 2) [ty_int;ty_int]] *)
   | Exn_record of (Ident.t * ty) list
+[@@deriving show]
 
-type xsymbol = { xs_ident : Ident.t; xs_type : exn_type }
+type xsymbol = { xs_ident : Ident.t; xs_type : exn_type } [@@deriving show]
 
 let xsymbol id ty = { xs_ident = id; xs_type = ty }
 let xs_equal x y = Ident.equal x.xs_ident y.xs_ident
