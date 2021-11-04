@@ -317,6 +317,7 @@ and s_expression = {
   spexp_loc : Location.t;
   spexp_loc_stack : Location.t list;
   spexp_attributes : attributes; (* ... [@id1] [@id2] *)
+}
 
 and s_expression_desc =
   | Sexp_ident of Longident.t loc
