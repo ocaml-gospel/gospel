@@ -27,9 +27,7 @@ val with_loadpath : string list -> string -> string
     an OCaml syntax error. *)
 
 val parse_ocaml_signature : string -> Parsetree.signature
-
 val parse_ocaml_signature_lb : Lexing.lexbuf -> Parsetree.signature
-
 val parse_ocaml_structure_lb : Lexing.lexbuf -> Parsetree.structure
 
 (* val parse_gospel :
@@ -50,6 +48,6 @@ val parse_signature_gospel :
 val parse_structure_gospel :
   filename:string -> Parsetree.structure -> string -> Uast.s_structure
 
-val parse_ocaml_signature_gospel :  string -> Uast.s_signature
+val parse_ocaml_signature_gospel : string -> Uast.s_signature
 
 (* val parse_ocaml_structure_gospel : string -> Uast.s_structure *)

@@ -1072,9 +1072,10 @@ and process_modtype penv muc umty =
         | Wmodule (_, _) ->
             not_supported ~loc:umty.mloc "with module clause not supported"
         | Wmodsubst (_, _) ->
-          not_supported ~loc:umty.mloc "with module clause not supported"
+            not_supported ~loc:umty.mloc "with module clause not supported"
         | Wpredicate _ -> assert false (* TODO *)
-        | Wfunction _ -> assert false (* TODO *)
+        | Wfunction _ -> assert false
+        (* TODO *)
       in
       let muc, cl = List.fold_left process_constraint (muc, []) cl in
       let tmty =
