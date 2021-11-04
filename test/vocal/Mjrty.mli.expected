@@ -1,0 +1,94 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel
+  {| function num (a: string seq) (v: string) (lo hi: integer) : integer |}]
+[@@@gospel
+  {| axiom num_base:
+      forall a v lo hi. hi <= lo -> num a v lo hi = 0 |}]
+[@@@gospel
+  {| axiom num_ind:
+      forall a v lo hi. 0 <= lo < hi <= Seq.length a ->
+      num a v lo hi = (if a[lo] = v then 1 else 0) + num a v (lo+1) hi |}]
+val mjrty : string array -> string[@@gospel
+                                    {| r = mjrty a
+      requires 1 <= Array.length a
+      ensures  2 * num a r 0 (Array.length a) > Array.length a
+      raises   Not_found ->
+               forall c. 2 * num a c 0 (Array.length a) <= Array.length a |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ function num ... *)
+
+(*@ axiom ... *)
+
+(*@ axiom ... *)
+
+val mjrty : string array -> string
+(*@ r = mjrty a
+    requires ...
+    ensures ...
+    with ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module Mjrty.mli
+
+  Namespace: Mjrty.mli
+    Type symbols
+      
+    Logic Symbols
+      function num (_:string seq) (_:string) (_:integer) (_:integer) : 
+      integer
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ function num (a:string seq) (v:string) (lo:integer) (hi:integer): 
+        integer
+    *)
+    
+    (*@ axiom num_base: forall a_1:string seq v_1:string lo_1:integer
+                               hi_1:integer. (hi_1:integer <= lo_1:integer):prop -> ((num 
+    a_1:string seq v_1:string lo_1:integer hi_1:integer):integer = 0:
+    integer):prop *)
+    
+    (*@ axiom num_ind: forall a_2:string seq v_2:string lo_2:integer
+                              hi_2:integer. (0:integer <= lo_2:integer):prop /\ (
+    lo_2:integer < hi_2:integer):prop /\ (hi_2:integer <= (length 
+    a_2:string seq):integer):prop -> ((num 
+    a_2:string seq v_2:string lo_2:integer hi_2:integer):integer = (if ((mixfix [_] 
+    a_2:string seq lo_2:integer):string = v_2:string):prop then 1:integer else 0:
+    integer + (num 
+    a_2:string seq v_2:string (lo_2:integer + 1:integer):integer hi_2:integer):
+    integer):integer):prop *)
+    
+    val mjrty : string array -> string
+    (*@ r:string = mjrty a_3:string array
+        requires (1:integer <= (length_1  a_3:string array):integer):prop
+        ensures ((2:integer * (num 
+                (to_seq  a_3:string array):string seq r:string 0:integer
+                (length_1  a_3:string array):integer):integer):integer > (length_1 
+                a_3:string array):integer):prop
+        raisesNot_found  -> forall c:string. ((2:integer * (num 
+                            (to_seq  a_3:string array):string seq c:string
+                            0:integer (length_1  a_3:string array):integer):
+                            integer):integer <= (length_1 
+                            a_3:string array):integer):prop*)
+
+OK

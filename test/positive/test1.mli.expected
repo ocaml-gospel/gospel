@@ -22,6 +22,8 @@ module test1.mli
     Logic Symbols
       function f (_:t) : integer
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -35,6 +37,4 @@ module test1.mli
     
     (*@ function f (x:t): integer *)
 
-
-*** OK ***
-
+OK

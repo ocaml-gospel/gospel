@@ -1,0 +1,65 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel {| function fibonacci (n: integer) : integer |}]
+val fib : int -> int -> int -> int[@@gospel
+                                    {| r = fib [i: integer] n a b
+    requires i >= 0
+    checks n >= 0
+    requires a = fibonacci i
+    requires b = fibonacci (i+1)
+    ensures r = fibonacci (i+n) |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ function fibonacci ... *)
+
+val fib : int -> int -> int -> int
+(*@ r = fib [i : TY] n a b
+    requires ...
+    requires ...
+    requires ...
+    ensures ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module fib.mli
+
+  Namespace: fib.mli
+    Type symbols
+      
+    Logic Symbols
+      function fibonacci (_:integer) : integer
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ function fibonacci (n:integer): integer *)
+    
+    val fib : int -> int -> int -> int
+    (*@ r:int = fib [i:integer: integer] n_1:int a:int b:int
+        requires (i:integer >= 0:integer):prop
+                 requires ((integer_of_int  a:int):integer = (fibonacci 
+                          i:integer):integer):prop
+                 requires ((integer_of_int  b:int):integer = (fibonacci 
+                          (i:integer + 1:integer):integer):integer):prop
+        checks ((integer_of_int  n_1:int):integer >= 0:integer):prop
+        ensures ((integer_of_int  r:int):integer = (fibonacci 
+                (i:integer + (integer_of_int  n_1:int):integer):integer):
+                integer):prop*)
+
+OK

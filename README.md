@@ -1,81 +1,129 @@
-# Gospel
+<div align="center">
+  <h1>Gospel</h1>
+  <strong>A tool-agnostic formal specification language for OCaml.</strong>
+</div>
 
-[![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-gospel%2Fgospel%2Fmaster&logo=ocaml)](https://ci.ocamllabs.io/github/ocaml-gospel/gospel)
+<div align="center">
+<br />
 
-**Disclamer:** This project is still experimental. No support will be provided
-at this point, and its behaviour is still unstable.
+[![license](https://img.shields.io/github/license/ocaml-gospel/gospel.svg?style=flat-square)](LICENSE)
 
-Gospel is a tool-agnostic formal specification language for OCaml.
+[![OCaml-CI Build Status](https://img.shields.io/endpoint?url=https%3A%2F%2Fci.ocamllabs.io%2Fbadge%2Focaml-gospel%2Fgospel%2Fmain&logo=ocaml&style=flat-square)](https://ci.ocamllabs.io/github/ocaml-gospel/gospel)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ocaml-gospel/gospel?style=flat-square)](https://github.com/ocaml-gospel/gospel/releases/latest)
+[![documentation](https://img.shields.io/badge/documentation-online-blue?style=flat-square)](https://ocaml-gospel.github.io/gospel)
 
-## Syntax example
+</div>
 
-We briefly describe the specification language using an example, taken from a
-vector interface.
+## About
 
-The abstract type `t` of vectors below is identified as `ephemeral` (elements
-can be mutated in-place) and is modeled using a polymorphic sequence, introduced
-using the `mutable model` syntax. Properties about the data type and associated
-models can be captured using the `invariant` keyword.
+Gospel is a behavioural specification language for OCaml program. It provides
+developers with a non-invasive and easy-to-use syntax to annotate their module
+interfaces with formal contracts that describe type invariants, mutability,
+function pre-conditions and post-conditions, effects, exceptions, and [much
+more](https://ocaml-gospel.github.io/gospel/)!
 
-```OCaml
-(** The polymorphic type of vectors.
-    This is a mutable data type. *)
-type 'a t
-(*@ ephemeral *)
-(*@ mutable model view: 'a seq *)
-(*@ invariant length view <= Sys.max_array_length *)
+<div align="center">
+<img src="screenshot.png" title="Gospel specification">
+</div>
+
+We designed Gospel to provide a tool-agnostic frontend for bringing formal
+methods into the OCaml ecosystem, meaning that we make no assumptions on the
+future use of the specifications.
+
+You can use Gospel specifications to complete and precise your documentation
+comments with non-ambiguous annotations and use a type-checker to ensure they
+always remain in sync. Other tools also rely on these annotations to provide
+additional features such as automated deductive verification or runtime
+assertion checking.
+
+Please feel free to visit [the project
+page](https://ocaml-gospel.github.io/gospel) if you wish to learn more about
+Gospel!
+
+## Getting Started
+
+### Installation
+
+Gospel is not yet available on Opam repositories. You can install it via pinning:
+
+```shell
+$ opam pin add gospel.dev git@github.com:ocaml-gospel/gospel
+$ opam install gospel
 ```
 
-To provide specification for function declarations, the parameters and the
-returned value must be named first. Preconditions are stated in `requires`
-clause, while postconditions are introduced after `ensures`.
+This will install the `gospel` tool binary, as well as the developer library if you
+wish to build your software on top of Gospel. You may check the installation with.
 
-```OCaml
-val create: ?capacity:int -> dummy:'a -> 'a t
-(*@ a = create capacity dummy
-      requires let capacity = match capacity with
-                 | None -> 0 | Some c -> c in
-               0 <= capacity <= Sys.max_array_length
-      ensures  length a.view = 0 *)
+```shell
+$ gospel --version
+gospel version xxxxxx
 ```
 
-Whenever type `int` is mentioned, it refers to the OCaml type `int` of native
-machine integer (e.g. 63-bit signed integers on a 64-bit platform). A type
-`integer` for mathematical integers is also provided. Here is an example:
+### Usage
 
-```OCaml
-val make: ?dummy:'a -> int -> 'a -> 'a t
-(*@ a = make ?dummy n x
-      requires 0 <= n <= Sys.max_array_length
-      ensures  length a.view = n
-      ensures  forall i: integer. 0 <= i < n -> a.view[i] = x *)
+Gospel contracts live in OCaml interface files (`.mli`), as special comments
+starting with the `@` symbol:
+
+```ocaml
+val max_array: int array -> int
+(*@ m = max_array a
+    requires Array.length a > 0
+    ensures forall i. 0 <= i < Array.length a -> a.(i) <= m
+    ensures exists i. 0 <= i < Array.length a /\ a.(i) = m *)
 ```
 
-Whenever a function has side effects, this is indicated using a `modifies`
-clause. Here is an example:
+Gospel provides a type-checker that ensures that your specifications are
+well-formed, well-typed, and remain in sync with the interface they annotate!
 
-```OCaml
-val resize: 'a t -> int -> unit
-(*@ resize a n
-      checks   0 <= n <= Sys.max_array_length
-      modifies a
-      ensures  length a.view = n
-      ensures  forall i. 0 <= i < min (length (old a.view)) n ->
-                 a.view[i] = (old a.view)[i] *)
+```shell
+$ gospel check max_array.mli
+OK
 ```
 
-This last example also features the `checks` clause. This is an alternative to
-`requires`. Contrary to the latter, a `checks` clause is checked at run-time,
-and raises an `Invalid_argument` exception when it is not satisfied.
+### Tools using Gospel
 
-Last, an `equivalent` clause is sometimes used to describe the behavior of an
-OCaml function using an equivalent piece of OCaml code. Here is an example:
+> You are using Gospel as a frontend? [Let us
+> know!](https://github.com/ocaml-gospel/gospel/discussions/new?category=show-and-tell)
 
-```OCaml
-val iter : ('a -> unit) -> 'a t -> unit
-(*@ iter f a
-      equivalent "for i = 0 to length a - 1 do f (get a i) done" *)
-```
+At the moment, three tools leverage Gospel specifications to provide more
+guarantees to your programs:
 
-A forthcoming documentation of this specification language will hopefully
-provide more details and clarify the semantics.
+- **[Cameleer](https://github.com/ocaml-gospel/cameleer).** A tool that extends
+  Gospel to implementation files to provide semi-automated deductive
+  verification of OCaml programs.
+- **[Ortac](https://github.com/ocaml-gospel/ortac).** A runtime assertion
+  checking tool based that generates verifying code for your test suites or
+  programs monitors.
+- **[Why3gospel](https://github.com/ocaml-gospel/why3gospel).** A Why3 plugin that
+  lets you verify that a program proof refines the Gospel specifications before
+  extracting it to OCaml.
+
+## License
+
+This project is licensed under the **MIT license**.
+
+See the [LICENSE](LICENSE) file for more information.
+
+## Authors
+
+Gospel was initially developed by Cláudio Lourenço (LRI postdoctorate).
+
+It is now maintained by Clément Pascutto, Mário Pereira, and Jean-Christophe
+Filliâtre.
+
+The full list of contributors is available
+[here](https://github.com/ocaml-gospel/gospel/graphs/contributors).
+
+## Acknowledgements
+
+This project is part of a collaboration between the [LMF
+laboratory](https://lmf.cnrs.fr/), [Tarides](https://tarides.com/), and [NOVA
+LINCS](https://nova-lincs.di.fct.unl.pt/).
+
+The development is supported by:
+
+- The [VOCaL project](https://vocal.lri.fr). ANR grant No.
+  [ANR-15-CE25-0008](https://anr.fr/Project-ANR-15-CE25-0008), 1/10/2015 -
+  31/3/2021.
+- The HORIZON 2020 Cameleer project (Marie Skłodowska-Curie grant agreement
+  ID:897873) and NOVA LINCS (Ref. UIDB/04516/2020).

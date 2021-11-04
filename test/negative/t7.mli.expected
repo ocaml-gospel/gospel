@@ -22,5 +22,5 @@
     ensures ...
     ensures ...
      *)
-File "_none_", line 3, characters 12-13:
-Error: Type mysmatch. Cannot match integer with bool
+File "t7.mli", line 14, characters 12-13:
+Error: Type mismatch. Cannot match integer with bool

@@ -1,3 +1,0 @@
-\begin{syntax}
-  attribute ::= "[@" ~... "]" 
-\end{syntax}

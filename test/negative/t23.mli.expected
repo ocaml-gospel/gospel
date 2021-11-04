@@ -12,5 +12,5 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y |}]
 val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y
      *)
-File "_none_", line 1, characters 5-6:
+File "t23.mli", line 12, characters 5-6:
 Error: Type checking error: too few parameters

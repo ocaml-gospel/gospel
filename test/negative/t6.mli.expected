@@ -22,5 +22,5 @@
     ensures ...
     ensures ...
      *)
-File "_none_", line 2, characters 12-17:
+File "t6.mli", line 13, characters 12-17:
 Error: Term was expected

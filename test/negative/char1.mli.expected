@@ -4,5 +4,5 @@
 *******************************
 val f : char -> unit[@@gospel {| f c
     requires c = '\' |}]
-File "_none_", line 2, characters 17-18:
+File "char1.mli", line 4, characters 17-18:
 Error: illegal character '

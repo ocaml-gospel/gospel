@@ -26,6 +26,8 @@ module a2.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -40,6 +42,4 @@ module a2.mli
     type t2 = t
          
 
-
-*** OK ***
-
+OK

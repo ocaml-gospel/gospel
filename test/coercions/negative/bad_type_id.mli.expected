@@ -15,5 +15,5 @@ type t1
 
 (*@ function c ...
     coercion *)
-File "_none_", line 1, characters 10-11:
+File "bad_type_id.mli", line 3, characters 10-11:
 Error: Function c cannot be used as a coercion

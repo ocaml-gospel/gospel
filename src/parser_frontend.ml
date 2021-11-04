@@ -15,9 +15,8 @@ exception Ocaml_syntax_error of Location.t
 let () =
   let open Location.Error in
   register_error_of_exn (function
-      | Ocaml_syntax_error loc ->
-         Some (make ~loc ~sub:[] "OCaml syntax error")
-      | _ -> None )
+    | Ocaml_syntax_error loc -> Some (make ~loc ~sub:[] "OCaml syntax error")
+    | _ -> None)
 
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
@@ -28,10 +27,13 @@ let with_loadpath load_path file =
     try
       let f = Filename.concat d file in
       if Sys.file_exists f then raise (Break f)
-    with Sys_error _ -> () in
+    with Sys_error _ -> ()
+  in
   if file = gospelstdlib_file then file
   else if Filename.is_relative file then
-    try List.iter try_open load_path; raise Not_found
+    try
+      List.iter try_open load_path;
+      raise Not_found
     with Break c -> c
   else if Sys.file_exists file then file
   else raise Not_found
@@ -39,32 +41,32 @@ let with_loadpath load_path file =
 let parse_ocaml_signature_lb lb =
   let lb_pps = Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
-  try Parse.interface lb_pps with _ ->
-    let loc_start, loc_end = lb_pps.lex_start_p, lb_pps.lex_curr_p in
+  try Parse.interface lb_pps
+  with _ ->
+    let loc_start, loc_end = (lb_pps.lex_start_p, lb_pps.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)
 
 let parse_ocaml_structure_lb lb =
   let lb_pps = Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_curr_p.pos_fname;
-  try Parse.implementation lb_pps with _ ->
-    let loc_start, loc_end = lb.lex_start_p, lb.lex_curr_p in
+  try Parse.implementation lb_pps
+  with _ ->
+    let loc_start, loc_end = (lb.lex_start_p, lb.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)
 
 let parse_ocaml_signature file =
   let lb =
-    if file = gospelstdlib_file then
-      Lexing.from_string Gospelstdlib.contents
-    else
-      open_in file |> Lexing.from_channel
+    if file = gospelstdlib_file then Lexing.from_string Gospelstdlib.contents
+    else open_in file |> Lexing.from_channel
   in
   Location.init lb file;
   parse_ocaml_signature_lb lb
 
-module B = Ast_builder.Make(struct
-    let loc = Location.none
-  end)
+module B = Ast_builder.Make (struct
+  let loc = Location.none
+end)
 
 let default_open =
   let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
@@ -77,15 +79,16 @@ let _default_open_str =
   B.attribute ~name ~payload |> B.pstr_attribute
 
 (** Parse the attributes as GOSPEL specification. *)
-let parse_signature_gospel signature name =
+let parse_signature_gospel ~filename signature name =
   (if name = gospelstdlib then signature else default_open :: signature)
-  |> Uattr2spec.signature
+  |> Uattr2spec.signature ~filename
 
-let parse_structure_gospel structure name =
-  (if name = gospelstdlib then structure else
-  (* TODO: default open of stdlib as a structure item *)
-     (* default_open_str :: *) structure)
-  |> Uattr2spec.structure
+let parse_structure_gospel ~filename structure name =
+  (if name = gospelstdlib then structure
+  else
+    (* TODO: default open of stdlib as a structure item *)
+    (* default_open_str :: *) structure)
+  |> Uattr2spec.structure ~filename
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
@@ -93,4 +96,4 @@ let path2module p =
 let parse_ocaml_signature_gospel path =
   let module_name = path2module path in
   let ocaml = parse_ocaml_signature path in
-  parse_signature_gospel ocaml module_name
+  parse_signature_gospel ~filename:path ocaml module_name

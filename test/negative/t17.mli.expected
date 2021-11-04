@@ -12,5 +12,5 @@ val f : int -> int -> int[@@gospel {| r = f ~x y|}]
 val f : int -> int -> int
 (*@ r = f ~x y
      *)
-File "_none_", line 1, characters 8-9:
+File "t17.mli", line 12, characters 8-9:
 Error: Type checking error: parameter do not match with val type

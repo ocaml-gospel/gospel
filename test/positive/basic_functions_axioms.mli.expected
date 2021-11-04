@@ -224,10 +224,10 @@ module basic_functions_axioms.mli
     Logic Symbols
       function A  : t4
       function B  : t4
-      function C (_:'a * int) : 'a t1
+      function C (_:'a) (_:int) : 'a t1
       function C2 (_:'a) : 'a t2
       function C3 (_:bool) : 'a t2
-      function C4 (_:int * 'a) : 'a t2
+      function C4 (_:int) (_:'a) : 'a t2
       function constr#t5 (_:int) (_:'a) : 'a t5
       function constr#t6 (_:'a) (_:int) : 'a t6
       function f (_:int) : int t3
@@ -242,6 +242,8 @@ module basic_functions_axioms.mli
       function p (_:integer) : integer
       predicate pred (_:bool)
       function to_integer (_:int) : integer
+      
+    Field Symbols
       function x (_:'a t5) : int
       function xx (_:'a t6) : 'a
       function y (_:'a t5) : 'a
@@ -343,12 +345,12 @@ module basic_functions_axioms.mli
     *)
     
     type 'a t1 = C of 'a * int
-                 function C (_:'a * int) : 'a t1
+                 function C (_:'a) (_:int) : 'a t1
          
     
     (*@ function i (a_6:'a t1): int =
         match a_6:'a t1 with
-        | C (_, y_2:int) -> y_2:int
+        | C _ y_2:int -> y_2:int
         end::int
     *)
     
@@ -357,7 +359,7 @@ module basic_functions_axioms.mli
                  | C3 of bool
                    function C3 (_:bool) : 'a t2
                  | C4 of int * 'a
-                   function C4 (_:int * 'a) : 'a t2
+                   function C4 (_:int) (_:'a) : 'a t2
          
     
     (*@ function gnr : 'a *)
@@ -368,12 +370,12 @@ module basic_functions_axioms.mli
         match x_12:'a t2 with
         | C2 x_13:'a -> x_13:'a
         | C3 b_3:bool -> (gnr ):'a
-        | C4 (i_5:int, x_14:'a) -> (g_2  x_14:'a x_14:'a i_5:int):'a
+        | C4 i_5:int x_14:'a -> (g_2  x_14:'a x_14:'a i_5:int):'a
         end::'a
     *)
     
-    (*@ axiom ax1: forall x_15:'a218 t2 y_4:'a218 . (y_4:'a218 = (f_6 
-    x_15:'a218 t2):'a218):prop *)
+    (*@ axiom ax1: forall x_15:'a66 t2 y_4:'a66. (y_4:'a66 = (f_6 
+    x_15:'a66 t2):'a66):prop *)
     
     val f_7 : int -> int -> int
     (*@ r:int = f_7 x_16:int y_5:int
@@ -429,6 +431,4 @@ module basic_functions_axioms.mli
         end::t4 t6
     *)
 
-
-*** OK ***
-
+OK

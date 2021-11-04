@@ -10,8 +10,10 @@
 
 open Ppxlib
 
-(** Pre-identifiers: these are not unique identifier; they come out of the
-    parser and are used in the untyped AST. *)
+(** {1 Pre-identifiers}
+
+    These are not unique identifier; they come out of the parser and are used in
+    the untyped AST. *)
 module Preid : sig
   type t = private {
     pid_str : string;  (** The identifier name. *)
@@ -23,7 +25,7 @@ module Preid : sig
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for pre-identifiers. *)
 
-  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  val create : ?attrs:string list -> loc:Location.t -> string -> t
   (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
       attributes [attrs] and location [loc]. Default attributes are empty, and
       default location is [Location.none]. *)
@@ -32,7 +34,9 @@ module Preid : sig
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
 end
 
-(** Identifiers: uniquely tagged identifiers produced by the typing. *)
+(** {1 Identifiers}
+
+    These are uniquely tagged identifiers produced by the typing. *)
 module Ident : sig
   type t = private {
     id_str : string;  (** The identifier name. *)
@@ -42,10 +46,14 @@ module Ident : sig
   }
   (** The type for identifiers. *)
 
+  val compare : t -> t -> int
+  val equal : t -> t -> bool
+  val hash : t -> int
+
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for identifiers. *)
 
-  val create : ?attrs:string list -> ?loc:Location.t -> string -> t
+  val create : ?attrs:string list -> loc:Location.t -> string -> t
   (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
       attributes [attrs] and location [loc]. A unique tag is automatically
       affected to the new identifier Default attributes are empty, and default
@@ -63,30 +71,20 @@ module Ident : sig
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
 end
 
-(** Hard-coded identifiers *)
+(** {2 Hard-coded identifiers} *)
 
 val eq : Ident.t
-
 val neq : Ident.t
-
 val none : Ident.t
-
 val some : Ident.t
-
 val nil : Ident.t
-
 val cons : Ident.t
 
 (* Utils *)
 
 val prefix : string -> string
-
 val infix : string -> string
-
 val mixfix : string -> string
-
 val is_prefix : string -> bool
-
 val is_infix : string -> bool
-
 val is_mixfix : string -> bool

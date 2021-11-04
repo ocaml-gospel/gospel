@@ -23,6 +23,8 @@ module a1.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -35,6 +37,4 @@ module a1.mli
     type t
          
 
-
-*** OK ***
-
+OK

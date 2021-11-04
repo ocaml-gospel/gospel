@@ -32,6 +32,7 @@
 (** The type for finite unordered sets. *)
 
 (** {1 Arithmetic}
+
     The type [integer] is built-in. This is the type of arbitrary precision
     integers, not to be confused with OCaml's type [int] (machine, bounded
     integers). *)
@@ -44,7 +45,7 @@
 (*@ function (-) (x y: integer) : integer *)
 (*@ function ( * ) (x y: integer) : integer *)
 (*@ function (/) (x y: integer) : integer *)
-(* @ function mod (x y: integer) : integer *)
+(*@ function mod (x y: integer) : integer *)
 
 (*@ function pow (x y: integer) : integer *)
 (*@ function abs (x:integer) : integer *)
@@ -78,6 +79,7 @@
     power of two with rounding toward 0 *)
 
 (** {2 Machine integers}
+
     There is a coercion from type [int] to type [integer], so that Gospel
     specifications can be written using type [integer] only, and yet use OCaml's
     variables of type [int]. The Gospel typechecker will automatically apply
@@ -109,8 +111,6 @@ type int
 
 (** {1 Sequences} *)
 
-(*@ predicate (==) (s1 s2: 'a seq) *)
-
 (*@ function (++) (s s': 'a seq) : 'a seq *)
 (** [s ++ s'] is the sequence [s] followed by the sequence [s']. *)
 
@@ -125,17 +125,11 @@ module Seq : sig
   (*@ type 'a t = 'a seq *)
   (** An alias for {!'a seq} *)
 
-  (*@ predicate equal (s s': 'a t) *)
-  (** Equality predicate over sequences. *)
-
   (*@ function length (s: 'a t): integer *)
   (** [length s] is the length of the sequence [s]. *)
 
   (*@ function empty : 'a t *)
   (** [empty] is the empty sequence. *)
-
-  (*@ function return (x: 'a) : 'a t *)
-  (** [return x] is the sequence containing only [x]. *)
 
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton] is an alias for {!return}. *)
@@ -144,8 +138,10 @@ module Seq : sig
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
 
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
-  (** [cons x s] is the sequence containing the element [x] followed by the
-      sequence [s]. *)
+  (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
+
+  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
+  (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
 
   (*@ function hd (s: 'a t) : 'a *)
   (** When [s] contains one or more elements, [hd s] is the first element of
@@ -159,7 +155,7 @@ module Seq : sig
   (** [append s s'] is [s ++ s']. *)
 
   (*@ predicate mem (s: 'a seq) (x: 'a) *)
-  (** [mem s x] is true iff [x] is in [s]. *)
+  (** [mem s x] holds iff [x] is in [s]. *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a sequence whose elements are the elements of [s],
@@ -179,19 +175,21 @@ module Seq : sig
   (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
   (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
 
-  (*@ function ([<-]) (s: 'a seq) (i: integer) (x: 'a): 'a seq *)
-  (** [s\[i\] <- x] is [set s i x]. *)
-
-  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
-
   (*@ function rev (s: 'a seq) : 'a seq *)
+  (** [rev s] is the sequence containing the same elements as [s], in reverse
+      order. *)
 
   (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b seq) : 'a *)
+  (** [fold_left f acc s] is [f (... (f (f acc s\[0\]) s\[1\]) ...) s\[n-1\]],
+      where [n] is the length of [s]. *)
 
   (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b *)
+  (** [fold_right f s acc] is [f s\[1\] (f s\[2\] (... (f s\[n\] acc) ...))]
+      where [n] is the length of [s]. *)
 end
 
 (** Lists
+
     The type ['a list] and the constructors [\[\]] and [(::)] are built-in. *)
 
 module List : sig
@@ -202,10 +200,12 @@ module List : sig
   (** [length l] is the number of elements of [l]. *)
 
   (*@ function hd (l: 'a t) : 'a *)
-  (** [hd l] is the first element of [l]. *)
+  (** When [l] contains one or more elements, [hd s] is the first element of
+      [l]. *)
 
   (*@ function tl (l: 'a t) : 'a t *)
-  (** [tl l] is [x], when [t] is [.. :: t]. *)
+  (** When [l] contains one or more elements, [tl l] is the list of the elements
+      of [l], starting at position 2. *)
 
   (*@ function nth (l: 'a t) (i: integer) : 'a *)
   (** [nth l i] is the [i]th element of [l]. *)
@@ -243,10 +243,10 @@ module List : sig
       and builds a list with the results returned by [f]. *)
 
   (*@ predicate for_all (f: 'a -> bool) (l: 'a t) *)
-  (** [for_all f l] checks if all elements of [l] satisfy the predicate [f]. *)
+  (** [for_all f l] holds iff all elements of [l] satisfy the predicate [f]. *)
 
   (*@ predicate _exists (f: 'a -> bool) (l: 'a t) *)
-  (** [_exists f l] checks if at least one element of [l] satisfies [f]. *)
+  (** [_exists f l] holds iff at least one element of [l] satisfies [f]. *)
 
   (*@ predicate for_all2 (f: 'a -> 'b -> bool) (l: 'a t) (l': 'b t) *)
   (** Same as {!for_all}, but for a two-argument predicate. *)
@@ -315,10 +315,10 @@ module Array : sig
       builds an array with the results returned by [f]. *)
 
   (*@ predicate for_all (f: 'a -> bool) (a: 'a t) *)
-  (** [for_all f a] checks if all elements of [a] satisfy the predicate [f]. *)
+  (** [for_all f a] holds iff all elements of [a] satisfy the predicate [f]. *)
 
   (*@ predicate _exists (f: 'a -> bool) (a: 'a t) *)
-  (** [_exists f a] checks if at least one element of [a] satisfies [f]. *)
+  (** [_exists f a] holds iff at least one element of [a] satisfies [f]. *)
 
   (*@ predicate for_all2 (f: 'a -> 'b -> bool) (a: 'a t) (b: 'b t) *)
   (** Same as {!for_all}, but for a two-argument predicate. *)
@@ -339,8 +339,13 @@ module Array : sig
   (*@ function to_bag (a: 'a t) : 'a bag *)
 
   (*@ predicate permut (a b: 'a array) *)
-  (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
+  (** [permut a b] is true iff [a] and [b] contain the same elements with the
+      same number of occurrences *)
 
+  (*@ predicate permut_sub (a b: 'a array) (lo hi: integer) *)
+  (** [permut_sub a b lo hi] is true iff the segment `a1.(lo..hi-1)` is a
+      permutation of the segment `a2.(lo..hi-1)` and values outside of the
+      interval are equal. *)
 end
 
 (** {1 Bags} *)
@@ -355,58 +360,63 @@ module Bag : sig
   (*@ function compare (b b': 'a t) : int *)
   (** A comparison function over bags. *)
 
-  (*@ predicate equal (b b': 'a t) *)
-  (** [equal b b'] is [b = b']. *)
-
   (*@ function empty : 'a t *)
-  (** [empty] is [∅]. *)
+  (** [empty] is the empty bag. *)
 
   (*@ predicate is_empty (b: 'a t) *)
-  (** [is_empty b] is [b = ∅]. *)
+  (** [is_empty b] is [b = empty]. *)
 
   (*@ predicate mem (x: 'a) (b: 'a t) *)
-  (** [mem x b] is [x ∈ b]. *)
+  (** [mem x b] holds iff [b] contains [x] at least once. *)
 
   (*@ function add (x: 'a) (b: 'a t) : 'a t *)
-  (** [add x b] is [b ∪ {x}]. *)
+  (** [add x b] is [b] when an occurence of [x] was added. *)
 
   (*@ function singleton (x: 'a) : 'a t *)
-  (** [singleton x] is [{x}]. *)
+  (** [singleton x] is a bag containing one occurence of [x]. *)
 
   (*@ function remove (x: 'a) (b: 'a t) : 'a t *)
-  (** [remove x b] is [b ∖ {x}]. *)
+  (** [remove x b] is [b] where an occurence of [x] was removed. *)
 
   (*@ function union (b b': 'a t) : 'a t *)
-  (** [union b b'] is [b ∪ b']. *)
+  (** [union b b'] is a bag [br] where for all element [x],
+      [occurences x br = max
+      (occurences x b) (occurences x b')]. *)
 
   (*@ function sum (b b': 'a t) : 'a t *)
-  (** [union b b'] is [b ∪ b']. *)
+  (** [sum b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      (occurences x b) + (occurences x b')]. *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
-  (** [inter b b'] is [b ∩ b']. *)
+  (** [inter b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      min (occurences x b) (occurences x b')]. *)
 
   (*@ predicate disjoint (b b': 'a t) *)
-  (** [disjoint b b'] is [b ∩ b' = ∅]. *)
+  (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
 
   (*@ function diff (b b': 'a t) : 'a t *)
-  (** [diff b b'] is [b ∖ b']. *)
+  (** [diff b b'] is a bag [br] where for all element [x],
+      [occurences x br =
+      max 0 (occurences x b - occurences x b')]. *)
 
   (*@ predicate subset (b b': 'a t) *)
-  (** [subset b b'] is [b ⊂ b']. *)
+  (** [subset b b'] holds iff for all element [x],
+      [occurences x b <= occurences x b']. *)
 
-  (*@ function cardinal (b: 'a t) : integer *)
-  (** [cardinal b] is the number of elements in [b]. *)
-
-  (*@ function choose (b: 'a t) : integer *)
+  (*@ function choose (b: 'a t) : 'a *)
   (** [choose b] is an arbitrary element of [b]. *)
 
-  (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
-  (** [map f b] is a fresh set which elements are [f x1 ... f xN], where
-      [x1 ...
-      xN] are the elements of [b]. *)
+  (*@ function choose_opt (b: 'a t) : 'a option *)
+  (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty. *)
 
-  (*@ function fold (f: 'a -> 'b -> 'b) (b: 'a t) : 'b *)
-  (** [fold f b] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
+  (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
+  (** [map f b] is a fresh bag which elements are [f x1 ... f xN], where
+      [x1 ... xN] are the elements of [b]. *)
+
+  (*@ function fold (f: 'a -> 'b -> 'b) (b: 'a t) (a: 'b) : 'b *)
+  (** [fold f b a] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
       elements of [b]. *)
 
   (*@ predicate for_all (f: 'a -> bool) (b: 'a t) *)
@@ -427,17 +437,11 @@ module Bag : sig
       all the elements of [b] that satisfy [f], and [b2] is the bag of all the
       elements of [b] that do not satisfy [f]. *)
 
-  (*@ function cardinal_distinct (b: 'a t) : int *)
+  (*@ function cardinal (b: 'a t) : int *)
   (** [cardinal b] is the number of distinct elements in [b]. *)
 
   (*@ function elements (b: 'a t) : 'a list *)
   (** [elements b] is the list of all elements in [b]. *)
-
-  (* @ function choose (b: 'a t) : 'a *)
-  (** [choose b] is an arbitrary element of [b]. *)
-
-  (*@ function choose_opt (b: 'a t) : 'a option *)
-  (** [choose b] is an arbitrary element of [b] or [None] if [b] is empty. *)
 
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
@@ -446,7 +450,6 @@ module Bag : sig
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
 
   (*@ function of_array (a: 'a array) : 'a t *)
-
 end
 
 (** {1 Sets} *)
@@ -460,9 +463,6 @@ module Set : sig
 
   (*@ function compare (s s': 'a t) : int *)
   (** A comparison function over sets. *)
-
-  (*@ predicate equal (s s': 'a t) *)
-  (** [equal s s'] is [s = s']. *)
 
   (*@ function empty : 'a t *)
   (** [empty] is [∅]. *)
@@ -503,6 +503,9 @@ module Set : sig
   (*@ function choose (s: 'a t) : integer *)
   (** [choose s] is an arbitrary element of [s]. *)
 
+  (*@ function choose_opt: 'a t -> 'a option *)
+  (** [choose_opt s] is an arbitrary element of [s] or [None] if [s] is empty. *)
+
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
       [x1 ...
@@ -530,17 +533,8 @@ module Set : sig
       all the elements of [s] that satisfy the predicate [f], and [s2] is the
       set of all the elements of [s] that do not satisfy [f]. *)
 
-  (* @ function cardinal (s: 'a t) : int *)
-  (** [cardinal s] is the number of elements in [s]. *)
-
   (*@ function elements (s: 'a t) : 'a list *)
   (** [elements s] is the list of all elements in [s]. *)
-
-  (* @ function choose (s: 'a t) : 'a *)
-  (** [choose s] is an arbitrary element of [s]. *)
-
-  (*@ function choose_opt: 'a t -> 'a option *)
-  (** [choose_opt s] is an arbitrary element of [s] or [None] if [s] is empty. *)
 
   (*@ function to_list (s: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
@@ -549,7 +543,7 @@ module Set : sig
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
 end
 
-(*@ function ( [<-] ) (m: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+(*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
 
 module Map : sig
   (* the type ('a, 'b) map is defined internally in GOSPEL and can be
@@ -557,7 +551,6 @@ module Map : sig
 end
 
 module Order : sig
-
   (*@ predicate is_pre_order (cmp: 'a -> 'a -> int) =
       (forall x. cmp x x = 0) /\
       (forall x y. cmp x y <= 0 <-> cmp y x >= 0) /\
@@ -566,13 +559,11 @@ module Order : sig
          (cmp x y <= 0 -> cmp y z <  0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <= 0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <  0 -> cmp x z <  0)) *)
-
 end
 
 (** Other OCaml built-in stuff *)
 
 exception Not_found
-
 exception Invalid_argument of string
 
 module Sys : sig

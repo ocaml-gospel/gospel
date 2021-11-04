@@ -24,7 +24,7 @@
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
   let get_op l = Qpreid (mk_pid (mixfix "[_]") l)
-  let set_op l = Qpreid (mk_pid (mixfix "[<-]") l)
+  let set_op l = Qpreid (mk_pid (mixfix "[->]") l)
   let sub_op l = Qpreid (mk_pid (mixfix "[_.._]") l)
   let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
   let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
@@ -32,7 +32,7 @@
   let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
   let array_get l =
-    Qdot (Qpreid (mk_pid "Array" l), mk_pid (mixfix "[_]") l)
+    Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
 
 (*
     sp_hd_ret = [];
@@ -53,6 +53,7 @@
     sp_pure = false;
     sp_equiv = [];
     sp_text = "";
+    sp_loc = Location.none;
   }
 
   let empty_fspec = {
@@ -60,12 +61,16 @@
     fun_ens = [];
     fun_variant = [];
     fun_coer = false;
+    fun_text = "";
+    fun_loc = Location.none;
   }
 
   let empty_tspec = {
     ty_ephemeral = false;
     ty_field = [];
     ty_invariant = [];
+    ty_text = "";
+    ty_loc = Location.none;
   }
 
   let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
@@ -110,7 +115,7 @@
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
 %token MUTABLE MODEL
-%token LARROW LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
+%token LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
@@ -123,6 +128,7 @@
 %right COLON
 
 %right ARROW LRARROW
+%nonassoc RIGHTSQ
 %right OR BARBAR
 %right AND AMPAMP
 %nonassoc NOT
@@ -153,12 +159,11 @@
 val_spec:
 | hd=val_spec_header? bd=val_spec_body EOF
   { { bd with sp_header = hd } }
-(* TODO: pure or diverges only *)
 ;
 
 axiom:
 | AXIOM id=lident COLON t=term EOF
-  { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc} }
+  { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc; ax_text = ""} }
 ;
 
 prop:
@@ -174,11 +179,11 @@ func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
   { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc } }
+      fun_loc = mk_loc $loc; fun_text = "" } }
 | PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
     fun_def=preceded(EQUAL, term)? EOF
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc } }
+      fun_loc = mk_loc $loc; fun_text = "" } }
 ;
 
 func_name:
@@ -244,7 +249,7 @@ val_spec_body:
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }
 | CHECKS t=term bd=val_spec_body
-  { { bd with sp_checks = t :: bd.sp_pre } }
+  { { bd with sp_checks = t :: bd.sp_checks } }
 | ENSURES t=term bd=val_spec_body
   { { bd with sp_post = t :: bd.sp_post} }
 | RAISES r=bar_list1(raises) bd=val_spec_body
@@ -369,10 +374,10 @@ term_:
     { Tcase ($2, $4) }
 | MATCH comma_list2(term) WITH match_cases(term)
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
-| quant comma_list1(quant_vars) triggers DOT term
-    { Tquant ($1, List.concat $2, $3, $5) }
+| quant comma_list1(quant_vars) DOT term
+    { Tquant ($1, List.concat $2, $4) }
 | FUN args = quant_vars ARROW t = term
-    { Tquant (Tlambda, args, [], t) }
+    { Tquant (Tlambda, args, t) }
 | attr term %prec prec_named
     { Tattr ($1, $2) }
 | term cast
@@ -397,11 +402,6 @@ match_cases(X):
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }
-;
-
-triggers:
-| (* epsilon *)                                                 { [] }
-| LEFTSQ separated_nonempty_list(BAR,comma_list1(term)) RIGHTSQ { $2 }
 ;
 
 attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }
@@ -445,12 +445,15 @@ term_block_:
 ;
 
 term_sub_:
-| term_block_                                       { $1 }
-| uqualid DOT mk_term(term_block_)                  { Tscope ($1, $3) }
-| term_dot DOT lqualid_rich                         { Tidapp ($3,[$1]) }
+| term_block_
+    { $1 }
+| uqualid DOT mk_term(term_block_)
+    { Tscope ($1, $3) }
+| term_dot DOT lqualid_rich
+    { Tfield ($1, $3) }
 | term_arg LEFTSQ term RIGHTSQ
     { Tidapp (get_op $loc($2), [$1;$3]) }
-| term_arg LEFTSQ term LARROW term RIGHTSQ
+| term_arg LEFTSQ term ARROW term RIGHTSQ
     { Tidapp (set_op $loc($2), [$1;$3;$5]) }
 | term_arg LEFTSQ term DOTDOT term RIGHTSQ
     { Tidapp (sub_op $loc($2), [$1;$3;$5]) }
@@ -461,8 +464,6 @@ term_sub_:
 | LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
 | term_dot DOT LEFTPAR term RIGHTPAR
     { Tidapp (array_get $loc($2), [$1; $4]) }
-| t1=term_dot DOT LEFTPAR t2=term LARROW t3=term  RIGHTPAR
-    { Tidapp (set_op $loc($2), [t1;t2;t3]) }
 ;
 
 %inline bin_op:
@@ -653,9 +654,8 @@ lident_op:
 | EQUAL                                       { infix "=" }
 | OPPREF UNDERSCORE?                          { prefix $1 }
 | DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
-| DOT LEFTPAR LARROW RIGHTPAR                 { mixfix ".(<-)" }
 | LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
-| LEFTSQ LARROW RIGHTSQ                       { mixfix "[<-]" }
+| LEFTSQ ARROW RIGHTSQ                        { mixfix "[->]" }
 | LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { mixfix "[_.._]" }
 | LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]" }
 | LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]" }

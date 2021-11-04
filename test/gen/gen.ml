@@ -3,11 +3,12 @@ let print_rule file =
     Printf.printf
       {|(rule
  (targets %s.output)
+ (deps (source_tree .))
  (action
    (with-outputs-to %%{targets}
       (with-accepted-exit-codes
        (or :standard 125)
-       (system "%%{bin:gospel} tc --print-intermediate %%{dep:%s}")))))
+       (system "%%{bin:gospel} check --verbose %%{dep:%s}")))))
 
 (rule
  (alias runtest)

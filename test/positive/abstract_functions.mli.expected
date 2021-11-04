@@ -117,6 +117,8 @@ module abstract_functions.mli
       function prefix !? (_:'a) : 'a * 'b
       function prefix ?? (_:'a) : 'a
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -176,6 +178,4 @@ module abstract_functions.mli
     
     (*@ function h15 (x_17:test): integer *)
 
-
-*** OK ***
-
+OK

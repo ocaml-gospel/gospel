@@ -1,0 +1,39 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> unit
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> unit
+
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module no_header.mli
+
+  Namespace: no_header.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> unit
+    
+
+OK

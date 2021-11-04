@@ -14,5 +14,5 @@ val f : int -> int[@@gospel {| y = f x
 val f : int -> int
 (*@ y = f x
      *)
-File "_none_", line 1, characters 5-6:
+File "impure4.mli", line 3, characters 5-6:
 Error: Type checking error: a pure function cannot raise exceptions

@@ -23,6 +23,8 @@ module test.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -35,6 +37,4 @@ module test.mli
     type t
          
 
-
-*** OK ***
-
+OK

@@ -77,6 +77,8 @@ module more_types.mli
     Logic Symbols
       function constr#t6 (_:int) (_:'a) : 'a t6
       function f (_:'a t6) : 'a t6
+      
+    Field Symbols
       function x (_:'a t6) : int
       function y (_:'a t6) : 'a
       
@@ -131,6 +133,4 @@ module more_types.mli
         end::'a t6
     *)
 
-
-*** OK ***
-
+OK

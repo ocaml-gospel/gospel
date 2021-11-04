@@ -88,6 +88,8 @@ module vals.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -144,6 +146,4 @@ module vals.mli
         ~x_12:'a -> 'b -> 'c [w_4:int: int] ~y_12:'a [p_3:integer: integer]
         z_7:'b*)
 
-
-*** OK ***
-
+OK

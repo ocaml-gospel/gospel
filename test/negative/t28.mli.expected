@@ -13,5 +13,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)
-File "_none_", line 3, characters 17-18:
-Error: Type mysmatch. Cannot match float with integer
+File "t28.mli", line 13, characters 17-18:
+Error: Type mismatch. Cannot match float with integer

@@ -13,17 +13,9 @@ open Gospel
 open Tmodule
 open Parser_frontend
 
-type config = {
-  bench_mode : bool;
-  print_intermediate : bool;
-  print_parsed : bool;
-  parse_only : bool;
-  parse_ocaml_only : bool;
-  load_path : string list;
-}
+type config = { verbose : bool; load_path : string list }
 
 let fmt = Format.std_formatter
-
 let pp = Format.fprintf
 
 let path2module p =
@@ -37,62 +29,42 @@ let type_check load_path name sigs =
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
   wrap_up_muc md
 
-let run_bench config files =
-  let ok, error = (ref 0, ref 0) in
-  let parse f =
-    try
-      let ocaml = parse_ocaml_signature f in
-      let module_nm = path2module f in
-      let sigs = parse_signature_gospel ocaml module_nm in
-      pp fmt "parse OK - ";
-      incr ok;
-      if config.parse_only then raise Exit;
-      ignore (type_check config.load_path f sigs : file);
-      pp fmt "type-check OK - ";
-      raise Exit
-    with
-    | Exit -> Format.fprintf fmt "%s@\n" f
-    | _ ->
-        incr error;
-        pp fmt " *** ERROR *** - %s@\n" f
-  in
-  List.iter parse files;
-  pp fmt "@[@\n Parsing OK: %d  -  ERRORs: %d@\n@]@." !ok !error
-
 let run_file config file =
   try
     let ocaml = parse_ocaml_signature file in
-    if config.print_intermediate then (
+    if config.verbose then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[********** Parsed file ********@]@.";
       pp fmt "@[*******************************@]@.";
-      pp fmt "@[%a@]@." Opprintast.signature ocaml );
-    if config.parse_ocaml_only then raise Exit;
+      pp fmt "@[%a@]@." Opprintast.signature ocaml);
 
     let module_nm = path2module file in
-    let sigs = parse_signature_gospel ocaml module_nm in
-    if config.print_intermediate || config.print_parsed then (
+    let sigs = parse_signature_gospel ~filename:file ocaml module_nm in
+    if config.verbose then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[****** GOSPEL translation *****@]@.";
       pp fmt "@[*******************************@]@.";
-      pp fmt "@[%a@]@." Upretty_printer.s_signature sigs );
-    if config.parse_only then raise Exit;
+      pp fmt "@[%a@]@." Upretty_printer.s_signature sigs);
 
     let file = type_check config.load_path file sigs in
-    pp fmt "@[@\n*******************************@]@.";
-    pp fmt "@[********* Typed GOSPEL ********@]@.";
-    pp fmt "@[*******************************@]@.";
-    pp fmt "@[%a@]@." print_file file;
-    pp fmt "@[@\n*** OK ***@\n@]@."
+    if config.verbose then (
+      pp fmt "@[@\n*******************************@]@.";
+      pp fmt "@[********* Typed GOSPEL ********@]@.";
+      pp fmt "@[*******************************@]@.";
+      pp fmt "@[%a@]@." print_file file);
+    pp fmt "OK\n";
+    true
   with
-  | Exit -> ()
+  | Exit -> false
   | Not_found ->
       let open Format in
       eprintf "File %s not found.@\nLoad path: @\n%a@\n@." file
         (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
-        config.load_path
-  | e -> Location.report_exception Format.err_formatter e
+        config.load_path;
+      false
+  | e ->
+      Location.report_exception Format.err_formatter e;
+      false
 
 let run config files =
-  if config.bench_mode then run_bench config files
-  else List.iter (run_file config) files
+  List.fold_right (fun file b -> run_file config file && b) files true

@@ -49,6 +49,8 @@ module pattern_matching.mli
       function O  : t
       function S (_:t) : t
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -80,6 +82,4 @@ module pattern_matching.mli
                               bool
                 end::bool = (True ):bool):prop*)
 
-
-*** OK ***
-
+OK

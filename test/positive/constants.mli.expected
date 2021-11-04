@@ -41,6 +41,8 @@ module constants.mli
       
     Logic Symbols
       
+    Field Symbols
+      
     Exception Symbols
       
     Namespaces
@@ -62,6 +64,4 @@ module constants.mli
         requires (x_1:char = 'c':char):prop
         ensures (y_1:string = "c":string):prop*)
 
-
-*** OK ***
-
+OK

@@ -1,0 +1,407 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+module type HashedType  =
+  sig
+    type t
+    [@@@gospel {| predicate equiv (x: t) (y: t) |}]
+    [@@@gospel {| axiom refl : forall x: t. equiv x x |}]
+    [@@@gospel {| axiom sym  : forall x y: t. equiv x y -> equiv y x |}]
+    [@@@gospel
+      {| axiom trans: forall x y z: t. equiv x y -> equiv y z -> equiv x z |}]
+    val equal : t -> t -> bool[@@gospel
+                                {| b = equal x y
+      ensures b <-> equiv x y |}]
+    [@@@gospel {| function hash_f (x: t) : integer |}]
+    [@@@gospel
+      {| axiom compatibility: forall x y: t. equiv x y -> hash_f x = hash_f y |}]
+    val hash : t -> int[@@gospel {| h = hash x
+      ensures h = hash_f x |}]
+  end
+module Make :
+functor (K : HashedType) ->
+  sig
+    type key = K.t
+    type 'a table[@@gospel
+                   {| ephemeral
+      mutable model dom : key set
+      invariant forall x y: key. Set.mem x dom -> Set.mem y dom -> K.equiv x y -> x = y
+      mutable model view: key -> 'a list
+      invariant forall k: key. not (Set.mem k dom) -> view k = [] |}]
+    type 'a t = 'a table
+    val create : int -> 'a t[@@gospel
+                              {| h = create n
+    requires n >= 0
+    ensures  forall k: key. h.view k = [] |}]
+    val clear : 'a t -> unit[@@gospel
+                              {| clear h
+    modifies h
+    ensures  forall k: key. h.view k = [] |}]
+    val reset : 'a t -> unit[@@gospel
+                              {| reset h
+    modifies h
+    ensures  forall k: key. h.view k = [] |}]
+    val copy : 'a t -> 'a t[@@gospel
+                             {| h2 = copy h1
+    ensures  forall k: key. h2.view k = h1.view k |}]
+    [@@@gospel
+      {| function pop (h: 'a t) : integer =
+    Set.fold (fun k c -> List.length (h.view k) + c) h.dom 0 |}]
+    val population : 'a t -> int[@@gospel
+                                  {| n = population h
+    ensures n = pop h |}]
+    val length : 'a t -> int[@@gospel
+                              {| n = length h
+    ensures n = pop h |}]
+    val iter : (key -> 'a -> unit) -> 'a t -> unit
+    val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+    type statistics =
+      {
+      num_bindings: int ;
+      num_buckets: int ;
+      max_bucket_length: int ;
+      bucket_histogram: int array }
+    val stats : 'a t -> statistics
+    val add : 'a t -> key -> 'a -> unit[@@gospel
+                                         {| add h k v
+    modifies h
+    ensures  forall k': key.
+             h.view k = if K.equiv k' k then v :: old (h.view k')
+                        else old (h.view k') |}]
+    [@@@gospel
+      {| function tail (l: 'a list) : 'a list =
+        match l with [] -> [] | _ :: s -> s|}]
+    val remove : 'a t -> key -> unit[@@gospel
+                                      {| remove h k
+    modifies h
+    ensures  forall k': key.
+             h.view k = if K.equiv k' k then tail (old (h.view k'))
+                        else old (h.view k') |}]
+    val find : 'a t -> key -> 'a option[@@gospel
+                                         {| r = find h k
+    ensures r = match h.view k with [] -> None | x :: _ -> Some x|}]
+    val find_all : 'a t -> key -> 'a list[@@gospel
+                                           {| l = find_all h k
+    ensures l = h.view k |}]
+    val replace : 'a t -> key -> 'a -> unit[@@gospel
+                                             {| replace h k v
+    modifies h
+    ensures  forall k': key.
+             h.view k = if K.equiv k' k then v :: tail (old (h.view k))
+                        else old (h.view k') |}]
+    val mem : 'a t -> key -> bool[@@gospel
+                                   {| b = mem h k
+    ensures b <-> h.view k <> [] |}]
+  end
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+module type HashedType  =
+  sig
+    type t
+      (*@ predicate equiv ... *)(*@ axiom ... *)(*@ axiom ... *)
+    (*@ axiom ... *)val equal : t -> t -> bool
+    (*@ b = equal x y
+        ensures ...
+         *)
+    (*@ function hash_f ... *)(*@ axiom ... *)
+    val hash : t -> int
+    (*@ h = hash x
+        ensures ...
+         *)
+  end
+
+module Make : functor (K : HashedType) ->
+sig
+  type key = K.t
+    type 'a table
+    (*@ ephemeral
+        model ...
+        model ...
+        invariant ...
+        invariant ...
+         *)
+  type 'a t = 'a table
+    val create : int -> 'a t
+  (*@ h = create n
+      requires ...
+      ensures ...
+       *)
+  val clear : 'a t -> unit
+  (*@  clear h
+      ensures ...
+      modifies ...
+       *)
+  val reset : 'a t -> unit
+  (*@  reset h
+      ensures ...
+      modifies ...
+       *)
+  val copy : 'a t -> 'a t
+  (*@ h2 = copy h1
+      ensures ...
+       *)
+  (*@ function pop ... *)
+  val population : 'a t -> int
+  (*@ n = population h
+      ensures ...
+       *)
+  val length : 'a t -> int
+  (*@ n = length h
+      ensures ...
+       *)
+  val iter : (key -> 'a -> unit) -> 'a t -> unit
+  val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+  type statistics =
+  {
+  num_bindings: int ;
+  num_buckets: int ;
+  max_bucket_length: int ;
+  bucket_histogram: int array }
+    val stats : 'a t -> statistics
+  val add : 'a t -> key -> 'a -> unit
+  (*@  add h k v
+      ensures ...
+      modifies ...
+       *)
+  (*@ function tail ... *)
+  val remove : 'a t -> key -> unit
+  (*@  remove h k
+      ensures ...
+      modifies ...
+       *)
+  val find : 'a t -> key -> 'a option
+  (*@ r = find h k
+      ensures ...
+       *)
+  val find_all : 'a t -> key -> 'a list
+  (*@ l = find_all h k
+      ensures ...
+       *)
+  val replace : 'a t -> key -> 'a -> unit
+  (*@  replace h k v
+      ensures ...
+      modifies ...
+       *)
+  val mem : 'a t -> key -> bool
+  (*@ b = mem h k
+      ensures ...
+       *)
+end
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module HashTable.mli
+
+  Namespace: HashTable.mli
+    Type symbols
+      
+    Logic Symbols
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      Namespace: Make
+        Type symbols
+           key [=t]
+           statistics
+          ('a) t_1 [='a table]
+          ('a) table
+          
+        Logic Symbols
+          function constr#statistics (_:int) (_:int) (_:int) (_:int array) : 
+          statistics
+          function pop (_:'a table) : integer
+          function tail (_:'a list) : 'a list
+          
+        Field Symbols
+          function bucket_histogram (_:statistics) : int array
+          function dom (_:'a table) : t set
+          function max_bucket_length (_:statistics) : int
+          function num_bindings (_:statistics) : int
+          function num_buckets (_:statistics) : int
+          function view (_:'a table) : t -> 'a list
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+    Type Namespaces
+      Namespace: HashedType
+        Type symbols
+           t
+          
+        Logic Symbols
+          predicate equiv (_:t) (_:t)
+          function hash_f (_:t) : integer
+          
+        Field Symbols
+          
+        Exception Symbols
+          
+        Namespaces
+          
+        Type Namespaces
+          
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    module type HashedType  =
+      sig
+        type t
+             
+        (*@ predicate equiv (x:t) (y:t) *)
+        (*@ axiom refl: forall x_1:t. (equiv 
+        x_1:t x_1:t):prop *)
+        (*@ axiom sym: forall x_2:t y_1:t. (equiv 
+        x_2:t y_1:t):prop -> (equiv 
+        y_1:t x_2:t):prop *)
+        (*@ axiom trans: forall x_3:t y_2:t z:t. (equiv 
+        x_3:t y_2:t):prop -> (equiv  y_2:t z:t):prop -> (equiv 
+        x_3:t z:t):prop *)
+        val equal : t -> t -> bool
+        (*@ b:bool = equal x_4:t y_3:t
+            ensures (b:bool = (True ):bool):prop <-> (equiv 
+                    x_4:t y_3:t):prop*)
+        (*@ function hash_f (x_5:t): integer *)
+        (*@ axiom compatibility: forall x_6:t y_4:t. (equiv 
+        x_6:t y_4:t):prop -> ((hash_f  x_6:t):integer = (hash_f 
+        y_4:t):integer):prop *)
+        val hash : t -> int
+        (*@ h:int = hash x_7:t
+            ensures ((integer_of_int  h:int):integer = (hash_f 
+                    x_7:t):integer):prop*)
+      end
+    
+    module Make :
+    functor (K : HashedType) ->
+      sig
+        type key = t
+             
+        type 'a table
+             (*@ ephemeral
+                 mutable model dom : t set
+                 mutable model view : t -> 'a list
+                 invariant forall x_8:t y_5:t. (mem 
+                           x_8:t (dom_1 ):t set):prop -> (mem 
+                           y_5:t (dom_1 ):t set):prop -> (equiv 
+                           x_8:t y_5:t):prop -> (x_8:t = y_5:t):propinvariant
+                           forall k:t. not (mem 
+                           k:t (dom_1 ):t set):prop -> ((apply 
+                           (view_1 ):t -> 'a44 list k:t):'a44 list = ([] ):'a44 
+                           list):prop *)
+        type 'a t_1 = 'a table
+             
+        val create : int -> 'a t
+        (*@ h_1:'a table = create n:int
+            requires ((integer_of_int  n:int):integer >= 0:integer):prop
+            ensures forall k_1:t. ((apply 
+                    (h_1:'a table).view k_1:t):'a list = ([] ):'a list):prop*)
+        val clear : 'a t -> unit
+        (*@  clear h_2:'a table
+            ensures forall k_2:t. ((apply 
+                    (h_2:'a table).view k_2:t):'a list = ([] ):'a list):prop
+            writes h_2:'a table*)
+        val reset : 'a t -> unit
+        (*@  reset h_3:'a table
+            ensures forall k_3:t. ((apply 
+                    (h_3:'a table).view k_3:t):'a list = ([] ):'a list):prop
+            writes h_3:'a table*)
+        val copy : 'a t -> 'a t
+        (*@ h2:'a table = copy h1:'a table
+            ensures forall k_4:t. ((apply 
+                    (h2:'a table).view k_4:t):'a list = (apply 
+                    (h1:'a table).view k_4:t):'a list):prop*)
+        (*@ function pop (h_4:'a table): integer =
+            (fold 
+            fun k_5:t c:integer. ((length 
+            (apply  (h_4:'a table).view k_5:t):'a list):integer + c:integer):
+            integer (h_4:'a table).dom 0:integer):integer
+        *)
+        val population : 'a t -> int
+        (*@ n_1:int = population h_5:'a table
+            ensures ((integer_of_int  n_1:int):integer = (pop 
+                    h_5:'a table):integer):prop*)
+        val length_1 : 'a t -> int
+        (*@ n_2:int = length_1 h_6:'a table
+            ensures ((integer_of_int  n_2:int):integer = (pop 
+                    h_6:'a table):integer):prop*)
+        val iter : (key -> 'a -> unit) -> 'a t -> unit
+        
+        val fold_1 : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+        
+        type statistics = {num_bindings:int; num_buckets:int;
+                           max_bucket_length:int; bucket_histogram:int 
+                           array}
+                       function constr#statistics (_:int) (_:int) (_:
+                                                  int) (_:int array) : 
+                       statistics
+                       function num_bindings (_:statistics) : int
+                       function num_buckets (_:statistics) : int
+                       function max_bucket_length (_:statistics) : int
+                       function bucket_histogram (_:statistics) : int 
+                       array
+             
+        val stats : 'a t -> statistics
+        
+        val add : 'a t -> key -> 'a -> unit
+        (*@  add h_7:'a table k_6:t v:'a
+            ensures forall k':t. ((apply 
+                    (h_7:'a table).view k_6:t):'a list = if (equiv 
+                    k':t k_6:t):prop then (v:'a :: old ((apply 
+                    (h_7:'a table).view k':t):'a list)):'a list else old ((apply 
+                    (h_7:'a table).view k':t):'a list)):prop
+            writes h_7:'a table*)
+        (*@ function tail (l:'a list): 'a list =
+            match l:'a list with
+            | [] -> ([] ):'a list
+            | infix :: _ s:'a list -> s:'a list
+            end::'a list
+        *)
+        val remove : 'a t -> key -> unit
+        (*@  remove h_8:'a table k_7:t
+            ensures forall k'_1:t. ((apply 
+                    (h_8:'a table).view k_7:t):'a list = if (equiv 
+                    k'_1:t k_7:t):prop then (tail 
+                    old ((apply  (h_8:'a table).view k'_1:t):'a list)):'a 
+                    list else old ((apply 
+                    (h_8:'a table).view k'_1:t):'a list)):prop
+            writes h_8:'a table*)
+        val find : 'a t -> key -> 'a option
+        (*@ r:'a option = find h_9:'a table k_8:t
+            ensures (r:'a option = match (apply 
+                    (h_9:'a table).view k_8:t):'a list with
+                    | [] -> (None ):'a option
+                    | infix :: x_9:'a _ -> (Some  x_9:'a):'a option
+                    end::'a option):prop*)
+        val find_all : 'a t -> key -> 'a list
+        (*@ l_1:'a list = find_all h_10:'a table k_9:t
+            ensures (l_1:'a list = (apply 
+                    (h_10:'a table).view k_9:t):'a list):prop*)
+        val replace : 'a t -> key -> 'a -> unit
+        (*@  replace h_11:'a table k_10:t v_1:'a
+            ensures forall k'_2:t. ((apply 
+                    (h_11:'a table).view k_10:t):'a list = if (equiv 
+                    k'_2:t k_10:t):prop then (v_1:'a :: (tail 
+                    old ((apply  (h_11:'a table).view k_10:t):'a list)):'a 
+                    list):'a list else old ((apply 
+                    (h_11:'a table).view k'_2:t):'a list)):prop
+            writes h_11:'a table*)
+        val mem_1 : 'a t -> key -> bool
+        (*@ b_1:bool = mem_1 h_12:'a table k_11:t
+            ensures (b_1:bool = (True ):bool):prop <-> not ((apply 
+                    (h_12:'a table).view k_11:t):'a list = ([] ):'a list):prop*)
+      end
+
+OK
