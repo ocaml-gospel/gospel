@@ -82,11 +82,11 @@ let parse_signature_gospel ~filename signature name =
   (if name = gospelstdlib then signature else default_open :: signature)
   |> Uattr2spec.signature ~filename
 
-let parse_structure_gospel structure name =
+let parse_structure_gospel ~filename structure name =
   (if name = gospelstdlib then structure else
   (* TODO: default open of stdlib as a structure item *)
      (* default_open_str :: *) structure)
-  |> Uattr2spec.structure
+  |> Uattr2spec.structure ~filename
 
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii

@@ -60,10 +60,11 @@ let set_filename (lexbuf : Lexing.lexbuf) (fname : string) =
 let parse_gospel ~filename parse attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  Location.init lb loc.loc_start.pos_fname; (*FIXME: use filename *)
-  lb.lex_curr_p  <- loc.loc_start;
+  set_position lb attr.attr_loc.loc_start;
+  set_filename lb filename;
   lb.lex_abs_pos <- loc.loc_start.pos_cnum;
-  try parse Ulexer.token lb with Uparser.Error -> raise (Syntax_error loc)
+  try (spec, parse Ulexer.token lb)
+  with Uparser.Error -> raise (Syntax_error loc)
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
@@ -137,7 +138,6 @@ let floating_spec ~filename a =
   try
     let fun_text, fun_ = parse_gospel ~filename Uparser.func a in
     let fun_ = { fun_ with fun_text } in
-    let fun_ = parse_gospel Uparser.func a in
     if fun_.fun_spec = None then
       let fun_spec =
         get_inner_spec a
@@ -154,28 +154,28 @@ let floating_spec ~filename a =
       Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
     with Syntax_error _ -> ghost_spec ~filename a)
 
-let ghost_spec_str attr =
+let ghost_spec_str ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
   Location.init lb loc.loc_start.pos_fname;
   let impls = try Parse.implementation lb with _ -> raise (Syntax_error loc) in
   match impls with
   | [ { pstr_desc = Pstr_type (r, [ t ]); _ } ] ->
-    let type_ = type_declaration t in
+    let type_ = type_declaration ~filename t in
     if type_.tspec = None then
       let tspec =
         get_inner_spec attr |> fst
-        |> Option.map (parse_gospel Uparser.type_spec)
+        |> Option.map (parse_gospel ~filename Uparser.type_spec)
         |> Option.map snd
       in
       Str_ghost_type (r, [ { type_ with tspec } ])
     else Str_ghost_type (r, [ type_ ])
   | [ { pstr_desc = Pstr_primitive vd; _ } ] ->
-    let val_ = val_description vd in
+    let val_ = val_description ~filename vd in
     if val_.vspec = None then
       let vspec =
         get_inner_spec attr |> fst
-        |> Option.map (parse_gospel Uparser.val_spec)
+        |> Option.map (parse_gospel ~filename Uparser.val_spec)
         |> Option.map snd
       in
       Str_ghost_val { val_ with vspec }
@@ -183,19 +183,21 @@ let ghost_spec_str attr =
   | [ { pstr_desc = Pstr_open od; _ } ] -> Str_ghost_open od
   | _ -> assert false
 
-let floating_spec_str a =
+let floating_spec_str ~filename a =
   try
-    let _, fun_ = parse_gospel Uparser.func a in
+    let _, fun_ = parse_gospel ~filename Uparser.func a in
     if fun_.fun_spec = None then
       let fun_spec =
-        get_inner_spec a |> fst |> Option.map (parse_gospel Uparser.func_spec)
+        get_inner_spec a
+        |> fst
+        |> Option.map (parse_gospel ~filename Uparser.func_spec)
         |> Option.map snd
       in
       Str_function { fun_ with fun_spec }
     else Str_function fun_
   with Syntax_error _ -> (
-    try Str_prop (snd (parse_gospel Uparser.prop a))
-    with Syntax_error _ -> ghost_spec_str a)
+    try Str_prop (snd (parse_gospel ~filename Uparser.prop a))
+    with Syntax_error _ -> ghost_spec_str ~filename a)
 
 let with_constraint c =
   let no_spec_type_decl t =
@@ -242,17 +244,18 @@ and signature ~filename sigs =
       { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
     sigs
 
-and module_type_desc spec = function
+and module_type_desc ~filename spec = function
   | Pmty_ident id -> Mod_ident id
-  | Pmty_signature s -> Mod_signature (signature s)
-  | Pmty_functor (fp, mt) -> Mod_functor (functor_parameter fp, module_type mt)
+  | Pmty_signature s -> Mod_signature (signature ~filename s)
+  | Pmty_functor (fp, mt) ->
+    Mod_functor (functor_parameter ~filename fp, module_type ~filename mt)
   | Pmty_with (m, c) ->
     let extra_constraints = match spec with
       | None -> []
-      | Some c -> snd (parse_gospel Uparser.with_constraint c) in
+      | Some c -> snd (parse_gospel ~filename Uparser.with_constraint c) in
     let mk_constraint acc c = with_constraint c :: acc in
     let constraints = List.fold_left mk_constraint extra_constraints c in
-    Mod_with (module_type m, constraints)
+    Mod_with (module_type ~filename m, constraints)
   | Pmty_typeof m -> Mod_typeof m
   | Pmty_extension e -> Mod_extension e
   | Pmty_alias a -> Mod_alias a
@@ -264,7 +267,7 @@ and functor_parameter ~filename = function
 and module_type ~filename m =
   let spec, attr = get_spec_attr m.pmty_attributes in
   {
-    mdesc = module_type_desc ~filename m.pmty_desc;
+    mdesc = module_type_desc ~filename spec m.pmty_desc;
     mloc = m.pmty_loc;
     mattributes = attr;
   }
@@ -297,12 +300,13 @@ and mk_s_module_expr spmod_desc spmod_loc spmod_attributes =
 and mk_svb spvb_pat spvb_expr spvb_attributes spvb_vspec spvb_loc =
   { spvb_pat; spvb_expr; spvb_attributes; spvb_vspec; spvb_loc }
 
-and s_expression expr =
+and s_expression ~filename expr =
+  let s_expression = s_expression ~filename in
   let loc = expr.pexp_loc in
   let loc_stack = expr.pexp_loc_stack in
   let attributes = expr.pexp_attributes in
   let lbl_expr (lbl, expr) = lbl, s_expression expr in
-  let longid_expr (id,  expr) = id,  s_expression expr in
+  let longid_expr (id,  expr) = id, s_expression expr in
   let case {pc_lhs; pc_guard; pc_rhs} =
     let spc_lhs = pc_lhs in
     let spc_guard = Option.map s_expression pc_guard in
@@ -314,15 +318,16 @@ and s_expression expr =
     | Pexp_constant c ->
         Sexp_constant c
     | Pexp_let (rec_flag, vb_list, expr) ->
-        let s_vb_list = s_value_binding vb_list in
+        let s_vb_list = s_value_binding ~filename vb_list in
         Sexp_let (rec_flag, s_vb_list, s_expression expr)
     | Pexp_function case_list ->
         Sexp_function (List.map case case_list)
     | Pexp_fun (arg, expr_arg, pat, expr_body) ->
         let spec, _ = get_spec_attr attributes in
-        let fun_spec = Option.map (parse_gospel Uparser.func_spec) spec |>
-                       Option.map snd in
-        let expr_arg = Option.map s_expression expr_arg in
+        let fun_spec =
+          Option.map (parse_gospel ~filename Uparser.func_spec) spec |>
+          Option.map snd in
+        let expr_arg = Option.map (s_expression) expr_arg in
         let expr_body = s_expression expr_body in
         Sexp_fun (arg, expr_arg, pat, expr_body, fun_spec)
     | Pexp_apply (expr, arg_list) ->
@@ -332,37 +337,41 @@ and s_expression expr =
     | Pexp_try (expr, case_list) ->
         Sexp_try (s_expression expr, List.map case case_list)
     | Pexp_tuple expr_list ->
-        Sexp_tuple (List.map s_expression expr_list)
+        Sexp_tuple (List.map (s_expression) expr_list)
     | Pexp_construct (id, expr) ->
-        Sexp_construct (id, Option.map s_expression expr)
+        Sexp_construct (id, Option.map (s_expression) expr)
     | Pexp_variant (label, expr) ->
-        Sexp_variant (label, Option.map s_expression expr)
+        Sexp_variant (label, Option.map (s_expression) expr)
     | Pexp_record (field_list, expression) ->
         let field_list = List.map longid_expr field_list in
-        Sexp_record (field_list, Option.map s_expression expression)
+        Sexp_record (field_list, Option.map (s_expression) expression)
     | Pexp_field (expr, id) ->
         Sexp_field (s_expression expr, id)
     | Pexp_setfield (expr_rec, field, expr_assign) ->
-        Sexp_setfield (s_expression expr_rec, field, s_expression expr_assign)
+      Sexp_setfield (s_expression expr_rec, field,
+                     s_expression expr_assign)
     | Pexp_array expr_list ->
-        Sexp_array (List.map s_expression expr_list)
+        Sexp_array (List.map (s_expression) expr_list)
     | Pexp_ifthenelse (expr1, expr2, expr3) ->
-        let expr1 = s_expression expr1 and expr2 = s_expression expr2 in
-        Sexp_ifthenelse (expr1, expr2, Option.map s_expression expr3)
+      let expr1 = s_expression expr1 in
+      let expr2 = s_expression expr2 in
+      Sexp_ifthenelse (expr1, expr2, Option.map (s_expression) expr3)
     | Pexp_sequence (expr1, expr2) ->
         Sexp_sequence (s_expression expr1, s_expression expr2)
     | Pexp_while (expr1, expr2) ->
         let spec, _ = get_spec_attr attributes in
-        let while_spec = Option.map (parse_gospel Uparser.loop_spec) spec |>
-                         Option.map snd in
+        let while_spec =
+          Option.map (parse_gospel ~filename Uparser.loop_spec) spec |>
+          Option.map snd in
         Sexp_while (s_expression expr1, s_expression expr2, while_spec)
     | Pexp_for (pat, expr1, expr2, direction_flag, expr3) ->
         let expr1 = s_expression expr1 and expr2 = s_expression expr2 in
         let expr3 = s_expression expr3 in
         (* TODO: avoid all of this code duplication *)
         let spec, _ = get_spec_attr attributes in
-        let for_spec = Option.map (parse_gospel Uparser.loop_spec) spec |>
-                       Option.map snd in
+        let for_spec =
+          Option.map (parse_gospel ~filename Uparser.loop_spec) spec |>
+          Option.map snd in
         Sexp_for (pat, expr1, expr2, direction_flag, expr3, for_spec)
     | Pexp_constraint (expr, core_type) ->
         Sexp_constraint (s_expression expr, core_type)
@@ -392,7 +401,7 @@ and s_expression expr =
     | Pexp_newtype (id, expr) ->
         Sexp_newtype (id, s_expression expr)
     | Pexp_pack mod_expr ->
-        Sexp_pack (s_module_expr mod_expr)
+        Sexp_pack (s_module_expr ~filename mod_expr)
     | Pexp_open (open_decl, expr) ->
         Sexp_open (open_decl, s_expression expr)
     | Pexp_letop letop ->
@@ -403,52 +412,56 @@ and s_expression expr =
         Sexp_unreachable in
   mk_s_expression (spexp_desc expr.pexp_desc) loc loc_stack attributes
 
-and s_module_expr {pmod_desc; pmod_loc; pmod_attributes} =
+and s_module_expr ~filename {pmod_desc; pmod_loc; pmod_attributes} =
   let spmod_desc = match pmod_desc with
     | Pmod_ident id ->
         Smod_ident id
     | Pmod_structure str ->
-        Smod_structure (structure str)
+        Smod_structure (structure ~filename str)
     | Pmod_functor (Unit, _) ->
         assert false (* TODO *)
     | Pmod_functor (Named (id, mod_type), mod_expr) ->
-        Smod_functor (id, Some (module_type mod_type), s_module_expr mod_expr)
+      Smod_functor (id, Some (module_type ~filename mod_type),
+                    s_module_expr ~filename mod_expr)
     | Pmod_apply (mod_expr1, mod_expr2) ->
-        Smod_apply (s_module_expr mod_expr1, s_module_expr mod_expr2)
+      Smod_apply (s_module_expr ~filename mod_expr1,
+                  s_module_expr ~filename mod_expr2)
     | Pmod_constraint (mod_expr, mod_type) ->
-        Smod_constraint (s_module_expr mod_expr, module_type mod_type)
+      Smod_constraint (s_module_expr ~filename mod_expr,
+                       module_type ~filename mod_type)
     | Pmod_unpack expr ->
-        Smod_unpack (s_expression expr)
+        Smod_unpack (s_expression ~filename expr)
     | Pmod_extension extension ->
         Smod_extension extension in
   mk_s_module_expr spmod_desc pmod_loc pmod_attributes
 
-and structure s =
-  let add_str_item acc str_item = structure_item str_item :: acc in
+and structure ~filename s =
+  let add_str_item acc str_item = structure_item ~filename str_item :: acc in
   let structure = List.fold_left add_str_item [] s in
   List.rev (List.flatten structure)
 
-and structure_item str_item =
+and structure_item ~filename str_item =
   let loc = str_item.pstr_loc in
   match str_item.pstr_desc with
   | Pstr_eval (e, attrs) ->
-      [mk_s_structure_item (Str_eval (s_expression e, attrs)) ~loc]
+      [mk_s_structure_item (Str_eval (s_expression ~filename e, attrs)) ~loc]
   | Pstr_value (rec_flag, vb_list) ->
-      let vb_list = s_value_binding vb_list in
+      let vb_list = s_value_binding ~filename vb_list in
       let str_desc = mk_s_structure_item (Str_value (rec_flag, vb_list)) ~loc in
       [str_desc]
   | Pstr_type (rec_flag, type_decl_list) ->
-      let td_list = List.map type_declaration type_decl_list in
+      let td_list = List.map (type_declaration ~filename) type_decl_list in
       let str_desc = mk_s_structure_item (Str_type (rec_flag, td_list)) ~loc in
       [str_desc]
   | Pstr_attribute attr when is_spec attr ->
-      [mk_s_structure_item (floating_spec_str attr) ~loc]
+      [mk_s_structure_item (floating_spec_str ~filename attr) ~loc]
   | Pstr_attribute attr ->
       [mk_s_structure_item (Str_attribute attr) ~loc]
   | Pstr_module mod_binding ->
-      [mk_s_structure_item (Str_module (s_module_binding mod_binding)) ~loc]
+    [mk_s_structure_item
+       (Str_module (s_module_binding ~filename mod_binding)) ~loc]
   | Pstr_modtype mod_type_decl ->
-      let s_mod_type = module_type_declaration mod_type_decl in
+      let s_mod_type = module_type_declaration ~filename mod_type_decl in
       [mk_s_structure_item (Str_modtype s_mod_type) ~loc]
   | Pstr_exception ty_exn ->
       [mk_s_structure_item (Str_exception ty_exn) ~loc]
@@ -462,17 +475,22 @@ and structure_item str_item =
   | Pstr_include _ -> assert false (* TODO *)
   | Pstr_extension _ -> assert false (* TODO *)
 
-and s_value_binding vb_list =
+and s_value_binding ~filename vb_list =
   (* [val_binding v] parses the attributes of a value binding. As for val
      description, only the first attribute is considered as specification. *)
   let val_spec v =
     let spec, _ = get_spec_attr v.pvb_attributes in
-    let val_spec = Option.map (parse_gospel Uparser.val_spec) spec |>
-                   Option.map snd in
-    let expr = s_expression v.pvb_expr in
+    let val_spec =
+      Option.map (parse_gospel ~filename Uparser.val_spec) spec |>
+      Option.map snd in
+    let expr = s_expression ~filename v.pvb_expr in
     mk_svb v.pvb_pat expr v.pvb_attributes val_spec v.pvb_loc in
   List.map val_spec vb_list
 
-and s_module_binding {pmb_name; pmb_expr; pmb_attributes; pmb_loc} =
-  { spmb_expr       = s_module_expr pmb_expr; spmb_name = pmb_name;
-    spmb_attributes = pmb_attributes;         spmb_loc  = pmb_loc }
+and s_module_binding ~filename {pmb_name; pmb_expr; pmb_attributes; pmb_loc} =
+  {
+    spmb_expr = s_module_expr ~filename pmb_expr;
+    spmb_name = pmb_name;
+    spmb_attributes = pmb_attributes;
+    spmb_loc  = pmb_loc
+  }
