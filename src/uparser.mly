@@ -175,6 +175,15 @@ prop:
      prop_loc = mk_loc $loc; prop_kind = Plemma} }
 ;
 
+prop:
+| AXIOM id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Paxiom} }
+| LEMMA id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Plemma} }
+;
+
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
@@ -260,6 +269,27 @@ val_spec_body:
 | VARIANT t = comma_list1(term) bd=val_spec_body
   { { bd with sp_variant = t @ bd.sp_variant } }
 ;
+
+with_constraint:
+| WITH c = separated_list(ANDKW, _with_constraint) EOF { c }
+
+_with_constraint:
+| PREDICATE id = lident_rich EQUAL qr = qualid
+  { Wpredicate (id, qr) }
+| FUNCTION id = lident_rich EQUAL qr = qualid
+  { Wfunction (id, qr) }
+
+loop_spec: _loop_spec EOF
+  { let inv, var = $1 in
+    { loop_invariant = inv; loop_variant = var } }
+
+_loop_spec:
+| (* epsilon *)
+    { [], [] }
+| INVARIANT t = term _loop_spec
+    { let inv, var = $3 in t :: inv, var }
+| VARIANT   t = comma_list1(term) _loop_spec
+    { let inv, var = $3 in inv, t @ var }
 
 with_constraint:
 | WITH c = separated_list(ANDKW, _with_constraint) EOF { c }

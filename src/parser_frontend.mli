@@ -28,6 +28,7 @@ val with_loadpath : string list -> string -> string
 
 val parse_ocaml_signature : string -> Parsetree.signature
 val parse_ocaml_signature_lb : Lexing.lexbuf -> Parsetree.signature
+
 val parse_ocaml_structure_lb : Lexing.lexbuf -> Parsetree.structure
 
 (* val parse_gospel :
