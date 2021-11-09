@@ -121,9 +121,6 @@ type int
 (*@ function (!_) (r: 'a ref) : 'a *)
 (** Reference content access operator. *)
 
-(*@ function ref (x: 'a) : 'a ref *)
-(** Reference creation. *)
-
 (** {1 Sequences} *)
 
 (*@ function (++) (s s': 'a seq) : 'a seq *)

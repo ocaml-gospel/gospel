@@ -86,7 +86,6 @@ module a3.mli
               function pred (_:integer) : integer
               function prefix ! (_:'a ref) : 'a
               function prefix - (_:integer) : integer
-              function ref_1 (_:'a) : 'a ref
               function shift_left (_:integer) (_:integer) : integer
               function shift_right (_:integer) (_:integer) : integer
               function shift_right_trunc (_:integer) (_:integer) : integer
