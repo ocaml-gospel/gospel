@@ -447,15 +447,14 @@ module Bag : sig
       elements of [b] that do not satisfy [f]. *)
 
   (*@ function cardinal (b: 'a t) : integer *)
-  (** [cardinal b] is the total number of elements in [b], all occurrences
-      being counted. *)
+  (** [cardinal b] is the total number of elements in [b], all occurrences being
+      counted. *)
 
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
   (*@ function to_seq (b: 'a t) : 'a Seq.t *)
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
-
 end
 
 (** {1 Sets} *)
