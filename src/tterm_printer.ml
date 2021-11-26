@@ -8,13 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Ppxlib
 open Tterm
 open Symbols
-
-open Tterm_helper
-(** Pretty printing *)
-
 open Ttypes
 open Utils
 open Fmt
@@ -117,35 +112,3 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
   in
   let print_attrs fmt = List.iter (pp fmt "[%@ %s]") in
   pp fmt "%a%a" print_attrs t_attrs print_t_node t_node
-
-(** register exceptions *)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | TermExpected t ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Term expected in %a" print_term t
-    | FmlaExpected t ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Formula expected in %a" print_term t
-    | BadArity (ls, i) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Function %a expects %d arguments as opposed to %d" print_ls_nm ls
-          (List.length ls.ls_args) i
-    | PredicateSymbolExpected ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not a predicate symbol: %a" print_ls_nm ls
-    | FunctionSymbolExpected ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not a function symbol: %a" print_ls_nm ls
-    | FreeVariables svs ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Unbound variables: %a" (list ~sep:comma print_vs) (Svs.elements svs)
-    | _ -> None)

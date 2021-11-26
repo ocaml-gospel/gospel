@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 module Ident = Identifier.Ident
+open Ppxlib
 open Tterm
 open Ttypes
 open Symbols
@@ -37,55 +38,33 @@ val p_var : vsymbol -> pattern
 val p_app : lsymbol -> pattern list -> ty -> pattern
 val p_or : pattern -> pattern -> pattern
 val p_as : pattern -> vsymbol -> pattern
-val mk_term : term_node -> ty option -> Ocaml_common.Warnings.loc -> term
-val t_var : vsymbol -> Ocaml_common.Warnings.loc -> term
-
-val t_const :
-  Ppxlib.Parsetree.constant -> ty -> Ocaml_common.Warnings.loc -> term
-
-val t_app :
-  lsymbol -> term list -> ty option -> Ocaml_common.Warnings.loc -> term
-
-val t_field : term -> lsymbol -> ty option -> Ocaml_common.Warnings.loc -> term
-val t_if : term -> term -> term -> Ocaml_common.Warnings.loc -> term
-val t_let : vsymbol -> term -> term -> Ocaml_common.Warnings.loc -> term
-val t_case : term -> (pattern * term) list -> Ocaml_common.Warnings.loc -> term
-val t_binop : binop -> term -> term -> Ocaml_common.Warnings.loc -> term
-val t_not : term -> Ocaml_common.Warnings.loc -> term
-val t_old : term -> Ocaml_common.Warnings.loc -> term
-val t_true : Ocaml_common.Warnings.loc -> term
-val t_false : Ocaml_common.Warnings.loc -> term
+val mk_term : term_node -> ty option -> Location.t -> term
+val t_var : vsymbol -> Location.t -> term
+val t_const : Parsetree.constant -> ty -> Location.t -> term
+val t_app : lsymbol -> term list -> ty option -> Location.t -> term
+val t_field : term -> lsymbol -> ty option -> Location.t -> term
+val t_if : term -> term -> term -> Location.t -> term
+val t_let : vsymbol -> term -> term -> Location.t -> term
+val t_case : term -> (pattern * term) list -> Location.t -> term
+val t_binop : binop -> term -> term -> Location.t -> term
+val t_not : term -> Location.t -> term
+val t_old : term -> Location.t -> term
+val t_true : Location.t -> term
+val t_false : Location.t -> term
 val t_attr_set : string list -> term -> term
-val t_bool_true : Ocaml_common.Warnings.loc -> term
-val t_bool_false : Ocaml_common.Warnings.loc -> term
-val t_equ : term -> term -> Ocaml_common.Warnings.loc -> term
-
-val t_neq :
-  term -> term -> Ocaml_common.Warnings.loc -> Ocaml_common.Warnings.loc -> term
-
-val f_binop : binop -> term -> term -> Ocaml_common.Warnings.loc -> term
-val f_not : term -> Ocaml_common.Warnings.loc -> term
-
-val t_quant :
-  quant ->
-  vsymbol list ->
-  term ->
-  ty option ->
-  Ocaml_common.Warnings.loc ->
-  term
-
-val f_forall :
-  vsymbol list -> term -> ty option -> Ocaml_common.Warnings.loc -> term
-
-val f_exists :
-  vsymbol list -> term -> ty option -> Ocaml_common.Warnings.loc -> term
-
-val t_lambda :
-  vsymbol list -> term -> ty option -> Ocaml_common.Warnings.loc -> term
-
-val f_and : term -> term -> Ocaml_common.Warnings.loc -> term
-val f_and_asym : term -> term -> Ocaml_common.Warnings.loc -> term
-val f_or : term -> term -> Ocaml_common.Warnings.loc -> term
-val f_or_asym : term -> term -> Ocaml_common.Warnings.loc -> term
-val f_implies : term -> term -> Ocaml_common.Warnings.loc -> term
-val f_iff : term -> term -> Ocaml_common.Warnings.loc -> term
+val t_bool_true : Location.t -> term
+val t_bool_false : Location.t -> term
+val t_equ : term -> term -> Location.t -> term
+val t_neq : term -> term -> Location.t -> Location.t -> term
+val f_binop : binop -> term -> term -> Location.t -> term
+val f_not : term -> Location.t -> term
+val t_quant : quant -> vsymbol list -> term -> ty option -> Location.t -> term
+val f_forall : vsymbol list -> term -> ty option -> Location.t -> term
+val f_exists : vsymbol list -> term -> ty option -> Location.t -> term
+val t_lambda : vsymbol list -> term -> ty option -> Location.t -> term
+val f_and : term -> term -> Location.t -> term
+val f_and_asym : term -> term -> Location.t -> term
+val f_or : term -> term -> Location.t -> term
+val f_or_asym : term -> term -> Location.t -> term
+val f_implies : term -> term -> Location.t -> term
+val f_iff : term -> term -> Location.t -> term
