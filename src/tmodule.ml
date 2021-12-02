@@ -391,7 +391,6 @@ let add_sig_contents muc sig_ =
     | Pty_abstract -> []
     | Pty_variant cdl -> List.map (fun cd -> cd.cd_cs) cdl
     | Pty_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
-    | _ -> assert false
   in
   match sig_.sig_desc with
   | Sig_val (({ vd_spec = Some sp } as v), _) when sp.sp_pure ->
