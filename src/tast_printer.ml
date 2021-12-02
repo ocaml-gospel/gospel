@@ -43,7 +43,6 @@ let print_type_kind fmt = function
         rd.rd_ldl
         (list ~sep:newline print_ls_decl)
         (rd.rd_cs :: pjs)
-  | Pty_open -> assert false
 
 let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants } =
   if (not ty_ephemeral) && ty_fields = [] && ty_invariants = [] then ()
