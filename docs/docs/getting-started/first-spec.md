@@ -86,7 +86,7 @@ to specify three pieces of information:
 Let's write a Gospel formalisation of that contract. The contract starts with a
 header that names the arguments and the return value. We'll call the
 argument `c` and the return value `t`. Now we can mention them in the rest of the
-specification. The first property is a pre-condition of the function (we use the
+specification. The first property is a precondition of the function (we use the
 keyword `requires`), while the second and third ones are post-conditions (the
 keyword is `ensures`):
 
@@ -173,7 +173,7 @@ Since we have a `modifies` clause, the contents of `t` may be mutated even when
 
 Notice how we didn't need to repeat that `S.cardinal t.contents <= t.capacity`
 in every contract. As a type invariant, this property implicitly holds in every
-function's pre-state and post-state.
+function's prestate and poststate.
 
 ## Type-Checking Your Specification
 
