@@ -584,8 +584,9 @@ let type_type_declaration kid crcm ns tdl =
       | Ptype_open -> assert false
     in
     (* invariants are only allowed on abstract/private types *)
-    (match (td.tkind, td.tspec) with
-    | (Ptype_variant _ | Ptype_record _), Some { ty_invariant = _ :: _ }
+    (match ((td.tkind, td.tmanifest), td.tspec) with
+    | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
+        Some { ty_invariant = _ :: _ } )
       when td.tprivate = Public ->
         error ~loc:td.tloc (InvariantPublic td_ts)
     | _, _ -> ());

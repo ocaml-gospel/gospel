@@ -194,6 +194,19 @@
  (action (diff %{dep:infix.mli.expected} %{dep:infix.mli.output})))
 
 (rule
+ (targets invariants.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:invariants.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:invariants.mli.expected} %{dep:invariants.mli.output})))
+
+(rule
  (targets log2.mli.output)
  (deps (source_tree .))
  (action
