@@ -2,13 +2,13 @@
 sidebar_position: 1
 ---
 
-# Gospel special comment syntax
+# Gospel Special Comment Syntax
 
 Gospel specifications are written in interface files (`.mli`). They are written
 in special comments, starting with the `@` character[^1]:
 
 [^1]: Existing specification languages for other host languages introduced this
-    notation, *e.g.* [JML](https://www.cs.ucf.edu/~leavens/JML/index.shtml) for
+    notation, *e.g.,* [JML](https://www.cs.ucf.edu/~leavens/JML/index.shtml) for
     Java and [ACSL](https://frama-c.com/html/acsl.html) for C. Hence Gospel
     also uses this convention.
 
@@ -51,10 +51,10 @@ Error: Syntax error.
 :::
 
 
-## Specifications and documentation comments
+## Specifications and Documentation Comments
 
 Note that Gospel annotations can be combined with traditional documentation
-comments, *e.g.* as follows:
+comments. For example:
 
 ```ocaml invalidSyntax
 val eucl_division: int -> int -> int * int

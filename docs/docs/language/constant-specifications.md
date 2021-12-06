@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Constant specifications
+# Constant Specifications
 
 OCaml constant specifications are simple. They consist of a list of clauses
 starting with the `ensures` keyword followed by a formula.
@@ -18,4 +18,4 @@ val argv : string array
 (*@ ensures Array.length argv >= 1 *)
 ```
 
-These clauses hold at the end of evaluating the surrounding module.
+These clauses hold at the end the surrounding module evaluation.

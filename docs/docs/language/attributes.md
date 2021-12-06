@@ -2,7 +2,7 @@
 sidebar_position: 10
 ---
 
-# Appendix: Gospel in OCaml attributes
+# Appendix: Gospel in OCaml Attributes
 
 Gospel processes a file in various stages:
 
@@ -14,10 +14,10 @@ Gospel processes a file in various stages:
 [OCaml attributes]: https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html
 
 Gospel uses OCaml attributes with the identifier `gospel` to bear the Gospel
-specifications in their payload, as strings: `[@@gospel "<spec>"]` and
+specifications in their payload as strings: `[@@gospel "<spec>"]` and
 `[@@@gospel "<spec>"]`.
 
-## Floating attributes
+## Floating Attributes
 
 [Ghost and logical declarations](logical.md) must lie in floating attributes,
 inside module signatures:
@@ -27,7 +27,7 @@ inside module signatures:
 [@@@gospel "predicate is_zero (x: integer) = x = 0"]
 ```
 
-## Attached attributes
+## Attached Attributes
 
 Specification bits which are semantically attached to OCaml declarations (e.g.
 [function contracts](function-contracts.md) or [type
@@ -39,7 +39,7 @@ val f: int -> int
 [@@gospel "y = f x ensures x > 0"]
 ```
 
-## Specification of ghost and logical declarations
+## Specification of Ghost and Logical Declarations
 
 When ghost and logical declarations need to be specified with a contract, the
 contract should reside in an attribute attached to the string containing the
@@ -50,7 +50,7 @@ declaration:
   [@@gospel "y = f x ensures x > 0"]]
 ```
 
-## Gospel preprocessor
+## Gospel Preprocessor
 
 The preprocessor is available via the `gospel pps` command. It is also applied
 automatically on type-checking, so you should not have to worry about manually
