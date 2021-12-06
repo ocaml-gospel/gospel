@@ -11,7 +11,7 @@
 
 open Ppxlib
 open Ttypes
-open Tterm
+open Symbols
 open Utils
 
 type coercion_kind =

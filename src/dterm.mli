@@ -2,6 +2,7 @@ open Ppxlib
 open Identifier
 open Tterm
 open Ttypes
+open Symbols
 
 type dty = Tvar of dtvar | Tapp of tysymbol * dty list | Tty of ty
 

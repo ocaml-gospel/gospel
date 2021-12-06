@@ -11,6 +11,7 @@
 open Ppxlib
 open Ttypes
 open Tterm
+open Symbols
 module Ident = Identifier.Ident
 
 type lb_arg =

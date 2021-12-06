@@ -15,6 +15,7 @@ open Uast
 open Ttypes
 open Tmodule
 open Tast_helper
+open Symbols
 
 (** Utils *)
 
@@ -1173,6 +1174,7 @@ and type_sig_item penv muc sig_item =
 
 let () =
   let open Location.Error in
+  let open Tterm_printer in
   register_error_of_exn (function
     | PartialApplication ls ->
         Fmt.kstr

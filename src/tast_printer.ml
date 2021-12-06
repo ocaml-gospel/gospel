@@ -1,7 +1,8 @@
 open Utils
 open Ppxlib
 open Tast
-open Tterm
+open Symbols
+open Tterm_printer
 open Ttypes
 open Parsetree
 open Upretty_printer
