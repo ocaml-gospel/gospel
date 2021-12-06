@@ -4,11 +4,11 @@ sidebar_position: 3
 
 # Terms and Formulae
 
-Gospel features terms (e.g. `x+1`) and formulae (e.g. `forall i. f i > 0`). This
-distinction is made during type checking, and not at the syntax level. In
-the following, `expr` stands for a Gospel expression, be it a term or a formula.
+Gospel features terms (e.g. `x+1`) and formulae (e.g., `forall i. f i > 0`). This
+distinction is made during type checking and not at the syntax level. In
+the following, `expr` stands for a Gospel expression, whether it's a term or a formula.
 
-## Type expressions
+## Type Expressions
 
 Type expressions follow the OCaml syntax.
 
@@ -73,7 +73,7 @@ constant = integer_literal
 ```
 
 
-## Gospel-specific expressions
+## Gospel-Specific Wxpressions
 
 In addition, there is syntax that is specific to Gospel.
 
@@ -93,7 +93,7 @@ quantifier = "forall" | "exists"
 
 
 Note that `e1[e2]` is part of the OCaml syntax (application of `e1` to a
-single-element list `[e2]`) but has a different meaning in Gospel, namely,
+single-element list `[e2]`) but has a different meaning in Gospel, namely
 access to a sequence element.
 
 There are two operators for logical conjunction, `&&` and `/\`, and two
@@ -103,6 +103,6 @@ interpret `A && B` as `A /\ (A -> B)` and a runtime assertion checking tool may
 interpret `A && B` as a lazy operator (as in OCaml) and `A /\ B` as a strict
 operator.
 
-A noticeable difference w.r.t. the OCaml syntax is that infix operators can be
-chained in Gospel. One can write `0 <= n < 100`, for instance, and it is
+A noticeable difference WRT the OCaml syntax is that infix operators can be
+chained in Gospel. One can write `0 <= n < 100`, for instance, and it's
 interpreted as `0 <= n /\ n < 100`.

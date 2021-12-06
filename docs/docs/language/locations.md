@@ -2,20 +2,20 @@
 sidebar_position: 1
 ---
 
-# Specification locations
+# Specification Locations
 
-## General conventions
+## General Conventions
 
 Gospel annotations are written in interface files (`.mli`).
 
 We use [OCaml
 attributes](https://caml.inria.fr/pub/docs/manual-ocaml/attributes.html) with
-the identifier `gospel` to bear the Gospel specifications in their payload, as
+the identifier `gospel` to bear the Gospel specifications in their payload as
 strings: `[@@gospel "<spec>"]` and `[@@@gospel "<spec>"]`.
 
-### Floating attributes
+### Floating Attributes
 
-[Ghost and logical declarations](logical.md) must lie in floating attributes,
+[Ghost and logical declarations](logical.md) must lie in floating attributes located 
 inside module signatures:
 
 ```ocaml
@@ -23,19 +23,19 @@ inside module signatures:
 [@@@gospel "predicate is_zero (x: integer) = x = 0"]
 ```
 
-### Attached attributes
+### Attached Attributes
 
-Specification bits which are semantically attached to OCaml declarations (e.g.
+Specification bits that are semantically attached to OCaml declarations (e.g.,
 [function contracts](function-contracts.md) or [type
 specifications](type-specifications.md)) should be written in an attached
-attribute, following OCaml's attachment rules:
+attribute and follow OCaml's attachment rules:
 
 ```ocaml
 val f: int -> int
 [@@gospel "y = f x ensures x > 0"]
 ```
 
-### Specification of ghost and logical declarations
+### Specification of Ghost and Logical Declarations
 
 When ghost and logical declarations need to be specified with a contract, the
 contract should reside in an attribute attached to the string containing the
@@ -46,14 +46,14 @@ declaration:
   [@@gospel "y = f x ensures x > 0"]]
 ```
 
-## Gospel preprocessor
+## Gospel Preprocessor
 
 Writing attributes is tedious, especially when nested. Gospel provides a
 preprocessor that lets you write Gospel specifications in special comments,
 starting with the `@` character[^1]:
 
 [^1]: Existing specification languages for other host languages introduced this
-    notation, *e.g.* [JML](https://www.cs.ucf.edu/~leavens/JML/index.shtml) for
+    notation, *e.g.,* [JML](https://www.cs.ucf.edu/~leavens/JML/index.shtml) for
     Java and [ACSL](https://frama-c.com/html/acsl.html) for C. Hence Gospel
     also uses this convention.
 
@@ -67,22 +67,22 @@ val f: int -> int           (* An OCaml value declaration *)
     model size: int *)      (* Its Gospel specification   *)
 ```
 
-Although the preprocessor is available via the `gospel pps` command, it is also
-applied automatically on type-checking, so you should not have to worry about
+Although the preprocessor is available via the `gospel pps` command, it's also
+applied automatically on type-checking, so you shouldn't have to worry about
 manually applying it.
 
 :::info
 
 The special `(*@ ... *)` comment notation will be used throughout the
-documentation, and the attribute notation will not appear anymore.
+documentation, and the attribute notation won't appear anymore.
 
 :::
 
 
-## Specifications and documentation comments
+## Specifications and Documentation Comments
 
 Note that Gospel annotations can be combined with traditional documentation
-comments, *e.g.* as follows:
+comments. For example:
 
 ```ocaml
 val eucl_division: int -> int -> int * int
