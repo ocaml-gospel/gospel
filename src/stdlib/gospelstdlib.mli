@@ -121,9 +121,6 @@ type int
 (*@ function (!_) (r: 'a ref) : 'a *)
 (** Reference content access operator. *)
 
-(*@ function ref (x: 'a) : 'a ref *)
-(** Reference creation. *)
-
 (** {1 Sequences} *)
 
 (*@ function (++) (s s': 'a seq) : 'a seq *)
@@ -372,9 +369,6 @@ module Bag : sig
   (*@ function occurrences (x: 'a) (b: 'a t): integer *)
   (** [occurrences x b] is the number of occurrences of [x] in [s]. *)
 
-  (*@ function compare (b b': 'a t) : int *)
-  (** A comparison function over bags. *)
-
   (*@ function empty : 'a t *)
   (** [empty] is the empty bag. *)
 
@@ -452,19 +446,15 @@ module Bag : sig
       all the elements of [b] that satisfy [f], and [b2] is the bag of all the
       elements of [b] that do not satisfy [f]. *)
 
-  (*@ function cardinal (b: 'a t) : int *)
-  (** [cardinal b] is the number of distinct elements in [b]. *)
-
-  (*@ function elements (b: 'a t) : 'a list *)
-  (** [elements b] is the list of all elements in [b]. *)
+  (*@ function cardinal (b: 'a t) : integer *)
+  (** [cardinal b] is the total number of elements in [b], all occurrences being
+      counted. *)
 
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
   (*@ function to_seq (b: 'a t) : 'a Seq.t *)
   (*@ function of_seq (s: 'a Seq.t) : 'a t *)
-
-  (*@ function of_array (a: 'a array) : 'a t *)
 end
 
 (** {1 Sets} *)
@@ -476,7 +466,7 @@ module Set : sig
   (*@ type 'a t = 'a set *)
   (** An alias for ['a set]. *)
 
-  (*@ function compare (s s': 'a t) : int *)
+  (*@ function compare (s s': 'a t) : integer *)
   (** A comparison function over sets. *)
 
   (*@ function empty : 'a t *)
@@ -547,9 +537,6 @@ module Set : sig
   (** [partition f s] is the pair of sets [(s1, s2)], where [s1] is the set of
       all the elements of [s] that satisfy the predicate [f], and [s2] is the
       set of all the elements of [s] that do not satisfy [f]. *)
-
-  (*@ function elements (s: 'a t) : 'a list *)
-  (** [elements s] is the list of all elements in [s]. *)
 
   (*@ function to_list (s: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)

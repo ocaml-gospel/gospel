@@ -86,7 +86,6 @@ module a3.mli
               function pred (_:integer) : integer
               function prefix ! (_:'a ref) : 'a
               function prefix - (_:integer) : integer
-              function ref_1 (_:'a) : 'a ref
               function shift_left (_:integer) (_:integer) : integer
               function shift_right (_:integer) (_:integer) : integer
               function shift_right_trunc (_:integer) (_:integer) : integer
@@ -151,13 +150,11 @@ module a3.mli
                 Logic Symbols
                   predicate _exists_1 (_:'a -> bool) (_:'a bag)
                   function add (_:'a) (_:'a bag) : 'a bag
-                  function cardinal (_:'a bag) : int
+                  function cardinal (_:'a bag) : integer
                   function choose (_:'a bag) : 'a
                   function choose_opt (_:'a bag) : 'a option
-                  function compare (_:'a bag) (_:'a bag) : int
                   function diff (_:'a bag) (_:'a bag) : 'a bag
                   predicate disjoint (_:'a bag) (_:'a bag)
-                  function elements (_:'a bag) : 'a list
                   function empty  : 'a bag
                   function filter (_:'a -> bool) (_:'a bag) : 'a bag
                   function filter_map (_:'a -> 'a option) (_:'a bag) : 'a bag
@@ -168,7 +165,6 @@ module a3.mli
                   function map_1 (_:'a -> 'b) (_:'a bag) : 'b bag
                   predicate mem_1 (_:'a) (_:'a bag)
                   function occurrences (_:'a) (_:'a bag) : integer
-                  function of_array (_:'a array) : 'a bag
                   function of_list_1 (_:'a list) : 'a bag
                   function of_seq_1 (_:'a seq) : 'a bag
                   function partition (_:'a -> bool) (_:'a bag) : 'a bag *
@@ -296,10 +292,9 @@ module a3.mli
                   function cardinal_1 (_:'a set) : integer
                   function choose_1 (_:'a set) : integer
                   function choose_opt_1  : 'a set -> 'a option
-                  function compare_1 (_:'a set) (_:'a set) : int
+                  function compare (_:'a set) (_:'a set) : integer
                   function diff_1 (_:'a set) (_:'a set) : 'a set
                   predicate disjoint_1 (_:'a set) (_:'a set)
-                  function elements_1 (_:'a set) : 'a list
                   function empty_2  : 'a set
                   function filter_2 (_:'a -> bool) (_:'a set) : 'a set
                   function filter_map_2 (_:'a -> 'a option) (_:'a set) : 'a 
