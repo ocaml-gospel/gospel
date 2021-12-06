@@ -64,6 +64,19 @@
  (action (diff %{dep:field_application.mli.expected} %{dep:field_application.mli.output})))
 
 (rule
+ (targets invariant1.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:invariant1.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:invariant1.mli.expected} %{dep:invariant1.mli.output})))
+
+(rule
  (targets t1.mli.output)
  (deps (source_tree .))
  (action
