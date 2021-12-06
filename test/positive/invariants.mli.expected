@@ -1,0 +1,77 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t1 = private {
+  a: int }[@@gospel {| invariant a >= 0 |}]
+type t2 = private
+  | A 
+  | B [@@gospel {| invariant 1 > 0 |}]
+type t3 = private (int * int)[@@gospel {| invariant 1 > 0 |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t1 = private {
+a: int }
+  (*@ invariant ...
+       *)
+
+type t2 = private
+| A 
+| B 
+  (*@ invariant ...
+       *)
+
+type t3 = private (int * int)
+  (*@ invariant ...
+       *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module invariants.mli
+
+  Namespace: invariants.mli
+    Type symbols
+       t1
+       t2
+       t3 [=int * int]
+      
+    Logic Symbols
+      function A  : t2
+      function B  : t2
+      function constr#t1 (_:int) : t1
+      
+    Field Symbols
+      function a (_:t1) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t1 = {a:int}
+           function constr#t1 (_:int) : t1
+           function a (_:t1) : int
+         (*@ 
+             invariant ((integer_of_int  (a ):int):integer >= 0:integer):prop *)
+    
+    type t2 = A of 
+              function A  : t2
+              | B of 
+                function B  : t2
+         (*@ 
+             invariant (1:integer > 0:integer):prop *)
+    
+    type t3 = int * int
+         (*@ 
+             invariant (1:integer > 0:integer):prop *)
+
+OK

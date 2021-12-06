@@ -1,0 +1,20 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t =
+  | A 
+  | B [@@gospel {| invariant 1 >= 0 |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t =
+| A 
+| B 
+  (*@ invariant ...
+       *)
+File "invariant2.mli", line 1, characters 0-48:
+Error: Invariant on non-private type t
