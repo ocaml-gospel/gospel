@@ -584,11 +584,11 @@ let type_type_declaration kid crcm ns tdl =
       | Ptype_open -> assert false
     in
     (* invariants are only allowed on abstract/private types *)
-    (match td.tkind, td.tspec with
-     | (Ptype_variant _ | Ptype_record _), Some { ty_invariant = _ :: _ }
-       when td.tprivate = Public ->
-         error ~loc:td.tloc (InvariantPublic td_ts)
-     | _, _ -> ());
+    (match (td.tkind, td.tspec) with
+    | (Ptype_variant _ | Ptype_record _), Some { ty_invariant = _ :: _ }
+      when td.tprivate = Public ->
+        error ~loc:td.tloc (InvariantPublic td_ts)
+    | _, _ -> ());
 
     let params = List.combine params variance_list in
     let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
