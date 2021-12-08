@@ -150,6 +150,9 @@ let rec unify_dty_ty dty ty =
   | Tty ty1, _ when ty_equal ty1 ty -> ()
   | Tapp (ts1, dl), Tyapp (ts2, tl) when ts_equal ts1 ts2 -> (
       try List.iter2 unify_dty_ty dl tl with Invalid_argument _ -> raise Exit)
+  | Ttuple dtyl, Tytuple tyl -> (
+      try List.iter2 unify_dty_ty dtyl tyl
+      with Invalid_argument _ -> raise Exit)
   | _ -> raise Exit
 
 let rec unify dty1 dty2 =
@@ -158,6 +161,8 @@ let rec unify dty1 dty2 =
   | Tvar tvar, dty | dty, Tvar tvar ->
       if occur tvar dty then raise Exit else tvar.dtv_def <- Some dty
   | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 -> (
+      try List.iter2 unify dtyl1 dtyl2 with Invalid_argument _ -> raise Exit)
+  | Ttuple dtyl1, Ttuple dtyl2 -> (
       try List.iter2 unify dtyl1 dtyl2 with Invalid_argument _ -> raise Exit)
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
   | _ -> raise Exit

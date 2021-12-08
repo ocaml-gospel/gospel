@@ -102,7 +102,11 @@ let ty_app ts tyl =
   else raise (BadTypeArity (ts, List.length tyl))
 
 (* XXX TODO: add some checks ? *)
-let ty_tuple tyl = { ty_node = Tytuple tyl }
+let ty_tuple = function
+  | [] ->
+      let ts = ts (Ident.create ~loc:Location.none "unit") [] in
+      ty_app ts []
+  | tyl -> { ty_node = Tytuple tyl }
 
 let rec ty_full_inst m ty =
   match ty.ty_node with
