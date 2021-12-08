@@ -68,8 +68,10 @@ let rec ty_of_pty ns = function
       let ts = find_q_ts ns q in
       ty_app ts (List.map (ty_of_pty ns) ptyl)
   | PTtuple ptyl ->
-      let tyl = List.map (ty_of_pty ns) ptyl in
-      ty_tuple tyl
+      if List.length ptyl = 0 then ty_unit
+      else
+        let tyl = List.map (ty_of_pty ns) ptyl in
+        ty_tuple tyl
   | PTarrow (_, pty1, pty2) ->
       let ty1, ty2 = (ty_of_pty ns pty1, ty_of_pty ns pty2) in
       ty_app ts_arrow [ ty1; ty2 ]
@@ -82,8 +84,10 @@ let rec ty_of_core ns cty =
   | Ptyp_any -> { ty_node = Tyvar (create_tv (Ident.create ~loc "_")) }
   | Ptyp_var s -> { ty_node = Tyvar (tv_of_string ~loc s) }
   | Ptyp_tuple ctl ->
-      let tyl = List.map (ty_of_core ns) ctl in
-      ty_tuple tyl
+      if List.length ctl = 0 then ty_unit
+      else
+        let tyl = List.map (ty_of_core ns) ctl in
+        ty_tuple tyl
   | Ptyp_constr (lid, ctl) ->
       let ts = find_ts ~loc:lid.loc ns (Longident.flatten_exn lid.txt) in
       let tyl = List.map (ty_of_core ns) ctl in
@@ -142,26 +146,20 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_dpattern ~loc dp_node dp_dty dp_vars =
     { dp_node; dp_dty; dp_vars; dp_loc = loc }
   in
+  let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
+  let vars dpl =
+    List.fold_left
+      (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
+      Mstr.empty dpl
+  in
   let mk_papp ~loc cs dpl =
     let dtyl, dty = specialize_cs ~loc cs in
     app_unify ~loc cs dpattern_unify dpl dtyl;
-    let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
-    let vars =
-      List.fold_left
-        (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
-        Mstr.empty dpl
-    in
-    mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
+    mk_dpattern ~loc (DPapp (cs, dpl)) dty (vars dpl)
   in
   let mk_tuple ~loc dpl =
     let dtys = List.map (fun p -> p.dp_dty) dpl in
-    let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
-    let vars =
-      List.fold_left
-        (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
-        Mstr.empty dpl
-    in
-    mk_dpattern ~loc (DPtuple dpl) (Ttuple dtys) vars
+    mk_dpattern ~loc (DPtuple dpl) (Ttuple dtys) (vars dpl)
   in
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
@@ -177,8 +175,11 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dpl = List.map (dpattern kid ns) pl in
       mk_papp ~loc cs dpl
   | Ptuple pl ->
-      let dpl = List.map (dpattern kid ns) pl in
-      mk_tuple ~loc dpl
+      if List.length pl = 0 then
+        mk_dpattern ~loc (DPapp (fs_unit, [])) (Tapp (ts_unit, [])) Mstr.empty
+      else
+        let dpl = List.map (dpattern kid ns) pl in
+        mk_tuple ~loc dpl
   | Pas (p, pid) ->
       let dp = dpattern kid ns p in
       if Mstr.mem pid.pid_str dp.dp_vars then

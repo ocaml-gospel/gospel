@@ -166,6 +166,7 @@ let rec ty_match mtv ty1 ty2 =
   | Tyvar tv1, _ -> Mtv.update tv1 set mtv
   | Tyapp (ts1, tyl1), Tyapp (ts2, tyl2) when ts_equal ts1 ts2 ->
       List.fold_left2 ty_match mtv tyl1 tyl2
+  | Tytuple tyl1, Tytuple tyl2 -> List.fold_left2 ty_match mtv tyl1 tyl2
   | _ -> raise Exit
 
 exception TypeMismatch of ty * ty

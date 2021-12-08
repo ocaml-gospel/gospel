@@ -178,6 +178,7 @@ exception TermExpected
    to be given properly -- based on why3 *)
 
 let app_unify ~loc ls unify l dtyl2 =
+  (* XXX Here for error at `| C (_, _)` in test/positive/variant_patterns.mli *)
   if List.length l <> List.length dtyl2 then
     error ~loc (BadArity (ls, List.length l));
   List.iter2 unify l dtyl2
