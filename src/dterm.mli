@@ -25,6 +25,7 @@ and dpattern_node =
   | DPwild
   | DPvar of Preid.t
   | DPapp of lsymbol * dpattern list
+  | DPtuple of dpattern list
   | DPor of dpattern * dpattern
   | DPas of dpattern * Preid.t
   | DPcast of dpattern * dty

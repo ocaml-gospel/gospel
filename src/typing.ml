@@ -142,22 +142,16 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_dpattern ~loc dp_node dp_dty dp_vars =
     { dp_node; dp_dty; dp_vars; dp_loc = loc }
   in
-  let rec mk_papp ~loc cs dpl =
-    let n = List.length cs.ls_args in
-    match dpl with
-    | [ { dp_node = DPapp (ls, dpl) } ]
-      when ls_equal ls (fs_tuple n) && cs.ls_constr ->
-        mk_papp ~loc cs dpl
-    | _ ->
-        let dtyl, dty = specialize_cs ~loc cs in
-        app_unify ~loc cs dpattern_unify dpl dtyl;
-        let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
-        let vars =
-          List.fold_left
-            (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
-            Mstr.empty dpl
-        in
-        mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
+  let mk_papp ~loc cs dpl =
+    let dtyl, dty = specialize_cs ~loc cs in
+    app_unify ~loc cs dpattern_unify dpl dtyl;
+    let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
+    let vars =
+      List.fold_left
+        (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
+        Mstr.empty dpl
+    in
+    mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
   in
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
@@ -728,7 +722,7 @@ let process_val_spec kid crcm ns id args ret vs =
             | (Pvar _ | Pwild | Ptuple _), Exn_tuple [ ty ] -> ty
             | (Pvar _ | Pwild), Exn_tuple (_ :: _ :: _) ->
                 error_report ~loc "exception pattern doesn't match its type"
-            | Ptuple _, Exn_tuple tyl -> ty_app (ts_tuple (List.length tyl)) tyl
+            | Ptuple _, Exn_tuple tyl -> ty_tuple tyl
             | Prec _, Exn_record _ ->
                 (* TODO unify types and field names *)
                 error_report ~loc "Unsupported record type in exceptions"

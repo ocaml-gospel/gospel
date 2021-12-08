@@ -67,6 +67,7 @@ let rec ty_equal x y =
   | Tyvar tvx, Tyvar tvy -> tv_equal tvx tvy
   | Tyapp (tsx, tylx), Tyapp (tsy, tyly) ->
       ts_equal tsx tsy && List.for_all2 ty_equal tylx tyly
+  | Tytuple tylx, Tytuple tyly -> List.for_all2 ty_equal tylx tyly
   | _ -> false
 
 module Ts = struct
@@ -217,10 +218,6 @@ let ts_arrow =
   let tb = fresh_tv ~loc:Location.none "b" in
   let id = Ident.create ~loc:Location.none "->" in
   ts id [ ta; tb ]
-
-let is_ts_tuple ts =
-  let ts_tuple = ts_tuple (ts_arity ts) in
-  Ident.equal ts_tuple.ts_ident ts.ts_ident
 
 let is_ts_arrow ts = Ident.equal ts_arrow.ts_ident ts.ts_ident
 let ty_unit = ty_app ts_unit []

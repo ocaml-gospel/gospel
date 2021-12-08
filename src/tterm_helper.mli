@@ -36,6 +36,7 @@ val mk_pattern : pattern_node -> ty -> Svs.t -> pattern
 val p_wild : ty -> pattern
 val p_var : vsymbol -> pattern
 val p_app : lsymbol -> pattern list -> ty -> pattern
+val p_tuple : pattern list -> ty -> pattern
 val p_or : pattern -> pattern -> pattern
 val p_as : pattern -> vsymbol -> pattern
 val mk_term : term_node -> ty option -> Location.t -> term

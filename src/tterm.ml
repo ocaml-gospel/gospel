@@ -25,6 +25,7 @@ and pattern_node =
   | Pwild  (** _ *)
   | Pvar of vsymbol  (** x *)
   | Papp of lsymbol * pattern list  (** Constructor *)
+  | Ptuple of pattern list  (** tuple *)
   | Por of pattern * pattern  (** p1 | p2 *)
   | Pas of pattern * vsymbol  (** p as vs *)
 [@@deriving show]

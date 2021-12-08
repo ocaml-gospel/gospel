@@ -70,7 +70,7 @@ let ls_subst_ty old_ts new_ts new_ty ls =
   let ls_value = Option.map subst ls.ls_value in
   lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr ~field:ls.ls_field
 
-(** buil-in lsymbols *)
+(** built-in lsymbols *)
 
 let ps_equ =
   let tv = fresh_ty_var "a" in

@@ -18,7 +18,7 @@ let rec p_vars p =
   match p.p_node with
   | Pwild -> Svs.empty
   | Pvar vs -> Svs.singleton vs
-  | Papp (_, pl) ->
+  | Papp (_, pl) | Ptuple pl ->
       List.fold_left (fun vsl p -> Svs.union (p_vars p) vsl) Svs.empty pl
   | Por (p1, p2) -> Svs.union (p_vars p1) (p_vars p2)
   | Pas (p, vs) -> Svs.add vs (p_vars p)
@@ -114,6 +114,15 @@ let p_app ls pl ty =
   let merge vars p = Svs.fold add vars p.p_vars in
   let vars = List.fold_left merge Svs.empty pl in
   mk_pattern (Papp (ls, pl)) ty vars
+
+let p_tuple pl ty =
+  let add v vars =
+    if Svs.mem v vars then raise (PDuplicatedVar v);
+    Svs.add v vars
+  in
+  let merge vars p = Svs.fold add vars p.p_vars in
+  let vars = List.fold_left merge Svs.empty pl in
+  mk_pattern (Ptuple pl) ty vars
 
 (* CHECK ty matchs ls.ls_value *)
 let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars

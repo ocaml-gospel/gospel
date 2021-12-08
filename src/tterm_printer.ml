@@ -41,7 +41,7 @@ let rec print_pat_node pri fmt p =
       pp fmt
         (protect_on (pri > 0) "%a | %a")
         (print_pat_node 0) p (print_pat_node 0) q
-  | Papp (cs, pl) when is_fs_tuple cs ->
+  | Ptuple pl ->
       pp fmt (protect_on (pri > 0) "%a") (list ~sep:comma (print_pat_node 1)) pl
   | Papp (cs, []) -> print_ls_nm fmt cs
   | Papp (cs, pl) ->
