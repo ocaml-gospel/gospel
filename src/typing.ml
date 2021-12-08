@@ -69,8 +69,7 @@ let rec ty_of_pty ns = function
       ty_app ts (List.map (ty_of_pty ns) ptyl)
   | PTtuple ptyl ->
       let tyl = List.map (ty_of_pty ns) ptyl in
-      let ts = ts_tuple (List.length tyl) in
-      ty_app ts tyl
+      ty_tuple tyl
   | PTarrow (_, pty1, pty2) ->
       let ty1, ty2 = (ty_of_pty ns pty1, ty_of_pty ns pty2) in
       ty_app ts_arrow [ ty1; ty2 ]
@@ -84,7 +83,7 @@ let rec ty_of_core ns cty =
   | Ptyp_var s -> { ty_node = Tyvar (tv_of_string ~loc s) }
   | Ptyp_tuple ctl ->
       let tyl = List.map (ty_of_core ns) ctl in
-      ty_app (ts_tuple (List.length tyl)) tyl
+      ty_tuple tyl
   | Ptyp_constr (lid, ctl) ->
       let ts = find_ts ~loc:lid.loc ns (Longident.flatten_exn lid.txt) in
       let tyl = List.map (ty_of_core ns) ctl in
@@ -486,7 +485,7 @@ let type_type_declaration kid crcm ns tdl =
         ty_app ts_arrow [ ty1; ty2 ]
     | Ptyp_tuple ctl ->
         let tyl = List.map (parse_core alias tvl) ctl in
-        ty_app (ts_tuple (List.length tyl)) tyl
+        ty_tuple tyl
     | Ptyp_constr (lid, ctl) ->
         let idl = Longident.flatten_exn lid.txt in
         let tyl = List.map (parse_core alias tvl) ctl in
@@ -752,7 +751,7 @@ let process_val_spec kid crcm ns id args ret vs =
   let env, ret =
     match (header.sp_hd_ret, ret.ty_node) with
     | [], _ -> (env, [])
-    | _, Tyapp (ts, tyl) when is_ts_tuple ts ->
+    | _, Tytuple tyl ->
         let tyl = List.map (fun ty -> (ty, Asttypes.Nolabel)) tyl in
         process_args header.sp_hd_ret tyl env []
     | _, _ -> process_args header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []

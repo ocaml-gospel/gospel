@@ -45,7 +45,10 @@ let tv_of_string =
 
 type ty = { ty_node : ty_node } [@@deriving show]
 
-and ty_node = Tyvar of tvsymbol | Tyapp of tysymbol * ty list
+and ty_node =
+  | Tyvar of tvsymbol
+  | Tyapp of tysymbol * ty list
+  | Tytuple of ty list
 [@@deriving show]
 
 and tysymbol = {
@@ -97,10 +100,14 @@ let ty_app ts tyl =
   if ts_arity ts = List.length tyl then { ty_node = Tyapp (ts, tyl) }
   else raise (BadTypeArity (ts, List.length tyl))
 
+(* XXX TODO: add some checks ? *)
+let ty_tuple tyl = { ty_node = Tytuple tyl }
+
 let rec ty_full_inst m ty =
   match ty.ty_node with
   | Tyvar tv -> Mtv.find tv m
   | Tyapp (ts, tyl) -> ty_app ts (List.map (ty_full_inst m) tyl)
+  | Tytuple tyl -> ty_tuple (List.map (ty_full_inst m) tyl)
 
 let ts_match_args ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
@@ -123,6 +130,7 @@ and ty_subst_ts old_ts new_ts ty =
   | Tyapp (ts, tyl) ->
       let ts = if ts_equal old_ts ts then new_ts else ts in
       ty_app ts (List.map (ty_subst_ts old_ts new_ts) tyl)
+  | Tytuple tyl -> ty_tuple (List.map (ty_subst_ts old_ts new_ts) tyl)
 
 let rec ty_subst_ty old_ts new_ts new_ty ty =
   match ty.ty_node with
@@ -133,6 +141,7 @@ let rec ty_subst_ty old_ts new_ts new_ty ty =
         let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
         let tyl = List.map subst tyl in
         ty_app ts tyl
+  | Tytuple tyl -> ty_tuple (List.map (ty_subst_ty old_ts new_ts new_ty) tyl)
 
 and ts_subst_ty old_ts new_ts new_ty ts =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
@@ -161,6 +170,7 @@ let ty_match mtv ty1 ty2 =
     match ty.ty_node with
     | Tyvar n -> ( try Mtv.find n mtv with Not_found -> ty)
     | Tyapp (ts, tyl) -> { ty_node = Tyapp (ts, List.map (ty_inst mtv) tyl) }
+    | Tytuple tyl -> ty_tuple (List.map (ty_inst mtv) tyl)
   in
   try ty_match mtv ty1 ty2
   with Exit -> raise (TypeMismatch (ty_inst mtv ty1, ty2))
@@ -221,11 +231,7 @@ let ty_char = ty_app ts_char []
 let ty_string = ty_app ts_string []
 let ty_option ty = ty_app ts_option [ ty ]
 let ty_list ty = ty_app ts_list [ ty ]
-
-let ty_tuple = function
-  | [] -> ty_unit
-  | [ ty ] -> ty
-  | tyl -> ty_app (ts_tuple (List.length tyl)) tyl
+let ty_tuple = function [] -> ty_unit | [ ty ] -> ty | tyl -> ty_tuple tyl
 
 type exn_type =
   | Exn_tuple of ty list
@@ -286,11 +292,10 @@ and print_ty_node fmt = function
   | Tyvar v -> pp fmt "%a" print_tv v
   | Tyapp (ts, []) -> print_ts_name fmt ts
   | Tyapp (ts, tys) when is_ts_arrow ts -> print_arrow_ty fmt tys
-  | Tyapp (ts, tyl) when is_ts_tuple ts ->
-      pp fmt "%a" (list ~sep:star print_ty) tyl
   | Tyapp (ts, [ ty ]) -> pp fmt "%a %a" print_ty ty print_ts_name ts
   | Tyapp (ts, tyl) ->
       pp fmt "(%a) %a" (list ~sep:comma print_ty) tyl print_ts_name ts
+  | Tytuple tyl -> pp fmt "%a" (list ~sep:star print_ty) tyl
 
 let print_ts fmt ts =
   pp fmt "@[%a %a%a@]"

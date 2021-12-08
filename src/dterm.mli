@@ -4,7 +4,11 @@ open Tterm
 open Ttypes
 open Symbols
 
-type dty = Tvar of dtvar | Tapp of tysymbol * dty list | Tty of ty
+type dty =
+  | Tvar of dtvar
+  | Tapp of tysymbol * dty list
+  | Tty of ty
+  | Ttuple of dty list
 
 and dtvar = { dtv_id : int; mutable dtv_def : dty option }
 

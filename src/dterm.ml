@@ -19,7 +19,11 @@ open Tterm_helper
 
 (* types *)
 
-type dty = Tvar of dtvar | Tapp of tysymbol * dty list | Tty of ty
+type dty =
+  | Tvar of dtvar
+  | Tapp of tysymbol * dty list
+  | Tty of ty
+  | Ttuple of dty list
 
 and dtvar = { dtv_id : int; mutable dtv_def : dty option }
 
@@ -47,6 +51,7 @@ let ty_of_dty =
       | Tvar { dtv_def = Some dty } -> to_ty dty
       | Tapp (ts, dtyl) -> ty_app ts (List.map to_ty dtyl)
       | Tty ty -> ty
+      | Ttuple tyl -> ty_tuple (List.map to_ty tyl)
     in
     to_ty dty
 
@@ -73,6 +78,7 @@ let specialize_ls ls =
     match ty.ty_node with
     | Tyvar tv -> find_tv tv
     | Tyapp (ts, tyl) -> Tapp (ts, List.map spec tyl)
+    | Tytuple tyl -> Ttuple (List.map spec tyl)
   in
   (List.map spec ls.ls_args, Option.map spec ls.ls_value)
 
@@ -135,6 +141,7 @@ let rec occur dtvar dty =
   | Tty _ -> false
   | Tvar { dtv_id; _ } -> dtvar.dtv_id = dtv_id
   | Tapp (_, dtys) -> List.exists (occur dtvar) dtys
+  | Ttuple dtys -> List.exists (occur dtvar) dtys
 
 let rec unify_dty_ty dty ty =
   match (head dty, ty.ty_node) with
@@ -238,6 +245,8 @@ let rec ts_of_dty = function
   | Tvar { dtv_def = Some dty } -> ts_of_dty dty
   | Tvar { dtv_def = None } | Tty { ty_node = Tyvar _ } -> raise Exit
   | Tty { ty_node = Tyapp (ts, _) } | Tapp (ts, _) -> ts
+  | Tty { ty_node = Tytuple tyl } -> ts_tuple (List.length tyl)
+  | Ttuple dtys -> ts_tuple (List.length dtys)
 
 let ts_of_dty = function Some dt_dty -> ts_of_dty dt_dty | None -> ts_bool
 
@@ -249,6 +258,7 @@ let rec ty_of_dty_raw = function
   | Tvar _ -> fresh_ty_var ~loc:Location.none "xi"
   | Tapp (ts, dl) -> ty_app ts (List.map ty_of_dty_raw dl)
   | Tty ty -> ty
+  | Ttuple dtys -> ty_tuple (List.map ty_of_dty_raw dtys)
 
 let ty_of_dty_raw = function
   | Some dt_dty -> ty_of_dty_raw dt_dty
@@ -428,6 +438,7 @@ let rec print_dty fmt dty =
       | [ dty ] -> pp fmt "%a %a" print_dty dty print_ts_name ts
       | dtyl ->
           pp fmt "(%a) %a" (list ~sep:comma print_dty) dtyl print_ts_name ts)
+  | Ttuple dtyl -> pp fmt "(%a)" (list ~sep:comma print_dty) dtyl
 
 let () =
   let open Location.Error in
