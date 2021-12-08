@@ -153,6 +153,16 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
     in
     mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
   in
+  let mk_tuple ~loc dpl =
+    let dtys = List.map (fun p -> p.dp_dty) dpl in
+    let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
+    let vars =
+      List.fold_left
+        (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
+        Mstr.empty dpl
+    in
+    mk_dpattern ~loc (DPtuple dpl) (Ttuple dtys) vars
+  in
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
   | Pwild ->
@@ -167,9 +177,8 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dpl = List.map (dpattern kid ns) pl in
       mk_papp ~loc cs dpl
   | Ptuple pl ->
-      let cs = fs_tuple (List.length pl) in
       let dpl = List.map (dpattern kid ns) pl in
-      mk_papp ~loc cs dpl
+      mk_tuple ~loc dpl
   | Pas (p, pid) ->
       let dp = dpattern kid ns p in
       if Mstr.mem pid.pid_str dp.dp_vars then
