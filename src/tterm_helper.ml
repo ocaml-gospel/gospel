@@ -106,23 +106,17 @@ exception EmptyCase
 let p_wild ty = mk_pattern Pwild ty Svs.empty
 let p_var vs = mk_pattern (Pvar vs) vs.vs_ty (Svs.singleton vs)
 
+let add v vars =
+  if Svs.mem v vars then raise (PDuplicatedVar v);
+  Svs.add v vars
+
+let merge vars p = Svs.fold add vars p.p_vars
+
 let p_app ls pl ty =
-  let add v vars =
-    if Svs.mem v vars then raise (PDuplicatedVar v);
-    Svs.add v vars
-  in
-  let merge vars p = Svs.fold add vars p.p_vars in
-  let vars = List.fold_left merge Svs.empty pl in
-  mk_pattern (Papp (ls, pl)) ty vars
+  List.fold_left merge Svs.empty pl |> mk_pattern (Papp (ls, pl)) ty
 
 let p_tuple pl ty =
-  let add v vars =
-    if Svs.mem v vars then raise (PDuplicatedVar v);
-    Svs.add v vars
-  in
-  let merge vars p = Svs.fold add vars p.p_vars in
-  let vars = List.fold_left merge Svs.empty pl in
-  mk_pattern (Ptuple pl) ty vars
+  List.fold_left merge Svs.empty pl |> mk_pattern (Ptuple pl) ty
 
 (* CHECK ty matchs ls.ls_value *)
 let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars

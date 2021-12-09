@@ -154,6 +154,8 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   in
   let mk_papp ~loc cs dpl =
     let dtyl, dty = specialize_cs ~loc cs in
+    (* XXX this is the call to app_unify that causes the error at
+       `| C (_, _)` in test/positive/variant_patterns.mli *)
     app_unify ~loc cs dpattern_unify dpl dtyl;
     mk_dpattern ~loc (DPapp (cs, dpl)) dty (vars dpl)
   in
@@ -173,6 +175,8 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   | Papp (q, pl) ->
       let cs = find_q_ls ns q in
       let dpl = List.map (dpattern kid ns) pl in
+      (* XXX the call to mk_app is done here, so we have a tuple that is encoded with a Papp
+         (which is wrong) *)
       mk_papp ~loc cs dpl
   | Ptuple pl ->
       if List.length pl = 0 then

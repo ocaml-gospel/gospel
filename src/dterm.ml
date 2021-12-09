@@ -87,6 +87,8 @@ exception ConstructorExpected of lsymbol
 let specialize_cs ~loc cs =
   if cs.ls_constr = false then error ~loc (ConstructorExpected cs);
   let dtyl, dty = specialize_ls cs in
+  (* XXX dirty code *)
+  (* let dtyl = match dtyl with [] | [ _ ] -> dtyl | _ :: _ -> [ Ttuple dtyl ] in *)
   (dtyl, Option.get dty)
 
 (* terms *)

@@ -91,8 +91,6 @@ let fresh_ty_var ?(loc = Location.none) s =
 
 let ty_of_var tv = { ty_node = Tyvar tv }
 
-(* let ty_app ts tl = {ty_node = Tyapp (ts,tl)} *)
-
 (** smart constructors & utils *)
 
 exception BadTypeArity of tysymbol * int
@@ -101,11 +99,11 @@ let ty_app ts tyl =
   if ts_arity ts = List.length tyl then { ty_node = Tyapp (ts, tyl) }
   else raise (BadTypeArity (ts, List.length tyl))
 
-(* XXX TODO: add some checks ? *)
 let ty_tuple = function
   | [] ->
       let ts = ts (Ident.create ~loc:Location.none "unit") [] in
       ty_app ts []
+  | [ ty ] -> ty
   | tyl -> { ty_node = Tytuple tyl }
 
 let rec ty_full_inst m ty =
