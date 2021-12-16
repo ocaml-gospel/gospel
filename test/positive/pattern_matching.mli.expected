@@ -14,8 +14,9 @@ val test1 : t -> t -> t[@@gospel
              | _, S _ -> false
              | O, _   -> false
              | S a, O -> r = S (S a) |}]
-val f_unit : int -> unit[@@gospel
-                          {| x1 = f_unit x0
+val f_unit : int array -> unit[@@gospel
+                                {| x1 = f_unit a
+     modifies a
      ensures match x1 with () -> true |}]
 [@@@gospel
   {| function fun_unit (x: unit): string =
@@ -47,9 +48,10 @@ val test1 : t -> t -> t
     ensures ...
      *)
 
-val f_unit : int -> unit
-(*@ x1 = f_unit x0
+val f_unit : int array -> unit
+(*@ x1 = f_unit a
     ensures ...
+    modifies ...
      *)
 
 (*@ function fun_unit ... *)
@@ -110,11 +112,12 @@ module pattern_matching.mli
                               bool
                 end::bool = (True ):bool):prop*)
     
-    val f_unit : int -> unit
-    (*@ x1:unit = f_unit x0:int
+    val f_unit : int array -> unit
+    (*@ x1:unit = f_unit a_1:int array
         ensures (match x1:unit with
                 |  -> (True ):bool
-                end::bool = (True ):bool):prop*)
+                end::bool = (True ):bool):prop
+        writes a_1:int array*)
     
     (*@ function fun_unit (x_2:unit): string =
         match x_2:unit with

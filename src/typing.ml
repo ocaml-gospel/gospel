@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Gospel__Warnings
 open Ppxlib
 open Utils
 open Identifier
@@ -771,6 +772,7 @@ let process_val_spec kid crcm ns id args ret vs =
     | _, _ -> process_args header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
   in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
+
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
     if wr <> [] then error_report ~loc "a pure function cannot have writes";
@@ -829,6 +831,14 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
+  let () =
+    (* check there is a modifies clause if the return type is unit, through a warning if not *)
+    if Ttypes.(ty_equal ret ty_unit) then
+      match so with
+      | None -> ()
+      | Some sp ->
+          if sp.sp_wr = [] then W.return_unit_without_modifies ~loc id.id_str
+  in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
       spec.sp_ret so vd.vloc
