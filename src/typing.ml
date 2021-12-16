@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module Warn = Gospel__Warnings
 open Ppxlib
 open Utils
 open Identifier
@@ -705,6 +706,7 @@ let process_val_spec kid crcm ns id args ret vs =
 
   let checks = List.map (fmla kid crcm ns env) vs.sp_checks in
 
+  (* XXX warnings: for old on read-only *)
   let wr =
     List.map
       (fun t ->
@@ -770,6 +772,8 @@ let process_val_spec kid crcm ns id args ret vs =
         process_args header.sp_hd_ret tyl env []
     | _, _ -> process_args header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
   in
+  if ret = [ Lunit ] && wr = [] then
+    Warn.return_unit_without_modifies ~loc id_val;
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
