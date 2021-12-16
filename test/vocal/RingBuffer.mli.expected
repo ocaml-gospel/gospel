@@ -221,3 +221,15 @@ module RingBuffer.mli
                         (r_3:'a buffer).sequence i_1:integer):'a):prop*)
 
 OK
+File "RingBuffer.mli", line 37, characters 47-57:
+Warning
+There is a reference to old sequence, but is it read only.
+File "RingBuffer.mli", line 49, characters 47-57:
+Warning
+There is a reference to old sequence, but is it read only.
+File "RingBuffer.mli", line 50, characters 24-34:
+Warning
+There is a reference to old sequence, but is it read only.
+File "RingBuffer.mli", line 51, characters 19-29:
+Warning
+There is a reference to old sequence, but is it read only.

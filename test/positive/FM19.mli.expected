@@ -409,3 +409,18 @@ module FM19.mli
         consumes p3:tt*)
 
 OK
+File "FM19.mli", line 17, characters 38-44:
+Warning
+There is a reference to old view, but is it read only.
+File "FM19.mli", line 23, characters 17-23:
+Warning
+There is a reference to old view, but is it read only.
+File "FM19.mli", line 92, characters 33-39:
+Warning
+There is a reference to old dom, but is it read only.
+File "FM19.mli", line 93, characters 37-43:
+Warning
+There is a reference to old dom, but is it read only.
+File "FM19.mli", line 94, characters 27-33:
+Warning
+There is a reference to old rep, but is it read only.

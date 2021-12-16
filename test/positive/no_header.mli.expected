@@ -37,3 +37,6 @@ module no_header.mli
     
 
 OK
+File "no_header.mli", line 1, characters 0-19:
+Warning
+The function f returns a unit but its specifications does not contains any modifies clause.

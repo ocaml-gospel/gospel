@@ -384,3 +384,57 @@ module UnionFind.mli
     *)
 
 OK
+File "UnionFind.mli", line 35, characters 31-37:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 36, characters 39-45:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 37, characters 29-35:
+Warning
+There is a reference to old rep, but is it read only.
+File "UnionFind.mli", line 38, characters 29-35:
+Warning
+There is a reference to old img, but is it read only.
+File "UnionFind.mli", line 56, characters 28-34:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 57, characters 28-34:
+Warning
+There is a reference to old rep, but is it read only.
+File "UnionFind.mli", line 58, characters 28-34:
+Warning
+There is a reference to old img, but is it read only.
+File "UnionFind.mli", line 68, characters 28-34:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 69, characters 28-34:
+Warning
+There is a reference to old rep, but is it read only.
+File "UnionFind.mli", line 70, characters 28-34:
+Warning
+There is a reference to old img, but is it read only.
+File "UnionFind.mli", line 79, characters 28-34:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 80, characters 28-34:
+Warning
+There is a reference to old rep, but is it read only.
+File "UnionFind.mli", line 81, characters 28-34:
+Warning
+There is a reference to old img, but is it read only.
+File "UnionFind.mli", line 90, characters 28-34:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 91, characters 28-34:
+Warning
+There is a reference to old rep, but is it read only.
+File "UnionFind.mli", line 101, characters 28-34:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 117, characters 32-39:
+Warning
+There is a reference to old dom, but is it read only.
+File "UnionFind.mli", line 120, characters 32-39:
+Warning
+There is a reference to old dom, but is it read only.

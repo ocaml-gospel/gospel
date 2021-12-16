@@ -123,3 +123,9 @@ module Queue.mli
                writes (q2:'a t).view*)
 
 OK
+File "Queue.mli", line 23, characters 38-44:
+Warning
+There is a reference to old view, but is it read only.
+File "Queue.mli", line 30, characters 19-25:
+Warning
+There is a reference to old view, but is it read only.

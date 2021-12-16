@@ -720,3 +720,15 @@ module Vector.mli
     [@@@ocaml.text " {2 Only if you know what you are doing...} "]
 
 OK
+File "Vector.mli", line 86, characters 55-61:
+Warning
+There is a reference to old view, but is it read only.
+File "Vector.mli", line 87, characters 34-40:
+Warning
+There is a reference to old view, but is it read only.
+File "Vector.mli", line 275, characters 51-57:
+Warning
+There is a reference to old view, but is it read only.
+File "Vector.mli", line 277, characters 50-56:
+Warning
+There is a reference to old view, but is it read only.
