@@ -19,7 +19,7 @@
       if a = int_of_integer 2
       then f b (int_of_integer 3)
       else g (int_of_integer 4) = (int_of_integer 5)
- *)
+*)
 
 (* ERROR:
    Line 21

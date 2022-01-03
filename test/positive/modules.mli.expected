@@ -13,7 +13,7 @@ sig
     [@@@gospel
       {| function fb (x:integer) (y:integer): ta =
           C (int_of_integer (x + y))
-     |}]
+    |}]
     [@@@gospel {| function int_of_float (x:float): int |}]
     [@@@gospel {| function float_of_int (x:int) : float |}]
     module MC :
@@ -31,7 +31,7 @@ sig
       [@@@gospel
         {| function td (a:ta) (b:MC.tc) : integer = match a with
         | C c -> (integer_of_int c) + (integer_of_int b.MC.x)
-       |}]
+      |}]
     end
   end
 end
@@ -49,7 +49,7 @@ val default : MF.ft -> MF.ft[@@gospel
                               {| x = default y
     requires MF.fp1 y
     ensures MF.fp2 x
- |}]
+|}]
 
 *******************************
 ****** GOSPEL translation *****

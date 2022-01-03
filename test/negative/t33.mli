@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type t = {x:int}
+type t = { x : int }
 
 (*@ function f (x: t): int =
     match x with

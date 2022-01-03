@@ -5,7 +5,6 @@ open Ttypes
 open Symbols
 
 type dty = Tvar of dtvar | Tapp of tysymbol * dty list | Tty of ty
-
 and dtvar = { dtv_id : int; mutable dtv_def : dty option }
 
 module Mstr : Map.S with type key = string

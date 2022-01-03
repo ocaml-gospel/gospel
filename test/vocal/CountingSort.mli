@@ -14,7 +14,7 @@
 (*@ predicate sorted (a: int array) =
       forall i j. 0 <= i <= j < Array.length a -> a.(i) <= a.(j) *)
 
-val counting_sort: int -> int array -> int array -> unit
+val counting_sort : int -> int array -> int array -> unit
 (*@ counting_sort k a b
       requires 0 < k
       requires k_values k a
@@ -23,7 +23,7 @@ val counting_sort: int -> int array -> int array -> unit
       ensures  sorted b
       ensures  Array.permut a b *)
 
-val in_place_counting_sort: int -> int array -> unit
+val in_place_counting_sort : int -> int array -> unit
 (*@ in_place_counting_sort k a
       requires 0 < k
       requires k_values k a

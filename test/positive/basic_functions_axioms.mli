@@ -44,13 +44,13 @@
       if a = int_of_integer 2
       then f b (int_of_integer 3)
       else g (int_of_integer 4) = 5
- *)
+*)
 
 (*@ function h (a:int) (b:bool) (c:'a): bool =
       if a = int_of_integer 2
       then f (pred b) (int_of_integer 3)
       else g (int_of_integer 4) = 5
- *)
+*)
 
 (*@ function h (b:bool): bool = pred b *)
 
@@ -72,11 +72,9 @@ type 'a t1 = C of 'a * int
 (*@ function i (a:'a t1): int =
       match a with
       | C (_,y) -> y
-      *)
+*)
 
-type 'a t2 = C2 of 'a
-           | C3 of bool
-           | C4 of int * 'a
+type 'a t2 = C2 of 'a | C3 of bool | C4 of int * 'a
 
 (*@ function gnr: 'a *)
 
@@ -103,27 +101,27 @@ type 'a t3 = A
 (*@ function integer_of_int (x:int) : integer *)
 
 type t4 = A | B
-type 'a t5 = {x: int; y: 'a}
+type 'a t5 = { x : int; y : 'a }
 
 (* @ function f (x: t4 t5) : integer =
-  match x with
-  | {x;y=A} -> integer_of_int x + 1
-  | {x;y=B} -> integer_of_int x + 2 *)
+   match x with
+   | {x;y=A} -> integer_of_int x + 1
+   | {x;y=B} -> integer_of_int x + 2 *)
 
-type 'a t6 = {xx: 'a; yy: int}
+type 'a t6 = { xx : 'a; yy : int }
 
 (* @ function f (xx: 'a): 'a t6 =
-  let a = {yy = int_of_integer 2; xx} in
-  {a with yy = int_of_integer 3} *)
+   let a = {yy = int_of_integer 2; xx} in
+   {a with yy = int_of_integer 3} *)
 
 (*@ function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y = A} -> {xx=B;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- *)
+*)
 
 (*@ function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y} -> {xx=y;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- *)
+*)

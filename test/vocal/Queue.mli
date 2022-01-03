@@ -35,8 +35,8 @@ val is_empty : 'a t -> bool
       ensures b <-> q.view = Seq.empty *)
 
 val transfer : 'a t -> 'a t -> unit
-(** [transfer q1 q2] adds all of [q1]'s elements at the end of
-    the queue [q2], then clears [q1]. *)
+(** [transfer q1 q2] adds all of [q1]'s elements at the end of the queue [q2],
+    then clears [q1]. *)
 (*@ transfer q1 q2
       modifies q1.view, q2.view
       ensures  q1.view = Seq.empty

@@ -18,7 +18,8 @@ type 'a t
 val empty : unit -> 'a t
 (*@ z = empty ()
     ensures z.seq = Seq.empty
-    ensures z.idx = 0 *) (* could be deduced from invariant *)
+    ensures z.idx = 0 *)
+(* could be deduced from invariant *)
 
 val is_empty : 'a t -> bool
 (*@ b = is_empty z

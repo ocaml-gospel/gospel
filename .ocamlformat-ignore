@@ -1,4 +1,1 @@
-test/*/*.mli
-test/*/*/*.mli
 src/Opprintast.ml
-docs/docs/getting-started/container.mli

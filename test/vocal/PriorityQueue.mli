@@ -8,10 +8,10 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(** This module implements a priority queue based on a minimal binary heap.
-The heap is modelized by a dynamic array, taken from the module Vector **)
+(** This module implements a priority queue based on a minimal binary heap. The
+    heap is modelized by a dynamic array, taken from the module Vector **)
 
-module Make (X: sig
+module Make (X : sig
   type t
 
   val dummy : t
@@ -21,12 +21,10 @@ module Make (X: sig
   (*@ axiom is_pre_order: Order.is_pre_order cmp *)
 
   val compare : t -> t -> int
-    (*@ r = compare x y
-          ensures r = cmp x y *)
+  (*@ r = compare x y
+        ensures r = cmp x y *)
 end) : sig
-
   type elt = X.t
-
   type heap
   (*@ mutable model bag : elt bag *)
   (*@ invariant card bag <= Sys.max_array_length *)
@@ -35,7 +33,7 @@ end) : sig
 
   val create : unit -> heap
   (*@ h = create ()
-      ensures h.bag = Bag.empty  *)
+      ensures h.bag = Bag.empty *)
 
   val is_empty : heap -> bool
   (*@ b = is_empty h
@@ -80,9 +78,8 @@ end) : sig
       ensures (old h).bag = Bag.add x h.bag *)
 
   val insert : elt -> heap -> unit
-   (*@ insert x h
-       checks   Bag.cardinal h.bag < Sys.max_array_length
-       modifies h
-       ensures  h.bag = Bag.add x (old h).bag *)
-
+  (*@ insert x h
+      checks   Bag.cardinal h.bag < Sys.max_array_length
+      modifies h
+      ensures  h.bag = Bag.add x (old h).bag *)
 end

@@ -38,8 +38,8 @@ val make : 'a -> 'a elem
       ensures  uf.img = (old uf.img)[e -> v]
 *)
 
-(** note: in functions find, eq, and get,
-    'modifies' accounts for path compression *)
+(** note: in functions find, eq, and get, 'modifies' accounts for path
+    compression *)
 
 (*@ function alpha : integer -> integer *)
 

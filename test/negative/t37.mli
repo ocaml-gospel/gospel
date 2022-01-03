@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type 'a t = {x:int; y:'a}
+type 'a t = { x : int; y : 'a }
 
 (*@ function f (x: 'a t): int =
     match x with

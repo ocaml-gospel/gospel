@@ -10,5 +10,5 @@
 (*@ open Gospelstdlib *)
 
 (*@ open T9 *)
-File "./t9.mli", line 2, characters 45-46:
+File "./t9.mli", line 1, characters 45-46:
 Error: Type mismatch. Cannot match int with bool

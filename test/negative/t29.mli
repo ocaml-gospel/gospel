@@ -10,7 +10,6 @@
 
 exception E of float list
 
-
 val f : 'a -> 'a
 (*@ x = f y
     raises E l -> match l with

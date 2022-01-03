@@ -28,13 +28,13 @@
       if a = int_of_integer 2
       then f b (int_of_integer 3)
       else g (int_of_integer 4) = 5
- |}]
+|}]
 [@@@gospel
   {| function h (a:int) (b:bool) (c:'a): bool =
       if a = int_of_integer 2
       then f (pred b) (int_of_integer 3)
       else g (int_of_integer 4) = 5
- |}]
+|}]
 [@@@gospel {| function h (b:bool): bool = pred b |}]
 [@@@gospel {| function h: bool = [@ athing]true |}]
 [@@@gospel {| function to_integer (i: int): integer |}]
@@ -54,7 +54,7 @@ type 'a t1 =
   {| function i (a:'a t1): int =
       match a with
       | C (_,y) -> y
-      |}]
+|}]
 type 'a t2 =
   | C2 of 'a 
   | C3 of bool 
@@ -91,13 +91,13 @@ type 'a t6 = {
   match b with
   | {x; y = A} -> {xx=B;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- |}]
+|}]
 [@@@gospel
   {| function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
   | {x; y} -> {xx=y;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
- |}]
+|}]
 
 *******************************
 ****** GOSPEL translation *****

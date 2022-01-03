@@ -1,11 +1,10 @@
-
 module type TA = sig
   type 'a t
   type 'b t2
   (*@ function f (x: 'a t) : float *)
 end
 
-module B (A: TA) : sig
+module B (A : TA) : sig
   type 'a t = 'a A.t
 end
 
