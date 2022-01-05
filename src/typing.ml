@@ -639,7 +639,14 @@ let rec val_parse_core_type ns cty =
 let rec check_old wr t =
   let rec check t =
     match t.t_node with
-    | Tvar vs -> if not (List.mem t wr) then Some vs.vs_name.id_str else None
+    | Tvar vs ->
+        if
+          not
+            (List.exists
+               (function { t_node = Tvar vs' } -> vs = vs' | _ -> false)
+               wr)
+        then Some vs.vs_name.id_str
+        else None
     | Tfield (t', ls) ->
         if not (List.mem t wr) then Some ls.ls_name.id_str else check t'
     | _ -> None
