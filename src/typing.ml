@@ -647,8 +647,19 @@ let rec check_old wr t =
                wr)
         then Some vs.vs_name.id_str
         else None
-    | Tfield (t', ls) ->
-        if not (List.mem t wr) then Some ls.ls_name.id_str else check t'
+    | Tfield (t', ls) -> (
+        match check t' with
+        | None ->
+            if
+              not
+                (List.exists
+                   (function
+                     | { t_node = Tfield (_, ls') } -> Symbols.ls_equal ls ls'
+                     | _ -> false)
+                   wr)
+            then Some ls.ls_name.id_str
+            else None
+        | Some n -> Some n)
     | _ -> None
   in
   match t.t_node with
