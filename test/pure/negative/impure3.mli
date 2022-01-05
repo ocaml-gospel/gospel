@@ -1,6 +1,4 @@
-
-val f: int ->  int
+val f : int -> int
 (*@ y = f x
     pure
     raises Not_found -> true *)
-

@@ -3,7 +3,7 @@
 ********** Parsed file ********
 *******************************
 [@@@ocaml.text
-  " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
+  " This module implements a priority queue based on a minimal binary heap. The\n    heap is modelized by a dynamic array, taken from the module Vector *"]
 module Make :
 functor (X :
   sig
@@ -13,7 +13,7 @@ functor (X :
     [@@@gospel {| axiom is_pre_order: Order.is_pre_order cmp |}]
     val compare : t -> t -> int[@@gospel
                                  {| r = compare x y
-          ensures r = cmp x y |}]
+        ensures r = cmp x y |}]
   end) ->
   sig
     type elt = X.t
@@ -23,7 +23,7 @@ functor (X :
       {| predicate mem (x: elt) (h: heap) = Bag.occurrences x h.bag > 0 |}]
     val create : unit -> heap[@@gospel
                                {| h = create ()
-      ensures h.bag = Bag.empty  |}]
+      ensures h.bag = Bag.empty |}]
     val is_empty : heap -> bool[@@gospel
                                  {| b = is_empty h
       ensures b <-> Bag.is_empty h.bag |}]
@@ -60,9 +60,9 @@ functor (X :
       ensures (old h).bag = Bag.add x h.bag |}]
     val insert : elt -> heap -> unit[@@gospel
                                       {| insert x h
-       checks   Bag.cardinal h.bag < Sys.max_array_length
-       modifies h
-       ensures  h.bag = Bag.add x (old h).bag |}]
+      checks   Bag.cardinal h.bag < Sys.max_array_length
+      modifies h
+      ensures  h.bag = Bag.add x (old h).bag |}]
   end
 
 *******************************
@@ -71,7 +71,7 @@ functor (X :
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text
-  " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
+  " This module implements a priority queue based on a minimal binary heap. The\n    heap is modelized by a dynamic array, taken from the module Vector *"]
 
 module Make : functor (X :
 sig
@@ -175,7 +175,7 @@ module PriorityQueue.mli
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text
-      " This module implements a priority queue based on a minimal binary heap.\nThe heap is modelized by a dynamic array, taken from the module Vector *"]
+      " This module implements a priority queue based on a minimal binary heap. The\n    heap is modelized by a dynamic array, taken from the module Vector *"]
     
     module Make :
     functor (X :

@@ -10,7 +10,7 @@ type 'a t2 =
   {| function i (a:'a t1): int =
       match a with
       | T (_,y) -> y
-      |}]
+|}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -26,5 +26,5 @@ type 'a t2 =
   
 
 (*@ function i ... *)
-File "t14.mli", line 17, characters 8-15:
+File "t14.mli", line 16, characters 8-15:
 Error: This pattern has type 'a t1 but is expected to have type @42@ t2

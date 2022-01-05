@@ -4,7 +4,7 @@
       forall i j. 0 <= i <= j < Array.length a
                   -> a.(i) <= a.(j) *)
 
-val merge: int array -> int array -> int array
+val merge : int array -> int array -> int array
 (*@ c = merge a b
     requires is_sorted a
     requires is_sorted b

@@ -1,8 +1,6 @@
-
 (*@ open Ocamlstdlib *)
 
 type t1
-
 type 'a t2
 
 (*@ function f1 (x: t1) : int t2 *)

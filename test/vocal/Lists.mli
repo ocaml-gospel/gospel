@@ -15,11 +15,10 @@
 
     Important note: the function is applied to the elements starting from the
     end of the list, thus not in the same order as with [List.map]. So if your
-    functions has side-effects, this is not equivalent to [List.map] but
-    rather to a combination of [List.rev] and [List.map] as stated below.
- *)
+    functions has side-effects, this is not equivalent to [List.map] but rather
+    to a combination of [List.rev] and [List.map] as stated below. *)
 
-val map: ('a -> 'b) -> 'a list -> 'b list
+val map : ('a -> 'b) -> 'a list -> 'b list
 (*@ r = map f l
       ensures List.length r = List.length l
       ensures forall i. 0 <= i < List.length l ->

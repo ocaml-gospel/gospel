@@ -20,7 +20,6 @@ val f : int -> int -> int
 exception X
 exception Y of int
 
-
 val f : int -> int -> int
 (*@ r = f x y
     raises X -> x = 2

@@ -1,4 +1,4 @@
-type t =  C of int * int
+type t = C of int * int
 
 val f : int -> t -> unit
 (*@ f n t

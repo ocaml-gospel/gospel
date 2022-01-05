@@ -8,9 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type 'a t2 = C2 of 'a
-           | C3 of bool
-           | C4 of int * 'a
+type 'a t2 = C2 of 'a | C3 of bool | C4 of int * 'a
 
 (*@ function gnr: 'a *)
 

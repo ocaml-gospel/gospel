@@ -15,5 +15,5 @@
 (*@ function rec f ... *)
 
 (*@ function g ... *)
-File "t11.mli", line 5, characters 17-18:
+File "t11.mli", line 4, characters 17-18:
 Error: Type mismatch. Cannot match integer with int

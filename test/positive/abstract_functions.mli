@@ -24,7 +24,6 @@
 
 (*@ function f6 : ('a,'b) t3 -> ('b,'a) t3 *)
 
-
 (* Functions with parameters *)
 
 (*@ function h1 (x : integer): integer *)

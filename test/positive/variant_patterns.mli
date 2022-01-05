@@ -1,7 +1,4 @@
-type t = A
-       | B of int
-       | C of int * int
-       | D of (int * int)
+type t = A | B of int | C of int * int | D of (int * int)
 
 exception E of int * int
 exception F of (int * int)

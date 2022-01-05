@@ -232,7 +232,6 @@ type s_signature_item_desc =
   | Sig_ghost_open of open_description
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
-
 and s_signature = s_signature_item list
 
 and s_module_type_desc =

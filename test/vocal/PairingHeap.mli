@@ -8,7 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module Make (X: sig (* FIXME: use ComparableType.S instead *)
+module Make (X : sig
+  (* FIXME: use ComparableType.S instead *)
   type t
 
   (*@ function cmp: t -> t -> int *)
@@ -16,12 +17,10 @@ module Make (X: sig (* FIXME: use ComparableType.S instead *)
   (*@ axiom is_pre_order: Order.is_pre_order cmp *)
 
   val compare : t -> t -> int
-    (*@ r = compare x y
-          ensures r = cmp x y *)
+  (*@ r = compare x y
+        ensures r = cmp x y *)
 end) : sig
-
   type elt = X.t
-
   type t
   (*@ model bag : elt bag *)
 

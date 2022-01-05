@@ -1,4 +1,4 @@
-type t = { a: int }
+type t = { a : int }
 
 val f : t -> int
 (*@ r = f x

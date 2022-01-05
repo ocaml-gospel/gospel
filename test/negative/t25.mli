@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val f : x:('a -> 'b -> 'c) -> 'a -> ('b -> 'c)
+val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y z *)
 
 (* ERROR:

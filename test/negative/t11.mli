@@ -1,4 +1,3 @@
-
 (*@ function rec f (x: bool) (y: int): bool = f x y *)
 
 (*@ function g (a: int): integer =

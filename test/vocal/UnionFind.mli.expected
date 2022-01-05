@@ -30,7 +30,7 @@ val make : 'a -> 'a elem[@@gospel
       ensures  uf.img = (old uf.img)[e -> v]
 |}]
 [@@@ocaml.text
-  " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+  " note: in functions find, eq, and get, 'modifies' accounts for path\n    compression "]
 [@@@gospel {| function alpha : integer -> integer |}]
 val find : 'a elem -> 'a elem[@@gospel
                                {| r = find [uf: 'a uf] e
@@ -143,7 +143,7 @@ val make : 'a -> 'a elem
      *)
 
 [@@@ocaml.text
-  " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+  " note: in functions find, eq, and get, 'modifies' accounts for path\n    compression "]
 
 (*@ function alpha ... *)
 
@@ -293,7 +293,7 @@ module UnionFind.mli
         writes uf_3:'a uf*)
     
     [@@@ocaml.text
-      " note: in functions find, eq, and get,\n    'modifies' accounts for path compression "]
+      " note: in functions find, eq, and get, 'modifies' accounts for path\n    compression "]
     
     (*@ function alpha : integer -> integer *)
     
