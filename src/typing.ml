@@ -647,19 +647,21 @@ let rec check_old wr t =
                wr)
         then Some vs.vs_name.id_str
         else None
-    | Tfield (t', ls) -> (
-        match check t' with
-        | None ->
+    | Tfield (t, ls) -> (
+        match check t with
+        | None -> None
+        | Some n ->
             if
               not
                 (List.exists
                    (function
-                     | { t_node = Tfield (_, ls') } -> Symbols.ls_equal ls ls'
+                     | { t_node = Tfield (_, ls') } | { t_node = Tapp (ls', _) }
+                       ->
+                         Symbols.ls_equal ls ls'
                      | _ -> false)
                    wr)
-            then Some ls.ls_name.id_str
-            else None
-        | Some n -> Some n)
+            then Some n
+            else None)
     | _ -> None
   in
   match t.t_node with
@@ -887,6 +889,7 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
+  (*XXX check for modifies & unit here *)
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
       spec.sp_ret so vd.vloc
