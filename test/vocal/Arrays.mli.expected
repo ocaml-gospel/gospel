@@ -310,9 +310,3 @@ module Arrays.mli
         writes a_6:'a array*)
 
 OK
-File "Arrays.mli", line 61, characters 37-38:
-Warning
-There is a reference to old a, but is it read only.
-File "Arrays.mli", line 75, characters 33-34:
-Warning
-There is a reference to old a, but is it read only.

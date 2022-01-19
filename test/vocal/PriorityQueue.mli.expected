@@ -269,15 +269,3 @@ module PriorityQueue.mli
       end
 
 OK
-File "PriorityQueue.mli", line 72, characters 61-66:
-Warning
-There is a reference to old bag, but is it read only.
-File "PriorityQueue.mli", line 73, characters 50-51:
-Warning
-There is a reference to old h, but is it read only.
-File "PriorityQueue.mli", line 78, characters 61-66:
-Warning
-There is a reference to old bag, but is it read only.
-File "PriorityQueue.mli", line 79, characters 31-32:
-Warning
-There is a reference to old h, but is it read only.

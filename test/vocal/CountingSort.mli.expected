@@ -110,6 +110,3 @@ module CountingSort.mli
         writes a_3:int array*)
 
 OK
-File "CountingSort.mli", line 32, characters 33-34:
-Warning
-There is a reference to old a, but is it read only.

@@ -136,6 +136,3 @@ module bitvector.mli
                 (integer_of_int  i_3:int):integer bv_3:t):prop*)
 
 OK
-File "bitvector.mli", line 18, characters 47-49:
-Warning
-There is a reference to old bv, but is it read only.

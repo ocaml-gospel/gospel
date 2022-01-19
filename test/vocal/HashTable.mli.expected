@@ -405,6 +405,3 @@ module HashTable.mli
       end
 
 OK
-File "HashTable.mli", line 70, characters 2-47:
-Warning
-The function iter returns a unit but its specifications does not contains any modifies clause.
