@@ -1,0 +1,4 @@
+(library
+ (name gospel2)
+  (modules_without_implementation uast)
+  (libraries ppxlib))
