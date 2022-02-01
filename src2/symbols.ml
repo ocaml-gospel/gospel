@@ -14,6 +14,7 @@ type symbol =
      - we can apply program and logical values with the same construct in the AST
      cons:
      - need to pattern match to determine which symbol it is, can't rely on type system like if there were seperate types
+     - loss of organisation for the namespace
      TODO: is it all the symbols we need? *)
   | Value of content
   | Logical of content

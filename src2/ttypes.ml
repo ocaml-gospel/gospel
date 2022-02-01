@@ -44,6 +44,10 @@ type ty =
    we keep the information that a type is an alias at the level of the type representation,
    not the symbol *)
 
+(* XXX DRAFT there should be better way to decompose an arrow type *)
+let rec depth = function Tyarr (_lb, _t0, t2) -> succ (depth t2) | _ -> 1
+let rec last = function Tyarr (_, _, t) -> last t | t -> t
+
 type exn_type =
   | Exn_tuple of ty list
   | Exn_record of (Identifier.Ident.t * ty) list

@@ -87,12 +87,12 @@ type spec_header = {
 }
 
 type val_spec = {
-  sp_header : spec_header option;
+  sp_header : spec_header;
   sp_pre : terms;
   sp_checks : terms;
   sp_post : terms;
   sp_xpost : xpost list;
-  sp_writes : terms;
+  sp_modifies : terms;
   sp_consumes : terms;
   sp_diverge : bool;
   sp_pure : bool;
@@ -148,7 +148,7 @@ type axiom = {
 
 type s_val_description = {
   vname : string loc;
-  vtype : core_type;
+  vtype : Ttypes.ty;
   vprim : string list;
   vattributes : attributes;
   (* ... [@@id1] [@@id2] *)
@@ -159,14 +159,14 @@ type s_val_description = {
 
 type s_type_declaration = {
   tname : string loc;
-  tparams : (core_type * (variance * injectivity)) list;
+  tparams : (Ttypes.ty * (variance * injectivity)) list;
   (* ('a1,...'an) t; None represents  _*)
-  tcstrs : (core_type * core_type * Location.t) list;
+  tcstrs : (Ttypes.ty * Ttypes.ty * Location.t) list;
   (* ... constraint T1=T1'  ... constraint Tn=Tn' *)
   tkind : type_kind;
   tprivate : private_flag;
   (* = private ... *)
-  tmanifest : core_type option;
+  tmanifest : Ttypes.ty option;
   (* = T *)
   tattributes : attributes;
   (* ... [@@id1] [@@id2] *)
