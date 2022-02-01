@@ -15,8 +15,8 @@ type val_spec = {
   sp_post : Tterm.terms;
   sp_xpost : (Symbols.xsymbol * cases) list;
   (* except sp_wr -> sp_mod because it is a `modifies' clause *)
-  sp_mod : Tterm.terms;
-  sp_cs : Tterm.terms;
+  sp_modifies : Tterm.terms;
+  sp_consumes : Tterm.terms;
   sp_diverge : bool;
   sp_pure : bool;
   sp_equiv : string list;
