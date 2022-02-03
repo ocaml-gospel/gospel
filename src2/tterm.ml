@@ -54,12 +54,13 @@ and terms = term list
 and case = { pattern : pattern; term : term }
 and cases = case list
 
+(* XXX TODO: check if the right symbols/symbols subset are used at the right places *)
 and term_node =
-  | Tvar of Symbols.vsymbol (* variables *)
+  | Tvar of [ `V of Symbols.vsymbol | `L of Symbols.lsymbol ] (* variables *)
   | Tconst of constant (* constants *)
   | Tlet of Symbols.vsymbol * term * term (* let binding *)
   | Tcase of term * cases (* pattern matching *)
-  | Tfield of term * Symbols.msymbol (* record/model destructior *)
+  | Tfield of term * Symbols.msymbol (* record/model destructor *)
   | Ttuple of term list (* tuple constructor *)
   | Tif of term * term * term (* conditional construction *)
   | Tquant of quant * Symbols.vsymbol list * term (* quantifiers *)
