@@ -32,8 +32,6 @@ and labelled_arg =
 
 (* Patterns *)
 
-type ghost = bool
-
 type pattern = { pat_desc : pat_desc; pat_loc : Location.t }
 
 and pat_desc =
