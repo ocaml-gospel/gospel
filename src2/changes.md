@@ -68,4 +68,8 @@ So now, we have the same `arg_label` than in OCaml.
 
 - in `pattern`, there is a field `p_vars`, I'm not sure to understand what is it for.
   The set of variables is computed anymay (`Tterm_helper.p_vars`) and it seems the only
-  place we access this field is in `tterm_helper` to build patterns.
+  place we access this field is in `tterm_helper` to build patterns. 
+  (been removed from v1 in PR #139)
+  
+- typing use `dterm`. it seems to be based on Why3, I can't find the analog in OCaml.
+  Do we need dterms ?
