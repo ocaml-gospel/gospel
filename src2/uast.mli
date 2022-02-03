@@ -9,13 +9,12 @@
 (**************************************************************************)
 
 open Ppxlib
-module Preid = Identifier.Preid
+open Identifier
 open Common
 
 (* Types *)
 
 type qualid = Qpreid of Preid.t | Qdot of qualid * Preid.t
-type ghost = bool
 type usymbol = { name : Preid.t; ghost : ghost }
 type uqualid = { name : qualid; ghost : ghost }
 
@@ -87,7 +86,7 @@ type spec_header = {
 }
 
 type val_spec = {
-  sp_header : spec_header;
+  sp_header : spec_header option;
   sp_pre : terms;
   sp_checks : terms;
   sp_post : terms;

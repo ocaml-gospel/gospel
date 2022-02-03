@@ -28,17 +28,17 @@ type pattern = {
   p_node : pattern_node;
   p_ty : Ttypes.ty;
   (* what for? At least, this could be computed *)
-  p_vars : Symbols.symbol list;
+  p_vars : Symbols.vsymbol list;
   p_loc : Location.t;
 }
 
 and pattern_node =
   | Pwild
-  | Pvar of Symbols.symbol
-  | Papp of Symbols.symbol (* this symbol has to be a Constr *) * pattern list
-  | Prec of (Symbols.symbol * pattern) list
+  | Pvar of Symbols.vsymbol
+  | Pconstr of Symbols.csymbol * pattern list
+  | Prec of (Symbols.msymbol * pattern) list
   | Ptuple of pattern list
-  | Pas of pattern * Symbols.symbol
+  | Pas of pattern * Symbols.vsymbol
   | Por of pattern * pattern
 
 type quant = Tforall | Texists
@@ -55,15 +55,15 @@ and case = { pattern : pattern; term : term }
 and cases = case list
 
 and term_node =
-  | Tvar of Symbols.symbol (* variables *)
+  | Tvar of Symbols.vsymbol (* variables *)
   | Tconst of constant (* constants *)
-  | Tlet of Symbols.symbol * term * term (* let binding *)
+  | Tlet of Symbols.vsymbol * term * term (* let binding *)
   | Tcase of term * cases (* pattern matching *)
-  | Tfield of term * Symbols.symbol (* record/model destructior *)
+  | Tfield of term * Symbols.msymbol (* record/model destructior *)
   | Ttuple of term list (* tuple constructor *)
   | Tif of term * term * term (* conditional construction *)
-  | Tquant of quant * Symbols.symbol list * term (* quantifiers *)
-  | Tfun of Symbols.symbol list * term (* anonymous function definition *)
+  | Tquant of quant * Symbols.vsymbol list * term (* quantifiers *)
+  | Tfun of Symbols.lsymbol list * term (* anonymous function definition *)
   | Tapp of term * term list (* function application *)
   | Told of term
 (* old construction - specific to gospel *)

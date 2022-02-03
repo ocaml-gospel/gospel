@@ -35,7 +35,7 @@ type ty =
   (* alpha types *)
   | Tyarr of arg_label * ty * ty
   (* unary function type. do we want n-ary functions ? *)
-  | Tyapp of tsymbol * ty list
+  | Tyconstr of tsymbol * ty list
   (* this is equivalent to Ptyp_constr.
      We need a symbol that allows to identify the type constructor *)
   | Tytuple of ty list

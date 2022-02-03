@@ -1,11 +1,12 @@
 open Ppxlib
 open Common
 
-let (_ : Uast.ghost) = true
+(* forcing dune to build uast.mli *)
+let _ = Uast.Qpreid (Identifier.Preid.create ~loc:Location.none "dummy")
 
 type val_spec = {
   (* arguments are symbols (with type and ghost status) and their label *)
-  sp_args : Symbols.symbol labelled list;
+  sp_args : Symbols.vsymbol labelled list;
   (* the returned value is coded with a pattern, not a list of labelled symbols as in V1
      we have pattern for tuples, so it's good *)
   sp_ret : Tterm.pattern;
@@ -39,14 +40,14 @@ type mutable_flag = Immutable | Mutable
 
 type type_spec = {
   ty_mutable : mutable_flag;
-  ty_fields : (Symbols.symbol * mutable_flag) list;
+  ty_fields : (Symbols.msymbol * mutable_flag) list;
   ty_invariants : Tterm.terms;
   ty_text : string;
   ty_loc : Location.t;
 }
 
 type label_declaration = {
-  ld_name : Symbols.symbol;
+  ld_name : Symbols.msymbol;
   ld_mutable : mutable_flag;
   ld_type : Ttypes.ty;
   ld_loc : Location.t;
@@ -60,7 +61,7 @@ type constructor_argument =
 type constructor_arguments = constructor_argument list
 
 type constructor_declaration = {
-  cd_name : Symbols.symbol;
+  cd_name : Symbols.csymbol;
   cd_args : constructor_arguments;
   (* what is that ? *)
   cd_res : Ttypes.ty option;
@@ -107,9 +108,9 @@ type fun_spec = {
 }
 
 type function_ = {
-  fun_name : Symbols.symbol; (* must be a Logical *)
+  fun_name : Symbols.lsymbol;
   fun_rec : bool;
-  fun_params : Symbols.symbol list;
+  fun_params : Symbols.vsymbol list;
   fun_def : Tterm.term option;
   fun_spec : fun_spec option;
   fun_text : string;
