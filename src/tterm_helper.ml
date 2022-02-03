@@ -98,28 +98,19 @@ let ls_app_inst ls tl ty =
 
 (** Pattern constructors *)
 
-let mk_pattern p_node p_ty p_vars = { p_node; p_ty; p_vars; p_loc = None }
+let mk_pattern p_node p_ty = { p_node; p_ty; p_loc = None }
 
-exception PDuplicatedVar of vsymbol
 exception EmptyCase
 
-let p_wild ty = mk_pattern Pwild ty Svs.empty
-let p_var vs = mk_pattern (Pvar vs) vs.vs_ty (Svs.singleton vs)
-
-let p_app ls pl ty =
-  let add v vars =
-    if Svs.mem v vars then raise (PDuplicatedVar v);
-    Svs.add v vars
-  in
-  let merge vars p = Svs.fold add vars p.p_vars in
-  let vars = List.fold_left merge Svs.empty pl in
-  mk_pattern (Papp (ls, pl)) ty vars
+let p_wild ty = mk_pattern Pwild ty
+let p_var vs = mk_pattern (Pvar vs) vs.vs_ty
+let p_app ls pl ty = mk_pattern (Papp (ls, pl)) ty
 
 (* CHECK ty matchs ls.ls_value *)
-let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty p1.p_vars
+let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty
 
 (* CHECK vars p1 = vars p2 *)
-let p_as p vs = mk_pattern (Pas (p, vs)) p.p_ty p.p_vars
+let p_as p vs = mk_pattern (Pas (p, vs)) p.p_ty
 (* CHECK type vs = type p *)
 
 (** Terms constructors *)
