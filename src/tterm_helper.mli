@@ -32,7 +32,7 @@ exception FunctionSymbolExpected of lsymbol
 
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
 val ls_app_inst : lsymbol -> term list -> ty option -> ty Mtv.t
-val mk_pattern : pattern_node -> ty -> Svs.t -> pattern
+val mk_pattern : pattern_node -> ty -> pattern
 val p_wild : ty -> pattern
 val p_var : vsymbol -> pattern
 val p_app : lsymbol -> pattern list -> ty -> pattern

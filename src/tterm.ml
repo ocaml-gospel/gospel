@@ -16,7 +16,6 @@ module Ident = Identifier.Ident
 type pattern = {
   p_node : pattern_node;
   p_ty : ty;
-  p_vars : Svs.t; [@printer fun fmt _ -> fprintf fmt "<Svs.t>"]
   p_loc : Location.t option; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
 }
 [@@deriving show]
