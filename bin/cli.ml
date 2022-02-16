@@ -54,25 +54,30 @@ let run_dumpast load_path file =
 
 let dumpast =
   let doc = "Gospel dump ast." in
-  (Term.(const run_dumpast $ load_path $ files), Term.info "dumpast" ~doc)
+  let info = Cmd.info "dumpast" ~doc in
+  let term = Term.(const run_dumpast $ load_path $ files) in
+  Cmd.v info term
 
 let tc =
   let doc = "Gospel type-checker." in
-  (Term.(const run_tc $ verbose $ load_path $ files), Term.info "check" ~doc)
+  let info = Cmd.info "check" ~doc in
+  let term = Term.(const run_tc $ verbose $ load_path $ files) in
+  Cmd.v info term
 
 let pps =
   let doc = "Gospel preprocessor." in
-  (Term.(const Pps.run $ files), Term.info "pps" ~doc)
+  let info = Cmd.info "pps" ~doc in
+  let term = Term.(const Pps.run $ files) in
+  Cmd.v info term
 
 let wc =
   let doc = "Gospel line count." in
-  (Term.(const Wc.run $ files), Term.info "cloc" ~doc)
-
-let usage_cmd =
-  let doc = "Gospel command line tool." in
-  ( Term.(ret (const (`Help (`Auto, None)))),
-    Term.info "gospel" ~doc ~version:"gospel version %%VERSION%%" )
+  let info = Cmd.info "cloc" ~doc in
+  let term = Term.(const Wc.run $ files) in
+  Cmd.v info term
 
 let () =
-  let commands = [ tc; wc; pps; dumpast ] in
-  Term.(exit @@ eval_choice usage_cmd commands)
+  let doc = "Gospel command line tool." in
+  let info = Cmd.info "gospel" ~doc ~version:"gospel version %%VERSION%%" in
+  let commands = Cmd.group info [ tc; wc; pps; dumpast ] in
+  Stdlib.exit (Cmd.eval commands)
