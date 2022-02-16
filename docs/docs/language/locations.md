@@ -70,6 +70,8 @@ val f: int -> int           (* An OCaml value declaration *)
 Although the preprocessor is available via the `gospel pps` command, it is also
 applied automatically on type-checking, so you should not have to worry about
 manually applying it.
+At the moment, the preprocessor only supports comments located _after_ the item
+they specify.
 
 :::info
 
