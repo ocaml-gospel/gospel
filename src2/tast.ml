@@ -6,16 +6,22 @@ let _ = Uast.Qpreid (Identifier.Preid.create ~loc:Location.none "dummy")
 
 type val_spec = {
   (* arguments are symbols (with type and ghost status) and their label *)
+  (* as stated in #153 and discussed in #151, we could put patterns here
+     - we could then easily destruct arguments like tuples or records
+     - we should check that the pattern is correct/irrefutable wrt to the function signature
+     - what is the status of models here? *)
   sp_args : Symbols.vsymbol labelled list;
   (* the returned value is coded with a pattern, not a list of labelled symbols as in V1
      we have pattern for tuples, so it's good *)
+  (* Some patterns are not correct here (and for arguments neither) as pattern for constructors.
+     Maybe we should have a specific pattern type with tuples, records (and alias)? *)
   sp_ret : Tterm.pattern;
   (* the following is the same as in V1 *)
   sp_pre : Tterm.terms;
   sp_checks : Tterm.terms;
   sp_post : Tterm.terms;
   sp_xpost : (Symbols.xsymbol * cases) list;
-  (* except sp_wr -> sp_mod because it is a `modifies' clause *)
+  (* except sp_wr -> sp_modifies because it is a `modifies' clause *)
   sp_modifies : Tterm.terms;
   sp_consumes : Tterm.terms;
   sp_diverge : bool;
@@ -31,7 +37,7 @@ type val_desc = {
   vd_type : Ttypes.ty;
   vd_prim : string list;
   vd_attrs : Parsetree.attributes;
-  (* V1 store here args and ret, but they need to be build if there is no spec *)
+  (* V1 store here args and ret, but they need to be build if there is no spec, why do we need them? *)
   vd_spec : val_spec option;
   vd_loc : Location.t;
 }
