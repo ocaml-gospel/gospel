@@ -1,6 +1,6 @@
 open Ppxlib
 
-(* come frome Parsetree, so that we don't depend on it, at least for devel time *)
+(* come from Parsetree, so that we don't depend on it, at least for devel time *)
 type constant =
   | Pconst_integer of string * char option
   (* 3 3l 3L 3n
@@ -24,13 +24,7 @@ type constant =
    Suffixes are rejected by the typechecker.
 *)
 
-type pattern = {
-  p_node : pattern_node;
-  p_ty : Ttypes.ty;
-  (* what for? At least, this could be computed *)
-  p_vars : Symbols.vsymbol list;
-  p_loc : Location.t;
-}
+type pattern = { p_node : pattern_node; p_ty : Ttypes.ty; p_loc : Location.t }
 
 and pattern_node =
   | Pwild
@@ -55,6 +49,7 @@ and case = { pattern : pattern; term : term }
 and cases = case list
 
 (* XXX TODO: check if the right symbols/symbols subset are used at the right places *)
+(* XXX Maybe can do something cleaner with polymorphic variants... *)
 and term_node =
   | Tvar of [ `V of Symbols.vsymbol | `L of Symbols.lsymbol ] (* variables *)
   | Tconst of constant (* constants *)

@@ -11,6 +11,7 @@ type lsymbol = {
 }
 
 (* model/field symbol, (should we call it fsymbol ?) *)
+(* do we want the same kind of symbols for OCaml fields and Gospel models ? *)
 type msymbol = { ms_name : Ident.t; ms_ty : Ttypes.ty; ms_ghost : ghost }
 
 (* construct symbol *)

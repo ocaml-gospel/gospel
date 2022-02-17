@@ -3,16 +3,15 @@
 This version of the document doesn't take into account `tast` and `uast`.
 It is about the changes in `tterm`, `ttypes`, and `symbols`.
 
-## Remove `Tnot`, `Tbinop` and make `Tapp` taking a tterm rather than a `lsymbol`
+## Remove `Tnot`, `Tbinop` and make `Tapp` taking a `tterm` rather than a `lsymbol`
 
 The initial design comes from Why3 where there is no higher order.
 The new design give a cleaner AST. Adding higher order is closer to OCaml,
 though it can bring its problems and complexity.
+Note that there is a discussion to add higher order to Gospel.
 
 External tools that does not support higher order can still focus on
 a subset of the language.
-
-We should still determine if the gain in expressivity is worth it.
 
 Negation and binary operators will be defined via builtin symbols.
 
@@ -37,7 +36,7 @@ When necessary, we use some polymorphic variants to specify a subset of all the 
 ## types representation
 
 We removed the `tysymbol` and renamed the `tvsymbol` to `tsymbol`.
-The `tysymbol` was keeping information about type constructors (their arguments and retunred type). 
+The `tysymbol` was keeping information about type constructors (their arguments and returned type). 
 
 - add an arrow type
 - rename Tyapp to Tyconstr as in OCaml; also it takes a `tsymbol` rather than a `tysymbol`
@@ -46,6 +45,12 @@ The `tysymbol` was keeping information about type constructors (their arguments 
 
 /!\ we should be carefull during typechecking to keep a way to find the type definition
 from a `ty`/`tsymbol`
+That can be achieved by maintaining an environment mapping type symbols to the corresponding 
+type definition.
+
+**Note**: in recent discussion it seems that there is the idea to really separate program and logic.
+If this is what we choose, maybe we can keep OCaml types (`core_type`...) for programs values
+and just add logical types?
 
 ## Remove `TLambda` from `quant`
 
@@ -69,7 +74,7 @@ So now, we have the same `arg_label` than in OCaml.
 - in `pattern`, there is a field `p_vars`, I'm not sure to understand what is it for.
   The set of variables is computed anymay (`Tterm_helper.p_vars`) and it seems the only
   place we access this field is in `tterm_helper` to build patterns. 
-  (been removed from v1 in PR #139)
+  (been removed from v1 in PR #139, it was dead code)
   
 - typing use `dterm`. it seems to be based on Why3, I can't find the analog in OCaml.
   Do we need dterms ?
