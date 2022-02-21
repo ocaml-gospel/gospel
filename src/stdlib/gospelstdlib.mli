@@ -567,6 +567,7 @@ end
 
 exception Not_found
 exception Invalid_argument of string
+exception Failure of string
 
 module Sys : sig
   (*@ function word_size : integer *)

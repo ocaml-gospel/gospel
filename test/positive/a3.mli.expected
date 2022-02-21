@@ -95,6 +95,7 @@ module a3.mli
             Field Symbols
               
             Exception Symbols
+              Failure
               Invalid_argument
               Not_found
               
