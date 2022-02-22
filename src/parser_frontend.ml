@@ -56,14 +56,6 @@ let parse_ocaml_structure_lb lb =
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     raise (Ocaml_syntax_error loc)
 
-let parse_ocaml_structure_lb lb =
-  let lb_pps = Pps.run lb |> Lexing.from_string in
-  Location.init lb_pps lb.lex_curr_p.pos_fname;
-  try Parse.implementation lb_pps with _ ->
-    let loc_start, loc_end = lb.lex_start_p, lb.lex_curr_p in
-    let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
-    raise (Ocaml_syntax_error loc)
-
 let parse_ocaml_signature file =
   let lb =
     if file = gospelstdlib_file then Lexing.from_string Gospelstdlib.contents

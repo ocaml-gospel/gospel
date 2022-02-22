@@ -24,9 +24,9 @@ let type_check load_path name sigs =
   wrap_up_muc md
 
 let run_dumpast load_path file =
-  let ocaml = parse_ocaml file in
+  let ocaml = parse_ocaml_signature file in
   let module_nm = path2module file in
-  let sigs = parse_gospel ~filename:file ocaml module_nm in
+  let sigs = parse_signature_gospel ~filename:file ocaml module_nm in
   let file = type_check load_path file sigs in
   Fmt.pf Fmt.stdout "%s\n" (Tast.show_signature file.fl_sigs)
 
