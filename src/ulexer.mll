@@ -79,7 +79,7 @@
         "ephemeral", EPHEMERAL;
         "model", MODEL;
         "and", ANDKW;
-        "mod", OP3("mod");
+        (* "mod", OP3("mod"); *)
       ]
 
   (* to translate escape sequences *)
