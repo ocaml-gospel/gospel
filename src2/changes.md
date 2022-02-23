@@ -37,16 +37,52 @@ When necessary, we use some polymorphic variants to specify a subset of all the 
 
 We removed the `tysymbol` and renamed the `tvsymbol` to `tsymbol`.
 The `tysymbol` was keeping information about type constructors (their arguments and returned type). 
+Not sure it is the way to go though. We should have somewhere easily accessible the information 
+about whether the symbol is the symbol of a type constructor or a "real" type.
+
+In V1:
+
+```ocaml
+type ty = { ty_node : ty_node } [@@deriving show]
+
+and ty_node = Tyvar of tvsymbol | Tyapp of tysymbol * ty list
+[@@deriving show]
+
+and tysymbol = {
+  ts_ident : Ident.t;
+  ts_args : tvsymbol list;
+  (* we need to keep variables to do things like
+     type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
+  ts_alias : ty option;
+}
+```
+
+I propose to have something closer to OCaml.
 
 - add an arrow type
 - rename Tyapp to Tyconstr as in OCaml; also it takes a `tsymbol` rather than a `tysymbol`
 - add Tytuple
 - add Tyalias (in V1, this information was in the `tysymbol`, which we don't have anymore
 
-/!\ we should be carefull during typechecking to keep a way to find the type definition
-from a `ty`/`tsymbol`
-That can be achieved by maintaining an environment mapping type symbols to the corresponding 
-type definition.
+In V2:
+
+```ocaml
+type tsymbol = { ts_name : Identifier.Ident.t }
+
+type ty =
+  | Tyvar of tsymbol
+  (* alpha types *)
+  | Tyarr of arg_label * ty * ty
+  (* unary function type. do we want n-ary functions ? *)
+  | Tyconstr of tsymbol * ty list
+  (* this is equivalent to Ptyp_constr.
+     We need a symbol that allows to identify the type constructor *)
+  | Tytuple of ty list
+  | Tyalias of ty * string
+(* this is different from version 1 (coming from Why3).
+   we keep the information that a type is an alias at the level of the type representation,
+   not the symbol *)
+```
 
 **Note**: in recent discussion it seems that there is the idea to really separate program and logic.
 If this is what we choose, maybe we can keep OCaml types (`core_type`...) for programs values
