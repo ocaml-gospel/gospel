@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module Warn = Gospel__Warnings
+module W = Gospel__Warnings
 open Ppxlib
 open Utils
 open Identifier
@@ -667,7 +667,7 @@ let rec check_old wr t =
   match t.t_node with
   | Told t -> (
       match check t with
-      | Some name -> Warn.old_on_read_only ~loc:t.t_loc name
+      | Some name -> W.old_on_read_only ~loc:t.t_loc name
       | None -> ())
   | Tapp (_, terms) -> List.iter (check_old wr) terms
   | Tif (cond, br0, br1) ->
@@ -757,7 +757,6 @@ let process_val_spec kid crcm ns id args ret vs =
 
   let checks = List.map (fmla kid crcm ns env) vs.sp_checks in
 
-  (* XXX warnings: for old on read-only *)
   let wr =
     List.map
       (fun t ->
@@ -825,8 +824,6 @@ let process_val_spec kid crcm ns id args ret vs =
         process_args header.sp_hd_ret tyl env []
     | _, _ -> process_args header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
   in
-  if ret = [ Lunit ] && wr = [] then
-    Warn.return_unit_without_modifies ~loc id_val;
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
   List.iter (check_old wr) post;
@@ -889,7 +886,14 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
-  (*XXX check for modifies & unit here *)
+  let () =
+    (* check there is a modifies clause if the return type is unit, through a warning if not *)
+    if Ttypes.(ty_equal ret { ty_node = Tyapp (ts_unit, []) }) then
+      match so with
+      | None -> ()
+      | Some sp ->
+          if sp.sp_wr = [] then W.return_unit_without_modifies ~loc id.id_str
+  in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
       spec.sp_ret so vd.vloc

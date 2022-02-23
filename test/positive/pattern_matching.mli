@@ -13,8 +13,9 @@ val test1 : t -> t -> t
              | S a, O -> r = S (S a) *)
 
 (* pattern of type unit *)
-val f_unit : int -> unit
-(*@ x1 = f_unit x0
+val f_unit : int array -> unit
+(*@ x1 = f_unit a
+     modifies a
      ensures match x1 with () -> true *)
 
 (*@ function fun_unit (x: unit): string =
