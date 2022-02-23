@@ -2,12 +2,11 @@
 sidebar_position: 5
 ---
 
-# Tips and good practices
+# Tips and Good Practices
 
-## Function clauses ordering
+## Function Clauses Ordering
 
-The clauses ordering in the contracts should ideally always appear in the same
-order:
+Always orgainse the clauses in the same order for the best results:
 
 - `requires` preconditions
 - `checks` preconditions
