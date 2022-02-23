@@ -607,7 +607,7 @@ let type_type_declaration kid crcm ns tdl =
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
   List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl
 
-let process_sig_type ~loc ?(ghost = false) kid crcm ns r tdl =
+let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
   let tdl = type_type_declaration kid crcm ns tdl in
   let sig_desc = Sig_type (rec_flag r, tdl, ghost) in
   mk_sig_item sig_desc loc
@@ -790,7 +790,7 @@ let mk_dummy_var i (ty, arg) =
   | Labelled s -> Uast.Lnamed (Preid.create ~loc s)
   | Optional s -> Uast.Loptional (Preid.create ~loc s)
 
-let process_val ~loc ?(ghost = false) kid crcm ns vd =
+let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   let id = Ident.create ~loc:vd.vloc vd.vname.txt in
   let args, ret = val_parse_core_type ns vd.vtype in
   let spec =
@@ -956,7 +956,7 @@ and module_as_file ~loc penv muc nm =
     error_report ~loc
       ("no module with name " ^ nm ^ " or file with name " ^ file_nm)
 
-and process_open ~loc ?(ghost = false) penv muc od =
+and process_open ~loc ?(ghost = Nonghost) penv muc od =
   let qd = Longident.flatten_exn od.Parsetree.popen_expr.txt in
   let qd_loc = od.Parsetree.popen_loc in
   let hd = List.hd qd in
@@ -1148,7 +1148,7 @@ and process_sig_item penv muc { sdesc; sloc } =
     | Uast.Sig_recmodule _ -> not_supported ~loc:sloc "module rec not supported"
     | Uast.Sig_modtype mty_decl -> process_modtype_decl penv sloc mty_decl muc
     | Uast.Sig_exception te -> (muc, process_exception_sig sloc ns te)
-    | Uast.Sig_open od -> process_open ~loc:sloc ~ghost:false penv muc od
+    | Uast.Sig_open od -> process_open ~loc:sloc ~ghost:Nonghost penv muc od
     | Uast.Sig_include id -> (muc, mk_sig_item (Sig_include id) sloc)
     | Uast.Sig_class cdl -> (muc, mk_sig_item (Sig_class cdl) sloc)
     | Uast.Sig_class_type ctdl -> (muc, mk_sig_item (Sig_class_type ctdl) sloc)
@@ -1157,10 +1157,10 @@ and process_sig_item penv muc { sdesc; sloc } =
     | Uast.Sig_function f -> (muc, process_function kid crcm ns f)
     | Uast.Sig_axiom a -> (muc, process_axiom sloc kid crcm ns a)
     | Uast.Sig_ghost_type (r, tdl) ->
-        (muc, process_sig_type ~loc:sloc ~ghost:true kid crcm ns r tdl)
+        (muc, process_sig_type ~loc:sloc ~ghost:Ghost kid crcm ns r tdl)
     | Uast.Sig_ghost_val vd ->
-        (muc, process_val ~loc:sloc ~ghost:true kid crcm ns vd)
-    | Uast.Sig_ghost_open od -> process_open ~loc:sloc ~ghost:true penv muc od
+        (muc, process_val ~loc:sloc ~ghost:Ghost kid crcm ns vd)
+    | Uast.Sig_ghost_open od -> process_open ~loc:sloc ~ghost:Ghost penv muc od
   in
   let rec process_and_import si muc =
     try process_sig_item si muc

@@ -218,11 +218,11 @@ let rec print_signature_item f x =
   match x.sig_desc with
   | Sig_type (_, td, g) ->
       pp f
-        (if g then "@[(*@@ type %a *)@]" else "@[type %a@]")
+        (if g = Ghost then "@[(*@@ type %a *)@]" else "@[type %a@]")
         (list ~sep:(newline ++ const string "and ") print_type_declaration)
         td
   | Sig_val (vd, g) ->
-      pp f (if g then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
+      pp f (if g = Ghost then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
   | Sig_typext te -> type_extension reset_ctxt f te
   | Sig_exception ed -> exception_declaration reset_ctxt f ed
   | Sig_class l -> (
@@ -259,7 +259,7 @@ let rec print_signature_item f x =
         pmd.md_attrs
   | Sig_open (od, ghost) ->
       pp f
-        (if ghost then "@[<hov2>(*@@@ open%s@ %a@ *)@]%a"
+        (if ghost = Ghost then "@[<hov2>(*@@@ open%s@ %a@ *)@]%a"
         else "@[<hov2>open%s@ %a@]%a")
         (override od.opn_override)
         (list ~sep:full Format.pp_print_string)
