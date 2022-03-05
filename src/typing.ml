@@ -898,7 +898,7 @@ let process_exception_sig loc ns te =
   let xs =
     match ec.pext_kind with
     | Pext_rebind lid -> find_xs ~loc:lid.loc ns (Longident.flatten_exn lid.txt)
-    | Pext_decl (ca, None) ->
+    | Pext_decl ([], ca, None) ->
         let args =
           match ca with
           | Pcstr_tuple ctyl -> Exn_tuple (List.map (ty_of_core ns) ctyl)
@@ -910,7 +910,7 @@ let process_exception_sig loc ns te =
               Exn_record (List.map get ldl)
         in
         xsymbol id args
-    | Pext_decl (_, _) ->
+    | Pext_decl (_, _, _) ->
         not_supported ~loc
           "this type of exceptions declaration is not supported"
   in
