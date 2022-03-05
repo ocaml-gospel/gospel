@@ -194,7 +194,7 @@ let print_function f x =
 let print_extension_constructor ctxt f x =
   (* Cf: #7200 *)
   match x.ext_kind with
-  | Pext_decl (_, _) -> print_xs f x.ext_xs
+  | Pext_decl (_, _, _) -> print_xs f x.ext_xs
   | Pext_rebind li ->
       pp f "%a%a@;=@;%a" Ident.pp x.ext_xs.xs_ident (attributes ctxt)
         x.ext_attributes longident_loc li
