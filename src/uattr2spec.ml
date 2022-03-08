@@ -59,12 +59,16 @@ let set_filename (lexbuf : Lexing.lexbuf) (fname : string) =
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = fname }
 
 let parse_gospel ~filename parse attr =
-  let spec, loc = get_spec_content attr in
+  let spec, _ = get_spec_content attr in
   let lb = Lexing.from_string spec in
   set_position lb attr.attr_loc.loc_start;
   set_filename lb filename;
   try (spec, parse Ulexer.token lb)
-  with Uparser.Error -> raise (Syntax_error loc)
+  with Uparser.Error ->
+    let loc =
+      { loc_start = lb.lex_start_p; loc_end = lb.lex_curr_p; loc_ghost = false }
+    in
+    raise (Syntax_error loc)
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
