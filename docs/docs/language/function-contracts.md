@@ -51,6 +51,7 @@ clause = "requires" formula
        | "modifies" expr ("," expr)*
        | "equivalent" string_literal
        | "diverges"
+       | "equality"
        | "pure"
        | "consumes" expr ("," expr)*
 exception_case = qualid "->" formula
@@ -382,6 +383,72 @@ val length : 'a t -> int
 Pure functions can be used in further Gospel specifications.
 On the contrary, OCaml functions not declared as `pure` cannot be used
 in specifications.
+
+## Equality functions
+
+As OCaml developers are used to providing equality functions for their abstract
+types, Gospel provides a convenient `equality` clause to specify them.
+
+```ocaml {4}
+type t
+
+val equal : t -> t -> bool
+(*@ equality *)
+```
+
+The equality clause states that:
+- The function is pure. See the [section on `pure` functions](#pure-functions)
+  for more details.
+- The function implements the logical equality over the type of its arguments
+
+The previous contract is equivalent to the following one:
+
+```ocaml {4-6}
+type t
+
+val equal : t -> t -> bool
+(*@ b = equal t1 t2
+    pure
+    ensures b <-> t1 = t2 *)
+```
+
+Functions that are parametrized by equality functions over their type arguments
+are also allowed. In that case, the equality functions should be passed in an
+order compatible with the appearance of type variables, from left to right.
+
+```ocaml {4-5}
+type ('a, 'b) t
+
+val equal :
+  ('a -> 'a -> bool) ->
+  ('b -> 'b -> bool) ->
+  ('a, 'b) t -> ('a, 'b) t -> bool
+(*@ equality *)
+```
+
+:::danger
+
+The following equality function is considered ill-formed by Gospel, since the
+comparison function over `'b` appears before the one on `'a`.
+
+```ocaml {2-3}
+val equal :
+  ('b -> 'b -> bool) ->
+  ('a -> 'a -> bool) ->
+  ('a, 'b) t -> ('a, 'b) t -> bool
+```
+
+:::
+
+Gospel also supports functions that do not require the caller to provide
+equality functions for all type parameters.
+
+```ocaml {2}
+val equal :
+  ('b -> 'b -> bool) ->
+  ('a, 'b) t -> ('a -> 'b) t -> bool
+(*@ equality *)
+```
 
 ## Data consumption
 
