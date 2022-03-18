@@ -622,6 +622,41 @@ let rec val_parse_core_type ns cty =
       ((ty_of_core ns ct1, lbl) :: args, res)
   | _ -> ([], ty_of_core ns cty)
 
+(** Checks that [args] and [ret] form a correct equality function type *)
+let check_equality_type ~loc args ret expected_ret_ty =
+  let fail () = error_report ~loc "type is incompatible with equality clause" in
+  (* Checks that [args] are equality functions over an ordered sublist of [vars] *)
+  let rec check vars args =
+    match (vars, args) with
+    | _, [] -> (* If there are no more arguments, we're done *) ()
+    | a :: vl, (eq :: eql as l) ->
+        let expected =
+          (* ['a -> 'a -> bool] *)
+          ty_app ts_arrow [ a; ty_app ts_arrow [ a; ty_bool ] ]
+        in
+        if ty_equal (ty_of_lb_arg eq) expected then
+          (* If [eq] is an equality over 'a, we check the next arguments *)
+          check vl eql
+        else (* Otherwise, we skip [a] *) check vl l
+    | _, _ -> fail ()
+  in
+  (* Check that the function returns the correct type *)
+  (match ret with
+  | [ b ] when ty_equal (ty_of_lb_arg b) expected_ret_ty -> ()
+  | _ -> fail ());
+  match List.rev args with
+  | t1 :: t2 :: args -> (
+      let ty = ty_of_lb_arg t1 in
+      (* The last two arguments have the same type *)
+      if not (ty_equal (ty_of_lb_arg t2) ty) then fail ();
+      match ty.ty_node with
+      | Tyapp (_, tyl) ->
+          (* Get the type variables appearing in [tyl] in a reverse order *)
+          let vars = List.fold_left (fun acc ty -> ty_vars ty @ acc) [] tyl in
+          check vars args
+      | _ -> fail ())
+  | _ -> fail ()
+
 (* Checks the following
    1 - the val id string is equal to the name in val header
    2 - no duplicated names in arguments and arguments in header
@@ -763,13 +798,7 @@ let process_val_spec kid crcm ns id args ret vs =
     if wr <> [] then error_report ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions");
-  (if vs.sp_equality then
-   match (args, ret) with
-   | [ t1; t2 ], [ b ]
-     when ty_equal (ty_of_lb_arg t1) (ty_of_lb_arg t2)
-          && ty_equal (ty_of_lb_arg b) ty_bool ->
-       ()
-   | _, _ -> error_report ~loc "type is incompatible with equality clause");
+  if vs.sp_equality then check_equality_type ~loc args ret ty_bool;
   mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
     vs.sp_equality vs.sp_equiv vs.sp_text vs.sp_loc
 

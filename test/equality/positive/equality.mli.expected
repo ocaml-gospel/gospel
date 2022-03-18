@@ -7,8 +7,32 @@ type t
 val g : t -> t -> bool[@@gospel {| equality |}]
 type 'a u
 val h : 'a u -> 'a u -> bool[@@gospel {| equality |}]
+val h' : 'b u -> 'b u -> bool[@@gospel {| equality |}]
+val h'' : ('a -> 'a -> bool) -> 'a u -> 'a u -> bool[@@gospel {| equality |}]
 type v = t
 val i : v -> t -> bool[@@gospel {| equality |}]
+type ('a, 'b) w
+val h : ('a, 'b) w -> ('a, 'b) w -> bool[@@gospel {| equality |}]
+val h : ('a -> 'a -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool[@@gospel
+                                                                {| equality |}]
+val h : ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool[@@gospel
+                                                                {| equality |}]
+val h :
+  ('a -> 'a -> bool) ->
+    ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool[@@gospel
+                                                            {| equality |}]
+val h : ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool[@@gospel
+                                                                {| equality |}]
+val h :
+  ('a -> 'a -> bool) ->
+    ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool[@@gospel
+                                                            {| equality |}]
+val h : ('a -> 'a -> bool) -> ('a, 'b) w list -> ('a, 'b) w list -> bool
+[@@gospel {| equality |}]
+val h : ('a -> 'a -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
+[@@gospel {| equality |}]
+val h : ('b -> 'b -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
+[@@gospel {| equality |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -33,10 +57,61 @@ val h : 'a u -> 'a u -> bool
 (*@ equality
      *)
 
+val h' : 'b u -> 'b u -> bool
+(*@ equality
+     *)
+
+val h'' : ('a -> 'a -> bool) -> 'a u -> 'a u -> bool
+(*@ equality
+     *)
+
 type v = t
   
 
 val i : v -> t -> bool
+(*@ equality
+     *)
+
+type ('a, 'b) w
+  
+
+val h : ('a, 'b) w -> ('a, 'b) w -> bool
+(*@ equality
+     *)
+
+val h : ('a -> 'a -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+(*@ equality
+     *)
+
+val h : ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+(*@ equality
+     *)
+
+val h :
+  ('a -> 'a -> bool) ->
+    ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+(*@ equality
+     *)
+
+val h : ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool
+(*@ equality
+     *)
+
+val h :
+  ('a -> 'a -> bool) ->
+    ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool
+(*@ equality
+     *)
+
+val h : ('a -> 'a -> bool) -> ('a, 'b) w list -> ('a, 'b) w list -> bool
+(*@ equality
+     *)
+
+val h : ('a -> 'a -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
+(*@ equality
+     *)
+
+val h : ('b -> 'b -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
 (*@ equality
      *)
 
@@ -50,6 +125,7 @@ module equality.mli
        t
       ('a) u
        v [=t]
+      ('a, 'b) w
       
     Logic Symbols
       
@@ -82,11 +158,75 @@ module equality.mli
     (*@ result_2:bool = h $x0_2:'a u $x1_2:'a u
         equality*)
     
+    val h' : 'b u -> 'b u -> bool
+    (*@ result_3:bool = h' $x0_3:'b u $x1_3:'b u
+        equality*)
+    
+    val h'' : ('a -> 'a -> bool) -> 'a u -> 'a u -> bool
+    (*@ result_4:bool = h'' $x0_4:'a -> 'a -> bool $x1_4:'a u $x2:'a u
+        equality*)
+    
     type v = t
          
     
     val i : v -> t -> bool
-    (*@ result_3:bool = i $x0_3:t $x1_3:t
+    (*@ result_5:bool = i $x0_5:t $x1_5:t
+        equality*)
+    
+    type ('a, 'b) w
+         
+    
+    val h_1 : ('a, 'b) w -> ('a, 'b) w -> bool
+    (*@ result_6:bool = h_1 $x0_6:('a, 'b) w $x1_6:('a, 'b) w
+        equality*)
+    
+    val h_2 : ('a -> 'a -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+    (*@ result_7:bool = h_2
+        $x0_7:'a -> 'a -> bool $x1_7:('a, 'b) w $x2_1:('a, 'b) w
+        equality*)
+    
+    val h_3 : ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+    (*@ result_8:bool = h_3
+        $x0_8:'b -> 'b -> bool $x1_8:('a, 'b) w $x2_2:('a, 'b) w
+        equality*)
+    
+    val h_4 :
+    ('a -> 'a -> bool) ->
+      ('b -> 'b -> bool) -> ('a, 'b) w -> ('a, 'b) w -> bool
+    (*@ result_9:bool = h_4
+        $x0_9:'a -> 'a -> bool $x1_9:'b -> 'b -> bool $x2_3:('a, 'b) w
+        $x3:('a, 'b) w
+        equality*)
+    
+    val h_5 : ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool
+    (*@ result_10:bool = h_5
+        $x0_10:'a -> 'a -> bool $x1_10:('a, 'a) w $x2_4:('a, 'a) w
+        equality*)
+    
+    val h_6 :
+    ('a -> 'a -> bool) ->
+      ('a -> 'a -> bool) -> ('a, 'a) w -> ('a, 'a) w -> bool
+    (*@ result_11:bool = h_6
+        $x0_11:'a -> 'a -> bool $x1_11:'a -> 'a -> bool $x2_5:('a, 'a) w
+        $x3_1:('a, 'a) w
+        equality*)
+    
+    val h_7 :
+    ('a -> 'a -> bool) -> ('a, 'b) w list -> ('a, 'b) w list -> bool
+    (*@ result_12:bool = h_7
+        $x0_12:'a -> 'a -> bool $x1_12:('a, 'b) w list $x2_6:('a, 'b) w list
+        equality*)
+    
+    val h_8 :
+    ('a -> 'a -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
+    (*@ result_13:bool = h_8
+        $x0_13:'a -> 'a -> bool $x1_13:('a, 'b list) w $x2_7:('a, 'b list) w
+        equality*)
+    
+    val h_9 :
+    ('b -> 'b -> bool) -> ('a, 'b list) w -> ('a, 'b list) w -> bool
+    (*@ result_14:bool = h_9
+        $x0_14:'b -> 'b -> bool $x1_14:('a, 'b list) w $x2_8:('a, 'b list) w
         equality*)
 
 OK

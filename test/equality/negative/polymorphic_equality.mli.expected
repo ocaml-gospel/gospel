@@ -1,0 +1,16 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : 'a -> 'a -> bool[@@gospel {| equality |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : 'a -> 'a -> bool
+(*@ equality
+     *)
+File "polymorphic_equality.mli", lines 1-2, characters 0-25:
+Error: Type checking error: type is incompatible with equality clause

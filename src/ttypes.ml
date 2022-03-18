@@ -66,6 +66,11 @@ let rec ty_equal x y =
       ts_equal tsx tsy && List.for_all2 ty_equal tylx tyly
   | _ -> false
 
+let rec ty_vars ty =
+  match ty.ty_node with
+  | Tyvar _ -> [ ty ]
+  | Tyapp (_, l) -> List.fold_left (fun acc ty -> ty_vars ty @ acc) l []
+
 module Ts = struct
   type t = tysymbol
 

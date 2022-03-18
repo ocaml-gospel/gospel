@@ -1,0 +1,25 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type ('a, 'b) t
+val f :
+  ('b -> 'b -> bool) ->
+    ('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool[@@gospel
+                                                            {| equality |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type ('a, 'b) t
+  
+
+val f :
+  ('b -> 'b -> bool) ->
+    ('a -> 'a -> bool) -> ('a, 'b) t -> ('a, 'b) t -> bool
+(*@ equality
+     *)
+File "equality_order.mli", lines 3-5, characters 0-25:
+Error: Type checking error: type is incompatible with equality clause

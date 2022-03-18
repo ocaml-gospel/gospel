@@ -1,0 +1,23 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type ('a, 'b) t
+val f :
+  ('a list -> 'a list -> bool) -> ('a list, 'b) t -> ('a list, 'b) t -> bool
+[@@gospel {| equality |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type ('a, 'b) t
+  
+
+val f :
+  ('a list -> 'a list -> bool) -> ('a list, 'b) t -> ('a list, 'b) t -> bool
+(*@ equality
+     *)
+File "inner_equality.mli", lines 3-5, characters 0-25:
+Error: Type checking error: type is incompatible with equality clause
