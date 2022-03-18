@@ -36,6 +36,7 @@ type val_spec = {
   sp_diverge : bool;  (** Diverges *)
   sp_pure : bool;  (** Pure *)
   sp_equality : bool;  (** Equality *)
+  sp_comparison : bool;  (** Comparison *)
   sp_equiv : string list;  (** Equivalent *)
   sp_text : string;
       (** String containing the original specificaion as written by the user *)

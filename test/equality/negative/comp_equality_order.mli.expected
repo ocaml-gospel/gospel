@@ -1,0 +1,23 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type ('a, 'b) t
+val f :
+  ('b -> 'b -> int) -> ('a -> 'a -> int) -> ('a, 'b) t -> ('a, 'b) t -> int
+[@@gospel {| comparison |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type ('a, 'b) t
+  
+
+val f :
+  ('b -> 'b -> int) -> ('a -> 'a -> int) -> ('a, 'b) t -> ('a, 'b) t -> int
+(*@ comparison
+     *)
+File "comp_equality_order.mli", lines 3-5, characters 0-27:
+Error: Type checking error: type is incompatible with equality clause

@@ -99,6 +99,7 @@ type val_spec = {
   sp_diverge : bool;
   sp_pure : bool;
   sp_equality : bool;
+  sp_comparison : bool;
   sp_equiv : string list;
   sp_text : string;
   sp_loc : Location.t;

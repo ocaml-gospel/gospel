@@ -19,6 +19,7 @@
    type float
    type bool
    type integer
+   type int
 
    type 'a option
    function None: 'a option
@@ -99,8 +100,6 @@
     specifications can be written using type [integer] only, and yet use OCaml's
     variables of type [int]. The Gospel typechecker will automatically apply
     [integer_of_int] whenever necessary. *)
-
-type int
 
 (*@ function integer_of_int (x: int) : integer *)
 (*@ coercion *)

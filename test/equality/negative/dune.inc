@@ -1,4 +1,134 @@
 (rule
+ (targets comp_equality_order.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_equality_order.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_equality_order.mli.expected} %{dep:comp_equality_order.mli.output})))
+
+(rule
+ (targets comp_extra_arg.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_extra_arg.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_extra_arg.mli.expected} %{dep:comp_extra_arg.mli.output})))
+
+(rule
+ (targets comp_inner_equality.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_inner_equality.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_inner_equality.mli.expected} %{dep:comp_inner_equality.mli.output})))
+
+(rule
+ (targets comp_polymorphic_equality.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_polymorphic_equality.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_polymorphic_equality.mli.expected} %{dep:comp_polymorphic_equality.mli.output})))
+
+(rule
+ (targets comp_too_few_args.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_too_few_args.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_too_few_args.mli.expected} %{dep:comp_too_few_args.mli.output})))
+
+(rule
+ (targets comp_type_arg.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_type_arg.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_type_arg.mli.expected} %{dep:comp_type_arg.mli.output})))
+
+(rule
+ (targets comp_wrong_arg_number.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_wrong_arg_number.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_wrong_arg_number.mli.expected} %{dep:comp_wrong_arg_number.mli.output})))
+
+(rule
+ (targets comp_wrong_args.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_wrong_args.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_wrong_args.mli.expected} %{dep:comp_wrong_args.mli.output})))
+
+(rule
+ (targets comp_wrong_order.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_wrong_order.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_wrong_order.mli.expected} %{dep:comp_wrong_order.mli.output})))
+
+(rule
+ (targets comp_wrong_ret.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comp_wrong_ret.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comp_wrong_ret.mli.expected} %{dep:comp_wrong_ret.mli.output})))
+
+(rule
  (targets equality_order.mli.output)
  (deps (source_tree .))
  (action

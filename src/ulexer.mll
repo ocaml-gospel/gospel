@@ -76,6 +76,7 @@
         "diverges", DIVERGES;
         "pure", PURE;
         "equality", EQUALITY;
+        "comparison", COMPARISON;
         "ephemeral", EPHEMERAL;
         "model", MODEL;
       ]

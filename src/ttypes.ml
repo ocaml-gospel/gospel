@@ -177,6 +177,7 @@ let ty_equal_check ty1 ty2 =
 
 let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
 let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
+let ts_int = ts (Ident.create ~loc:Location.none "int") []
 let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
 let ts_float = ts (Ident.create ~loc:Location.none "float") []
 let ts_char = ts (Ident.create ~loc:Location.none "char") []
@@ -220,6 +221,7 @@ let is_ts_tuple ts =
 let is_ts_arrow ts = Ident.equal ts_arrow.ts_ident ts.ts_ident
 let ty_unit = ty_app ts_unit []
 let ty_integer = ty_app ts_integer []
+let ty_int = ty_app ts_int []
 let ty_bool = ty_app ts_bool []
 let ty_float = ty_app ts_float []
 let ty_char = ty_app ts_char []

@@ -1,4 +1,17 @@
 (rule
+ (targets comparison.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:comparison.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:comparison.mli.expected} %{dep:comparison.mli.output})))
+
+(rule
  (targets equality.mli.output)
  (deps (source_tree .))
  (action

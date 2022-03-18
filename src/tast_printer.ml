@@ -111,20 +111,21 @@ let print_xposts f xposts =
 let print_diverges f d = if not d then () else pp f "@\n@[diverges@]"
 let print_pure f d = if not d then () else pp f "@\n@[pure@]"
 let print_equality f d = if not d then () else pp f "@\n@[equality@]"
+let print_comparison f d = if not d then () else pp f "@\n@[comparison@]"
 
 let print_vd_spec val_id fmt spec =
   let print_term f t = pp f "@[%a@]" print_term t in
   match spec with
   | None -> ()
   | Some vs ->
-      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a%a%a*)"
+      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a%a%a%a*)"
         (list ~sep:comma print_lb_arg)
         vs.sp_ret
         (if vs.sp_ret = [] then "" else " =")
         Ident.pp val_id
         (list ~sep:sp print_lb_arg)
         vs.sp_args print_diverges vs.sp_diverge print_pure vs.sp_pure
-        print_equality vs.sp_equality
+        print_equality vs.sp_equality print_comparison vs.sp_comparison
         (list
            ~first:(newline ++ const string "requires ")
            ~sep:(newline ++ const string "requires ")

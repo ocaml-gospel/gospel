@@ -52,6 +52,7 @@ clause = "requires" formula
        | "equivalent" string_literal
        | "diverges"
        | "equality"
+       | "comparison"
        | "pure"
        | "consumes" expr ("," expr)*
 exception_case = qualid "->" formula
@@ -384,22 +385,28 @@ Pure functions can be used in further Gospel specifications.
 On the contrary, OCaml functions not declared as `pure` cannot be used
 in specifications.
 
-## Equality functions
+## Equality and comparison functions
 
-As OCaml developers are used to providing equality functions for their abstract
-types, Gospel provides a convenient `equality` clause to specify them.
+As OCaml developers are used to providing equality or comparison functions for
+their abstract types, Gospel provides convenient `equality` and `comparison`
+clauses to specify them.
 
-```ocaml {4}
+```ocaml {4,7}
 type t
+
+val compare : t -> t -> int
+(*@ comparison *)
 
 val equal : t -> t -> bool
 (*@ equality *)
 ```
 
+### Equality
+
 The equality clause states that:
 - The function is pure. See the [section on `pure` functions](#pure-functions)
   for more details.
-- The function implements the logical equality over the type of its arguments
+- The function implements the logical equality over the type of its arguments.
 
 The previous contract is equivalent to the following one:
 
@@ -412,9 +419,31 @@ val equal : t -> t -> bool
     ensures b <-> t1 = t2 *)
 ```
 
-Functions that are parametrized by equality functions over their type arguments
-are also allowed. In that case, the equality functions should be passed in an
-order compatible with the appearance of type variables, from left to right.
+### Comparison
+
+The comparison clause states that:
+- The function is pure. See the [section on `pure` functions](#pure-functions)
+  for more details.
+- The function implements a [pre-order](https://en.wikipedia.org/wiki/Pre-order)
+  over the type of its arguments
+
+The previous contract is equivalent to the following one:
+
+```ocaml {4,6}
+type t
+
+val compare : t -> t -> int
+(*@ pure *)
+
+(*@ axiom compare_is_order : Order.is_pre_order compare *)
+```
+
+### Parametrized functions
+
+Functions that are parametrized by equality or comparison functions over their
+type arguments are also allowed. In that case, these functions should be passed
+in an order compatible with the appearance of type variables, from left to
+right.
 
 ```ocaml {4-5}
 type ('a, 'b) t
@@ -441,7 +470,7 @@ val equal :
 :::
 
 Gospel also supports functions that do not require the caller to provide
-equality functions for all type parameters.
+equality or comparison functions for all type parameters.
 
 ```ocaml {2}
 val equal :

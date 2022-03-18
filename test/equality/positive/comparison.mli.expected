@@ -1,0 +1,223 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int -> int[@@gospel {| comparison |}]
+type t
+val g : t -> t -> int[@@gospel {| comparison |}]
+type 'a u
+val h : 'a u -> 'a u -> int[@@gospel {| comparison |}]
+val h' : 'b u -> 'b u -> int[@@gospel {| comparison |}]
+val h'' : ('a -> 'a -> int) -> 'a u -> 'a u -> int[@@gospel {| comparison |}]
+type v = t
+val i : v -> t -> int[@@gospel {| comparison |}]
+type ('a, 'b) w
+val h : ('a, 'b) w -> ('a, 'b) w -> int[@@gospel {| comparison |}]
+val h : ('a -> 'a -> int) -> ('a, 'b) w -> ('a, 'b) w -> int[@@gospel
+                                                              {| comparison |}]
+val h : ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int[@@gospel
+                                                              {| comparison |}]
+val h :
+  ('a -> 'a -> int) -> ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+[@@gospel {| comparison |}]
+val h : ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int[@@gospel
+                                                              {| comparison |}]
+val h :
+  ('a -> 'a -> int) -> ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int
+[@@gospel {| comparison |}]
+val h : ('a -> 'a -> int) -> ('a, 'b) w list -> ('a, 'b) w list -> int
+[@@gospel {| comparison |}]
+val h : ('a -> 'a -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+[@@gospel {| comparison |}]
+val h : ('b -> 'b -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+[@@gospel {| comparison |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int -> int
+(*@ comparison
+     *)
+
+type t
+  
+
+val g : t -> t -> int
+(*@ comparison
+     *)
+
+type 'a u
+  
+
+val h : 'a u -> 'a u -> int
+(*@ comparison
+     *)
+
+val h' : 'b u -> 'b u -> int
+(*@ comparison
+     *)
+
+val h'' : ('a -> 'a -> int) -> 'a u -> 'a u -> int
+(*@ comparison
+     *)
+
+type v = t
+  
+
+val i : v -> t -> int
+(*@ comparison
+     *)
+
+type ('a, 'b) w
+  
+
+val h : ('a, 'b) w -> ('a, 'b) w -> int
+(*@ comparison
+     *)
+
+val h : ('a -> 'a -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+(*@ comparison
+     *)
+
+val h : ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+(*@ comparison
+     *)
+
+val h :
+  ('a -> 'a -> int) -> ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+(*@ comparison
+     *)
+
+val h : ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int
+(*@ comparison
+     *)
+
+val h :
+  ('a -> 'a -> int) -> ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int
+(*@ comparison
+     *)
+
+val h : ('a -> 'a -> int) -> ('a, 'b) w list -> ('a, 'b) w list -> int
+(*@ comparison
+     *)
+
+val h : ('a -> 'a -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+(*@ comparison
+     *)
+
+val h : ('b -> 'b -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+(*@ comparison
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module comparison.mli
+
+  Namespace: comparison.mli
+    Type symbols
+       t
+      ('a) u
+       v [=t]
+      ('a, 'b) w
+      
+    Logic Symbols
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> int -> int
+    (*@ result:int = f $x0:int $x1:int
+        comparison*)
+    
+    type t
+         
+    
+    val g : t -> t -> int
+    (*@ result_1:int = g $x0_1:t $x1_1:t
+        comparison*)
+    
+    type 'a u
+         
+    
+    val h : 'a u -> 'a u -> int
+    (*@ result_2:int = h $x0_2:'a u $x1_2:'a u
+        comparison*)
+    
+    val h' : 'b u -> 'b u -> int
+    (*@ result_3:int = h' $x0_3:'b u $x1_3:'b u
+        comparison*)
+    
+    val h'' : ('a -> 'a -> int) -> 'a u -> 'a u -> int
+    (*@ result_4:int = h'' $x0_4:'a -> 'a -> int $x1_4:'a u $x2:'a u
+        comparison*)
+    
+    type v = t
+         
+    
+    val i : v -> t -> int
+    (*@ result_5:int = i $x0_5:t $x1_5:t
+        comparison*)
+    
+    type ('a, 'b) w
+         
+    
+    val h_1 : ('a, 'b) w -> ('a, 'b) w -> int
+    (*@ result_6:int = h_1 $x0_6:('a, 'b) w $x1_6:('a, 'b) w
+        comparison*)
+    
+    val h_2 : ('a -> 'a -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+    (*@ result_7:int = h_2
+        $x0_7:'a -> 'a -> int $x1_7:('a, 'b) w $x2_1:('a, 'b) w
+        comparison*)
+    
+    val h_3 : ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+    (*@ result_8:int = h_3
+        $x0_8:'b -> 'b -> int $x1_8:('a, 'b) w $x2_2:('a, 'b) w
+        comparison*)
+    
+    val h_4 :
+    ('a -> 'a -> int) -> ('b -> 'b -> int) -> ('a, 'b) w -> ('a, 'b) w -> int
+    (*@ result_9:int = h_4
+        $x0_9:'a -> 'a -> int $x1_9:'b -> 'b -> int $x2_3:('a, 'b) w
+        $x3:('a, 'b) w
+        comparison*)
+    
+    val h_5 : ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int
+    (*@ result_10:int = h_5
+        $x0_10:'a -> 'a -> int $x1_10:('a, 'a) w $x2_4:('a, 'a) w
+        comparison*)
+    
+    val h_6 :
+    ('a -> 'a -> int) -> ('a -> 'a -> int) -> ('a, 'a) w -> ('a, 'a) w -> int
+    (*@ result_11:int = h_6
+        $x0_11:'a -> 'a -> int $x1_11:'a -> 'a -> int $x2_5:('a, 'a) w
+        $x3_1:('a, 'a) w
+        comparison*)
+    
+    val h_7 : ('a -> 'a -> int) -> ('a, 'b) w list -> ('a, 'b) w list -> int
+    (*@ result_12:int = h_7
+        $x0_12:'a -> 'a -> int $x1_12:('a, 'b) w list $x2_6:('a, 'b) w list
+        comparison*)
+    
+    val h_8 : ('a -> 'a -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+    (*@ result_13:int = h_8
+        $x0_13:'a -> 'a -> int $x1_13:('a, 'b list) w $x2_7:('a, 'b list) w
+        comparison*)
+    
+    val h_9 : ('b -> 'b -> int) -> ('a, 'b list) w -> ('a, 'b list) w -> int
+    (*@ result_14:int = h_9
+        $x0_14:'b -> 'b -> int $x1_14:('a, 'b list) w $x2_8:('a, 'b list) w
+        comparison*)
+
+OK

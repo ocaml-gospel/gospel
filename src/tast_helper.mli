@@ -30,6 +30,7 @@ val mk_val_spec :
   bool ->
   bool ->
   bool ->
+  bool ->
   string list ->
   string ->
   Location.t ->

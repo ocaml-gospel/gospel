@@ -631,8 +631,8 @@ let check_equality_type ~loc args ret expected_ret_ty =
     | _, [] -> (* If there are no more arguments, we're done *) ()
     | a :: vl, (eq :: eql as l) ->
         let expected =
-          (* ['a -> 'a -> bool] *)
-          ty_app ts_arrow [ a; ty_app ts_arrow [ a; ty_bool ] ]
+          (* ['a -> 'a -> expected_ret_ty] *)
+          ty_app ts_arrow [ a; ty_app ts_arrow [ a; expected_ret_ty ] ]
         in
         if ty_equal (ty_of_lb_arg eq) expected then
           (* If [eq] is an equality over 'a, we check the next arguments *)
@@ -799,8 +799,9 @@ let process_val_spec kid crcm ns id args ret vs =
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions");
   if vs.sp_equality then check_equality_type ~loc args ret ty_bool;
+  if vs.sp_comparison then check_equality_type ~loc args ret ty_int;
   mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
-    vs.sp_equality vs.sp_equiv vs.sp_text vs.sp_loc
+    vs.sp_equality vs.sp_comparison vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args =
   {
@@ -814,6 +815,7 @@ let empty_spec preid ret args =
     sp_diverge = false;
     sp_pure = false;
     sp_equality = false;
+    sp_comparison = false;
     sp_equiv = [];
     sp_text = "";
     sp_loc = Location.none;
