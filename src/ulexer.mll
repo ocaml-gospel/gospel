@@ -75,6 +75,7 @@
         "checks", CHECKS;
         "diverges", DIVERGES;
         "pure", PURE;
+        "equality", EQUALITY;
         "ephemeral", EPHEMERAL;
         "model", MODEL;
       ]

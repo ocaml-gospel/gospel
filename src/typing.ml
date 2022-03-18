@@ -763,8 +763,15 @@ let process_val_spec kid crcm ns id args ret vs =
     if wr <> [] then error_report ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
       error_report ~loc "a pure function cannot raise exceptions");
+  (if vs.sp_equality then
+   match (args, ret) with
+   | [ t1; t2 ], [ b ]
+     when ty_equal (ty_of_lb_arg t1) (ty_of_lb_arg t2)
+          && ty_equal (ty_of_lb_arg b) ty_bool ->
+       ()
+   | _, _ -> error_report ~loc "type is incompatible with equality clause");
   mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
-    vs.sp_equiv vs.sp_text vs.sp_loc
+    vs.sp_equality vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args =
   {
@@ -777,6 +784,7 @@ let empty_spec preid ret args =
     sp_consumes = [];
     sp_diverge = false;
     sp_pure = false;
+    sp_equality = false;
     sp_equiv = [];
     sp_text = "";
     sp_loc = Location.none;

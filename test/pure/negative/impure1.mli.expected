@@ -19,6 +19,7 @@ type t
 
 val f : t -> int
 (*@ y = f x
+    pure
     modifies ...
      *)
 File "impure1.mli", line 5, characters 5-6:

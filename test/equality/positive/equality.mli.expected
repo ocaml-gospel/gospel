@@ -1,0 +1,92 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int -> bool[@@gospel {| equality |}]
+type t
+val g : t -> t -> bool[@@gospel {| equality |}]
+type 'a u
+val h : 'a u -> 'a u -> bool[@@gospel {| equality |}]
+type v = t
+val i : v -> t -> bool[@@gospel {| equality |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+val f : int -> int -> bool
+(*@ equality
+     *)
+
+type t
+  
+
+val g : t -> t -> bool
+(*@ equality
+     *)
+
+type 'a u
+  
+
+val h : 'a u -> 'a u -> bool
+(*@ equality
+     *)
+
+type v = t
+  
+
+val i : v -> t -> bool
+(*@ equality
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module equality.mli
+
+  Namespace: equality.mli
+    Type symbols
+       t
+      ('a) u
+       v [=t]
+      
+    Logic Symbols
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    val f : int -> int -> bool
+    (*@ result:bool = f $x0:int $x1:int
+        equality*)
+    
+    type t
+         
+    
+    val g : t -> t -> bool
+    (*@ result_1:bool = g $x0_1:t $x1_1:t
+        equality*)
+    
+    type 'a u
+         
+    
+    val h : 'a u -> 'a u -> bool
+    (*@ result_2:bool = h $x0_2:'a u $x1_2:'a u
+        equality*)
+    
+    type v = t
+         
+    
+    val i : v -> t -> bool
+    (*@ result_3:bool = i $x0_3:t $x1_3:t
+        equality*)
+
+OK

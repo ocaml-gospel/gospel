@@ -50,6 +50,7 @@
     sp_consumes= [];
     sp_diverge = false;
     sp_pure = false;
+    sp_equality = false;
     sp_equiv = [];
     sp_text = "";
     sp_loc = Location.none;
@@ -103,7 +104,7 @@
 %token COERCION
 %token IF IN
 %token OLD NOT RAISES
-%token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
+%token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE EQUALITY
 
 %token AS
 %token LET MATCH PREDICATE
@@ -227,6 +228,8 @@ val_spec_body:
 | (* Empty spec *) { empty_vspec }
 | PURE bd=val_spec_body
   { {bd with sp_pure = true} }
+| EQUALITY bd=val_spec_body
+  { {bd with sp_equality = true} }
 | DIVERGES bd=val_spec_body
   { {bd with sp_diverge = true} }
 | MODIFIES wr=separated_list(COMMA, term) bd=val_spec_body

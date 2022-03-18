@@ -35,6 +35,7 @@ type val_spec = {
   sp_cs : term list;  (** Consumes *)
   sp_diverge : bool;  (** Diverges *)
   sp_pure : bool;  (** Pure *)
+  sp_equality : bool;  (** Equality *)
   sp_equiv : string list;  (** Equivalent *)
   sp_text : string;
       (** String containing the original specificaion as written by the user *)

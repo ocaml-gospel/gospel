@@ -98,6 +98,7 @@ type val_spec = {
   sp_consumes : term list;
   sp_diverge : bool;
   sp_pure : bool;
+  sp_equality : bool;
   sp_equiv : string list;
   sp_text : string;
   sp_loc : Location.t;

@@ -14,6 +14,7 @@ val f : int -> int[@@gospel
 
 val f : int -> int
 (*@ y = f x
+    pure
     with ...
      *)
 File "impure3.mli", line 2, characters 5-6:

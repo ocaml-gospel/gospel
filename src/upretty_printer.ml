@@ -63,9 +63,12 @@ let val_spec fmt vspec =
   match vspec with
   | None -> ()
   | Some vspec ->
+      let pure fmt x = if x then pp fmt "pure@\n" else () in
+      let equality fmt x = if x then pp fmt "equality@\n" else () in
       let diverge fmt x = if x then pp fmt "diverges@\n" else () in
       let print_content fmt s =
-        pp fmt "@[%a%a%a%a%a%a%a%a@]" (option spec_header) s.sp_header
+        pp fmt "@[%a%a%a%a%a%a%a%a%a%a@]" (option spec_header) s.sp_header
+          diverge s.sp_diverge pure s.sp_pure equality s.sp_equality
           (list_keyword "requires ...")
           s.sp_pre
           (list_keyword "ensures ...")
@@ -73,7 +76,7 @@ let val_spec fmt vspec =
           (list_keyword "modifies ...")
           s.sp_writes
           (list_keyword "consumes ...")
-          s.sp_consumes diverge s.sp_diverge
+          s.sp_consumes
           (list_keyword "equivalent ...")
           s.sp_equiv
       in

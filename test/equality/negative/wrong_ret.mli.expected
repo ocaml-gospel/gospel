@@ -2,19 +2,15 @@
 *******************************
 ********** Parsed file ********
 *******************************
-val f : int -> int[@@gospel {| y = f x
-    pure
-    diverges |}]
+val f : int -> int -> string[@@gospel {| equality |}]
 
 *******************************
 ****** GOSPEL translation *****
 *******************************
 (*@ open Gospelstdlib *)
 
-val f : int -> int
-(*@ y = f x
-    diverges
-    pure
+val f : int -> int -> string
+(*@ equality
      *)
-File "impure2.mli", line 2, characters 5-6:
-Error: Type checking error: a pure function cannot diverge
+File "wrong_ret.mli", lines 1-2, characters 0-25:
+Error: Type checking error: type is incompatible with equality clause
