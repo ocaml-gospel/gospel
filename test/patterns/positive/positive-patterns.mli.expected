@@ -1,0 +1,550 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t1 =
+  | A1 
+  | A2 
+  | B of t1 
+[@@@gospel
+  {| function f (x: t1): integer =
+    match x with
+    | A1
+    | A2 -> 0
+    | B A1
+    | B A2 -> 0
+    | B (B A1)
+    | B (B A2) -> 0
+    | B (B (B A1))
+    | B x -> 0 |}]
+type t2 =
+  | E 
+  | I of int 
+val f2 : t2 -> int[@@gospel
+                    {| r = f2 i
+    ensures match i with
+      | E    -> true
+      | I 1i -> true
+      | I 2i -> true
+      | I 6i -> true
+      | _    -> true |}]
+[@@@gospel {| type t_integer = N of integer |}]
+[@@@gospel
+  {| function f3 (x : t_integer) : integer =
+      match x with
+      | N 0
+      | N 1
+      | N x -> 0 |}]
+type t4 =
+  | A of string 
+  | B 
+[@@@gospel
+  {| function f4 (x: t4): integer =
+      match x with
+      | B
+      | A "1" -> 0
+      | A "333"
+      | A _ -> 0 |}]
+val f5 : bool -> int[@@gospel
+                      {| r = f5 x
+    ensures match x with
+      | true
+      | false
+      | true -> r <> 1
+      | true -> true
+    ensures match true with _ -> true
+    ensures match true with x -> true
+|}]
+type t6 =
+  | A 
+  | B of t6 * float 
+val f6 : t6 -> int[@@gospel
+                    {| r = f6 x
+    ensures match x with
+    | A -> false
+    | B (B _, _) -> true
+    | B (A, z) -> false |}]
+type 'a t7 = ('a * int)
+val f7 : char t7 -> int[@@gospel
+                         {| r = f7 a
+    ensures match a with
+      | '\000', 0i
+      | 'z', 0i -> false
+      | _ -> true
+|}]
+val f8 : 'a option -> int[@@gospel
+                           {| r = f8 o
+    ensures match o with
+    | None -> r = 2
+    | Some x -> r <> 2 |}]
+val f9 : char -> int[@@gospel
+                      {| r = f9 a
+    ensures
+      match a with
+      | '\000' .. '\031'
+      | '\127' .. '\255' -> false
+      | ' '    .. '~'    -> false
+
+    ensures
+      match a with
+      | '\000'..'a' -> false
+      | 'b'..'\255' -> true
+|}]
+val f10 : bool -> int[@@gospel
+                       {| r = f10 x
+    ensures
+      match x with
+      | true
+      | false
+      | true -> r <> 1
+      | true -> true
+    ensures
+      match true with
+      | _ -> true
+    ensures
+      match true with
+      | x -> true
+|}]
+type t11 =
+  | A of (int * int) 
+  | B of int * int 
+[@@@gospel
+  {| function f11 (x: t11): integer =
+    match x with
+    | A _ -> 0
+    | B _ -> 0 |}]
+type t12 =
+  | P of char * t12 
+[@@@gospel
+  {| function f (a : t12) : bool =
+      match a with
+      | P ('\000'..'b', _) -> true
+      | P ('b'..'\255', x) -> false
+|}]
+type t13 = {
+  n: int ;
+  s: string }
+[@@@gospel
+  {| function f13 (x: t13): integer =
+    match x with
+    | { n=0i; s="beta"|"omega" } -> 0
+    | { n=m } -> 0 |}]
+[@@@gospel
+  {| function f13' (x: t13): integer =
+    match x with
+    | { s="beta"|"omega" ; n=0i } -> 0
+    | { n=m ; s = y } -> 0 |}]
+val f14 : 'a list -> int[@@gospel
+                          {| r = f14 l
+    requires match l with
+      | [] -> true
+      | x::y::_ -> false
+      | x::_ -> false
+    requires match l with
+      | [] -> true
+      | x::(y::_ as ll) -> false
+      | x::_ -> false
+    requires match Some l with
+      | None -> false
+      | Some [] -> true
+      | Some (x :: _ as a) -> false
+|}]
+type t15 =
+  | A 
+  | B 
+val f15 : (t15 * t15 * t15 * t15) -> int[@@gospel
+                                          {| r = f15 x
+    requires match x with
+     | A,A,A,A
+     | B,B,B,B
+     | _,A,A,A
+     | _,B,B,B
+     | _,_,A,A
+     | _,_,B,B
+     | _,_,_,A
+     | _,_,_,B -> true
+|}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Stdlib *)
+
+(*@ open Gospelstdlib *)
+
+type t1 =
+| A1 
+| A2 
+| B of t1 
+  
+
+(*@ function f ... *)
+
+type t2 =
+| E 
+| I of int 
+  
+
+val f2 : t2 -> int
+(*@ r = f2 i
+    ensures ...
+     *)
+
+(*@ type t_integer =
+    | N of integer 
+   *)
+
+(*@ function f3 ... *)
+
+type t4 =
+| A of string 
+| B 
+  
+
+(*@ function f4 ... *)
+
+val f5 : bool -> int
+(*@ r = f5 x
+    ensures ...
+    ensures ...
+    ensures ...
+     *)
+
+type t6 =
+| A 
+| B of t6 * float 
+  
+
+val f6 : t6 -> int
+(*@ r = f6 x
+    ensures ...
+     *)
+
+type 'a t7 = ('a * int)
+  
+
+val f7 : char t7 -> int
+(*@ r = f7 a
+    ensures ...
+     *)
+
+val f8 : 'a option -> int
+(*@ r = f8 o
+    ensures ...
+     *)
+
+val f9 : char -> int
+(*@ r = f9 a
+    ensures ...
+    ensures ...
+     *)
+
+val f10 : bool -> int
+(*@ r = f10 x
+    ensures ...
+    ensures ...
+    ensures ...
+     *)
+
+type t11 =
+| A of (int * int) 
+| B of int * int 
+  
+
+(*@ function f11 ... *)
+
+type t12 =
+| P of char * t12 
+  
+
+(*@ function f ... *)
+
+type t13 = {
+n: int ;
+s: string }
+  
+
+(*@ function f13 ... *)
+
+(*@ function f13' ... *)
+
+val f14 : 'a list -> int
+(*@ r = f14 l
+    requires ...
+    requires ...
+    requires ...
+     *)
+
+type t15 =
+| A 
+| B 
+  
+
+val f15 : (t15 * t15 * t15 * t15) -> int
+(*@ r = f15 x
+    requires ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module positive-patterns.mli
+
+  Namespace: positive-patterns.mli
+    Type symbols
+       t1
+       t11
+       t12
+       t13
+       t15
+       t2
+       t4
+       t6
+      ('a) t7 [='a * int]
+       t_integer
+      
+    Logic Symbols
+      function A  : t15
+      function A1  : t1
+      function A2  : t1
+      function B  : t15
+      function E  : t2
+      function I (_:int) : t2
+      function N (_:integer) : t_integer
+      function P (_:char) (_:t12) : t12
+      function constr#t13 (_:int) (_:string) : t13
+      function f (_:t12) : bool
+      function f11 (_:t11) : integer
+      function f13 (_:t13) : integer
+      function f13' (_:t13) : integer
+      function f3 (_:t_integer) : integer
+      function f4 (_:t4) : integer
+      
+    Field Symbols
+      function n (_:t13) : int
+      function s (_:t13) : string
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Stdlib *)
+    
+    (*@ open Gospelstdlib *)
+    
+    type t1 = A1 of 
+              function A1  : t1
+              | A2 of 
+                function A2  : t1
+              | B_1 of t1
+                function B_1 (_:t1) : t1
+         
+    
+    (*@ function f_1 (x:t1): integer =
+        match x:t1 with
+        | A1 | A2 -> 0:integer
+        | B_1 A1 | B_1 A2 -> 0:integer
+        | B_1 B_1 A1 | B_1 B_1 A2 -> 0:integer
+        | B_1 B_1 B_1 A1 | B_1 x_1:t1 -> 0:integer
+        end::integer
+    *)
+    
+    type t2 = E of 
+              function E  : t2
+              | I of int
+                function I (_:int) : t2
+         
+    
+    val f2 : t2 -> int
+    (*@ r:int = f2 i:t2
+        ensures (match i:t2 with
+                | E -> (True ):bool
+                | I 1i -> (True ):bool
+                | I 2i -> (True ):bool
+                | I 6i -> (True ):bool
+                | _ -> (True ):bool
+                end::bool = (True ):bool):prop*)
+    
+    (*@ type t_integer = N of integer
+                         function N (_:integer) : t_integer
+              *)
+    
+    (*@ function f3 (x_2:t_integer): integer =
+        match x_2:t_integer with
+        | N 0 | N 1 | N x_3:integer -> 0:integer
+        end::integer
+    *)
+    
+    type t4 = A_1 of string
+              function A_1 (_:string) : t4
+              | B_2 of 
+                function B_2  : t4
+         
+    
+    (*@ function f4 (x_4:t4): integer =
+        match x_4:t4 with
+        | B_2 | A_1 "1" -> 0:integer
+        | A_1 "333" | A_1 _ -> 0:integer
+        end::integer
+    *)
+    
+    val f5 : bool -> int
+    (*@ r_1:int = f5 x_5:bool
+        ensures (match x_5:bool with
+                | True | False | True -> if not ((integer_of_int 
+                                         r_1:int):integer = 1:integer):prop then (True ):
+                                         bool else (False ):bool
+                | True -> (True ):bool
+                end::bool = (True ):bool):prop
+                ensures (match (True ):bool with
+                        | _ -> (True ):bool
+                        end::bool = (True ):bool):prop
+                ensures (match (True ):bool with
+                        | x_6:bool -> (True ):bool
+                        end::bool = (True ):bool):prop*)
+    
+    type t6 = A_2 of 
+              function A_2  : t6
+              | B_3 of t6 * float
+                function B_3 (_:t6) (_:float) : t6
+         
+    
+    val f6 : t6 -> int
+    (*@ r_2:int = f6 x_7:t6
+        ensures (match x_7:t6 with
+                | A_2 -> (False ):bool
+                | B_3 (B_3 (_, _), _) -> (True ):bool
+                | B_3 (A_2, z:float) -> (False ):bool
+                end::bool = (True ):bool):prop*)
+    
+    type 'a t7 = 'a * int
+         
+    
+    val f7 : char t7 -> int
+    (*@ r_3:int = f7 a_1:char * int
+        ensures (match a_1:char * int with
+                | '\000', 0i | 'z', 0i -> (False ):bool
+                | _ -> (True ):bool
+                end::bool = (True ):bool):prop*)
+    
+    val f8 : 'a option -> int
+    (*@ r_4:int = f8 o:'a option
+        ensures (match o:'a option with
+                | None -> if ((integer_of_int 
+                          r_4:int):integer = 2:integer):prop then (True ):
+                          bool else (False ):bool
+                | Some x_8:'a -> if not ((integer_of_int 
+                                 r_4:int):integer = 2:integer):prop then (True ):
+                                 bool else (False ):bool
+                end::bool = (True ):bool):prop*)
+    
+    val f9 : char -> int
+    (*@ r_5:int = f9 a_2:char
+        ensures (match a_2:char with
+                | '\000'..'\031' | '\127'..'\255' -> (False ):bool
+                | ' '..'~' -> (False ):bool
+                end::bool = (True ):bool):prop
+                ensures (match a_2:char with
+                        | '\000'..'a' -> (False ):bool
+                        | 'b'..'\255' -> (True ):bool
+                        end::bool = (True ):bool):prop*)
+    
+    val f10 : bool -> int
+    (*@ r_6:int = f10 x_9:bool
+        ensures (match x_9:bool with
+                | True | False | True -> if not ((integer_of_int 
+                                         r_6:int):integer = 1:integer):prop then (True ):
+                                         bool else (False ):bool
+                | True -> (True ):bool
+                end::bool = (True ):bool):prop
+                ensures (match (True ):bool with
+                        | _ -> (True ):bool
+                        end::bool = (True ):bool):prop
+                ensures (match (True ):bool with
+                        | x_10:bool -> (True ):bool
+                        end::bool = (True ):bool):prop*)
+    
+    type t11 = A_3 of int * int
+               function A_3 (_:int * int) : t11
+               | B_4 of int * int
+                 function B_4 (_:int) (_:int) : t11
+         
+    
+    (*@ function f11 (x_11:t11): integer =
+        match x_11:t11 with
+        | A_3 _ -> 0:integer
+        | B_4 (_, _) -> 0:integer
+        end::integer
+    *)
+    
+    type t12 = P of char * t12
+               function P (_:char) (_:t12) : t12
+         
+    
+    (*@ function f (a_3:t12): bool =
+        match a_3:t12 with
+        | P ('\000'..'b', _) -> (True ):bool
+        | P ('b'..'\255', x_12:t12) -> (False ):bool
+        end::bool
+    *)
+    
+    type t13 = {n:int; s:string}
+            function constr#t13 (_:int) (_:string) : t13
+            function n (_:t13) : int
+            function s (_:t13) : string
+         
+    
+    (*@ function f13 (x_13:t13): integer =
+        match x_13:t13 with
+        | constr#t13 (0i, ("beta" | "omega")) -> 0:integer
+        | constr#t13 (m:int, _) -> 0:integer
+        end::integer
+    *)
+    
+    (*@ function f13' (x_14:t13): integer =
+        match x_14:t13 with
+        | constr#t13 (0i, ("beta" | "omega")) -> 0:integer
+        | constr#t13 (m_1:int, y:string) -> 0:integer
+        end::integer
+    *)
+    
+    val f14 : 'a list -> int
+    (*@ r_7:int = f14 l:'a list
+        requires (match l:'a list with
+                 | [] -> (True ):bool
+                 | infix :: (x_15:'a, infix :: (y_1:'a, _)) -> (False ):bool
+                 | infix :: (x_16:'a, _) -> (False ):bool
+                 end::bool = (True ):bool):prop
+                 requires (match l:'a list with
+                          | [] -> (True ):bool
+                          | infix ::
+                            (x_17:'a, (infix :: (y_2:'a, _) as ll:'a list)) -> 
+                          (False ):bool
+                          | infix :: (x_18:'a, _) -> (False ):bool
+                          end::bool = (True ):bool):prop
+                 requires (match (Some 
+                          l:'a list):'a list option with
+                          | None -> (False ):bool
+                          | Some [] -> (True ):bool
+                          | Some (infix :: (x_19:'a, _) as a_4:'a list) -> 
+                          (False ):bool
+                          end::bool = (True ):bool):prop*)
+    
+    type t15 = A of 
+               function A  : t15
+               | B of 
+                 function B  : t15
+         
+    
+    val f15 : (t15 * t15 * t15 * t15) -> int
+    (*@ r_8:int = f15 x_20:t15 * t15 * t15 * t15
+        requires (match x_20:t15 * t15 * t15 * t15 with
+                 | A, A, A, A | B, B, B, B | _, A, A, A | _, B, B, B | 
+                   _, _, A, A | _, _, B, B | _, _, _, A | _, _, _, B -> 
+                 (True ):bool
+                 end::bool = (True ):bool):prop*)
+
+OK

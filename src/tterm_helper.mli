@@ -27,6 +27,8 @@ val p_var : vsymbol -> pattern
 val p_app : lsymbol -> pattern list -> ty -> pattern
 val p_or : pattern -> pattern -> pattern
 val p_as : pattern -> vsymbol -> pattern
+val p_interval : char -> char -> pattern
+val p_const : Parsetree.constant -> pattern
 val mk_term : term_node -> ty option -> Location.t -> term
 val t_var : vsymbol -> Location.t -> term
 val t_const : constant -> ty -> Location.t -> term

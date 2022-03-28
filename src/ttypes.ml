@@ -71,10 +71,12 @@ module Ts = struct
   type t = tysymbol
 
   let equal = ts_equal
+  let hash x = x.ts_ident.id_tag
   let compare x y = Ident.compare x.ts_ident y.ts_ident
 end
 
 module Mts = Map.Make (Ts)
+module Hts = Hashtbl.Make (Ts)
 
 let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
 let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }
@@ -171,15 +173,15 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
+let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
+let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
 let ts_int = ts (Ident.create ~loc:Location.none "int") []
 let ts_char = ts (Ident.create ~loc:Location.none "char") []
 let ts_bytes = ts (Ident.create ~loc:Location.none "bytes") []
 let ts_string = ts (Ident.create ~loc:Location.none "string") []
 let ts_float = ts (Ident.create ~loc:Location.none "float") []
 let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
-let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
 let ts_exn = ts (Ident.create ~loc:Location.none "exn") []
-let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
 
 let ts_array =
   ts

@@ -35,12 +35,16 @@ type pattern = { pat_desc : pat_desc; pat_loc : Location.t }
 and pat_desc =
   | Pwild
   | Pvar of Preid.t
+  | Ptrue
+  | Pfalse
   | Papp of qualid * pattern list
   | Prec of (qualid * pattern) list
   | Ptuple of pattern list
   | Pas of pattern * Preid.t
   | Por of pattern * pattern
   | Pcast of pattern * pty
+  | Pconst of constant
+  | Pinterval of char * char
 
 (* Logical terms and formulas *)
 

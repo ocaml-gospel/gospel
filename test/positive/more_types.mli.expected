@@ -133,7 +133,7 @@ module more_types.mli
     
     (*@ function f (x_5:'a t6): 'a t6 =
         match x_5:'a t6 with
-        | constr#t6 x_6:int y_1:'a -> (constr#t6  x_6:int y_1:'a):'a t6
+        | constr#t6 (x_6:int, y_1:'a) -> (constr#t6  x_6:int y_1:'a):'a t6
         end::'a t6
     *)
 

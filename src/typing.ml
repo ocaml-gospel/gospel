@@ -169,10 +169,14 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   | Pwild ->
       let dty = dty_fresh () in
       mk_pwild loc dty
+  | Pinterval (c1, c2) ->
+      mk_dpattern ~loc (DPinterval (c1, c2)) dty_char Mstr.empty
   | Pvar pid ->
       let dty = dty_fresh () in
       let vars = Mstr.singleton pid.pid_str dty in
       mk_dpattern ~loc (DPvar pid) dty vars
+  | Ptrue -> mk_papp ~loc fs_bool_true []
+  | Pfalse -> mk_papp ~loc fs_bool_false []
   | Papp (q, pl) ->
       let cs = find_q_ls ns q in
       let dpl = List.map (dpattern kid ns) pl in
@@ -210,6 +214,22 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       in
       let dpl = List.map get_pattern pjl in
       mk_papp ~loc cs dpl
+  | Pconst c ->
+      let dty =
+        match c with
+        | Pconst_integer (_, None) -> dty_integer
+        | Pconst_integer (s, (Some 'i' as c)) -> (
+            try
+              let (_ : int) = int_of_string s in
+              dty_int
+            with Failure _ -> W.error ~loc (W.Invalid_int_literal (s, c)))
+        | Pconst_integer (_, _) ->
+            (* This is forbidden at parsing*) assert false
+        | Pconst_char _ -> dty_char
+        | Pconst_string _ -> dty_string
+        | Pconst_float _ -> dty_float
+      in
+      mk_dpattern ~loc (DPconst c) dty Mstr.empty
 
 let binop = function
   | Uast.Tand -> Tand
@@ -634,7 +654,9 @@ let type_type_declaration kid crcm ns tdl =
   in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
-  List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl
+  let tdl = List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl in
+  List.iter (fun td -> Hts.add type_declarations td.td_ts td) tdl;
+  tdl
 
 let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
   let tdl = type_type_declaration kid crcm ns tdl in

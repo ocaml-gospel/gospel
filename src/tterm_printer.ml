@@ -44,12 +44,11 @@ let rec print_pat_node pri fmt p =
   | Papp (cs, pl) when is_fs_tuple cs ->
       pp fmt (protect_on (pri > 0) "%a") (list ~sep:comma (print_pat_node 1)) pl
   | Papp (cs, []) -> print_ls_nm fmt cs
+  | Papp (cs, [ pl ]) -> pp fmt "%a@ %a" print_ls_nm cs (print_pat_node 2) pl
   | Papp (cs, pl) ->
-      pp fmt
-        (protect_on (pri > 1) "%a@ %a")
-        print_ls_nm cs
-        (list ~sep:sp (print_pat_node 2))
-        pl
+      pp fmt "%a@ (%a)" print_ls_nm cs (list ~sep:comma (print_pat_node 2)) pl
+  | Pconst c -> Opprintast.constant fmt c
+  | Pinterval (c1, c2) -> pp fmt "%C..%C" c1 c2
 
 let print_pattern = print_pat_node 0
 

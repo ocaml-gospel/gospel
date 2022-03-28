@@ -17,6 +17,8 @@ open Tterm_printer
 open Tast
 open Tast_helper
 
+let type_declarations : type_declaration Hts.t = Hts.create 0
+
 (** Namespace *)
 
 module Mstr = Map.Make (String)
@@ -183,25 +185,117 @@ let ns_with_primitives =
       ("lazy", ts_lazy);
     ]
   in
+
+  let mk_td ts kind =
+    {
+      Tast.td_ts = ts;
+      td_params = [];
+      td_cstrs = [];
+      td_kind = kind;
+      td_private = Tast.Public;
+      td_manifest = None;
+      td_attrs = [];
+      td_spec = None;
+      td_loc = Location.none;
+    }
+  in
+
+  let td_unit =
+    mk_td
+      { Ttypes.ts_ident = ts_unit.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_bool =
+    mk_td
+      { Ttypes.ts_ident = ts_bool.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_int =
+    mk_td
+      { Ttypes.ts_ident = ts_int.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_integer =
+    mk_td
+      { Ttypes.ts_ident = ts_integer.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_float =
+    mk_td
+      { Ttypes.ts_ident = ts_float.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_string =
+    mk_td
+      { Ttypes.ts_ident = ts_string.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+  let td_char =
+    mk_td
+      { Ttypes.ts_ident = ts_char.ts_ident; ts_args = []; ts_alias = None }
+      Tast.Pty_abstract
+  in
+
+  let td_list =
+    mk_td ts_list
+      (Tast.Pty_variant
+         [
+           {
+             Tast.cd_cs = fs_list_nil;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+           {
+             Tast.cd_cs = fs_list_cons;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+         ])
+  in
+
+  let td_option =
+    mk_td ts_option
+      (Tast.Pty_variant
+         [
+           {
+             Tast.cd_cs = fs_option_none;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+           {
+             Tast.cd_cs = fs_option_some;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+         ])
+  in
+
+  Hts.add type_declarations ts_unit td_unit;
+  Hts.add type_declarations ts_bool td_bool;
+  Hts.add type_declarations ts_integer td_integer;
+  Hts.add type_declarations ts_int td_int;
+  Hts.add type_declarations ts_float td_float;
+  Hts.add type_declarations ts_string td_string;
+  Hts.add type_declarations ts_char td_char;
+  Hts.add type_declarations ts_option td_option;
+  Hts.add type_declarations ts_list td_list;
+
   let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in
   let primitive_ls =
-    let tv_option =
-      match ts_option.ts_args with [ v ] -> ty_of_var v | _ -> assert false
-    in
-    let tv_list =
-      match ts_list.ts_args with [ v ] -> ty_of_var v | _ -> assert false
-    in
     [
-      ( none.id_str,
-        fsymbol ~constr:true ~field:false none [] (ty_option tv_option) );
-      ( some.id_str,
-        fsymbol ~constr:true ~field:false some [ tv_option ]
-          (ty_option tv_option) );
-      (nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv_list));
-      ( cons.id_str,
-        fsymbol ~constr:true ~field:false cons
-          [ tv_list; ty_list tv_list ]
-          (ty_list tv_list) );
+      (none.id_str, fs_option_none);
+      (some.id_str, fs_option_some);
+      (nil.id_str, fs_list_nil);
+      (cons.id_str, fs_list_cons);
     ]
   in
   let ns =

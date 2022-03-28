@@ -26,6 +26,19 @@ and pattern_node =
   | Papp of lsymbol * pattern list  (** Constructor *)
   | Por of pattern * pattern  (** p1 | p2 *)
   | Pas of pattern * vsymbol  (** p as vs *)
+  | Pinterval of char * char
+      [@printer fun fmt (c1, c2) -> fprintf fmt "%C..%C" c1 c2]
+  | Pconst of constant
+      [@printer
+        fun fmt cc ->
+          let t, v =
+            match cc with
+            | Pconst_integer (s, _) -> ("integer", s)
+            | Pconst_char c -> ("char", Format.sprintf "%C" c)
+            | Pconst_string (s, _, _) -> ("string", Format.sprintf "%S" s)
+            | Pconst_float (s, _) -> ("float", s)
+          in
+          fprintf fmt "<const_%s: %s >" t v]
 [@@deriving show]
 
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff

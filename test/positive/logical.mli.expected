@@ -96,15 +96,11 @@ module logical.mli
     
     (*@ predicate rec is_sorted_list (l:int list) =
         (match l:int list with
-        | [] | infix :: _ [] -> (True ):bool
-        | infix :: h:int (infix :: y_1:int _ as t:int list) -> if ((integer_of_int 
-                                                               h:int):
-                                                               integer <= (integer_of_int 
-                                                               y_1:int):
-                                                               integer):prop /\ (is_sorted_list 
-                                                               t:int list):prop then (True ):
-                                                               bool else (False ):
-                                                               bool
+        | [] | infix :: (_, []) -> (True ):bool
+        | infix :: (h:int, (infix :: (y_1:int, _) as t:int list)) -> 
+        if ((integer_of_int  h:int):integer <= (integer_of_int 
+        y_1:int):integer):prop /\ (is_sorted_list 
+        t:int list):prop then (True ):bool else (False ):bool
         end::bool = (True ):bool):prop
     *)
     

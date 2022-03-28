@@ -100,6 +100,8 @@ and dpattern_node =
   | DPor of dpattern * dpattern
   | DPas of dpattern * Preid.t
   | DPcast of dpattern * dty
+  | DPconst of Parsetree.constant
+  | DPinterval of char * char
 
 type dbinder = Preid.t * dty
 
@@ -319,12 +321,14 @@ let pattern dp =
     match dp.dp_node with
     | DPwild -> p_wild ty
     | DPvar pid -> p_var (get_var pid ty)
+    | DPconst c -> p_const c
     | DPapp (ls, dpl) -> p_app ls (List.map pattern_node dpl) ty
     | DPor (dp1, dp2) ->
         let dp1 = pattern_node dp1 in
         let dp2 = pattern_node dp2 in
         p_or dp1 dp2
     | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty)
+    | DPinterval (c1, c2) -> p_interval c1 c2
     | DPcast _ -> assert false
   in
   let p = pattern_node dp in
@@ -399,6 +403,8 @@ and term_node ~loc env prop dty dterm_node =
         (p, term env false dt)
       in
       let pl = List.map branch ptl in
+      let ty = ty_of_dty (Option.get dt.dt_dty) in
+      Patmat.check_exhaustive ty pl ~loc;
       t_case t pl loc
 
 let fmla env dt = term env true dt
