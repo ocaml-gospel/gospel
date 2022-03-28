@@ -397,6 +397,8 @@ and term_node env prop dty dterm_node =
         (p, term env false dt)
       in
       let pl = List.map branch ptl in
+      let ty = Option.get t.t_ty in
+      Patterns.check_exhaustive ty pl;
       t_case t pl
 
 let fmla env dt = term env true dt

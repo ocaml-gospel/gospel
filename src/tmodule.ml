@@ -17,6 +17,8 @@ open Tterm_printer
 open Tast
 open Tast_helper
 
+let type_declarations : type_declaration Hts.t = Hts.create 0
+
 (** Namespace *)
 
 module Mstr = Map.Make (String)

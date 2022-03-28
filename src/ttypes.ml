@@ -70,10 +70,12 @@ module Ts = struct
   type t = tysymbol
 
   let equal = ts_equal
+  let hash x = x.ts_ident.id_tag
   let compare x y = Ident.compare x.ts_ident y.ts_ident
 end
 
 module Mts = Map.Make (Ts)
+module Hts = Hashtbl.Make (Ts)
 
 let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
 let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }

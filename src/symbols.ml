@@ -24,6 +24,7 @@ module Vs = struct
 end
 
 module Svs = Set.Make (Vs)
+module Mvs = Map.Make (Vs)
 
 (* Function and predicate symbols *)
 

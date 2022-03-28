@@ -605,7 +605,9 @@ let type_type_declaration kid crcm ns tdl =
   in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
-  List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl
+  let tdl = List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl in
+  List.iter (fun td -> Hts.add type_declarations td.td_ts td) tdl;
+  tdl
 
 let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
   let tdl = type_type_declaration kid crcm ns tdl in
