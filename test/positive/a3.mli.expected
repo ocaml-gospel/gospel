@@ -48,7 +48,6 @@ module a3.mli
             Type symbols
               ('a) array
               ('a) bag
-               int
               ('a) ref
               ('a) seq
               ('a) set
