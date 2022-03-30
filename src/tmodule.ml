@@ -167,6 +167,7 @@ let ns_with_primitives =
   let primitive_tys =
     [
       ("integer", ts_integer);
+      ("int", ts_int);
       ("string", ts_string);
       ("char", ts_char);
       ("float", ts_float);
