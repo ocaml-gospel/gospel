@@ -447,7 +447,7 @@ let () =
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "This pattern has type %a but is expected to have type %a" print_dty
-          dty2 print_dty dty1
+          dty1 print_dty dty2
     | BadType (dty1, dty2) ->
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))
