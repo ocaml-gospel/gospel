@@ -101,7 +101,11 @@ let s_type_declaration f x =
   let constructor_declaration f pcd =
     pp f "|@;";
     constructor_declaration reset_ctxt f
-      (pcd.pcd_name.txt, pcd.pcd_args, pcd.pcd_res, pcd.pcd_attributes)
+      ( pcd.pcd_name.txt,
+        pcd.pcd_vars,
+        pcd.pcd_args,
+        pcd.pcd_res,
+        pcd.pcd_attributes )
   in
   let repr f =
     let intro f = if x.tmanifest = None then () else pp f "@;=" in
@@ -226,7 +230,17 @@ let rec s_signature_item f x =
         s_module_type pmd.mdtype
         (item_attributes reset_ctxt)
         pmd.mdattributes
+  | Sig_modsubst pms ->
+      pp f "@[<hov>module@ %s@ :=@ %a@]%a" pms.pms_name.txt longident_loc
+        pms.pms_manifest
+        (item_attributes reset_ctxt)
+        pms.pms_attributes
   | Sig_open od -> print_open f od
+  | Sig_typesubst _l ->
+      (* Psig_typesubst is never recursive, but we specify [Recursive] here to
+         avoid printing a [nonrec] flag, which would be rejected by the parser.
+      *)
+      pp f "<typesubst>"
   | Sig_include incl ->
       pp f "@[<hov2>include@ %a@]%a" module_type incl.pincl_mod
         (item_attributes reset_ctxt)
@@ -240,6 +254,13 @@ let rec s_signature_item f x =
               Format.pp_print_space f ();
               pp f "@ =@ %a" s_module_type mt)
         md
+        (item_attributes reset_ctxt)
+        attrs
+  | Sig_modtypesubst { mtdname = s; mtdtype = md; mtdattributes = attrs } ->
+      let md =
+        match md with None -> assert false (* ast invariant *) | Some mt -> mt
+      in
+      pp f "@[<hov2>module@ type@ %s@ :=@ %a@]%a" s.txt s_module_type md
         (item_attributes reset_ctxt)
         attrs
   | Sig_class_type l -> class_type_declaration_list reset_ctxt f l
@@ -298,6 +319,8 @@ and s_module_type f x =
                 ls longident_loc li s_type_declaration td
           | Wmodule (li, li2) ->
               pp f "module %a =@ %a" longident_loc li longident_loc li2
+          | Wmodtype (li, mty) ->
+              pp f "module type %a =@ %a" longident_loc li module_type mty
           | Wtypesubst (li, ({ tparams = ls; _ } as td)) ->
               let ls = List.map fst ls in
               pp f "type@ %a %a :=@ %a"
@@ -305,6 +328,8 @@ and s_module_type f x =
                 ls longident_loc li s_type_declaration td
           | Wmodsubst (li, li2) ->
               pp f "module %a :=@ %a" longident_loc li longident_loc li2
+          | Wmodtypesubst (li, mty) ->
+              pp f "module type %a :=@ %a" longident_loc li module_type mty
         in
         pp f "@[<hov2>%a@ with@ %a@]" s_module_type1 mt
           (list with_constraint ~sep:(any " and@ "))

@@ -1072,6 +1072,10 @@ and process_modtype penv muc umty =
             not_supported ~loc:umty.mloc "with module clause not supported"
         | Wmodsubst (_, _) ->
             not_supported ~loc:umty.mloc "with module clause not supported"
+        | Wmodtypesubst (_, _) ->
+            not_supported ~loc:umty.mloc "with module clause not supported"
+        | Wmodtype (_, _) ->
+            not_supported ~loc:umty.mloc "with module clause not supported"
       in
       let muc, cl = List.fold_left process_constraint (muc, []) cl in
       let tmty =
@@ -1146,6 +1150,8 @@ and process_sig_item penv muc { sdesc; sloc } =
     | Uast.Sig_typext te -> (muc, mk_sig_item (Sig_typext te) sloc)
     | Uast.Sig_module m -> process_mod penv sloc m muc
     | Uast.Sig_recmodule _ -> not_supported ~loc:sloc "module rec not supported"
+    | Uast.Sig_modsubst _ | Uast.Sig_modtypesubst _ | Uast.Sig_typesubst _ ->
+        not_supported ~loc:sloc "substitution not supported"
     | Uast.Sig_modtype mty_decl -> process_modtype_decl penv sloc mty_decl muc
     | Uast.Sig_exception te -> (muc, process_exception_sig sloc ns te)
     | Uast.Sig_open od -> process_open ~loc:sloc ~ghost:Nonghost penv muc od

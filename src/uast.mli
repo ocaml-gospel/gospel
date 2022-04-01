@@ -187,6 +187,10 @@ type s_with_constraint =
   (* with module X.Y = Z *)
   | Wtypesubst of Longident.t loc * s_type_declaration
   (* with type X.t := ..., same format as [Pwith_type] *)
+  | Wmodtypesubst of longident_loc * module_type
+  (* with module type X.Y := sig end *)
+  | Wmodtype of longident_loc * module_type
+  (* with module type X.Y = Z *)
   | Wmodsubst of Longident.t loc * Longident.t loc
 (* with module X.Y := Z *)
 
@@ -198,6 +202,8 @@ type s_signature_item_desc =
          *)
   | Sig_type of rec_flag * s_type_declaration list
   (* type t1 = ... and ... and tn = ... *)
+  | Sig_typesubst of s_type_declaration list
+  (* type t1 := ... and ... and tn := ...  *)
   | Sig_typext of type_extension
   (* type t1 += ... *)
   | Sig_module of s_module_declaration
@@ -207,7 +213,11 @@ type s_signature_item_desc =
   | Sig_modtype of s_module_type_declaration
   (* module type S = MT
      module type S *)
+  | Sig_modtypesubst of s_module_type_declaration
+  (* module type S :=  ...  *)
   (* these were not modified *)
+  | Sig_modsubst of module_substitution
+  (* module X := M *)
   | Sig_exception of type_exception
   (* exception C of T *)
   | Sig_open of open_description
