@@ -18,7 +18,7 @@ let print_rec_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
     Ident.pp ld.ld_field.ls_name print_ty
-    (Option.get ld.ld_field.ls_value)
+    (Stdlib.Option.get ld.ld_field.ls_value)
 
 let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}" (list ~sep:semi print_field) fields
@@ -53,7 +53,8 @@ let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants } =
     let print_field f (ls, mut) =
       pp f "@[%s%a : %a@]"
         (if mut then "mutable model " else "model ")
-        print_ls_nm ls print_ty (Option.get ls.ls_value)
+        print_ls_nm ls print_ty
+        (Stdlib.Option.get ls.ls_value)
     in
     pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral
       (list ~first:newline ~sep:newline print_field)
@@ -194,7 +195,7 @@ let print_function f x =
 let print_extension_constructor ctxt f x =
   (* Cf: #7200 *)
   match x.ext_kind with
-  | Pext_decl (_, _) -> print_xs f x.ext_xs
+  | Pext_decl (_, _, _) -> print_xs f x.ext_xs
   | Pext_rebind li ->
       pp f "%a%a@;=@;%a" Ident.pp x.ext_xs.xs_ident (attributes ctxt)
         x.ext_attributes longident_loc li
