@@ -114,4 +114,4 @@ let fs_tuple =
       Hashtbl.add ls_tuples n ls;
       ls
 
-let is_fs_tuple fs = fs.ls_constr = true && Hashtbl.mem fs_tuple_ids fs.ls_name
+let is_fs_tuple fs = fs.ls_constr && Hashtbl.mem fs_tuple_ids fs.ls_name
