@@ -222,6 +222,8 @@ let with_constraint c =
   | Pwith_module (l1, l2) -> Wmodule (l1, l2)
   | Pwith_typesubst (l, t) -> Wtypesubst (l, no_spec_type_decl t)
   | Pwith_modsubst (l1, l2) -> Wmodsubst (l1, l2)
+  | Pwith_modtype (l1, l2) -> Wmodtype (l1, l2)
+  | Pwith_modtypesubst (l1, l2) -> Wmodtypesubst (l1, l2)
 
 let rec signature_item_desc ~filename = function
   | Psig_value v -> Sig_val (val_description ~filename v)
@@ -239,9 +241,11 @@ let rec signature_item_desc ~filename = function
   | Psig_class c -> Sig_class c
   | Psig_class_type c -> Sig_class_type c
   | Psig_extension (e, a) -> Sig_extension (e, a)
-  | Psig_typesubst _ | Psig_modsubst _ -> assert false
+  | Psig_typesubst s -> Sig_typesubst (List.map (type_declaration ~filename) s)
+  | Psig_modsubst s -> Sig_modsubst s
+  | Psig_modtypesubst s ->
+      Sig_modtypesubst (module_type_declaration ~filename s)
 
-(* TODO(@pascutto) *)
 and signature ~filename sigs =
   List.map
     (fun { psig_desc; psig_loc } ->
