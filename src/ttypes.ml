@@ -190,8 +190,8 @@ let ts_list =
 
 let ts_tuple =
   let ts_tuples = Hashtbl.create 0 in
+  Hashtbl.add ts_tuples 0 ts_unit;
   fun n ->
-    (* if n = 0 then ts_unit else *)
     try Hashtbl.find ts_tuples n
     with Not_found ->
       let ts_id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in

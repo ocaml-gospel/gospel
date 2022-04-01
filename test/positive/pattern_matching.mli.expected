@@ -14,6 +14,13 @@ val test1 : t -> t -> t[@@gospel
              | _, S _ -> false
              | O, _   -> false
              | S a, O -> r = S (S a) |}]
+val f_unit : int -> unit[@@gospel
+                          {| x1 = f_unit x0
+     ensures match x1 with () -> true |}]
+[@@@gospel
+  {| function fun_unit (x: unit): string =
+    match x with
+    | () -> "out" |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -36,6 +43,13 @@ val test1 : t -> t -> t
     ensures ...
      *)
 
+val f_unit : int -> unit
+(*@ x1 = f_unit x0
+    ensures ...
+     *)
+
+(*@ function fun_unit ... *)
+
 *******************************
 ********* Typed GOSPEL ********
 *******************************
@@ -48,6 +62,7 @@ module pattern_matching.mli
     Logic Symbols
       function O  : t
       function S (_:t) : t
+      function fun_unit (_:unit) : string
       
     Field Symbols
       
@@ -81,5 +96,17 @@ module pattern_matching.mli
                               (S  a:t):t):t):prop then (True ):bool else (False ):
                               bool
                 end::bool = (True ):bool):prop*)
+    
+    val f_unit : int -> unit
+    (*@ x1:unit = f_unit x0:int
+        ensures (match x1:unit with
+                |  -> (True ):bool
+                end::bool = (True ):bool):prop*)
+    
+    (*@ function fun_unit (x_2:unit): string =
+        match x_2:unit with
+        |  -> "out":string
+        end::string
+    *)
 
 OK
