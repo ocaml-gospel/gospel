@@ -273,7 +273,9 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tconst c ->
       let dty =
         match c with
-        | Pconst_integer _ -> dty_integer
+        | Pconst_integer (_, None) -> dty_integer
+        | Pconst_integer (_, Some 'i') -> dty_int
+        | Pconst_integer (_, _) -> assert false
         | Pconst_char _ -> dty_char
         | Pconst_string _ -> dty_string
         | Pconst_float _ -> dty_float

@@ -50,6 +50,7 @@ val dty_char : dty
 val dty_float : dty
 val dty_string : dty
 val dty_integer : dty
+val dty_int : dty
 val dty_of_dterm : dterm -> dty
 val dty_of_ty : Ttypes.ty -> dty
 val dty_fresh : unit -> dty

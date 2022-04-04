@@ -1,0 +1,55 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+[@@@gospel {| type t = A of integer |}]
+val f : int -> int[@@gospel {| y = f x
+    requires A 42i = A 42i |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+(*@ type t =
+    | A of integer 
+   *)
+
+val f : int -> int
+(*@ y = f x
+    requires ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module bad_constr_arg.mli
+
+  Namespace: bad_constr_arg.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      function A (_:integer) : t
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    (*@ type t = A of integer
+                 function A (_:integer) : t
+              *)
+    
+    val f : int -> int
+    (*@ y:int = f x:int
+        requires ((A  (integer_of_int  42i:int):integer):t = (A 
+                 (integer_of_int  42i:int):integer):t):prop*)
+
+OK
