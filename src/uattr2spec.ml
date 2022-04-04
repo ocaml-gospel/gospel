@@ -8,37 +8,11 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module W = Warnings
+module W = Gospel.Warnings
 open Ppxlib
+open Utils
 open Uast
-
-let is_spec attr = attr.attr_name.txt = "gospel"
-
-let rec get_spec_attr = function
-  | [] -> (None, [])
-  | h :: t when is_spec h -> (Some h, t)
-  | h :: t ->
-      let elt, rest = get_spec_attr t in
-      (elt, h :: rest)
-
-let get_spec_content attr =
-  match attr.attr_payload with
-  | PStr
-      [
-        {
-          pstr_desc =
-            Pstr_eval
-              ({ pexp_desc = Pexp_constant (Pconst_string (spec, _, _)); _ }, _);
-          _;
-        };
-      ] ->
-      (spec, attr.attr_loc)
-  | _ -> assert false
-
-let get_inner_spec attr =
-  match attr.attr_payload with
-  | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
-  | _ -> assert false
+open Attrs
 
 (* XXX: Use Lexing.set_position when moving to OCaml 4.11 *)
 let set_position (lexbuf : Lexing.lexbuf) (position : Lexing.position) =
@@ -62,39 +36,22 @@ let parse_gospel ~filename parse attr =
     W.error ~loc W.Syntax_error
 
 let type_declaration ~filename t =
-  let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
+  let spec_attr = get_spec_attr t.ptype_attributes in
   let parse attr =
     let ty_text, spec = parse_gospel ~filename Uparser.type_spec attr in
     { spec with ty_text; ty_loc = attr.attr_loc }
   in
   let spec = Option.map parse spec_attr in
-  {
-    tname = t.ptype_name;
-    tparams = t.ptype_params;
-    tcstrs = t.ptype_cstrs;
-    tkind = t.ptype_kind;
-    tprivate = t.ptype_private;
-    tmanifest = t.ptype_manifest;
-    tattributes = other_attrs;
-    tspec = spec;
-    tloc = t.ptype_loc;
-  }
+  with_parsed_type_spec t spec
 
 let val_description ~filename v =
-  let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
+  let spec_attr = get_spec_attr v.pval_attributes in
   let parse attr =
     let sp_text, spec = parse_gospel ~filename Uparser.val_spec attr in
     { spec with sp_text; sp_loc = attr.attr_loc }
   in
   let spec = Option.map parse spec_attr in
-  {
-    vname = v.pval_name;
-    vtype = v.pval_type;
-    vprim = v.pval_prim;
-    vattributes = other_attrs;
-    vspec = spec;
-    vloc = v.pval_loc;
-  }
+  with_parsed_val_spec v spec
 
 let ghost_spec ~filename attr =
   let spec, loc = get_spec_content attr in
@@ -103,135 +60,77 @@ let ghost_spec ~filename attr =
   match sigs with
   | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
       let type_ = type_declaration ~filename t in
-      if type_.tspec = None then
-        let tspec =
-          get_inner_spec attr
-          |> fst
-          |> Option.map (parse_gospel ~filename Uparser.type_spec)
-          |> Option.map (fun (ty_text, spec) ->
-                 { spec with ty_text; ty_loc = attr.attr_loc })
-        in
-        Sig_ghost_type (r, [ { type_ with tspec; tloc = attr.attr_loc } ])
-      else Sig_ghost_type (r, [ type_ ])
+      let spec = parsed_of_type_spec type_ in
+      let t =
+        if spec = None then
+          let spec =
+            get_inner_spec attr
+            |> Option.map (parse_gospel ~filename Uparser.type_spec)
+            |> Option.map (fun (ty_text, spec) ->
+                   { spec with ty_text; ty_loc = attr.attr_loc })
+          in
+          with_parsed_type_spec t spec
+        else type_
+      in
+      to_parsed_floating (Type (r, [ t ]))
   | [ { psig_desc = Psig_value vd; _ } ] ->
       let val_ = val_description ~filename vd in
-      if val_.vspec = None then
-        let vspec =
-          get_inner_spec attr
-          |> fst
-          |> Option.map (parse_gospel ~filename Uparser.val_spec)
-          |> Option.map (fun (sp_text, spec) ->
-                 { spec with sp_text; sp_loc = attr.attr_loc })
-        in
-        Sig_ghost_val { val_ with vspec; vloc = attr.attr_loc }
-      else Sig_ghost_val val_
-  | [ { psig_desc = Psig_open od; _ } ] ->
-      Sig_ghost_open { od with popen_loc = attr.attr_loc }
+      let spec = parsed_of_val_spec val_ in
+      let v =
+        if spec = None then
+          let spec =
+            get_inner_spec attr
+            |> Option.map (parse_gospel ~filename Uparser.val_spec)
+            |> Option.map (fun (sp_text, spec) ->
+                   { spec with sp_text; sp_loc = attr.attr_loc })
+          in
+          with_parsed_val_spec vd spec
+        else val_
+      in
+      to_parsed_floating (Value v)
+  | [ { psig_desc = Psig_open od; _ } ] -> to_parsed_floating (Open od)
   | _ -> assert false
 
 let floating_spec ~filename a =
   try
     let fun_text, fun_ = parse_gospel ~filename Uparser.func a in
     let fun_ = { fun_ with fun_text } in
-    if fun_.fun_spec = None then
-      let fun_spec =
-        get_inner_spec a
-        |> fst
-        |> Option.map (parse_gospel ~filename Uparser.func_spec)
-        |> Option.map (fun (fun_text, (spec : fun_spec)) ->
-               { spec with fun_text; fun_loc = a.attr_loc })
-      in
-      Sig_function { fun_ with fun_spec }
-    else Sig_function fun_
+    let fun_ =
+      if fun_.fun_spec = None then
+        let fun_spec =
+          get_inner_spec a
+          |> Option.map (parse_gospel ~filename Uparser.func_spec)
+          |> Option.map (fun (fun_text, (spec : fun_spec)) ->
+                 { spec with fun_text; fun_loc = a.attr_loc })
+        in
+        Function { fun_ with fun_spec }
+      else Function fun_
+    in
+    to_parsed_floating fun_
   with W.Error (_, W.Syntax_error) -> (
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
-      Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
+      let parsed_ax = Axiom { axiom with ax_text; ax_loc = a.attr_loc } in
+      to_parsed_floating parsed_ax
     with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a)
 
-let with_constraint c =
-  let no_spec_type_decl t =
-    {
-      tname = t.ptype_name;
-      tparams = t.ptype_params;
-      tcstrs = t.ptype_cstrs;
-      tkind = t.ptype_kind;
-      tprivate = t.ptype_private;
-      tmanifest = t.ptype_manifest;
-      tattributes = t.ptype_attributes;
-      tspec = None;
-      tloc = t.ptype_loc;
-    }
-  in
-  match c with
-  | Pwith_type (l, t) -> Wtype (l, no_spec_type_decl t)
-  | Pwith_module (l1, l2) -> Wmodule (l1, l2)
-  | Pwith_typesubst (l, t) -> Wtypesubst (l, no_spec_type_decl t)
-  | Pwith_modsubst (l1, l2) -> Wmodsubst (l1, l2)
-  | Pwith_modtype (l1, l2) -> Wmodtype (l1, l2)
-  | Pwith_modtypesubst (l1, l2) -> Wmodtypesubst (l1, l2)
+let parse_specs filename =
+  object
+    inherit Ast_traverse.map as super
 
-let rec signature_item_desc ~filename = function
-  | Psig_value v -> Sig_val (val_description ~filename v)
-  | Psig_type (r, tl) -> Sig_type (r, List.map (type_declaration ~filename) tl)
-  | Psig_attribute a ->
-      if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
-  | Psig_module m -> Sig_module (module_declaration ~filename m)
-  | Psig_recmodule d ->
-      Sig_recmodule (List.map (module_declaration ~filename) d)
-  | Psig_modtype d -> Sig_modtype (module_type_declaration ~filename d)
-  | Psig_typext t -> Sig_typext t
-  | Psig_exception e -> Sig_exception e
-  | Psig_open o -> Sig_open o
-  | Psig_include i -> Sig_include i
-  | Psig_class c -> Sig_class c
-  | Psig_class_type c -> Sig_class_type c
-  | Psig_extension (e, a) -> Sig_extension (e, a)
-  | Psig_typesubst s -> Sig_typesubst (List.map (type_declaration ~filename) s)
-  | Psig_modsubst s -> Sig_modsubst s
-  | Psig_modtypesubst s ->
-      Sig_modtypesubst (module_type_declaration ~filename s)
+    method! value_description v =
+      let v = super#value_description v in
+      val_description ~filename v
 
-and signature ~filename sigs =
-  List.map
-    (fun { psig_desc; psig_loc } ->
-      { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
-    sigs
+    method! type_declaration t =
+      let t = super#type_declaration t in
+      type_declaration ~filename t
 
-and module_type_desc ~filename = function
-  | Pmty_ident id -> Mod_ident id
-  | Pmty_signature s -> Mod_signature (signature ~filename s)
-  | Pmty_functor (fp, mt) ->
-      Mod_functor (functor_parameter ~filename fp, module_type ~filename mt)
-  | Pmty_with (m, c) ->
-      Mod_with (module_type ~filename m, List.map with_constraint c)
-  | Pmty_typeof m -> Mod_typeof m
-  | Pmty_extension e -> Mod_extension e
-  | Pmty_alias a -> Mod_alias a
+    method! signature_item i =
+      let i = super#signature_item i in
+      match i.psig_desc with
+      | Psig_attribute a when is_spec a -> floating_spec ~filename a
+      | _ -> i
+  end
 
-and functor_parameter ~filename = function
-  | Unit -> Unit
-  | Named (s, m) -> Named (s, module_type ~filename m)
-
-and module_type ~filename m =
-  {
-    mdesc = module_type_desc ~filename m.pmty_desc;
-    mloc = m.pmty_loc;
-    mattributes = m.pmty_attributes;
-  }
-
-and module_declaration ~filename m =
-  {
-    mdname = m.pmd_name;
-    mdtype = module_type ~filename m.pmd_type;
-    mdattributes = m.pmd_attributes;
-    mdloc = m.pmd_loc;
-  }
-
-and module_type_declaration ~filename m =
-  {
-    mtdname = m.pmtd_name;
-    mtdtype = Option.map (module_type ~filename) m.pmtd_type;
-    mtdattributes = m.pmtd_attributes;
-    mtdloc = m.pmtd_loc;
-  }
+let signature ~filename = (parse_specs filename)#signature

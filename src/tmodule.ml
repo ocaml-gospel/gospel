@@ -389,66 +389,83 @@ let get_top_import muc =
 let get_top_export muc =
   match muc.muc_export with e0 :: _ -> e0 | _ -> assert false
 
-let add_sig_contents muc sig_ =
-  let muc = add_sig muc sig_ in
-  let get_cs_pjs = function
-    | Pty_abstract -> []
-    | Pty_variant cdl -> List.map (fun cd -> cd.cd_cs) cdl
-    | Pty_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
-  in
-  match sig_.sig_desc with
-  | Sig_val (({ vd_spec = Some sp; _ } as v), _) when sp.sp_pure ->
+let add_value muc sig_ v =
+  let spec = Attrs.typed_of_val_spec v in
+  match spec with
+  | Some sp when sp.sp_pure ->
       let tyl = List.map ty_of_lb_arg sp.sp_args in
       let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
       let ls = lsymbol ~field:false v.vd_name tyl (Some ty) in
       let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
       add_kid muc ls.ls_name sig_
-  | Sig_function f ->
-      let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
-      let muc =
-        match f.fun_spec with
-        | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
-        | _ -> muc
-      in
-      add_kid muc f.fun_ls.ls_name sig_
-  | Sig_type (_, tdl, _) ->
-      let add_td muc td =
-        let s = (ts_ident td.td_ts).id_str in
-        let muc = add_ts ~export:true muc s td.td_ts in
-        let csl = get_cs_pjs td.td_kind in
-        let muc =
-          List.fold_left
-            (fun muc cs ->
-              (if cs.ls_field then add_fd else add_ls)
-                ~export:true muc cs.ls_name.id_str cs)
-            muc csl
-        in
-        let fields =
-          Option.fold ~none:[]
-            ~some:(fun spec -> List.map fst spec.ty_fields)
-            td.td_spec
-        in
-        let muc =
-          List.fold_left
-            (fun muc ls ->
-              (if ls.ls_field then add_fd else add_ls)
-                ~export:true muc ls.ls_name.id_str ls)
-            muc fields
-        in
-        add_kid muc td.td_ts.ts_ident sig_
-      in
-      List.fold_left add_td muc tdl
-  | Sig_exception te ->
-      let s = te.exn_constructor.ext_ident.id_str in
+  | _ -> muc
+
+let add_type muc sig_ tdl =
+  let get_cs_pjs = function
+    | Ptype_abstract | Ptype_open -> []
+    | Ptype_variant cdl -> List.map (fun cd -> cd.cd_cs) cdl
+    | Ptype_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
+  in
+  let add_td muc td =
+    let s = (ts_ident td.td_ts).id_str in
+    let muc = add_ts ~export:true muc s td.td_ts in
+    let csl = get_cs_pjs td.td_kind in
+    let muc =
+      List.fold_left
+        (fun muc cs ->
+          (if cs.ls_field then add_fd else add_ls)
+            ~export:true muc cs.ls_name.id_str cs)
+        muc csl
+    in
+    let fields =
+      Option.fold ~none:[]
+        ~some:(fun spec -> List.map fst spec.ty_fields)
+        td.td_spec
+    in
+    let muc =
+      List.fold_left
+        (fun muc ls ->
+          (if ls.ls_field then add_fd else add_ls)
+            ~export:true muc ls.ls_name.id_str ls)
+        muc fields
+    in
+    add_kid muc td.td_ts.ts_ident sig_
+  in
+  List.fold_left add_td muc tdl
+
+let add_function muc sig_ f =
+  let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
+  let muc =
+    match f.fun_spec with
+    | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
+    | _ -> muc
+  in
+  add_kid muc f.fun_ls.ls_name sig_
+
+let add_open muc sig_ (o : open_description) =
+  let nm = List.hd (List.rev opn_id) in
+  let ns = ns_find_ns (get_top_import muc) opn_id in
+  add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
+
+let add_sig_contents muc sig_ =
+  let muc = add_sig muc sig_ in
+  match sig_.psig_desc with
+  | Psig_value v -> add_value muc sig_ v
+  | Psig_attribute a when Attrs.is_typed_spec a -> (
+      match Attrs.of_typed_floating sig_.psig_desc with
+      | Function f -> add_function muc sig_ f
+      | Axiom _ -> muc
+      | Type (_, tl) -> add_type muc sig_ tl
+      | Value v -> add_value muc sig_ v
+      | Open o -> add_open muc sig_ o)
+  | Psig_type (_, tdl) -> add_type muc sig_ tdl
+  | Psig_exception te ->
+      let s = te.ptyexn_constructor.pext_name.txt in
       let xs = te.exn_constructor.ext_xs in
       let muc = add_xs ~export:true muc s xs in
       add_kid muc te.exn_constructor.ext_ident sig_
-  | Sig_open ({ opn_id; _ }, _) ->
-      let nm = List.hd (List.rev opn_id) in
-      let ns = ns_find_ns (get_top_import muc) opn_id in
-      add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
+  | Psig_open o -> add_open muc sig_ o
   | _ -> muc
-(* TODO *)
 
 (** Module under construction with primitive types and functions *)
 

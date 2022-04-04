@@ -15,9 +15,6 @@ val type_spec :
   Location.t ->
   type_spec
 
-val label_declaration :
-  'a -> mutable_flag -> Location.t -> attributes -> 'a label_declaration
-
 val mk_val_spec :
   lb_arg list ->
   lb_arg list ->
@@ -55,46 +52,3 @@ val mk_function :
   function_
 
 val mk_axiom : Ident.t -> term -> Location.t -> string -> axiom
-
-val mk_val_description :
-  Ident.t ->
-  core_type ->
-  string list ->
-  attributes ->
-  lb_arg list ->
-  lb_arg list ->
-  val_spec option ->
-  Location.t ->
-  val_description
-
-val type_declaration :
-  tysymbol ->
-  (tvsymbol * (Asttypes.variance * Asttypes.injectivity)) list ->
-  (ty * ty * Location.t) list ->
-  type_kind ->
-  private_flag ->
-  ty option ->
-  attributes ->
-  type_spec option ->
-  Location.t ->
-  type_declaration
-
-val extension_constructor :
-  Ident.t ->
-  xsymbol ->
-  extension_constructor_kind ->
-  Location.t ->
-  attributes ->
-  extension_constructor
-
-val constructor_decl :
-  lsymbol ->
-  (Ident.t * ty) label_declaration list ->
-  Location.t ->
-  attributes ->
-  constructor_decl
-
-val type_exception :
-  extension_constructor -> Location.t -> attributes -> type_exception
-
-val mk_sig_item : signature_item_desc -> Location.t -> signature_item

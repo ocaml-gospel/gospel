@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 open Ppxlib
+open Parsetree
 module Preid = Identifier.Preid
 
 (* Types *)
@@ -125,7 +126,6 @@ type fun_spec = {
   fun_loc : Location.t;
 }
 
-(* type param  = Location.t * Preid.t * pty *)
 type function_ = {
   fun_name : Preid.t;
   fun_rec : bool;
@@ -144,143 +144,9 @@ type axiom = {
   ax_text : string;
 }
 
-(* Modified OCaml constructs with specification attached *)
-
-type s_val_description = {
-  vname : string loc;
-  vtype : core_type;
-  vprim : string list;
-  vattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  vspec : val_spec option;
-  (* specification *)
-  vloc : Location.t;
-}
-
-type s_type_declaration = {
-  tname : string loc;
-  tparams : (core_type * (variance * injectivity)) list;
-  (* ('a1,...'an) t; None represents  _*)
-  tcstrs : (core_type * core_type * Location.t) list;
-  (* ... constraint T1=T1'  ... constraint Tn=Tn' *)
-  tkind : type_kind;
-  tprivate : private_flag;
-  (* = private ... *)
-  tmanifest : core_type option;
-  (* = T *)
-  tattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  tspec : type_spec option;
-  (* specification *)
-  tloc : Location.t;
-}
-
-type s_with_constraint =
-  | Wtype of Longident.t loc * s_type_declaration
-  (* with type X.t = ...
-
-     Note: the last component of the longident must match
-     the name of the type_declaration. *)
-  | Wmodule of Longident.t loc * Longident.t loc
-  (* with module X.Y = Z *)
-  | Wtypesubst of Longident.t loc * s_type_declaration
-  (* with type X.t := ..., same format as [Pwith_type] *)
-  | Wmodtypesubst of longident_loc * module_type
-  (* with module type X.Y := sig end *)
-  | Wmodtype of longident_loc * module_type
-  (* with module type X.Y = Z *)
-  | Wmodsubst of Longident.t loc * Longident.t loc
-(* with module X.Y := Z *)
-
-type s_signature_item_desc =
-  | Sig_val of s_val_description
-  (*
-          val x: T
-          external x: T = "s1" ... "sn"
-         *)
-  | Sig_type of rec_flag * s_type_declaration list
-  (* type t1 = ... and ... and tn = ... *)
-  | Sig_typesubst of s_type_declaration list
-  (* type t1 := ... and ... and tn := ...  *)
-  | Sig_typext of type_extension
-  (* type t1 += ... *)
-  | Sig_module of s_module_declaration
-  (* module X : MT *)
-  | Sig_recmodule of s_module_declaration list
-  (* module rec X1 : MT1 and ... and Xn : MTn *)
-  | Sig_modtype of s_module_type_declaration
-  (* module type S = MT
-     module type S *)
-  | Sig_modtypesubst of s_module_type_declaration
-  (* module type S :=  ...  *)
-  (* these were not modified *)
-  | Sig_modsubst of module_substitution
-  (* module X := M *)
-  | Sig_exception of type_exception
-  (* exception C of T *)
-  | Sig_open of open_description
-  (* open X *)
-  | Sig_include of include_description
-  (* include MT *)
-  | Sig_class of class_description list
-  (* class c1 : ... and ... and cn : ... *)
-  | Sig_class_type of class_type_declaration list
-  (* class type ct1 = ... and ... and ctn = ... *)
-  | Sig_attribute of attribute
-  (* [@@@id] *)
-  | Sig_extension of extension * attributes
-  (* [%%id] *)
-  (* Specific to specification *)
-  | Sig_function of function_
-  | Sig_axiom of axiom
-  | Sig_ghost_type of rec_flag * s_type_declaration list
-  | Sig_ghost_val of s_val_description
-  | Sig_ghost_open of open_description
-
-and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
-and s_signature = s_signature_item list
-
-and s_module_type_desc =
-  | Mod_ident of Longident.t loc
-  (* S *)
-  | Mod_signature of s_signature
-  (* sig ... end *)
-  | Mod_functor of s_functor_parameter * s_module_type
-  (* functor(X : MT1) -> MT2 *)
-  | Mod_with of s_module_type * s_with_constraint list
-  (* MT with ... *)
-  | Mod_typeof of module_expr
-  (* module type of ME *)
-  | Mod_extension of extension
-  (* [%id] *)
-  | Mod_alias of Longident.t loc
-(* (module M) *)
-
-and s_functor_parameter =
-  | Unit
-  (* () *)
-  | Named of string option loc * s_module_type
-(* (X : MT)          Some X, MT
-   (_ : MT)          None, MT *)
-
-and s_module_type = {
-  mdesc : s_module_type_desc;
-  mloc : Location.t;
-  mattributes : attributes; (* ... [@id1] [@id2] *)
-}
-
-and s_module_declaration = {
-  mdname : string option loc;
-  mdtype : s_module_type;
-  mdattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  mdloc : Location.t;
-}
-
-and s_module_type_declaration = {
-  mtdname : string loc;
-  mtdtype : s_module_type option;
-  mtdattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  mtdloc : Location.t;
-}
+type floating =
+  | Axiom of axiom
+  | Function of function_
+  | Value of value_description
+  | Type of rec_flag * type_declaration list
+  | Open of open_description

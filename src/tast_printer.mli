@@ -1,1 +1,3 @@
-val print_signature : Tast.signature Fmt.t
+open Ppxlib
+
+val signature : signature Fmt.t

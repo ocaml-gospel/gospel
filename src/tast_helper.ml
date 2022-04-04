@@ -53,32 +53,8 @@ let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
   List.iter (ty_check None) post;
   val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc
 
-let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
-    vd_loc =
-  { vd_name; vd_type; vd_prim; vd_attrs; vd_args; vd_ret; vd_spec; vd_loc }
-
 let type_spec ty_ephemeral ty_fields ty_invariants ty_text ty_loc =
   { ty_ephemeral; ty_fields; ty_invariants; ty_text; ty_loc }
-
-let label_declaration ld_field ld_mut ld_loc ld_attrs =
-  { ld_field; ld_mut; ld_loc; ld_attrs }
-
-let constructor_decl cd_cs cd_ld cd_loc cd_attrs =
-  { cd_cs; cd_ld; cd_loc; cd_attrs }
-
-let type_declaration td_ts td_params td_cstrs td_kind td_private td_manifest
-    td_attrs td_spec td_loc =
-  {
-    td_ts;
-    td_params;
-    td_cstrs;
-    td_kind;
-    td_private;
-    td_manifest;
-    td_attrs;
-    td_spec;
-    td_loc;
-  }
 
 let axiom ax_name ax_term ax_loc ax_text = { ax_name; ax_term; ax_text; ax_loc }
 
@@ -154,17 +130,11 @@ let mk_function ?result ls r params def spec loc =
 
   function_ ls r params def spec loc
 
-let extension_constructor id xs kd loc attrs =
-  {
-    ext_ident = id;
-    ext_xs = xs;
-    ext_kind = kd;
-    ext_loc = loc;
-    ext_attributes = attrs;
-  }
-
-let type_exception ctr loc attrs =
-  { exn_constructor = ctr; exn_loc = loc; exn_attributes = attrs }
-
-let sig_item sig_desc sig_loc = { sig_desc; sig_loc }
-let mk_sig_item desc loc = sig_item desc loc
+let () =
+  let open Ppxlib.Location.Error in
+  register_error_of_exn (function
+    | DuplicatedArg vs ->
+        Fmt.kstr
+          (fun str -> Some (make ~loc:vs.vs_name.id_loc ~sub:[] str))
+          "Duplicated argument %a" print_vs vs
+    | _ -> None)
