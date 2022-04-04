@@ -25,3 +25,6 @@ etc. There are however a number of exceptions:
 In the rest of this documentation, `lident` (resp. `uident`) stands for an
 identifier with a lowercase (resp. uppercase) first character.
 
+- There is an extra literal modifier for literals of type `int`. Unmodified 
+  literals (e.g. `42`) are of type `integer`, but Gospel adds a `i` modifier to
+  write literals of type `int` (e.g. `42i`).

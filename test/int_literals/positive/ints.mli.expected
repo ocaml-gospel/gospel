@@ -1,0 +1,66 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t =
+  | A of int 
+val f : int -> int[@@gospel
+                    {| y = f x
+    requires x = 42i
+    requires 42 = 42i
+    requires 42i = 42i
+    requires A 42i = A 43i |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t =
+| A of int 
+  
+
+val f : int -> int
+(*@ y = f x
+    requires ...
+    requires ...
+    requires ...
+    requires ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module ints.mli
+
+  Namespace: ints.mli
+    Type symbols
+       t
+      
+    Logic Symbols
+      function A (_:int) : t
+      
+    Field Symbols
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t = A of int
+             function A (_:int) : t
+         
+    
+    val f : int -> int
+    (*@ y:int = f x:int
+        requires (x:int = 42i:int):prop
+                 requires (42:integer = (integer_of_int 
+                          42i:int):integer):prop
+                 requires (42i:int = 42i:int):prop
+                 requires ((A  42i:int):t = (A  43i:int):t):prop*)
+
+OK

@@ -85,7 +85,7 @@
 %token <string> BACKQUOTE_LIDENT
 %token <string> ATTRIBUTE
 
-%token <string> INTEGER
+%token <string * char option> INTEGER
 %token <string> FLOAT
 %token <char> CHAR
 %token <string> STRING
@@ -445,7 +445,7 @@ quant:
 ;
 
 constant:
-| INTEGER { Parsetree.Pconst_integer ($1, None) }
+| INTEGER { let i, m = $1 in Parsetree.Pconst_integer (i, m) }
 | FLOAT { Parsetree.Pconst_float ($1, None) }
 | STRING { Pconst_string ($1, mk_loc $loc, None) }
 | CHAR { Pconst_char $1 }
