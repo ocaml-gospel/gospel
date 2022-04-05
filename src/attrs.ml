@@ -1,5 +1,4 @@
 open Ppxlib
-open Uast
 open Ast_builder.Default
 
 let loc = Location.none
@@ -20,6 +19,9 @@ let to_payload x =
 let to_parsed_attr x =
   attribute ~loc ~name:(noloc parsed_gospel) ~payload:(to_payload x)
 
+let to_typed_attr x =
+  attribute ~loc ~name:(noloc typed_gospel) ~payload:(to_payload x)
+
 let of_payload = function
   | PStr
       [
@@ -32,36 +34,60 @@ let of_payload = function
       Marshal.from_string spec 0
   | _ -> invalid_arg "of_payload"
 
-let parsed_of_attr a =
-  if not (is_parsed_spec a) then invalid_arg "of_attr"
-  else of_payload a.attr_payload
+let of_attr p a =
+  if not (p a) then invalid_arg "of_attr" else of_payload a.attr_payload
 
-let parsed_of_attr_list l =
+let of_attr_list p l =
   try
-    let a = List.find is_parsed_spec l in
+    let a = List.find p l in
     of_payload a.attr_payload
   with Not_found -> invalid_arg "of_attr_list"
 
-let parsed_of_type_spec t : type_spec option =
+let parsed_of_attr = of_attr is_parsed_spec
+let typed_of_attr = of_attr is_typed_spec
+let parsed_of_attr_list = of_attr_list is_parsed_spec
+let typed_of_attr_list = of_attr_list is_typed_spec
+
+let parsed_of_type_spec t : Uast.type_spec option =
   parsed_of_attr_list t.ptype_attributes
 
-let parsed_of_val_spec v : val_spec option =
+let typed_of_type_spec t : Tast.type_spec option =
+  typed_of_attr_list t.ptype_attributes
+
+let parsed_of_val_spec v : Uast.val_spec option =
   parsed_of_attr_list v.pval_attributes
 
-let with_parsed_type_spec t (s : type_spec option) =
+let typed_of_val_spec v : Tast.val_spec option =
+  typed_of_attr_list v.pval_attributes
+
+let with_parsed_type_spec t (s : Uast.type_spec option) =
   { t with ptype_attributes = to_parsed_attr s :: t.ptype_attributes }
 
-let with_parsed_val_spec v (s : val_spec option) =
+let with_typed_type_spec t (s : Tast.type_spec option) =
+  { t with ptype_attributes = to_typed_attr s :: t.ptype_attributes }
+
+let with_parsed_val_spec v (s : Uast.val_spec option) =
   { v with pval_attributes = to_parsed_attr s :: v.pval_attributes }
 
-let to_parsed_floating (f : floating) : signature_item =
-  psig_attribute ~loc
-    (attribute ~loc ~name:(noloc parsed_gospel) ~payload:(to_payload f))
+let with_typed_val_spec v (s : Tast.val_spec option) =
+  { v with pval_attributes = to_typed_attr s :: v.pval_attributes }
 
-let of_parsed_floating s : floating =
+let to_parsed_floating (f : Uast.floating) : signature_item =
+  psig_attribute ~loc (to_parsed_attr f)
+
+let to_typed_floating (f : Tast.floating) : signature_item =
+  psig_attribute ~loc (to_typed_attr f)
+
+let of_floating p k s =
   match s with
-  | Psig_attribute a when is_parsed_spec a -> parsed_of_attr a
+  | Psig_attribute a when p a -> k a
   | _ -> invalid_arg "of_parsed_floating"
+
+let of_parsed_floating s : Uast.floating =
+  of_floating is_parsed_spec parsed_of_attr s
+
+let of_typed_floating s : Tast.floating =
+  of_floating is_typed_spec typed_of_attr s
 
 (** END OF UNSAFE ZONE **)
 
