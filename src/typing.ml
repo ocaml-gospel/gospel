@@ -139,6 +139,8 @@ let parse_record ~loc kid ns fll =
   in
   (cs, pjl, fll)
 
+exception Invalid_int_literal of string * char option
+
 let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_dpattern ~loc dp_node dp_dty dp_vars =
     { dp_node; dp_dty; dp_vars; dp_loc = loc }
@@ -274,7 +276,11 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let dty =
         match c with
         | Pconst_integer (_, None) -> dty_integer
-        | Pconst_integer (_, Some 'i') -> dty_int
+        | Pconst_integer (s, (Some 'i' as c)) -> (
+            try
+              let (_ : int) = int_of_string s in
+              dty_int
+            with Failure _ -> error ~loc (Invalid_int_literal (s, c)))
         | Pconst_integer (_, _) -> assert false
         | Pconst_char _ -> dty_char
         | Pconst_string _ -> dty_string
@@ -1224,4 +1230,10 @@ let () =
         Fmt.kstr
           (fun str -> Some (make ~loc:Location.none ~sub:[] str))
           "Invariant on non-private type %a" print_ts_name ts
+    | Invalid_int_literal (s, c) ->
+        Fmt.kstr
+          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
+          "Invalid int literal: %s%a" s
+          Fmt.(option char)
+          c
     | _ -> None)
