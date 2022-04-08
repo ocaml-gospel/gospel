@@ -522,7 +522,7 @@ pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON pat_arg
     { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
-| uqualid pat_arg+                      { Papp ($1,$2) }
+| uqualid pat_arg                       { Papp ($1,[$2]) }
 | mk_pat(pat_uni_) AS attrs(lident)
                                         { Pas ($1,$3) }
 | mk_pat(pat_uni_) cast                 { Pcast ($1, $2) }
