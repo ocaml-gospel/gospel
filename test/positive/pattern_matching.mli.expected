@@ -21,6 +21,10 @@ val f_unit : int -> unit[@@gospel
   {| function fun_unit (x: unit): string =
     match x with
     | () -> "out" |}]
+type t2 =
+  | B of int * int 
+[@@@gospel {| function f (x: t2) : unit =
+    match x with B _ -> () |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -50,6 +54,12 @@ val f_unit : int -> unit
 
 (*@ function fun_unit ... *)
 
+type t2 =
+| B of int * int 
+  
+
+(*@ function f ... *)
+
 *******************************
 ********* Typed GOSPEL ********
 *******************************
@@ -58,10 +68,13 @@ module pattern_matching.mli
   Namespace: pattern_matching.mli
     Type symbols
        t
+       t2
       
     Logic Symbols
+      function B (_:int) (_:int) : t2
       function O  : t
       function S (_:t) : t
+      function f (_:t2) : unit
       function fun_unit (_:unit) : string
       
     Field Symbols
@@ -107,6 +120,16 @@ module pattern_matching.mli
         match x_2:unit with
         |  -> "out":string
         end::string
+    *)
+    
+    type t2 = B of int * int
+              function B (_:int) (_:int) : t2
+         
+    
+    (*@ function f (x_3:t2): unit =
+        match x_3:t2 with
+        | B _ _ -> (unit_1 ):unit
+        end::unit
     *)
 
 OK

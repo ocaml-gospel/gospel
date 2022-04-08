@@ -13,8 +13,9 @@ val f : int -> t -> unit
              | A
              | B _
              | C (_, _)
-             (* | C _ *)
+             | C _
              | D (_, _)
+             | D ((_, _))
              | D _ -> true
     (* raises E _ -> false *)
     raises F _ -> true

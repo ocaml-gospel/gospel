@@ -506,6 +506,7 @@ mk_pat(X): X { mk_pat $1 $loc }
 
 pattern: mk_pat(pattern_) { $1 };
 pat_arg: mk_pat(pat_arg_) { $1 }
+pat_arg_no_lpar: mk_pat(pat_arg_no_lpar_) { $1 }
 ;
 
 pattern_:
@@ -522,26 +523,29 @@ pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON pat_arg
     { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
-| uqualid pat_arg+                      { Papp ($1,$2) }
+| uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
+| uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
 | mk_pat(pat_uni_) AS attrs(lident)
                                         { Pas ($1,$3) }
 | mk_pat(pat_uni_) cast                 { Pcast ($1, $2) }
 ;
 
 pat_arg_:
-| pat_arg_shared_                       { $1 }
-| attrs(lident)                         { Pvar $1 }
+| LEFTPAR RIGHTPAR                      { Ptuple [] }
+| LEFTPAR pattern_ RIGHTPAR             { $2 }
+| pat_arg_no_lpar_                      { $1 }
 ;
 
-pat_arg_shared_:
+pat_arg_no_lpar_:
+| attrs(lident)                         { Pvar $1 }
 | UNDERSCORE                            { Pwild }
 | uqualid                               { Papp ($1,[]) }
-| LEFTPAR RIGHTPAR                      { Ptuple [] }
 | LEFTSQRIGHTSQ
   { Papp (Qpreid (mk_pid "[]"  $loc), []) }
-| LEFTPAR pattern_ RIGHTPAR             { $2 }
 | LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
 ;
+
+
 
 field_pattern(X):
 | fl = semicolon_list1(pattern_rec_field(X)) { fl }

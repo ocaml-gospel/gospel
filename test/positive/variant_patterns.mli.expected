@@ -19,8 +19,9 @@ val f : int -> t -> unit[@@gospel
              | A
              | B _
              | C (_, _)
-             (* | C _ *)
+             | C _
              | D (_, _)
+             | D ((_, _))
              | D _ -> true
     (* raises E _ -> false *)
     raises F _ -> true
@@ -104,7 +105,8 @@ module variant_patterns.mli
                           n:int n:int):int * int in ((D  x:int * int):
                           t = (D  x:int * int):t):prop
                  requires (match t_1:t with
-                          | A | B _ | C _ _ | D (_, _) | D _ -> (True ):bool
+                          | A | B _ | C _ _ | C _ _ | D (_, _) | D (_, _) | D
+                            _ -> (True ):bool
                           end::bool = (True ):bool):prop
         raisesF _, _ -> true:prop
         raisesE _, _ -> true:prop
