@@ -145,14 +145,20 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_dpattern ~loc dp_node dp_dty dp_vars =
     { dp_node; dp_dty; dp_vars; dp_loc = loc }
   in
+  let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   let rec mk_papp ~loc cs dpl =
-    let n = List.length cs.ls_args in
-    match dpl with
-    | [ { dp_node = DPapp (ls, dpl) } ]
-      when ls_equal ls (fs_tuple n) && cs.ls_constr ->
+    let dtyl, dty = specialize_cs ~loc cs in
+    match (dpl, cs.ls_args) with
+    (* allow pattern C (x,y) with type t = C of (int * int) *)
+    | _ :: _ :: _, [ { ty_node = Tyapp (ts, _) } ] when is_ts_tuple ts ->
+        let n = List.length dpl in
+        let p = mk_papp ~loc (fs_tuple n) dpl in
+        mk_papp ~loc cs [ p ]
+    (* allow C _ with type t = C of int * int *)
+    | [ { dp_node = DPwild } ], _ :: _ :: _ ->
+        let dpl = List.map (mk_pwild loc) dtyl in
         mk_papp ~loc cs dpl
     | _ ->
-        let dtyl, dty = specialize_cs ~loc cs in
         app_unify ~loc cs dpattern_unify dpl dtyl;
         let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
         let vars =
@@ -162,7 +168,6 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
         in
         mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
   in
-  let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   match pat_desc with
   | Pwild ->
       let dty = dty_fresh () in

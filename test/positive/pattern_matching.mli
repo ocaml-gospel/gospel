@@ -20,3 +20,8 @@ val f_unit : int -> unit
 (*@ function fun_unit (x: unit): string =
     match x with
     | () -> "out" *)
+
+type t2 = B of int * int
+
+(*@ function f (x: t2) : unit =
+    match x with B _ -> () *)
