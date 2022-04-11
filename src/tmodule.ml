@@ -178,20 +178,25 @@ let ns_with_primitives =
     ]
   in
   let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in
+  let tv_option =
+    match ts_option.ts_args with [ v ] -> ty_of_var v | _ -> assert false
+  in
+  let tv_list =
+    match ts_list.ts_args with [ v ] -> ty_of_var v | _ -> assert false
+  in
   let primitive_ls =
     [
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       (none.id_str, fsymbol ~constr:true ~field:false none [] (ty_option tv)));
+      ( none.id_str,
+        fsymbol ~constr:true ~field:false none [] (ty_option tv_option) );
       (let tv = fresh_ty_var ~loc:Location.none "a" in
        ( some.id_str,
-         fsymbol ~constr:true ~field:false some [ tv ] (ty_option tv) ));
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       (nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv)));
+         fsymbol ~constr:true ~field:false some [ tv ] (ty_option tv_option) ));
+      (nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv_list));
       (let tv = fresh_ty_var ~loc:Location.none "a" in
        ( cons.id_str,
          fsymbol ~constr:true ~field:false cons
            [ tv; ty_app ts_list [ tv ] ]
-           (ty_list tv) ));
+           (ty_list tv_list) ));
     ]
   in
   let ns =

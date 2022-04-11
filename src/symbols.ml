@@ -107,7 +107,8 @@ let fs_tuple =
     try Hashtbl.find ls_tuples n
     with Not_found ->
       let id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
-      let tyl = List.init n (fun _ -> fresh_ty_var "a") in
+      let ts = ts_tuple n in
+      let tyl = List.map ty_of_var ts.ts_args in
       let ty = ty_app (ts_tuple n) tyl in
       let ls = fsymbol ~constr:true ~field:false id tyl ty in
       Hashtbl.add fs_tuple_ids id ls;
