@@ -636,7 +636,8 @@ let rec val_parse_core_type ns cty =
       ((ty_of_core ns ct1, lbl) :: args, res)
   | _ -> ([], ty_of_core ns cty)
 
-let rec check_old wr t =
+let rec check_old ns wr t =
+  let array_get = ns_find_ls ns [ "Gospelstdlib"; "Array"; "get" ] in
   let rec check t =
     match t.t_node with
     | Tvar vs ->
@@ -662,6 +663,8 @@ let rec check_old wr t =
                    wr)
             then Some n
             else None)
+    | Tapp (ls, terms) when ls = array_get && List.length terms > 0 ->
+        check (List.hd terms)
     | _ -> None
   in
   match t.t_node with
@@ -669,22 +672,22 @@ let rec check_old wr t =
       match check t with
       | Some name -> W.old_on_read_only ~loc:t.t_loc name
       | None -> ())
-  | Tapp (_, terms) -> List.iter (check_old wr) terms
+  | Tapp (_, terms) -> List.iter (check_old ns wr) terms
   | Tif (cond, br0, br1) ->
-      check_old wr cond;
-      check_old wr br0;
-      check_old wr br1
+      check_old ns wr cond;
+      check_old ns wr br0;
+      check_old ns wr br1
   | Tlet (_, bind, body) ->
-      check_old wr bind;
-      check_old wr body
+      check_old ns wr bind;
+      check_old ns wr body
   | Tcase (t, xs) ->
-      check_old wr t;
-      List.iter (fun (_, t) -> check_old wr t) xs
-  | Tquant (_, _, t) -> check_old wr t
+      check_old ns wr t;
+      List.iter (fun (_, t) -> check_old ns wr t) xs
+  | Tquant (_, _, t) -> check_old ns wr t
   | Tbinop (_, left, right) ->
-      check_old wr left;
-      check_old wr right
-  | Tnot t -> check_old wr t
+      check_old ns wr left;
+      check_old ns wr right
+  | Tnot t -> check_old ns wr t
   | _ -> ()
 
 (* Checks the following
@@ -814,7 +817,9 @@ let process_val_spec kid crcm ns id args ret vs =
     List.fold_left (fun acc xp -> process_xpost xp @ acc) [] vs.sp_xpost
   in
 
-  List.iter (fun (_, xp) -> List.iter (fun (_, t) -> check_old wr t) xp) xpost;
+  List.iter
+    (fun (_, xp) -> List.iter (fun (_, t) -> check_old ns wr t) xp)
+    xpost;
 
   let env, ret =
     match (header.sp_hd_ret, ret.ty_node) with
@@ -826,7 +831,7 @@ let process_val_spec kid crcm ns id args ret vs =
   in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
-  List.iter (check_old wr) post;
+  List.iter (check_old ns wr) post;
 
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
