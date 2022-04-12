@@ -10,7 +10,7 @@ let pp_kind ppf = function
       pf ppf "There is a reference to old %s, but is it read only." var
   | Return_unit_without_modifies fct ->
       pf ppf
-        "The function %s returns a unit but its specifications does not \
+        "The function `%s' returns a unit but its specifications does not \
          contains any modifies clause."
         fct
 
