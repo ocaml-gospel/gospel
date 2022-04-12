@@ -7,7 +7,7 @@ type kind =
 
 let pp_kind ppf = function
   | Old_on_read_only var ->
-      pf ppf "There is a reference to old %s, but is it read only." var
+      pf ppf "There is a reference to old `%s`, but is it read only." var
   | Return_unit_without_modifies fct ->
       pf ppf
         "The function `%s' returns a unit but its specifications does not \
