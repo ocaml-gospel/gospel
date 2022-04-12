@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Gospel__Warnings
 open Ppxlib
 open Utils
 open Identifier
@@ -635,6 +636,60 @@ let rec val_parse_core_type ns cty =
       ((ty_of_core ns ct1, lbl) :: args, res)
   | _ -> ([], ty_of_core ns cty)
 
+let rec check_old ns wr t =
+  let array_get = ns_find_ls ns [ "Gospelstdlib"; "Array"; "get" ] in
+  let rec check t =
+    match t.t_node with
+    | Tvar vs ->
+        if
+          not
+            (List.exists
+               (function { t_node = Tvar vs' } -> vs = vs' | _ -> false)
+               wr)
+        then Some vs.vs_name.id_str
+        else None
+    | Tfield (t, ls) -> (
+        match check t with
+        | None -> None
+        | Some n ->
+            if
+              not
+                (List.exists
+                   (function
+                     | { t_node = Tfield (_, ls') } | { t_node = Tapp (ls', _) }
+                       ->
+                         Symbols.ls_equal ls ls'
+                     | _ -> false)
+                   wr)
+            then Some n
+            else None)
+    | Tapp (ls, terms) when ls = array_get && List.length terms > 0 ->
+        check (List.hd terms)
+    | _ -> None
+  in
+  match t.t_node with
+  | Told t -> (
+      match check t with
+      | Some name -> W.old_on_read_only ~loc:t.t_loc name
+      | None -> ())
+  | Tapp (_, terms) -> List.iter (check_old ns wr) terms
+  | Tif (cond, br0, br1) ->
+      check_old ns wr cond;
+      check_old ns wr br0;
+      check_old ns wr br1
+  | Tlet (_, bind, body) ->
+      check_old ns wr bind;
+      check_old ns wr body
+  | Tcase (t, xs) ->
+      check_old ns wr t;
+      List.iter (fun (_, t) -> check_old ns wr t) xs
+  | Tquant (_, _, t) -> check_old ns wr t
+  | Tbinop (_, left, right) ->
+      check_old ns wr left;
+      check_old ns wr right
+  | Tnot t -> check_old ns wr t
+  | _ -> ()
+
 (* Checks the following
    1 - the val id string is equal to the name in val header
    2 - no duplicated names in arguments and arguments in header
@@ -762,6 +817,10 @@ let process_val_spec kid crcm ns id args ret vs =
     List.fold_left (fun acc xp -> process_xpost xp @ acc) [] vs.sp_xpost
   in
 
+  List.iter
+    (fun (_, xp) -> List.iter (fun (_, t) -> check_old ns wr t) xp)
+    xpost;
+
   let env, ret =
     match (header.sp_hd_ret, ret.ty_node) with
     | [], _ -> (env, [])
@@ -771,6 +830,9 @@ let process_val_spec kid crcm ns id args ret vs =
     | _, _ -> process_args header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
   in
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
+
+  List.iter (check_old ns wr) post;
+
   if vs.sp_pure then (
     if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
     if wr <> [] then error_report ~loc "a pure function cannot have writes";
@@ -829,6 +891,14 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
+  let () =
+    (* check there is a modifies clause if the return type is unit, through a warning if not *)
+    if Ttypes.(ty_equal ret ty_unit) then
+      match so with
+      | None -> ()
+      | Some sp ->
+          if sp.sp_wr = [] then W.return_unit_without_modifies ~loc id.id_str
+  in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
       spec.sp_ret so vd.vloc

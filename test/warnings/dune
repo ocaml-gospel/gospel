@@ -1,0 +1,43 @@
+(rule
+ (targets no_modifies_while_returning_unit.output)
+ (action
+  (with-stderr-to
+   %{targets}
+   (with-accepted-exit-codes
+    (or :standard 124)
+    (run gospel check %{dep:no_modifies_while_returning_unit.mli})))))
+
+(rule
+ (targets old_on_read_only.output)
+ (action
+  (with-stderr-to
+   %{targets}
+   (with-accepted-exit-codes
+    (or :standard 124)
+    (run gospel check %{dep:old_on_read_only.mli})))))
+
+(rule
+ (targets old_on_read_only_inside_array.output)
+ (action
+  (with-stderr-to
+   %{targets}
+   (with-accepted-exit-codes
+    (or :standard 124)
+    (run gospel check %{dep:old_on_read_only_inside_array.mli})))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff old_on_read_only.expected old_on_read_only.output)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff old_on_read_only_inside_array.expected
+    old_on_read_only_inside_array.output)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff no_modifies_while_returning_unit.expected
+    no_modifies_while_returning_unit.output)))

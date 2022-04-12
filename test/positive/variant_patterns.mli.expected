@@ -9,8 +9,8 @@ type t =
   | D of (int * int) 
 exception E of int * int 
 exception F of (int * int) 
-val f : int -> t -> unit[@@gospel
-                          {| f n t
+val f : int -> t -> bool[@@gospel
+                          {| b = f n t
     requires t = D (n, n)
     requires t = C (n, n)
     requires let x = (n, n) in D x = D x
@@ -44,8 +44,8 @@ exception E of int * int
 
 exception F of (int * int) 
 
-val f : int -> t -> unit
-(*@  f n t
+val f : int -> t -> bool
+(*@ b = f n t
     requires ...
     requires ...
     requires ...
@@ -97,8 +97,8 @@ module variant_patterns.mli
     
     exception F
     
-    val f : int -> t -> unit
-    (*@  f n:int t_1:t
+    val f : int -> t -> bool
+    (*@ b:bool = f n:int t_1:t
         requires (t_1:t = (D  (tuple2  n:int n:int):int * int):t):prop
                  requires (t_1:t = (C  n:int n:int):t):prop
                  requires let x:int * int = (tuple2 
