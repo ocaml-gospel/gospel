@@ -11,7 +11,7 @@ let pp_kind ppf = function
   | Return_unit_without_modifies fct ->
       pf ppf
         "The function `%s' returns a unit but its specifications does not \
-         contains any modifies clause."
+         contains any `modifies' clause."
         fct
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l

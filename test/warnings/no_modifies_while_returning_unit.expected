@@ -1,3 +1,3 @@
 File "no_modifies_while_returning_unit.mli", line 1, characters 0-120:
 Warning
-The function no_modifies_while_returning_unit returns a unit but its specifications does not contains any modifies clause.
+The function `no_modifies_while_returning_unit' returns a unit but its specifications does not contains any `modifies' clause.
