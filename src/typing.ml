@@ -893,7 +893,7 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   let so = Option.map (fun _ -> spec) vd.vspec in
   let () =
     (* check there is a modifies clause if the return type is unit, through a warning if not *)
-    if Ttypes.(ty_equal ret { ty_node = Tyapp (ts_unit, []) }) then
+    if Ttypes.(ty_equal ret ty_unit) then
       match so with
       | None -> ()
       | Some sp ->
