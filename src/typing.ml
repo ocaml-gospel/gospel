@@ -494,7 +494,7 @@ let type_type_declaration kid crcm ns tdl =
         try { ty_node = Tyvar (Mstr.find s tvl) }
         with Not_found -> error ~loc:core.ptyp_loc (UnboundVar s))
     | Ptyp_arrow (lbl, ct1, ct2) ->
-        assert (lbl != Nolabel);
+        assert (lbl = Nolabel);
         (* TODO check what to do *)
         let ty1, ty2 = (parse_core alias tvl ct1, parse_core alias tvl ct2) in
         ty_app ts_arrow [ ty1; ty2 ]
