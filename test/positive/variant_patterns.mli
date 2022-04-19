@@ -3,8 +3,8 @@ type t = A | B of int | C of int * int | D of (int * int)
 exception E of int * int
 exception F of (int * int)
 
-val f : int -> t -> unit
-(*@ f n t
+val f : int -> t -> bool
+(*@ b = f n t
     requires t = D (n, n)
     requires t = C (n, n)
     requires let x = (n, n) in D x = D x
