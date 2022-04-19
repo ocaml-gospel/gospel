@@ -1,0 +1,66 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t = int -> int
+type u = (int -> int) ref
+type v = private {
+  x: int -> int }[@@gospel {| invariant x 0i = 0 |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t = int -> int
+  
+
+type u = (int -> int) ref
+  
+
+type v = private {
+x: int -> int }
+  (*@ invariant ...
+       *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module record_functions.mli
+
+  Namespace: record_functions.mli
+    Type symbols
+       t [=int -> int]
+       u [=int -> int ref]
+       v
+      
+    Logic Symbols
+      function constr#v (_:int -> int) : v
+      
+    Field Symbols
+      function x (_:v) : int -> int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t = int -> int
+         
+    
+    type u = int -> int ref
+         
+    
+    type v = {x:int -> int}
+          function constr#v (_:int -> int) : v
+          function x (_:v) : int -> int
+         (*@ 
+             invariant ((integer_of_int 
+                       (apply  (x ):int -> int 0i:int):int):integer = 0:
+                       integer):prop *)
+
+OK

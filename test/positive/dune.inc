@@ -298,6 +298,19 @@
  (action (diff %{dep:pattern_matching.mli.expected} %{dep:pattern_matching.mli.output})))
 
 (rule
+ (targets record_functions.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:record_functions.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:record_functions.mli.expected} %{dep:record_functions.mli.output})))
+
+(rule
  (targets stdlib_exceptions.mli.output)
  (deps (source_tree .))
  (action
