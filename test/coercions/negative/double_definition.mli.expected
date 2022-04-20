@@ -24,5 +24,5 @@ type t2
 (*@ function c2 ...
     coercion *)
 File "double_definition.mli", line 7, characters 10-12:
-Error: There is already a coercion from type t1 to type t2:
-c1: t1 -> t2
+Error: A coercion between these types already exists:
+         c1: t1 -> t2.

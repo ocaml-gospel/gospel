@@ -43,8 +43,7 @@ type term = {
 
 and term_node =
   | Tvar of vsymbol
-  | Tconst of Parsetree.constant
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.constant>"]
+  | Tconst of constant [@printer fun fmt _ -> fprintf fmt "<constant>"]
   | Tapp of lsymbol * term list
   | Tfield of term * lsymbol
   | Tif of term * term * term

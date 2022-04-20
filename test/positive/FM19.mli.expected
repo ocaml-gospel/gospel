@@ -269,8 +269,8 @@ module FM19.mli
         writes q_1:'a t*)
     
     val is_empty : 'a t -> bool
-    (*@ b:bool = is_empty q_2:'a t
-        ensures (b:bool = (True ):bool):prop <-> ((q_2:'a t).view = (empty ):'a 
+    (*@ b_1:bool = is_empty q_2:'a t
+        ensures (b_1:bool = (True ):bool):prop <-> ((q_2:'a t).view = (empty ):'a 
                 seq):prop*)
     
     val create : unit -> 'a t
@@ -298,15 +298,14 @@ module FM19.mli
                 seq):prop*)
     
     val map : ('a -> 'b) -> 'a t -> 'b t
-    (*@ r:'b_1 t = map f:'a -> 'b_1 q_4:'a t
-        ensures ((length  (r:'b_1 t).view):integer = (length 
+    (*@ r:'b t = map f:'a -> 'b q_4:'a t
+        ensures ((length  (r:'b t).view):integer = (length 
                 (q_4:'a t).view):integer):prop
                 ensures forall i:integer. (0:integer <= i:integer):prop /\ (
                         i:integer < (length 
                         (q_4:'a t).view):integer):prop -> ((mixfix [_] 
-                        (r:'b_1 t).view i:integer):'b_1 = (apply 
-                        f:'a -> 'b_1 (mixfix [_] 
-                        (q_4:'a t).view i:integer):'a):'b_1):prop*)
+                        (r:'b t).view i:integer):'b = (apply 
+                        f:'a -> 'b (mixfix [_]  (q_4:'a t).view i:integer):'a):'b):prop*)
     
     (*@ function power (x:integer) (y:integer): integer *)
     

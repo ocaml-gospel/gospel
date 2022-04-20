@@ -16,4 +16,4 @@ type 'a t1
 type t2 = t1
   
 File "t39.mli", line 12, characters 10-12:
-Error: Type t1 expects 1 arguments as opposed to 0
+Error: The type `t1' expects 1 argument(s) but was given 0 argument(s) here.

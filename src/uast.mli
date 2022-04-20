@@ -9,8 +9,6 @@
 (**************************************************************************)
 
 open Ppxlib
-open Asttypes
-open Parsetree
 module Preid = Identifier.Preid
 
 (* Types *)

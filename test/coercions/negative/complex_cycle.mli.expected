@@ -32,7 +32,6 @@ type t3
 (*@ function c3 ...
     coercion *)
 File "complex_cycle.mli", line 11, characters 10-12:
-Error: This coercion introduces a cycle;
-There is already a coercion from type t1 to type t3:
-c1: t1 -> t2
-c2: t2 -> t3
+Error: This coercion introduces a cycle:
+         c1: t1 -> t2
+         c2: t2 -> t3.

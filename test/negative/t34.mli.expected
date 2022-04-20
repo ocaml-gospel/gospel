@@ -19,4 +19,4 @@ x: int }
 
 (*@ function f ... *)
 File "t34.mli", line 15, characters 7-8:
-Error: Symbol y not found
+Error: Symbol y not found.

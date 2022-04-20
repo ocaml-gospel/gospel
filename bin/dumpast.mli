@@ -8,6 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val signature : filename:string -> Ppxlib.signature -> Uast.s_signature
-(** Parses the specifications contained in the attributes of the input parsetree
-    and returns an annotated parsetree with Gospel specifications. *)
+type config = { load_path : string list }
+
+val run : config -> string list -> bool

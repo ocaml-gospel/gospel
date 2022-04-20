@@ -8,13 +8,13 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
 open Utils
 open Identifier
 open Ttypes
 open Symbols
 open Tterm
-open Tterm_printer
 open Tterm_helper
 
 (* types *)
@@ -76,10 +76,9 @@ let specialize_ls ls =
   in
   (List.map spec ls.ls_args, Option.map spec ls.ls_value)
 
-exception ConstructorExpected of lsymbol
-
 let specialize_cs ~loc cs =
-  if cs.ls_constr = false then error ~loc (ConstructorExpected cs);
+  if cs.ls_constr = false then
+    W.error ~loc (W.Not_a_constructor cs.ls_name.id_str);
   let dtyl, dty = specialize_ls cs in
   (dtyl, Option.get dty)
 
@@ -109,7 +108,7 @@ type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 and dterm_node =
   | DTattr of dterm * string list
   | DTvar of Preid.t
-  | DTconst of Parsetree.constant
+  | DTconst of constant
   | DTapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
@@ -154,44 +153,46 @@ let rec unify dty1 dty2 =
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
   | _ -> raise Exit
 
-exception PatternBadType of dty * dty
-exception BadType of dty * dty
-exception FmlaExpected
-
-(* CHECK isn't it better to use only BadType? *)
-exception TermExpected
-
 (* the following functions should receive dterms for precise locations
    to be given properly -- based on why3 *)
 
 let app_unify ~loc ls unify l dtyl2 =
   if List.length l <> List.length dtyl2 then
-    error ~loc (BadArity (ls, List.length l));
+    W.error ~loc
+      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length l));
   List.iter2 unify l dtyl2
 
 let app_unify_map ~loc ls unify l dtyl =
   if List.length l <> List.length dtyl then
-    error ~loc (BadArity (ls, List.length l));
+    W.error ~loc
+      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length l));
   List.map2 unify l dtyl
 
 let dpattern_unify dp dty =
   try unify dp.dp_dty dty
-  with Exit -> error ~loc:dp.dp_loc (PatternBadType (dp.dp_dty, dty))
+  with Exit ->
+    let t1 = Fmt.str "%a" print_ty (ty_of_dty dp.dp_dty) in
+    let t2 = Fmt.str "%a" print_ty (ty_of_dty dty) in
+    W.error ~loc:dp.dp_loc (W.Pattern_bad_type (t1, t2))
 
 let dty_unify ~loc dty1 dty2 =
-  try unify dty1 dty2 with Exit -> error ~loc (BadType (dty1, dty2))
+  let t1 = Fmt.str "%a" print_ty (ty_of_dty dty1) in
+  let t2 = Fmt.str "%a" print_ty (ty_of_dty dty2) in
+  try unify dty1 dty2 with Exit -> W.error ~loc (W.Bad_type (t1, t2))
 
 let dterm_unify dt dty =
   match dt.dt_dty with
   | Some dt_dty -> dty_unify ~loc:dt.dt_loc dt_dty dty
   | None -> (
-      try unify dty_bool dty with Exit -> error ~loc:dt.dt_loc TermExpected)
+      try unify dty_bool dty
+      with Exit -> W.error ~loc:dt.dt_loc W.Term_expected)
 
 let dfmla_unify dt =
   match dt.dt_dty with
   | None -> ()
   | Some dt_dty -> (
-      try unify dt_dty dty_bool with Exit -> error ~loc:dt.dt_loc FmlaExpected)
+      try unify dt_dty dty_bool
+      with Exit -> W.error ~loc:dt.dt_loc W.Formula_expected)
 
 let unify dt dty =
   match dty with None -> dfmla_unify dt | Some dt_dty -> dterm_unify dt dt_dty
@@ -200,11 +201,8 @@ let unify dt dty =
 
 type denv = dty Mstr.t
 
-exception DuplicatedVar of string
-exception UnboundVar of string
-
 let denv_find ~loc s denv =
-  try Mstr.find s denv with Not_found -> error ~loc (UnboundVar s)
+  try Mstr.find s denv with Not_found -> W.error ~loc (W.Unbound_variable s)
 
 let is_in_denv denv s = Mstr.mem s denv
 
@@ -215,7 +213,7 @@ let denv_add_var denv s dty = Mstr.add s dty denv
 let denv_add_var_quant denv vl =
   let add acc (pid, dty) =
     if Mstr.mem pid.Preid.pid_str acc then
-      error ~loc:pid.pid_loc (DuplicatedVar pid.pid_str)
+      W.error ~loc:pid.pid_loc (W.Duplicated_variable pid.pid_str)
     else Mstr.add pid.pid_str dty acc
   in
   let vl = List.fold_left add Mstr.empty vl in
@@ -339,7 +337,9 @@ let rec term env prop dt =
   | Some _ when prop -> (
       try t_equ t (t_bool_true loc) loc
       with TypeMismatch (ty1, ty2) ->
-        error ~loc (BadType (dty_of_ty ty1, dty_of_ty ty2)))
+        let t1 = Fmt.str "%a" print_ty ty1 in
+        let t2 = Fmt.str "%a" print_ty ty2 in
+        W.error ~loc (W.Bad_type (t1, t2)))
   | None when not prop -> t_if t (t_bool_true loc) (t_bool_false loc) loc
   | _ -> t
 
@@ -403,63 +403,3 @@ and term_node ~loc env prop dty dterm_node =
 
 let fmla env dt = term env true dt
 let term env dt = term env false dt
-
-(* Pretty printing *)
-
-(* open Opprintast *)
-open Fmt
-
-(* TODO not sure if we need this. Maybe we just need this for pretty
-   print dterm. The flatten part is already done in ty_of_dty. *)
-let rec flatten = function
-  | Tvar { dtv_def = Some dty; _ } -> flatten dty
-  | Tapp (ts, dtys) -> Tapp (ts, List.map flatten dtys)
-  | dty -> dty
-
-let rec print_dty fmt dty =
-  match flatten dty with
-  | Tty ty -> print_ty fmt ty
-  | Tvar { dtv_id; dtv_def = None } -> pp fmt "@%d@" dtv_id
-  | Tvar { dtv_def = Some _; _ } -> assert false (* it is flattened *)
-  | Tapp (ts, dtyl) -> (
-      match dtyl with
-      | [] -> print_ts_name fmt ts
-      | dtyl when is_ts_arrow ts ->
-          pp fmt "(%a)" (list ~sep:arrow print_dty) dtyl
-      | [ dty ] -> pp fmt "%a %a" print_dty dty print_ts_name ts
-      | dtyl ->
-          pp fmt "(%a) %a" (list ~sep:comma print_dty) dtyl print_ts_name ts)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | ConstructorExpected ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Symbol %a is not a constructor" print_ls_nm ls
-    | FmlaExpected ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Formula was expected"
-    | TermExpected ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Term was expected"
-    | PatternBadType (dty1, dty2) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "This pattern has type %a but is expected to have type %a" print_dty
-          dty1 print_dty dty2
-    | BadType (dty1, dty2) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type mismatch. Cannot match %a with %a" print_dty dty1 print_dty dty2
-    | DuplicatedVar s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Variable %s is duplicated in pattern" s
-    | UnboundVar s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Variable %s does not appear in pattern" s
-    | _ -> None)

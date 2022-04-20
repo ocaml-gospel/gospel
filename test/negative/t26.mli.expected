@@ -14,4 +14,4 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 (*@ r = f ~x [z : TY] ~y z
      *)
 File "t26.mli", line 12, characters 21-22:
-Error: Variable z is duplicated in pattern
+Error: The variable `z' is duplicated in this pattern.

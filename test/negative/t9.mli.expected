@@ -11,4 +11,4 @@
 
 (*@ function rec f ... *)
 File "t9.mli", line 1, characters 45-46:
-Error: Type mismatch. Cannot match int with bool
+Error: This term has type `int' but a term was expected of type `bool'.

@@ -159,7 +159,7 @@ module PriorityQueue.mli
           function minimum (_:heap) : t
           
         Field Symbols
-          function bag (_:heap) : t bag_1
+          function bag_1 (_:heap) : t bag
           
         Exception Symbols
           Empty
@@ -197,21 +197,21 @@ module PriorityQueue.mli
              
         type heap
              (*@ ephemeral
-                 mutable model bag : t bag_1 *)
+                 mutable model bag_1 : t bag *)
         (*@ predicate mem (x_1:t) (h:heap) =
-            ((occurrences  x_1:t (h:heap).bag):integer > 0:integer):prop
+            ((occurrences  x_1:t (h:heap).bag_1):integer > 0:integer):prop
         *)
         val create : unit -> heap
         (*@ h_1:heap = create ()
-            ensures ((h_1:heap).bag = (empty ):t bag_1):prop*)
+            ensures ((h_1:heap).bag_1 = (empty ):t bag):prop*)
         val is_empty : heap -> bool
         (*@ b:bool = is_empty h_2:heap
             ensures (b:bool = (True ):bool):prop <-> (is_empty_1 
-                    (h_2:heap).bag):prop*)
+                    (h_2:heap).bag_1):prop*)
         val size : heap -> int
         (*@ x_2:int = size h_3:heap
             ensures ((integer_of_int  x_2:int):integer = (cardinal 
-                    (h_3:heap).bag):integer):prop*)
+                    (h_3:heap).bag_1):integer):prop*)
         (*@ function minimum (h_4:heap): t *)
         (*@ predicate is_minimum (x_3:t) (h_5:heap) =
             (mem  x_3:t h_5:heap):prop && forall e:t. (mem 
@@ -220,16 +220,16 @@ module PriorityQueue.mli
             integer <= 0:integer):prop
         *)
         (*@ axiom min_def: forall h_6:heap. (0:integer < (cardinal 
-        (h_6:heap).bag):integer):prop -> (is_minimum 
+        (h_6:heap).bag_1):integer):prop -> (is_minimum 
         (minimum  h_6:heap):t h_6:heap):prop *)
         val find_min : heap -> elt option
         (*@ r_1:t option = find_min h_7:heap
             ensures (match r_1:t option with
                     | None -> if ((cardinal 
-                              (h_7:heap).bag):integer = 0:integer):prop then (True ):
+                              (h_7:heap).bag_1):integer = 0:integer):prop then (True ):
                               bool else (False ):bool
                     | Some x_4:t -> if ((cardinal 
-                                    (h_7:heap).bag):integer > 0:integer):prop && (
+                                    (h_7:heap).bag_1):integer > 0:integer):prop && (
                                     x_4:t = (minimum 
                                     h_7:heap):t):prop then (True ):bool else (False ):
                                     bool
@@ -238,33 +238,33 @@ module PriorityQueue.mli
         val find_min_exn : heap -> elt
         (*@ x_5:t = find_min_exn h_8:heap
             ensures ((cardinal 
-                    (h_8:heap).bag):integer > 0:integer):prop && (x_5:t = (minimum 
+                    (h_8:heap).bag_1):integer > 0:integer):prop && (x_5:t = (minimum 
                     h_8:heap):t):prop
             raisesEmpty  -> ((cardinal 
-                            (h_8:heap).bag):integer = 0:integer):prop*)
+                            (h_8:heap).bag_1):integer = 0:integer):prop*)
         val delete_min_exn : heap -> unit
         (*@  delete_min_exn h_9:heap
-            ensures ((old (h_9:heap)).bag = (add 
-                    (minimum  old (h_9:heap)):t (h_9:heap).bag):t bag_1):prop
+            ensures ((old (h_9:heap)).bag_1 = (add 
+                    (minimum  old (h_9:heap)):t (h_9:heap).bag_1):t bag):prop
             raisesEmpty  -> ((cardinal 
-                            (h_9:heap).bag):integer = 0:integer):prop && ((
-                            h_9:heap).bag = old ((h_9:heap).bag)):prop
+                            (h_9:heap).bag_1):integer = 0:integer):prop && ((
+                            h_9:heap).bag_1 = old ((h_9:heap).bag_1)):prop
             writes h_9:heap*)
         val extract_min_exn : heap -> elt
         (*@ x_6:t = extract_min_exn h_10:heap
             ensures (x_6:t = (minimum  old (h_10:heap)):t):prop
-                    ensures ((old (h_10:heap)).bag = (add 
-                            x_6:t (h_10:heap).bag):t bag_1):prop
+                    ensures ((old (h_10:heap)).bag_1 = (add 
+                            x_6:t (h_10:heap).bag_1):t bag):prop
             raisesEmpty  -> ((cardinal 
-                            (h_10:heap).bag):integer = 0:integer):prop && ((
-                            h_10:heap).bag = old ((h_10:heap).bag)):prop
+                            (h_10:heap).bag_1):integer = 0:integer):prop && ((
+                            h_10:heap).bag_1 = old ((h_10:heap).bag_1)):prop
             writes h_10:heap*)
         val insert : elt -> heap -> unit
         (*@  insert x_7:t h_11:heap
             checks ((cardinal 
-                   (h_11:heap).bag):integer < (max_array_length ):integer):prop
-            ensures ((h_11:heap).bag = (add 
-                    x_7:t (old (h_11:heap)).bag):t bag_1):prop
+                   (h_11:heap).bag_1):integer < (max_array_length ):integer):prop
+            ensures ((h_11:heap).bag_1 = (add 
+                    x_7:t (old (h_11:heap)).bag_1):t bag):prop
             writes h_11:heap*)
       end
 

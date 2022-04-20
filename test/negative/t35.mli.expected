@@ -19,4 +19,4 @@ x: int }
 
 (*@ function f ... *)
 File "t35.mli", line 15, characters 9-10:
-Error: Symbol z not found
+Error: Symbol z not found.

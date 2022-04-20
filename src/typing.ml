@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module W = Gospel__Warnings
+module W = Warnings
 open Ppxlib
 open Utils
 open Identifier
@@ -31,16 +31,16 @@ let string_list_of_qualid q =
   in
   fold_q [] q
 
-exception SymbolNotFound of string list
-exception NsNotFound of string
+exception Ns_not_found of location * string
 
 let rec q_loc = function Qpreid pid -> pid.pid_loc | Qdot (q, _) -> q_loc q
 
 let ns_find ~loc f ns sl =
   match sl with
   | s :: _ :: _ when not (ns_exists_ns ns s) ->
-      error ~loc (NsNotFound s) (* try to find file s *)
-  | _ -> ( try f ns sl with Not_found -> error ~loc (SymbolNotFound sl))
+      raise (Ns_not_found (loc, s))
+      (* this will be caught to try to find file s *)
+  | _ -> ( try f ns sl with Not_found -> W.error ~loc (W.Symbol_not_found sl))
 
 let find_ts ~loc = ns_find ~loc ns_find_ts
 let find_ls ~loc = ns_find ~loc ns_find_ls
@@ -78,7 +78,6 @@ let rec ty_of_pty ns = function
 
 (* OCaml types *)
 let rec ty_of_core ns cty =
-  let open Parsetree in
   let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
   | Ptyp_any -> { ty_node = Tyvar (create_tv (Ident.create ~loc "_")) }
@@ -104,13 +103,6 @@ open Tast
 
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
 
-exception EmptyRecord
-exception BadRecordField of lsymbol
-exception DuplicateRecordField of lsymbol
-exception RecordFieldMissing of lsymbol
-exception FieldApplication of lsymbol
-exception InvariantPublic of tysymbol
-
 let find_constructors kid ts =
   match (Mid.find ts.ts_ident kid).sig_desc with
   | Sig_type (_, tdl, _) -> (
@@ -122,25 +114,29 @@ let find_constructors kid ts =
 
 let parse_record ~loc kid ns fll =
   let fll = List.map (fun (q, v) -> (find_q_fd ns q, v)) fll in
-  let fs = match fll with [] -> error ~loc EmptyRecord | (fs, _) :: _ -> fs in
+  let fs =
+    match fll with
+    | [] -> assert false (* foridden at parsing *)
+    | (fs, _) :: _ -> fs
+  in
   let ts =
     match fs.ls_args with
     | [ { ty_node = Tyapp (ts, _) } ] -> ts
-    | _ -> error ~loc (BadRecordField fs)
+    | _ -> W.error ~loc (W.Bad_record_field fs.ls_name.id_str)
   in
   let cs, pjl = find_constructors kid ts in
   let pjs = Sls.of_list pjl in
   let fll =
     List.fold_left
       (fun m (pj, v) ->
-        if not (Sls.mem pj pjs) then error ~loc (BadRecordField pj)
-        else if Mls.mem pj m then error ~loc (DuplicateRecordField pj)
+        if not (Sls.mem pj pjs) then
+          W.error ~loc (W.Bad_record_field pj.ls_name.id_str)
+        else if Mls.mem pj m then
+          W.error ~loc (Duplicated_record_field pj.ls_name.id_str)
         else Mls.add pj v m)
       Mls.empty fll
   in
   (cs, pjl, fll)
-
-exception Invalid_int_literal of string * char option
 
 let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_dpattern ~loc dp_node dp_dty dp_vars =
@@ -161,7 +157,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
         mk_papp ~loc cs dpl
     | _ ->
         app_unify ~loc cs dpattern_unify dpl dtyl;
-        let check_duplicate s _ _ = error ~loc (DuplicatedVar s) in
+        let check_duplicate s _ _ = W.error ~loc (W.Duplicated_variable s) in
         let vars =
           List.fold_left
             (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
@@ -188,7 +184,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   | Pas (p, pid) ->
       let dp = dpattern kid ns p in
       if Mstr.mem pid.pid_str dp.dp_vars then
-        error ~loc:pid.pid_loc (DuplicatedVar pid.pid_str);
+        W.error ~loc:pid.pid_loc (W.Duplicated_variable pid.pid_str);
       let vars = Mstr.add pid.pid_str dp.dp_dty dp.dp_vars in
       mk_dpattern ~loc (DPas (dp, pid)) dp.dp_dty vars
   | Por (p1, p2) ->
@@ -223,8 +219,6 @@ let binop = function
   | Uast.Timplies -> Timplies
   | Uast.Tiff -> Tiff
 
-exception PartialApplication of lsymbol
-
 let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let mk_dterm ~loc dt_node dty = { dt_node; dt_dty = dty; dt_loc = loc } in
   let apply dt1 t2 =
@@ -247,7 +241,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n && ls.ls_constr
       ->
         gen_app ~loc ls tl
-    | _ when List.length tl < n -> error ~loc (PartialApplication ls)
+    | _ when List.length tl < n ->
+        W.error ~loc (W.Partial_application ls.ls_name.id_str)
     | _ ->
         let args, extra = split_at_i (List.length ls.ls_args) tl in
         let dtl = List.map (dterm kid crcm ns denv) args in
@@ -255,7 +250,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         if extra = [] then dt else map_apply dt extra
   in
   let fun_app ~loc ls tl =
-    if ls.ls_field && ls.ls_args <> [] then error ~loc (FieldApplication ls);
+    if ls.ls_field && ls.ls_args <> [] then
+      W.error ~loc (W.Field_application ls.ls_name.id_str);
     gen_app ~loc ls tl
   in
   let qualid_app q tl =
@@ -287,7 +283,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
             try
               let (_ : int) = int_of_string s in
               dty_int
-            with Failure _ -> error ~loc (Invalid_int_literal (s, c)))
+            with Failure _ -> W.error ~loc (W.Invalid_int_literal (s, c)))
         | Pconst_integer (_, _) -> assert false
         | Pconst_char _ -> dty_char
         | Pconst_string _ -> dty_string
@@ -300,13 +296,15 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tpreid q ->
       (* in this case it must be a constant *)
       let ls = find_q_ls ns q in
-      if List.length ls.ls_args > 0 then error ~loc (PartialApplication ls);
+      if ls.ls_args <> [] then
+        W.error ~loc (W.Partial_application ls.ls_name.id_str);
       let _, dty = specialize_ls ls in
       let node, dty = (DTapp (ls, []), dty) in
       mk_dterm ~loc node dty
   | Uast.Tfield (t, q) ->
       let ls = find_q_fd ns q in
-      if not ls.ls_field then error ~loc (BadRecordField ls);
+      if not ls.ls_field then
+        W.error ~loc (W.Bad_record_field ls.ls_name.id_str);
       gen_app ~loc ls [ t ]
   | Uast.Tidapp (q, tl) -> qualid_app q tl
   | Uast.Tapply (t1, t2) -> unfold_app t1 t2 []
@@ -423,7 +421,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let cs, pjl, fll = parse_record ~loc kid ns qtl in
       let get_term pj =
         try dterm kid crcm ns denv (Mls.find pj fll)
-        with Not_found -> error ~loc (RecordFieldMissing pj)
+        with Not_found ->
+          W.error ~loc (W.Unknown_record_field pj.ls_name.id_str)
       in
       mk_app ~loc cs (List.map get_term pjl)
   | Uast.Tupdate (t, qtl) ->
@@ -474,26 +473,23 @@ let process_type_spec kid crcm ns ty spec =
   let invariant = List.map (fmla kid crcm ns env) spec.ty_invariant in
   type_spec spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
 
-exception CyclicTypeDecl of string
-
 (* TODO compare manifest with td_kind *)
 let type_type_declaration kid crcm ns tdl =
   let add_new tdm td =
     if Mstr.mem td.tname.txt tdm then
-      error ~loc:td.tname.loc (NameClash td.tname.txt)
+      W.error ~loc:td.tname.loc (W.Name_clash td.tname.txt)
     else Mstr.add td.tname.txt td tdm
   in
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hashtbl.create 0 in
   let htd = Hashtbl.create 0 in
-  let open Parsetree in
   let rec parse_core alias tvl core =
+    let loc = core.ptyp_loc in
     match core.ptyp_desc with
-    | Ptyp_any ->
-        not_supported ~loc:core.ptyp_loc "_ type parameters not supported yet"
+    | Ptyp_any -> W.error ~loc (W.Unsupported "_ type parameters")
     | Ptyp_var s -> (
         try { ty_node = Tyvar (Mstr.find s tvl) }
-        with Not_found -> error ~loc:core.ptyp_loc (UnboundVar s))
+        with Not_found -> W.error ~loc (W.Unbound_variable s))
     | Ptyp_arrow (lbl, ct1, ct2) ->
         assert (lbl = Nolabel);
         (* TODO check what to do *)
@@ -508,7 +504,7 @@ let type_type_declaration kid crcm ns tdl =
         let ts =
           match idl with
           | [ s ] when Sstr.mem s alias ->
-              error ~loc:core.ptyp_loc (CyclicTypeDecl s)
+              W.error ~loc (W.Cyclic_type_declaration s)
           | [ s ] when Hashtbl.mem hts s -> Hashtbl.find hts s
           | [ s ] when Mstr.mem s tdm ->
               visit ~alias s (Mstr.find s tdm);
@@ -516,7 +512,8 @@ let type_type_declaration kid crcm ns tdl =
           | s -> find_ts ~loc:lid.loc ns s
         in
         if List.length tyl <> ts_arity ts then
-          error ~loc:core.ptyp_loc (BadTypeArity (ts, List.length tyl));
+          W.error ~loc
+            (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl));
         ty_app ts tyl
     | _ -> assert false
   (* TODO what to do with other cases? *)
@@ -527,7 +524,7 @@ let type_type_declaration kid crcm ns tdl =
       | Ptyp_var s ->
           let tv = tv_of_string ~loc s in
           (Mstr.add s tv tvl, tv :: params, vi :: vs)
-      | Ptyp_any -> not_supported ~loc "_ type parameters not supported yet"
+      | Ptyp_any -> W.error ~loc (W.Unsupported "_ type parameters")
       | _ -> assert false
       (* should not happen -- see parser optional_type_variable *)
     in
@@ -562,9 +559,10 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let process_variant ty alias cd =
+      let loc = cd.pcd_loc in
       if cd.pcd_res != None then
-        not_supported ~loc:cd.pcd_loc "type in constructors not supported";
-      let cs_id = Ident.create ~loc:cd.pcd_loc cd.pcd_name.txt in
+        W.error ~loc (W.Unsupported "type in constructors");
+      let cs_id = Ident.create ~loc cd.pcd_name.txt in
       let cd_cs, cd_ld =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
@@ -603,14 +601,14 @@ let type_type_declaration kid crcm ns tdl =
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
         Some { ty_invariant = _ :: _; _ } )
       when td.tprivate = Public ->
-        error ~loc:td.tloc (InvariantPublic td_ts)
+        W.error ~loc:td.tloc (W.Public_type_invariant td_ts.ts_ident.id_str)
     | _, _ -> ());
 
     let params = List.combine params variance_list in
     let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
 
     if td.tcstrs != [] then
-      not_supported ~loc:td.tloc "type constraints not supported";
+      W.error ~loc:td.tloc (W.Unsupported "type constraints");
 
     let td =
       type_declaration td_ts params [] kind (private_flag td.tprivate) manifest
@@ -630,7 +628,6 @@ let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
 (** Type val declarations *)
 
 let rec val_parse_core_type ns cty =
-  let open Parsetree in
   match cty.ptyp_desc with
   | Ptyp_arrow (lbl, ct1, ct2) ->
       let args, res = val_parse_core_type ns ct2 in
@@ -641,7 +638,6 @@ let rec val_parse_core_type ns cty =
    1 - the val id string is equal to the name in val header
    2 - no duplicated names in arguments and arguments in header
    match core type
-   3 -
 *)
 let process_val_spec kid crcm ns id args ret vs =
   let header = Option.get vs.sp_header in
@@ -654,7 +650,8 @@ let process_val_spec kid crcm ns id args ret vs =
     | [ _ ] -> id_val = id_spec
     | _ -> assert false
   in
-  check_report ~loc cmp_ids "val specification header does not match name";
+  if not cmp_ids then
+    W.type_checking_error ~loc "val specification header does not match name";
 
   let add_arg la env lal =
     match la with
@@ -664,7 +661,8 @@ let process_val_spec kid crcm ns id args ret vs =
         let vs_str = vs.vs_name.id_str in
         let add = function
           | None -> Some vs
-          | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar vs_str)
+          | Some _ ->
+              W.error ~loc:vs.vs_name.id_loc (W.Duplicated_variable vs_str)
         in
         (Mstr.update vs_str add env, la :: lal)
   in
@@ -672,22 +670,25 @@ let process_val_spec kid crcm ns id args ret vs =
   let rec process_args args tyl env lal =
     match (args, tyl) with
     | [], [] -> (env, List.rev lal)
-    | [], _ -> error_report ~loc:header.sp_hd_nm.pid_loc "too few parameters"
+    | [], _ ->
+        W.type_checking_error ~loc:header.sp_hd_nm.pid_loc "too few parameters"
     | Uast.Lghost (pid, pty) :: args, _ ->
         let ty = ty_of_pty ns pty in
         let vs = create_vsymbol pid ty in
         let env, lal = add_arg (Lghost vs) env lal in
         process_args args tyl env lal
     | Loptional pid :: args, (ty, Asttypes.Optional s) :: tyl ->
-        check_report ~loc:pid.pid_loc (pid.pid_str = s)
-          "parameter do not match with val type";
+        if not (String.equal pid.pid_str s) then
+          W.type_checking_error ~loc:pid.pid_loc
+            "parameter do not match with val type";
         let ty = ty_app ts_option [ ty ] in
         let vs = create_vsymbol pid ty in
         let env, lal = add_arg (Loptional vs) env lal in
         process_args args tyl env lal
     | Lnamed pid :: args, (ty, Asttypes.Labelled s) :: tyl ->
-        check_report ~loc:pid.pid_loc (pid.pid_str = s)
-          "parameter do not match with val type";
+        if not (String.equal pid.pid_str s) then
+          W.type_checking_error ~loc:pid.pid_loc
+            "parameter do not match with val type";
         let vs = create_vsymbol pid ty in
         let env, lal = add_arg (Lnamed vs) env lal in
         process_args args tyl env lal
@@ -697,7 +698,7 @@ let process_val_spec kid crcm ns id args ret vs =
         process_args args tyl env lal
     | Lunit :: args, _ :: tyl -> process_args args tyl env (Lunit :: lal)
     | la :: _, _ ->
-        error_report ~loc:(pid_of_label la).pid_loc
+        W.type_checking_error ~loc:(pid_of_label la).pid_loc
           "parameter do not match with val type"
   in
 
@@ -740,16 +741,18 @@ let process_val_spec kid crcm ns id args ret vs =
           let ty =
             match (p.pat_desc, xs.xs_type) with
             | (Pvar _ | Pwild), Exn_tuple [] ->
-                error_report ~loc "exception pattern not expected"
+                W.type_checking_error ~loc "exception pattern not expected"
             | (Pvar _ | Pwild | Ptuple _), Exn_tuple [ ty ] -> ty
             | (Pvar _ | Pwild), Exn_tuple (_ :: _ :: _) ->
-                error_report ~loc "exception pattern doesn't match its type"
+                W.type_checking_error ~loc
+                  "Exception pattern doesn't match its type"
             | Ptuple _, Exn_tuple tyl -> ty_app (ts_tuple (List.length tyl)) tyl
             | Prec _, Exn_record _ ->
                 (* TODO unify types and field names *)
-                error_report ~loc "Unsupported record type in exceptions"
+                W.error ~loc (W.Unsupported "Record type in exceptions")
             | _, _ ->
-                error_report ~loc "exception pattern doesn't match its type"
+                W.type_checking_error ~loc
+                  "Exception pattern does not match its type"
           in
           dpattern_unify dp (dty_of_ty ty);
           let p, vars = pattern dp in
@@ -775,10 +778,12 @@ let process_val_spec kid crcm ns id args ret vs =
   let post = List.map (fmla kid crcm ns env) vs.sp_post in
 
   if vs.sp_pure then (
-    if vs.sp_diverge then error_report ~loc "a pure function cannot diverge";
-    if wr <> [] then error_report ~loc "a pure function cannot have writes";
+    if vs.sp_diverge then
+      W.type_checking_error ~loc "a pure function cannot diverge";
+    if wr <> [] then
+      W.type_checking_error ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
-      error_report ~loc "a pure function cannot raise exceptions");
+      W.type_checking_error ~loc "a pure function cannot raise exceptions");
   mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
     vs.sp_equiv vs.sp_text vs.sp_loc
 
@@ -838,7 +843,8 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
       match so with
       | None -> ()
       | Some sp ->
-          if sp.sp_wr = [] then W.return_unit_without_modifies ~loc id.id_str
+          if sp.sp_wr = [] then
+            W.error ~loc (W.Return_unit_without_modifies id.id_str)
   in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
@@ -870,7 +876,7 @@ let process_function kid crcm ns f =
      here, before creating identifiers *)
   let add_var nm vs = function
     | None -> Some vs
-    | Some _ -> error ~loc:vs.vs_name.id_loc (DuplicatedVar nm)
+    | Some _ -> W.error ~loc:vs.vs_name.id_loc (W.Duplicated_variable nm)
   in
   let env =
     List.fold_left
@@ -916,7 +922,7 @@ let process_axiom loc kid crcm ns a =
   mk_sig_item (Sig_axiom ax) loc
 
 let process_exception_sig loc ns te =
-  let ec = te.Parsetree.ptyexn_constructor in
+  let ec = te.ptyexn_constructor in
   let id = Ident.create ~loc:ec.pext_loc ec.pext_name.txt in
   let xs =
     match ec.pext_kind with
@@ -926,7 +932,7 @@ let process_exception_sig loc ns te =
           match ca with
           | Pcstr_tuple ctyl -> Exn_tuple (List.map (ty_of_core ns) ctyl)
           | Pcstr_record ldl ->
-              let get Parsetree.{ pld_name; pld_type; _ } =
+              let get { pld_name; pld_type; _ } =
                 ( Ident.create ~loc:pld_name.loc pld_name.txt,
                   ty_of_core ns pld_type )
               in
@@ -934,15 +940,12 @@ let process_exception_sig loc ns te =
         in
         xsymbol id args
     | Pext_decl (_, _, _) ->
-        not_supported ~loc
-          "this type of exceptions declaration is not supported"
+        W.error ~loc (W.Unsupported "type of exception declaration")
   in
   let ec =
     extension_constructor id xs ec.pext_kind ec.pext_loc ec.pext_attributes
   in
-  let te =
-    type_exception ec te.Parsetree.ptyexn_loc te.Parsetree.ptyexn_attributes
-  in
+  let te = type_exception ec te.ptyexn_loc te.ptyexn_attributes in
   mk_sig_item (Sig_exception te) loc
 
 (** Typing use, and modules *)
@@ -956,10 +959,8 @@ type parse_env = {
 
 let penv lpaths parsing = { lpaths; parsing }
 
-exception Circular of string
-
 let rec open_file ~loc penv muc nm =
-  if Sstr.mem nm penv.parsing then error ~loc (Circular nm);
+  if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;
   try add_ns ~export:true muc nm (get_file muc nm).fl_export
   with Not_found ->
     let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
@@ -975,21 +976,17 @@ let rec open_file ~loc penv muc nm =
 
 and module_as_file ~loc penv muc nm =
   try open_file ~loc penv muc nm
-  with Not_found ->
-    let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
-    error_report ~loc
-      ("no module with name " ^ nm ^ " or file with name " ^ file_nm)
+  with Not_found -> W.error ~loc (W.Module_not_found nm)
 
 and process_open ~loc ?(ghost = Nonghost) penv muc od =
-  let qd = Longident.flatten_exn od.Parsetree.popen_expr.txt in
-  let qd_loc = od.Parsetree.popen_loc in
+  let qd = Longident.flatten_exn od.popen_expr.txt in
+  let qd_loc = od.popen_loc in
   let hd = List.hd qd in
   let muc =
     if ns_exists_ns (get_top_import muc) hd then muc
     else module_as_file ~loc:qd_loc penv muc hd
   in
   let od =
-    let open Parsetree in
     {
       opn_id = qd;
       opn_override = od.popen_override;
@@ -1052,9 +1049,10 @@ and process_modtype penv muc umty =
             (* check that type symbols are compatible
                TODO there are other checks that need to be performed, for
                now we assume that the file passes the ocaml compiler type checker *)
-            check ~loc:li.loc
-              (ts_arity ts = ts_arity td.td_ts)
-              (BadTypeArity (ts, ts_arity td.td_ts));
+            if ts_arity ts <> ts_arity td.td_ts then
+              W.error ~loc:li.loc
+                (W.Bad_type_arity
+                   (ts.ts_ident.id_str, ts_arity ts, ts_arity td.td_ts));
             (match (ts.ts_alias, td.td_ts.ts_alias) with
             | None, Some _ -> ()
             | Some ty1, Some ty2 -> ignore (ty_match Mtv.empty ty1 ty2)
@@ -1082,9 +1080,10 @@ and process_modtype penv muc umty =
             (* check that type symbols are compatible
                TODO there are other checks that need to be performed, for
                now we assume that the file passes the ocaml compiler type checker *)
-            check ~loc:li.loc
-              (ts_arity ts = ts_arity td.td_ts)
-              (BadTypeArity (ts, ts_arity td.td_ts));
+            if ts_arity ts <> ts_arity td.td_ts then
+              W.error ~loc:li.loc
+                (W.Bad_type_arity
+                   (ts.ts_ident.id_str, ts_arity ts, ts_arity td.td_ts));
             (match (ts.ts_alias, td.td_ts.ts_alias) with
             | None, Some _ -> ()
             | Some ty1, Some ty2 -> ignore (ty_match Mtv.empty ty1 ty2)
@@ -1092,14 +1091,11 @@ and process_modtype penv muc umty =
 
             let muc = muc_subst_ty muc ts td.td_ts ty in
             (muc, Wty (ts.ts_ident, td) :: cl)
-        | Wmodule (_, _) ->
-            not_supported ~loc:umty.mloc "with module clause not supported"
-        | Wmodsubst (_, _) ->
-            not_supported ~loc:umty.mloc "with module clause not supported"
-        | Wmodtypesubst (_, _) ->
-            not_supported ~loc:umty.mloc "with module clause not supported"
+        | Wmodule (_, _)
+        | Wmodsubst (_, _)
+        | Wmodtypesubst (_, _)
         | Wmodtype (_, _) ->
-            not_supported ~loc:umty.mloc "with module clause not supported"
+            W.error ~loc:umty.mloc (W.Unsupported "`with' module clause")
       in
       let muc, cl = List.fold_left process_constraint (muc, []) cl in
       let tmty =
@@ -1113,7 +1109,7 @@ and process_modtype penv muc umty =
   | Mod_functor (mto, mt) ->
       let nm, mty_arg, loc =
         match mto with
-        | Unit -> not_supported ~loc:umty.mloc "functor type must be provided"
+        | Unit -> W.error ~loc:umty.mloc (W.Unsupported "generative functor")
         | Named ({ txt; loc }, mt) -> (Option.value ~default:"_" txt, mt, loc)
       in
       let muc = open_module muc nm in
@@ -1128,10 +1124,8 @@ and process_modtype penv muc umty =
         }
       in
       (muc, tmty)
-  | Mod_typeof _ -> not_supported ~loc:umty.mloc "module type of not supported"
-  | Mod_extension _ ->
-      not_supported ~loc:umty.mloc "module extension not supported"
-(* TODO warning saying that extensions are not supported *)
+  | Mod_typeof _ -> W.error ~loc:umty.mloc (W.Unsupported "module type of")
+  | Mod_extension _ -> W.error ~loc:umty.mloc (W.Unsupported "module extension")
 
 and process_mod penv loc m muc =
   let nm = Option.value ~default:"_" m.mdname.txt in
@@ -1173,9 +1167,9 @@ and process_sig_item penv muc { sdesc; sloc } =
     | Uast.Sig_val vd -> (muc, process_val ~loc:sloc kid crcm ns vd)
     | Uast.Sig_typext te -> (muc, mk_sig_item (Sig_typext te) sloc)
     | Uast.Sig_module m -> process_mod penv sloc m muc
-    | Uast.Sig_recmodule _ -> not_supported ~loc:sloc "module rec not supported"
+    | Uast.Sig_recmodule _ -> W.error ~loc:sloc (W.Unsupported "module rec")
     | Uast.Sig_modsubst _ | Uast.Sig_modtypesubst _ | Uast.Sig_typesubst _ ->
-        not_supported ~loc:sloc "substitution not supported"
+        W.error ~loc:sloc (W.Unsupported "type substitution")
     | Uast.Sig_modtype mty_decl -> process_modtype_decl penv sloc mty_decl muc
     | Uast.Sig_exception te -> (muc, process_exception_sig sloc ns te)
     | Uast.Sig_open od -> process_open ~loc:sloc ~ghost:Nonghost penv muc od
@@ -1194,7 +1188,7 @@ and process_sig_item penv muc { sdesc; sloc } =
   in
   let rec process_and_import si muc =
     try process_sig_item si muc
-    with Located (loc, NsNotFound s) ->
+    with Ns_not_found (loc, s) ->
       (* if a namespace does not exist we try to load
          a file with the same name *)
       let muc = module_as_file ~loc penv muc s in
@@ -1209,47 +1203,3 @@ and process_sig_item penv muc { sdesc; sloc } =
 and type_sig_item penv muc sig_item =
   let muc, _ = process_sig_item penv muc sig_item in
   muc
-
-let () =
-  let open Location.Error in
-  let open Tterm_printer in
-  register_error_of_exn (function
-    | PartialApplication ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Symbol %a cannot be partially applied" print_ls_nm ls
-    | SymbolNotFound sl ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Symbol %s not found" (String.concat "." sl)
-    | EmptyRecord ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Record cannot be empty"
-    | BadRecordField ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "The record field %a does not exist" print_ls_nm ls
-    | DuplicateRecordField ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Duplicated record field %a" print_ls_nm ls
-    | FieldApplication ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Record field %a cannot be applied" print_ls_nm ls
-    | Circular m ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Circular open: %s" m
-    | InvariantPublic ts ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Invariant on non-private type %a" print_ts_name ts
-    | Invalid_int_literal (s, c) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Invalid int literal: %s%a" s
-          Fmt.(option char)
-          c
-    | _ -> None)

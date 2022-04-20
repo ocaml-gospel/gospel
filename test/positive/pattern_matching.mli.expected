@@ -107,17 +107,17 @@ module pattern_matching.mli
                 x_1:t y_1:t):t * t with
                 | _, S _ -> (False ):bool
                 | O, _ -> (False ):bool
-                | S a:t, O -> if (r:t = (S 
-                              (S  a:t):t):t):prop then (True ):bool else (False ):
-                              bool
+                | S a_1:t, O -> if (r:t = (S 
+                                (S  a_1:t):t):t):prop then (True ):bool else (False ):
+                                bool
                 end::bool = (True ):bool):prop*)
     
     val f_unit : int array -> unit
-    (*@ x1:unit = f_unit a_1:int array
+    (*@ x1:unit = f_unit a_2:int array
         ensures (match x1:unit with
                 |  -> (True ):bool
                 end::bool = (True ):bool):prop
-        writes a_1:int array*)
+        writes a_2:int array*)
     
     (*@ function fun_unit (x_2:unit): string =
         match x_2:unit with

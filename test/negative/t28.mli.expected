@@ -14,4 +14,4 @@
 
 (*@ axiom ... *)
 File "t28.mli", line 13, characters 17-18:
-Error: Type mismatch. Cannot match float with integer
+Error: This term has type `float' but a term was expected of type `integer'.

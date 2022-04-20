@@ -1,14 +1,15 @@
+(include dune.inc)
+
 (rule
- (targets no_modifies_while_returning_unit.output)
+ (targets dune.inc.gen)
+ (deps
+  (source_tree .))
  (action
-  (with-stderr-to
+  (with-stdout-to
    %{targets}
-   (with-accepted-exit-codes
-    (or :standard 124)
-    (run gospel check %{dep:no_modifies_while_returning_unit.mli})))))
+   (run ../gen/gen.exe))))
 
 (rule
  (alias runtest)
  (action
-  (diff no_modifies_while_returning_unit.expected
-    no_modifies_while_returning_unit.output)))
+  (diff dune.inc dune.inc.gen)))

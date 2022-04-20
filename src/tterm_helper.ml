@@ -10,9 +10,9 @@
 
 open Tterm
 open Ttypes
-open Utils
 open Symbols
 module Ident = Identifier.Ident
+module W = Warnings
 
 let rec p_vars p =
   match p.p_node with
@@ -50,34 +50,29 @@ let rec t_free_vars t =
   | Ttrue -> Svs.empty
   | Tfalse -> Svs.empty
 
-exception FreeVariables of Svs.t
-
 let t_free_vs_in_set svs t =
   let diff = Svs.diff (t_free_vars t) svs in
-  check ~loc:t.t_loc (Svs.is_empty diff) (FreeVariables diff)
+  if not (Svs.is_empty diff) then
+    W.error ~loc:t.t_loc
+      (W.Free_variables
+         (Svs.elements diff |> List.map (fun vs -> vs.vs_name.id_str)))
 
 (** type checking *)
 
-exception TermExpected of term
-exception FmlaExpected of term
-
-let t_prop t = if t.t_ty = None then t else error ~loc:t.t_loc (FmlaExpected t)
+let t_prop t =
+  if t.t_ty = None then t else W.error ~loc:t.t_loc W.Formula_expected
 
 let t_type t =
   match t.t_ty with
   | Some ty -> ty
-  | None -> error ~loc:t.t_loc (TermExpected t)
+  | None -> W.error ~loc:t.t_loc W.Formula_expected
 
 let t_ty_check t ty =
   match (ty, t.t_ty) with
   | Some l, Some r -> ty_equal_check l r
-  | Some _, None -> raise (TermExpected t)
-  | None, Some _ -> raise (FmlaExpected t)
+  | Some _, None -> W.error ~loc:t.t_loc W.Term_expected
+  | None, Some _ -> W.error ~loc:t.t_loc W.Formula_expected
   | None, None -> ()
-
-exception BadArity of lsymbol * int
-exception PredicateSymbolExpected of lsymbol
-exception FunctionSymbolExpected of lsymbol
 
 let ls_arg_inst ls tl =
   try
@@ -86,22 +81,24 @@ let ls_arg_inst ls tl =
       Mtv.empty ls.ls_args tl
   with Invalid_argument _ ->
     let loc = (List.hd tl).t_loc in
-    error ~loc (BadArity (ls, List.length tl))
+    W.error ~loc
+      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length tl))
 
 let ls_app_inst ls tl ty =
   let s = ls_arg_inst ls tl in
   match (ls.ls_value, ty) with
-  | Some _, None -> raise (PredicateSymbolExpected ls)
-  | None, Some _ -> raise (FunctionSymbolExpected ls)
+  | Some _, None ->
+      (* FIXME: get a proper location here *)
+      W.error ~loc:Location.none (W.Predicate_symbol_expected ls.ls_name.id_str)
+  | None, Some _ ->
+      (* FIXME: get a proper location here *)
+      W.error ~loc:Location.none (W.Function_symbol_expected ls.ls_name.id_str)
   | Some vty, Some ty -> ty_match s vty ty
   | None, None -> s
 
 (** Pattern constructors *)
 
 let mk_pattern p_node p_ty = { p_node; p_ty; p_loc = None }
-
-exception EmptyCase
-
 let p_wild ty = mk_pattern Pwild ty
 let p_var vs = mk_pattern (Pvar vs) vs.vs_ty
 let p_app ls pl ty = mk_pattern (Papp (ls, pl)) ty
@@ -132,7 +129,7 @@ let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
 
 let t_case t1 ptl =
   match ptl with
-  | [] -> error ~loc:t1.t_loc EmptyCase
+  | [] -> assert false (* this is a syntax error *)
   | (_, t) :: _ -> mk_term (Tcase (t1, ptl)) t.t_ty
 
 let t_quant q vsl t ty = mk_term (Tquant (q, vsl, t)) ty
@@ -146,9 +143,6 @@ let t_bool_true = mk_term (Tapp (fs_bool_true, [])) (Some ty_bool)
 let t_bool_false = mk_term (Tapp (fs_bool_false, [])) (Some ty_bool)
 let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] None
 let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
-
-(* smart-constructors with type checking *)
-
 let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)
 
@@ -158,7 +152,7 @@ let t_quant q vsl t ty loc =
   | _, [] -> t_prop t
   | Tlambda, _ -> t_quant q vsl t ty loc
   | _, _ ->
-      check_report ~loc (ty = None) "Quantifiers terms must be of type prop.";
+      if ty <> None then W.error ~loc W.Formula_expected;
       t_quant q vsl (t_prop t) None loc
 
 let f_forall = t_quant Tforall
@@ -170,39 +164,3 @@ let f_or = f_binop Tor
 let f_or_asym = f_binop Tor_asym
 let f_implies = f_binop Timplies
 let f_iff = f_binop Tiff
-
-(** register exceptions *)
-
-let () =
-  let open Ppxlib in
-  let open Tterm_printer in
-  let open Location.Error in
-  register_error_of_exn (function
-    | TermExpected t ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Term expected in %a" print_term t
-    | FmlaExpected t ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Formula expected in %a" print_term t
-    | BadArity (ls, i) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Function %a expects %d arguments as opposed to %d" print_ls_nm ls
-          (List.length ls.ls_args) i
-    | PredicateSymbolExpected ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not a predicate symbol: %a" print_ls_nm ls
-    | FunctionSymbolExpected ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not a function symbol: %a" print_ls_nm ls
-    | FreeVariables svs ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Unbound variables: %a"
-          (Fmt.list ~sep:Fmt.comma print_vs)
-          (Svs.elements svs)
-    | _ -> None)

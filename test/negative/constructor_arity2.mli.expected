@@ -24,4 +24,5 @@ val f : int -> t -> unit
     requires ...
      *)
 File "constructor_arity2.mli", line 6, characters 15-24:
-Error: Function C expects 2 arguments as opposed to 3
+Error: The constructor `C' expects `2' argument(s)
+       but is applied to 3 argument(s) here.

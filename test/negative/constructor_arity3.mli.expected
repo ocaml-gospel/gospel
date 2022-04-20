@@ -12,4 +12,4 @@ val f : t -> int[@@gospel
       | L E E -> r = 1
 |}]
 File "constructor_arity3.mli", line 7, characters 12-13:
-Error: syntax error
+Error: Syntax error.

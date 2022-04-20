@@ -302,16 +302,16 @@ module modules.mli
                
           (*@ function fc (y_2:tc): ta =
               (C  (y_2:tc).x):ta *)
-          (*@ function fcc (a:ta): tc =
-              match a:ta with
+          (*@ function fcc (a_1:ta): tc =
+              match a_1:ta with
               | C b:int -> (constr#tc  b:int (float_of_int  b:int):float):tc
               end::tc
           *)
         end
         module MD :
         sig
-          (*@ function td (a_1:ta) (b_1:tc): integer =
-              match a_1:ta with
+          (*@ function td (a_2:ta) (b_1:tc): integer =
+              match a_2:ta with
               | C c:int -> ((integer_of_int 
                            c:int):integer + (integer_of_int 
                            (b_1:tc).x):integer):integer

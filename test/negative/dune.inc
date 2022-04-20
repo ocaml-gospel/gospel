@@ -64,6 +64,19 @@
  (action (diff %{dep:constructor_arity4.mli.expected} %{dep:constructor_arity4.mli.output})))
 
 (rule
+ (targets empty_match.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:empty_match.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:empty_match.mli.expected} %{dep:empty_match.mli.output})))
+
+(rule
  (targets exn_arity.mli.output)
  (deps (source_tree .))
  (action

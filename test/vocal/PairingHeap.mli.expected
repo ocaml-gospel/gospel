@@ -132,7 +132,7 @@ module PairingHeap.mli
           function minimum (_:t_1) : t
           
         Field Symbols
-          function bag (_:t_1) : t bag_1
+          function bag_1 (_:t_1) : t bag
           
         Exception Symbols
           
@@ -164,37 +164,37 @@ module PairingHeap.mli
              
         type t_1
              (*@ 
-                 model bag : t bag_1 *)
+                 model bag_1 : t bag *)
         val empty : unit -> t
         (*@ h:t_1 = empty ()
-            ensures ((cardinal  (h:t_1).bag):integer = 0:integer):prop
+            ensures ((cardinal  (h:t_1).bag_1):integer = 0:integer):prop
                     ensures forall x_1:t. ((occurrences 
-                            x_1:t (h:t_1).bag):integer = 0:integer):prop*)
+                            x_1:t (h:t_1).bag_1):integer = 0:integer):prop*)
         val is_empty : t -> bool
         (*@ b:bool = is_empty h_1:t_1
             ensures (b:bool = (True ):bool):prop <-> (is_empty_1 
-                    (h_1:t_1).bag):prop*)
+                    (h_1:t_1).bag_1):prop*)
         val merge : t -> t -> t
         (*@ h_2:t_1 = merge h1:t_1 h2:t_1
-            ensures ((cardinal  (h_2:t_1).bag):integer = ((cardinal 
-                    (h1:t_1).bag):integer + (cardinal 
-                    (h2:t_1).bag):integer):integer):prop
+            ensures ((cardinal  (h_2:t_1).bag_1):integer = ((cardinal 
+                    (h1:t_1).bag_1):integer + (cardinal 
+                    (h2:t_1).bag_1):integer):integer):prop
                     ensures forall x_2:t. ((occurrences 
-                            x_2:t (h_2:t_1).bag):integer = ((occurrences 
-                            x_2:t (h1:t_1).bag):integer + (occurrences 
-                            x_2:t (h2:t_1).bag):integer):integer):prop*)
+                            x_2:t (h_2:t_1).bag_1):integer = ((occurrences 
+                            x_2:t (h1:t_1).bag_1):integer + (occurrences 
+                            x_2:t (h2:t_1).bag_1):integer):integer):prop*)
         val insert : elt -> t -> t
         (*@ h':t_1 = insert x_3:t h_3:t_1
             ensures ((occurrences 
-                    x_3:t (h':t_1).bag):integer = ((occurrences 
-                    x_3:t (h_3:t_1).bag):integer + 1:integer):integer):prop
+                    x_3:t (h':t_1).bag_1):integer = ((occurrences 
+                    x_3:t (h_3:t_1).bag_1):integer + 1:integer):integer):prop
                     ensures forall y_1:t. not (y_1:t = x_3:t):prop -> ((occurrences 
-                            y_1:t (h':t_1).bag):integer = (occurrences 
-                            y_1:t (h_3:t_1).bag):integer):prop
-                    ensures ((cardinal  (h':t_1).bag):integer = ((cardinal 
-                            (h_3:t_1).bag):integer + 1:integer):integer):prop*)
+                            y_1:t (h':t_1).bag_1):integer = (occurrences 
+                            y_1:t (h_3:t_1).bag_1):integer):prop
+                    ensures ((cardinal  (h':t_1).bag_1):integer = ((cardinal 
+                            (h_3:t_1).bag_1):integer + 1:integer):integer):prop*)
         (*@ predicate mem (x_4:t) (h_4:t_1) =
-            ((occurrences  x_4:t (h_4:t_1).bag):integer > 0:integer):prop
+            ((occurrences  x_4:t (h_4:t_1).bag_1):integer > 0:integer):prop
         *)
         (*@ predicate is_minimum (x_5:t) (h_5:t_1) =
             (mem  x_5:t h_5:t_1):prop /\ forall e:t. (mem 
@@ -204,24 +204,25 @@ module PairingHeap.mli
         *)
         (*@ function minimum (h_6:t_1): t *)
         (*@ axiom min_def: forall h_7:t_1. (0:integer < (cardinal 
-        (h_7:t_1).bag):integer):prop -> (is_minimum 
+        (h_7:t_1).bag_1):integer):prop -> (is_minimum 
         (minimum  h_7:t_1):t h_7:t_1):prop *)
         val find_min : t -> elt
         (*@ x_6:t = find_min h_8:t_1
-            requires ((cardinal  (h_8:t_1).bag):integer > 0:integer):prop
+            requires ((cardinal  (h_8:t_1).bag_1):integer > 0:integer):prop
             ensures (x_6:t = (minimum  h_8:t_1):t):prop*)
         val delete_min : t -> t
         (*@ h'_1:t_1 = delete_min h_9:t_1
-            requires ((cardinal  (h_9:t_1).bag):integer > 0:integer):prop
+            requires ((cardinal  (h_9:t_1).bag_1):integer > 0:integer):prop
             ensures let x_7:t = (minimum  h_9:t_1):t in ((occurrences 
-                    x_7:t (h'_1:t_1).bag):integer = ((occurrences 
-                    x_7:t (h_9:t_1).bag):integer - 1:integer):integer):prop
+                    x_7:t (h'_1:t_1).bag_1):integer = ((occurrences 
+                    x_7:t (h_9:t_1).bag_1):integer - 1:integer):integer):prop
                     ensures forall y_2:t. not (y_2:t = (minimum 
                             h_9:t_1):t):prop -> ((occurrences 
-                            y_2:t (h'_1:t_1).bag):integer = (occurrences 
-                            y_2:t (h_9:t_1).bag):integer):prop
-                    ensures ((cardinal  (h'_1:t_1).bag):integer = ((cardinal 
-                            (h_9:t_1).bag):integer - 1:integer):integer):prop*)
+                            y_2:t (h'_1:t_1).bag_1):integer = (occurrences 
+                            y_2:t (h_9:t_1).bag_1):integer):prop
+                    ensures ((cardinal 
+                            (h'_1:t_1).bag_1):integer = ((cardinal 
+                            (h_9:t_1).bag_1):integer - 1:integer):integer):prop*)
       end
 
 OK

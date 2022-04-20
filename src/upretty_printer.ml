@@ -9,7 +9,6 @@
 (**************************************************************************)
 
 open Ppxlib
-open Parsetree
 open Uast
 open Opprintast
 open Utils.Fmt

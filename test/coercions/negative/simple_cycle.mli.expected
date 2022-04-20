@@ -24,6 +24,5 @@ type t2
 (*@ function c2 ...
     coercion *)
 File "simple_cycle.mli", line 7, characters 10-12:
-Error: This coercion introduces a cycle;
-There is already a coercion from type t1 to type t2:
-c1: t1 -> t2
+Error: This coercion introduces a cycle:
+         c1: t1 -> t2.

@@ -4,7 +4,6 @@ open Tast
 open Symbols
 open Tterm_printer
 open Ttypes
-open Parsetree
 open Upretty_printer
 open Opprintast
 open Fmt
@@ -227,7 +226,6 @@ let rec print_signature_item f x =
   | Sig_typext te -> type_extension reset_ctxt f te
   | Sig_exception ed -> exception_declaration reset_ctxt f ed
   | Sig_class l -> (
-      let open Parsetree in
       let class_description kwd f
           ({ pci_params = ls; pci_name = { txt; _ }; _ } as x) =
         pp f "@[<2>%s %a%a%s@;:@;%a@]%a" kwd virtual_flag x.pci_virt

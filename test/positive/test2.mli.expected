@@ -33,7 +33,7 @@ module test2.mli
 
   Namespace: test2.mli
     Type symbols
-       int
+       int_1
        t
       
     Logic Symbols
@@ -96,7 +96,7 @@ module test2.mli
     type t
          
     
-    type int
+    type int_1
          
 
 OK

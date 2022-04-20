@@ -76,17 +76,17 @@ module logical.mli
         (mod  (pow  x:integer y:integer):integer m:integer):integer
     *)
     
-    (*@ predicate is_sorted (a:int array) =
+    (*@ predicate is_sorted (a_1:int array) =
         forall i:integer j:integer. (0:integer <= i:integer):prop /\ (
         i:integer <= j:integer):prop /\ (j:integer < (length 
-        a:int array):integer):prop -> ((integer_of_int 
-        (get  a:int array i:integer):int):integer <= (integer_of_int 
-        (get  a:int array j:integer):int):integer):prop
+        a_1:int array):integer):prop -> ((integer_of_int 
+        (get  a_1:int array i:integer):int):integer <= (integer_of_int 
+        (get  a_1:int array j:integer):int):integer):prop
     *)
     
     val merge : int array -> int array -> int array
-    (*@ c:int array = merge a_1:int array b:int array
-        requires (is_sorted  a_1:int array):prop
+    (*@ c:int array = merge a_2:int array b:int array
+        requires (is_sorted  a_2:int array):prop
                  requires (is_sorted  b:int array):prop
         ensures (is_sorted  c:int array):prop*)
     

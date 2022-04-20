@@ -13,4 +13,4 @@ val f : y:int -> int -> int
 (*@ r = f ~y y
      *)
 File "t19.mli", line 12, characters 10-11:
-Error: Variable y is duplicated in pattern
+Error: The variable `y' is duplicated in this pattern.

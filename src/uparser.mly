@@ -445,8 +445,8 @@ quant:
 ;
 
 constant:
-| INTEGER { let i, m = $1 in Parsetree.Pconst_integer (i, m) }
-| FLOAT { Parsetree.Pconst_float ($1, None) }
+| INTEGER { let i, m = $1 in Pconst_integer (i, m) }
+| FLOAT { Pconst_float ($1, None) }
 | STRING { Pconst_string ($1, mk_loc $loc, None) }
 | CHAR { Pconst_char $1 }
 ;
