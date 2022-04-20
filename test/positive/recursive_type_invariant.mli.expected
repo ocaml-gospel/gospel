@@ -1,0 +1,101 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t = private
+  | A 
+  | B of t 
+  | C of {
+  x: t } [@@gospel
+           {| invariant match self with
+              | A -> true
+              | B t' -> self = t'
+              | C a -> a.x = self |}]
+type u = private {
+  tag: int ;
+  next: u }[@@gospel
+             {| invariant self.tag = self.next.tag = self.next.next.tag |}]
+val f : u -> u[@@gospel {| y = f x
+    requires x.tag = 0 |}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Gospelstdlib *)
+
+type t = private
+| A 
+| B of t 
+| C of {
+x: t } 
+  (*@ invariant ...
+       *)
+
+type u = private {
+tag: int ;
+next: u }
+  (*@ invariant ...
+       *)
+
+val f : u -> u
+(*@ y = f x
+    requires ...
+     *)
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module recursive_type_invariant.mli
+
+  Namespace: recursive_type_invariant.mli
+    Type symbols
+       t
+       u
+      
+    Logic Symbols
+      function A  : t
+      function B (_:t) : t
+      function C (_:t) : t
+      function constr#u (_:int) (_:u) : u
+      
+    Field Symbols
+      function next (_:u) : u
+      function tag (_:u) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Gospelstdlib *)
+    
+    type t = A of 
+             function A  : t
+             | B of t
+               function B (_:t) : t
+             | C of {x:t}
+               function C (_:t) : t
+         (*@ 
+             invariant (match (self ):t with
+                       | A -> (True ):bool
+                       | B t':t -> if ((self ):t = t':t):prop then (True ):
+                                   bool else (False ):bool
+                       | C a_1:t -> if ((a_1:t).x = (self ):t):prop then (True ):
+                                    bool else (False ):bool
+                       end::bool = (True ):bool):prop *)
+    
+    type u = {tag:int; next:u}
+          function constr#u (_:int) (_:u) : u
+          function tag (_:u) : int
+          function next (_:u) : u
+         (*@ 
+             invariant (((self_1 ):u).tag = (((self_1 ):u).next).tag):prop /\ ((((self_1 ):
+                       u).next).tag = ((((self_1 ):u).next).next).tag):prop *)
+    
+    val f : u -> u
+    (*@ y:u = f x_1:u
+        requires ((integer_of_int  (x_1:u).tag):integer = 0:integer):prop*)
+
+OK

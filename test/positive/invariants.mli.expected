@@ -3,7 +3,7 @@
 ********** Parsed file ********
 *******************************
 type t1 = private {
-  a: int }[@@gospel {| invariant a >= 0 |}]
+  a: int }[@@gospel {| invariant self.a >= 0 |}]
 type t2 = private
   | A 
   | B [@@gospel {| invariant 1 > 0 |}]
@@ -62,7 +62,7 @@ module invariants.mli
            function a_1 (_:t1) : int
          (*@ 
              invariant ((integer_of_int 
-                       (a_1 ):int):integer >= 0:integer):prop *)
+                       ((self ):t1).a_1):integer >= 0:integer):prop *)
     
     type t2 = A of 
               function A  : t2

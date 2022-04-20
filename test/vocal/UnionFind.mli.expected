@@ -10,9 +10,9 @@ type 'a elem
                     {| mutable model dom : 'a elem set
     mutable model rep : 'a elem -> 'a elem
     mutable model img : 'a elem -> 'a
-    invariant forall x: 'a elem. mem x dom -> img x = img (rep x)
-    invariant forall x: 'a elem. mem x dom -> rep (rep x) = rep x
-    invariant forall x: 'a elem. mem x dom -> mem (rep x) dom |}]]
+    invariant forall x: 'a elem. mem x self.dom -> self.img x = self.img (self.rep x)
+    invariant forall x: 'a elem. mem x self.dom -> self.rep (self.rep x) = self.rep x
+    invariant forall x: 'a elem. mem x self.dom -> mem (self.rep x) self.dom |}]]
 [@@@gospel
   {| predicate equiv (uf: 'a uf) (x: 'a elem) (y: 'a elem) =
       uf.rep x = uf.rep y |}]
@@ -247,25 +247,20 @@ module UnionFind.mli
                  mutable model rep : 'a elem -> 'a elem
                  mutable model img : 'a elem -> 'a
                  invariant forall x:'a elem. (mem 
-                           x:'a elem (dom_1 ):'a elem set):prop -> ((apply 
-                           (img_1 ):'a elem -> 'a x:'a elem):'a = (apply 
-                           (img_1 ):'a elem -> 'a (apply 
-                           (rep_1 ):'a elem -> 'a elem x:'a elem):'a 
-                           elem):'a):propinvariantforall x_1:'a elem. (mem 
-                                                  x_1:'a elem
-                                                  (dom_1 ):'a elem set):prop -> ((apply 
-                                                  (rep_1 ):'a elem -> 'a elem
-                                                  (apply 
-                                                  (rep_1 ):'a elem -> 'a elem
-                                                  x_1:'a elem):'a elem):'a 
-                                                  elem = (apply 
-                                                  (rep_1 ):'a elem -> 'a elem
-                                                  x_1:'a elem):'a elem):propinvariant
+                           x:'a elem ((self ):'a uf).dom):prop -> ((apply 
+                           ((self ):'a uf).img x:'a elem):'a = (apply 
+                           ((self ):'a uf).img (apply 
+                           ((self ):'a uf).rep x:'a elem):'a elem):'a):propinvariant
+                           forall x_1:'a elem. (mem 
+                           x_1:'a elem ((self ):'a uf).dom):prop -> ((apply 
+                           ((self ):'a uf).rep (apply 
+                           ((self ):'a uf).rep x_1:'a elem):'a elem):'a 
+                           elem = (apply 
+                           ((self ):'a uf).rep x_1:'a elem):'a elem):propinvariant
                            forall x_2:'a elem. (mem 
-                           x_2:'a elem (dom_1 ):'a elem set):prop -> (mem 
-                           (apply 
-                           (rep_1 ):'a elem -> 'a elem x_2:'a elem):'a 
-                           elem (dom_1 ):'a elem set):prop *) *)
+                           x_2:'a elem ((self ):'a uf).dom):prop -> (mem 
+                           (apply  ((self ):'a uf).rep x_2:'a elem):'a 
+                           elem ((self ):'a uf).dom):prop *) *)
     
     (*@ predicate equiv (uf_1:'a uf) (x_3:'a elem) (y:'a elem) =
         ((apply  (uf_1:'a uf).rep x_3:'a elem):'a elem = (apply 

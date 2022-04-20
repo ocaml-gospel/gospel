@@ -13,7 +13,7 @@
 type 'a t
 (*@ model seq: 'a seq
     model idx: integer
-    invariant 0 <= idx <= Seq.length seq *)
+    invariant 0 <= self.idx <= Seq.length self.seq *)
 
 val empty : unit -> 'a t
 (*@ z = empty ()

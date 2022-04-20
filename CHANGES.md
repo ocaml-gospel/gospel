@@ -2,6 +2,8 @@
 
 ## Added
 
+- Added a `self` variable in type invariants referring to a value of the
+  specified type. [\#187](https://github.com/ocaml-gospel/gospel/pull/187)
 - Added support for `int` literals.
   [\#175](https://github.com/ocaml-gospel/gospel/pull/175) and
   [\#177](https://github.com/ocaml-gospel/gospel/pull/177)

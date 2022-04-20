@@ -31,9 +31,9 @@ module Make (K : HashedType) : sig
   type 'a table
   (*@ ephemeral
       mutable model dom : key set
-      invariant forall x y: key. Set.mem x dom -> Set.mem y dom -> K.equiv x y -> x = y
+      invariant forall x y: key. Set.mem x self.dom -> Set.mem y self.dom -> K.equiv x y -> x = y
       mutable model view: key -> 'a list
-      invariant forall k: key. not (Set.mem k dom) -> view k = [] *)
+      invariant forall k: key. not (Set.mem k self.dom) -> self.view k = [] *)
 
   type 'a t = 'a table
 
