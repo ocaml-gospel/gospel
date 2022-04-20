@@ -245,7 +245,7 @@ let rec s_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a" module_type incl.pincl_mod
         (item_attributes reset_ctxt)
         incl.pincl_attributes
-  | Sig_modtype { mtdname = s; mtdtype = md; mtdattributes = attrs } ->
+  | Sig_modtype { mtdname = s; mtdtype = md; mtdattributes = attrs; _ } ->
       pp f "@[<hov2>module@ type@ %s%a@]%a" s.txt
         (fun f md ->
           match md with
@@ -256,7 +256,7 @@ let rec s_signature_item f x =
         md
         (item_attributes reset_ctxt)
         attrs
-  | Sig_modtypesubst { mtdname = s; mtdtype = md; mtdattributes = attrs } ->
+  | Sig_modtypesubst { mtdname = s; mtdtype = md; mtdattributes = attrs; _ } ->
       let md =
         match md with None -> assert false (* ast invariant *) | Some mt -> mt
       in

@@ -30,7 +30,7 @@ let print_type_kind fmt = function
         | [] -> list ~sep:star print_ty fmt cs.ls_args
         | ld -> print_label_decl_list print_variant_field fmt ld
       in
-      let print_constructor fmt { cd_cs; cd_ld } =
+      let print_constructor fmt { cd_cs; cd_ld; _ } =
         pp fmt "@[%a of %a@\n@[<h 2>%a@]@]" Ident.pp cd_cs.ls_name
           (print_args cd_cs) cd_ld print_ls_decl cd_cs
       in
@@ -45,7 +45,7 @@ let print_type_kind fmt = function
         (list ~sep:newline print_ls_decl)
         (rd.rd_cs :: pjs)
 
-let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants } =
+let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
   if (not ty_ephemeral) && ty_fields = [] && ty_invariants = [] then ()
   else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
@@ -271,7 +271,7 @@ let rec print_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a" module_type incl.pincl_mod
         (item_attributes reset_ctxt)
         incl.pincl_attributes
-  | Sig_modtype { mtd_name = s; mtd_type = md; mtd_attrs = attrs } ->
+  | Sig_modtype { mtd_name = s; mtd_type = md; mtd_attrs = attrs; _ } ->
       pp f "@[<hov2>module@ type@ %a%a@]%a" Ident.pp s
         (fun f md ->
           match md with

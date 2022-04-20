@@ -7,7 +7,7 @@
 
 (library
  (public_name gospel)
- (flags :standard -open Ocaml_shadow -w -9)
+ (flags :standard -open Ocaml_shadow)
  (preprocess
   (pps ppx_deriving.show))
  (libraries ocaml-compiler-libs.shadow fmt ppxlib ppxlib.ast)
