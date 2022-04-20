@@ -63,7 +63,7 @@ let find_q_ns = find_q find_ns
 
 (* specification types *)
 let rec ty_of_pty ns = function
-  | PTtyvar { pid_str; pid_loc } ->
+  | PTtyvar { pid_str; pid_loc; _ } ->
       { ty_node = Tyvar (tv_of_string ~loc:pid_loc pid_str) }
   | PTtyapp (q, ptyl) ->
       let ts = find_q_ts ns q in
@@ -156,7 +156,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
         let p = mk_papp ~loc (fs_tuple n) dpl in
         mk_papp ~loc cs [ p ]
     (* allow C _ with type t = C of int * int *)
-    | [ { dp_node = DPwild } ], _ :: _ :: _ ->
+    | [ { dp_node = DPwild; _ } ], _ :: _ :: _ ->
         let dpl = List.map (mk_pwild loc) dtyl in
         mk_papp ~loc cs dpl
     | _ ->
@@ -244,7 +244,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let rec gen_app ~loc ls tl =
     let n = List.length ls.ls_args in
     match tl with
-    | [ { term_desc = Ttuple tl } ] when List.length tl = n && ls.ls_constr ->
+    | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n && ls.ls_constr
+      ->
         gen_app ~loc ls tl
     | _ when List.length tl < n -> error ~loc (PartialApplication ls)
     | _ ->
@@ -600,7 +601,7 @@ let type_type_declaration kid crcm ns tdl =
     (* invariants are only allowed on abstract/private types *)
     (match ((td.tkind, td.tmanifest), td.tspec) with
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
-        Some { ty_invariant = _ :: _ } )
+        Some { ty_invariant = _ :: _; _ } )
       when td.tprivate = Public ->
         error ~loc:td.tloc (InvariantPublic td_ts)
     | _, _ -> ());
@@ -810,7 +811,7 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   let args, ret = val_parse_core_type ns vd.vtype in
   let spec =
     match vd.vspec with
-    | None | Some { sp_header = None } -> (
+    | None | Some { sp_header = None; _ } -> (
         let id = Preid.create ~loc:vd.vloc vd.vname.txt in
         let ret =
           if ty_equal ret ty_unit then Uast.Lunit

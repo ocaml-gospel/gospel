@@ -326,7 +326,7 @@ term_:
     { let cast ty = { $4 with term_desc = Tcast ($4, ty) } in
       let pat, def = match $2.pat_desc with
         | Ptuple [] -> { $2 with pat_desc = Pwild }, cast (PTtuple [])
-        | Pcast ({pat_desc = (Pvar _|Pwild)} as p, ty) -> p, cast ty
+        | Pcast ({pat_desc = (Pvar _|Pwild); _} as p, ty) -> p, cast ty
         | _ -> $2, $4 in
       match pat.pat_desc with
       | Pvar id -> Tlet (id, def, $6)

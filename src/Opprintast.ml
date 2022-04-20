@@ -21,6 +21,8 @@
 (* Extensive Rewrite: Hongbo Zhang: University of Pennsylvania *)
 (* TODO more fine-grained precedence pretty-printing *)
 
+[@@@warning "-9"]
+
 open Ppxlib
 open Asttypes
 open Format

@@ -29,7 +29,8 @@ let get_spec_content attr =
         {
           pstr_desc =
             Pstr_eval
-              ({ pexp_desc = Pexp_constant (Pconst_string (spec, _, _)) }, _);
+              ({ pexp_desc = Pexp_constant (Pconst_string (spec, _, _)); _ }, _);
+          _;
         };
       ] ->
       (spec, attr.attr_loc)
@@ -37,7 +38,7 @@ let get_spec_content attr =
 
 let get_inner_spec attr =
   match attr.attr_payload with
-  | PStr [ { pstr_desc = Pstr_eval (_, attrs) } ] -> get_spec_attr attrs
+  | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
   | _ -> assert false
 
 exception Syntax_error of Location.t

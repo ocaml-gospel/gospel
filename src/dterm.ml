@@ -43,7 +43,7 @@ let ty_of_dty =
     let rec to_ty dty =
       match dty with
       | Tvar { dtv_id; dtv_def = None } -> get_var dtv_id
-      | Tvar { dtv_def = Some dty } -> to_ty dty
+      | Tvar { dtv_def = Some dty; _ } -> to_ty dty
       | Tapp (ts, dtyl) -> ty_app ts (List.map to_ty dtyl)
       | Tty ty -> ty
     in
@@ -146,7 +146,7 @@ let rec unify_dty_ty dty ty =
 
 let rec unify dty1 dty2 =
   match (head dty1, head dty2) with
-  | Tvar { dtv_id = id1 }, Tvar { dtv_id = id2 } when id1 = id2 -> ()
+  | Tvar { dtv_id = id1; _ }, Tvar { dtv_id = id2; _ } when id1 = id2 -> ()
   | Tvar tvar, dty | dty, Tvar tvar ->
       if occur tvar dty then raise Exit else tvar.dtv_def <- Some dty
   | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 -> (
@@ -224,19 +224,19 @@ let denv_add_var_quant denv vl =
 
 (** coercions *)
 
-let apply_coercion l ({ dt_loc = loc } as dt) =
+let apply_coercion l dt =
   let apply dt ls =
     let dtyl, dty = specialize_ls ls in
     dterm_unify dt (List.hd dtyl);
-    { dt_node = DTapp (ls, [ dt ]); dt_dty = dty; dt_loc = loc }
+    { dt_node = DTapp (ls, [ dt ]); dt_dty = dty; dt_loc = dt.dt_loc }
   in
   List.fold_left apply dt l
 
 (* coercions using just head tysymbols without type arguments: *)
 (* TODO: this can be improved *)
 let rec ts_of_dty = function
-  | Tvar { dtv_def = Some dty } -> ts_of_dty dty
-  | Tvar { dtv_def = None } | Tty { ty_node = Tyvar _ } -> raise Exit
+  | Tvar { dtv_def = Some dty; _ } -> ts_of_dty dty
+  | Tvar { dtv_def = None; _ } | Tty { ty_node = Tyvar _ } -> raise Exit
   | Tty { ty_node = Tyapp (ts, _) } | Tapp (ts, _) -> ts
 
 let ts_of_dty = function Some dt_dty -> ts_of_dty dt_dty | None -> ts_bool
@@ -244,8 +244,8 @@ let ts_of_dty = function Some dt_dty -> ts_of_dty dt_dty | None -> ts_bool
 (* NB: this function is not a morphism w.r.t.
    the identity of type variables. *)
 let rec ty_of_dty_raw = function
-  | Tvar { dtv_def = Some (Tty ty) } -> ty
-  | Tvar { dtv_def = Some dty } -> ty_of_dty_raw dty
+  | Tvar { dtv_def = Some (Tty ty); _ } -> ty
+  | Tvar { dtv_def = Some dty; _ } -> ty_of_dty_raw dty
   | Tvar _ -> fresh_ty_var ~loc:Location.none "xi"
   | Tapp (ts, dl) -> ty_app ts (List.map ty_of_dty_raw dl)
   | Tty ty -> ty
@@ -270,8 +270,9 @@ let max_dty crcmap dtl =
   in
   let l =
     List.fold_left
-      (fun acc { dt_dty = dty } ->
-        try (dty, ts_of_dty dty, ty_of_dty_raw dty) :: acc with Exit -> acc)
+      (fun acc { dt_dty; _ } ->
+        try (dt_dty, ts_of_dty dt_dty, ty_of_dty_raw dt_dty) :: acc
+        with Exit -> acc)
       [] dtl
   in
   if l = [] then (List.hd dtl).dt_dty else aux l
@@ -280,7 +281,7 @@ let max_dty crcmap dtl =
   match max_dty crcmap dtl with
   | Some (Tty ty)
     when ty_equal ty ty_bool
-         && List.exists (fun { dt_dty = dty } -> dty = None) dtl ->
+         && List.exists (fun { dt_dty; _ } -> dt_dty = None) dtl ->
       (* favor prop over bool *)
       None
   | dty -> dty

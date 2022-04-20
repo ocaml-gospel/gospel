@@ -399,7 +399,7 @@ let add_sig_contents muc sig_ =
     | Pty_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
   in
   match sig_.sig_desc with
-  | Sig_val (({ vd_spec = Some sp } as v), _) when sp.sp_pure ->
+  | Sig_val (({ vd_spec = Some sp; _ } as v), _) when sp.sp_pure ->
       let tyl = List.map ty_of_lb_arg sp.sp_args in
       let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
       let ls = lsymbol ~field:false v.vd_name tyl (Some ty) in
@@ -445,7 +445,7 @@ let add_sig_contents muc sig_ =
       let xs = te.exn_constructor.ext_xs in
       let muc = add_xs ~export:true muc s xs in
       add_kid muc te.exn_constructor.ext_ident sig_
-  | Sig_open ({ opn_id }, _) ->
+  | Sig_open ({ opn_id; _ }, _) ->
       let nm = List.hd (List.rev opn_id) in
       let ns = ns_find_ns (get_top_import muc) opn_id in
       add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
