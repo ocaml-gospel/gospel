@@ -23,4 +23,4 @@
     ensures ...
      *)
 File "t6.mli", line 13, characters 12-17:
-Error: Term was expected
+Error: A term was expected.

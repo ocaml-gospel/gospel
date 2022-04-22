@@ -14,22 +14,11 @@ open Tterm
 open Ttypes
 open Symbols
 
-exception FreeVariables of Svs.t
-
 val t_free_vars : Tterm.term -> Svs.t
-
-exception TermExpected of term
-exception FmlaExpected of term
-
 val t_free_vs_in_set : Svs.t -> Tterm.term -> unit
 val t_prop : Tterm.term -> Tterm.term
 val t_type : term -> ty
 val t_ty_check : term -> ty option -> unit
-
-exception BadArity of lsymbol * int
-exception PredicateSymbolExpected of lsymbol
-exception FunctionSymbolExpected of lsymbol
-
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
 val ls_app_inst : lsymbol -> term list -> ty option -> ty Mtv.t
 val mk_pattern : pattern_node -> ty -> pattern
@@ -40,7 +29,7 @@ val p_or : pattern -> pattern -> pattern
 val p_as : pattern -> vsymbol -> pattern
 val mk_term : term_node -> ty option -> Location.t -> term
 val t_var : vsymbol -> Location.t -> term
-val t_const : Parsetree.constant -> ty -> Location.t -> term
+val t_const : constant -> ty -> Location.t -> term
 val t_app : lsymbol -> term list -> ty option -> Location.t -> term
 val t_field : term -> lsymbol -> ty option -> Location.t -> term
 val t_if : term -> term -> term -> Location.t -> term

@@ -18,4 +18,4 @@ val f : int -> unit
     with ...
      *)
 File "exn_arity.mli", line 5, characters 11-23:
-Error: Type checking error: exception pattern doesn't match its type
+Error: Type checking error: Exception pattern doesn't match its type.

@@ -25,5 +25,5 @@ type ('a, 'b) t2 = 'a t1
   
 
 (*@ function f ... *)
-File "t38.mli", lines 15-16, characters 4-20:
-Error: Type mismatch. Cannot match 'a t1 with 'b t1
+File "t38.mli", line 15, characters 4-37:
+Error: This term has type `'a t1' but a term was expected of type `'b t1'.

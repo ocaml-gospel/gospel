@@ -22,4 +22,4 @@ y: 'a }
 
 (*@ function f ... *)
 File "t37.mli", line 15, characters 6-15:
-Error: Variable x is duplicated in pattern
+Error: The variable `x' is duplicated in this pattern.

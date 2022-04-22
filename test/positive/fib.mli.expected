@@ -51,9 +51,9 @@ module fib.mli
     (*@ function fibonacci (n:integer): integer *)
     
     val fib : int -> int -> int -> int
-    (*@ r:int = fib [i:integer: integer] n_1:int a:int b:int
+    (*@ r:int = fib [i:integer: integer] n_1:int a_1:int b:int
         requires (i:integer >= 0:integer):prop
-                 requires ((integer_of_int  a:int):integer = (fibonacci 
+                 requires ((integer_of_int  a_1:int):integer = (fibonacci 
                           i:integer):integer):prop
                  requires ((integer_of_int  b:int):integer = (fibonacci 
                           (i:integer + 1:integer):integer):integer):prop

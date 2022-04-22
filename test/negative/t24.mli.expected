@@ -13,4 +13,4 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y z w
      *)
 File "t24.mli", line 12, characters 13-14:
-Error: Type checking error: parameter do not match with val type
+Error: Type checking error: parameter do not match with val type.

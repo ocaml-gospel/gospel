@@ -32,4 +32,4 @@ type 'a t2 =
 
 (*@ function f ... *)
 File "t15.mli", line 21, characters 18-19:
-Error: Type mismatch. Cannot match 'a with bool
+Error: This term has type `'a' but a term was expected of type `bool'.

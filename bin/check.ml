@@ -8,10 +8,10 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Ppxlib
 open Gospel
 open Tmodule
 open Parser_frontend
+module W = Gospel.Warnings
 
 type config = { verbose : bool; load_path : string list }
 
@@ -54,17 +54,9 @@ let run_file config file =
       pp fmt "@[%a@]@." print_file file);
     pp fmt "OK\n";
     true
-  with
-  | Exit -> false
-  | Not_found ->
-      let open Format in
-      eprintf "File %s not found.@\nLoad path: @\n%a@\n@." file
-        (pp_print_list ~pp_sep:pp_print_newline pp_print_string)
-        config.load_path;
-      false
-  | e ->
-      Location.report_exception Format.err_formatter e;
-      false
+  with W.Error e ->
+    Fmt.epr "%a@." W.pp e;
+    false
 
 let run config files =
   List.fold_right (fun file b -> run_file config file && b) files true

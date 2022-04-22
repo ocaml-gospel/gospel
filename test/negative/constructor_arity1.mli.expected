@@ -22,4 +22,4 @@ val f : int -> t -> unit
     requires ...
      *)
 File "constructor_arity1.mli", line 5, characters 31-32:
-Error: Symbol C cannot be partially applied
+Error: The symbol `C' cannot be partially applied.

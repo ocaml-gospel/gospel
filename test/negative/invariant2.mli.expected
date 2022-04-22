@@ -17,4 +17,4 @@ type t =
   (*@ invariant ...
        *)
 File "invariant2.mli", line 1, characters 0-48:
-Error: Invariant on non-private type t
+Error: Invariant on public type `t'.

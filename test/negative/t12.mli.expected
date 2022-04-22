@@ -27,4 +27,4 @@
 
 (*@ function h ... *)
 File "t12.mli", line 21, characters 11-12:
-Error: Type mismatch. Cannot match float with int
+Error: This term has type `float' but a term was expected of type `int'.

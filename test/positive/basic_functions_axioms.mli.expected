@@ -258,9 +258,9 @@ module basic_functions_axioms.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ axiom a1: true:prop *)
+    (*@ axiom a1_1: true:prop *)
     
-    (*@ axiom a2: (1:integer = 0:integer):prop *)
+    (*@ axiom a2_1: (1:integer = 0:integer):prop *)
     
     (*@ function f1 (x_1:int): int *)
     

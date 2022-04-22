@@ -45,11 +45,9 @@ type val_spec = {
 
 type val_description = {
   vd_name : Ident.t;
-  vd_type : Parsetree.core_type;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.core_type>"]
+  vd_type : core_type; [@printer fun fmt _ -> fprintf fmt "<core_type>"]
   vd_prim : string list;  (** primitive declaration *)
-  vd_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  vd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   vd_args : lb_arg list;
   vd_ret : lb_arg list;
   vd_spec : val_spec option;
@@ -75,8 +73,7 @@ type 'a label_declaration = {
   ld_field : 'a;
   ld_mut : mutable_flag;
   ld_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  ld_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  ld_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* l : T [@id1] [@id2] *)
 }
 [@@deriving show]
@@ -93,8 +90,7 @@ type constructor_decl = {
   (* cd_ld is empty if defined through a tuple *)
   cd_ld : (Ident.t * ty) label_declaration list;
   cd_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  cd_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  cd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* C of ... [@id1] [@id2] *)
 }
 [@@deriving show]
@@ -128,8 +124,7 @@ type type_declaration = {
   td_kind : type_kind;
   td_private : private_flag;
   td_manifest : ty option;
-  td_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  td_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   td_spec : type_spec option;
   td_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
 }
@@ -173,12 +168,10 @@ type function_ = {
 type extension_constructor = {
   ext_ident : Ident.t;
   ext_xs : xsymbol;
-  ext_kind : Parsetree.extension_constructor_kind;
-      [@printer
-        fun fmt _ -> fprintf fmt "<Parsetree.extension_constructor_kind>"]
+  ext_kind : extension_constructor_kind;
+      [@printer fun fmt _ -> fprintf fmt "<extension_constructor_kind>"]
   ext_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  ext_attributes : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  ext_attributes : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* C of ... [@id1] [@id2] *)
 }
 [@@deriving show]
@@ -186,9 +179,9 @@ type extension_constructor = {
 type type_exception = {
   exn_constructor : extension_constructor;
   exn_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  exn_attributes : Parsetree.attributes;
+  exn_attributes : attributes;
       (* ... [@@id1] [@@id2] *)
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+      [@printer fun fmt _ -> fprintf fmt "<attributes>"]
 }
 [@@deriving show]
 
@@ -214,8 +207,7 @@ type open_description = {
   opn_override : Asttypes.override_flag;
       [@printer fun fmt _ -> fprintf fmt "<Asttypes.override_flag>"]
   opn_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  opn_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  opn_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
 }
 [@@deriving show]
 
@@ -231,9 +223,8 @@ and signature_item_desc =
   | Sig_val of val_description * ghost
   | Sig_type of rec_flag * type_declaration list * ghost
   (* type t1 = ... and ... and tn = ... *)
-  | Sig_typext of Parsetree.type_extension
-      [@printer
-        fun fmt _ -> fprintf fmt "Sig_typext <Parsetree.type_extension>"]
+  | Sig_typext of type_extension
+      [@printer fun fmt _ -> fprintf fmt "Sig_typext <type_extension>"]
   (* type t1 += ... *)
   | Sig_module of module_declaration
   (* module X : MT *)
@@ -247,31 +238,26 @@ and signature_item_desc =
   (* exception C of T *)
   | Sig_open of open_description * ghost
   (* open X *)
-  | Sig_include of Parsetree.include_description
-      [@printer
-        fun fmt _ -> fprintf fmt "Sig_include <Parsetree.include_description>"]
+  | Sig_include of include_description
+      [@printer fun fmt _ -> fprintf fmt "Sig_include <include_description>"]
   (* type t1 += ... *)
   (* include MT *)
-  | Sig_class of Parsetree.class_description list
-      [@printer
-        fun fmt _ -> fprintf fmt "Sig_class <Parsetree.class_description list>"]
+  | Sig_class of class_description list
+      [@printer fun fmt _ -> fprintf fmt "Sig_class <class_description list>"]
   (* type t1 += ... *)
   (* class c1 : ... and ... and cn : ... *)
-  | Sig_class_type of Parsetree.class_type_declaration list
+  | Sig_class_type of class_type_declaration list
       [@printer
-        fun fmt _ ->
-          fprintf fmt "Sig_class_type <Parsetree.class_type_declaration list>"]
+        fun fmt _ -> fprintf fmt "Sig_class_type <class_type_declaration list>"]
   (* type t1 += ... *)
   (* class type ct1 = ... and ... and ctn = ... *)
-  | Sig_attribute of Parsetree.attribute
-      [@printer fun fmt _ -> fprintf fmt "Sig_attribute <Parsetree.attribute>"]
+  | Sig_attribute of attribute
+      [@printer fun fmt _ -> fprintf fmt "Sig_attribute <attribute>"]
   (* type t1 += ... *)
   (* [@@@id] *)
-  | Sig_extension of Parsetree.extension * Parsetree.attributes
+  | Sig_extension of extension * attributes
       [@printer
-        fun fmt _ ->
-          fprintf fmt
-            "Sig_extension <Parsetree.extension * Parsetree.attributes>"]
+        fun fmt _ -> fprintf fmt "Sig_extension <extension * attributes>"]
   (* type t1 += ... *)
   (* [%%id] *)
   (* Specific to specification *)
@@ -283,8 +269,7 @@ and signature_item_desc =
 and module_declaration = {
   md_name : Ident.t;
   md_type : module_type;
-  md_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  md_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   (* ... [@@id1] [@@id2] *)
   md_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
 }
@@ -293,8 +278,7 @@ and module_declaration = {
 and module_type_declaration = {
   mtd_name : Ident.t;
   mtd_type : module_type option;
-  mtd_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  mtd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   (* ... [@@id1] [@@id2] *)
   mtd_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
 }
@@ -303,8 +287,7 @@ and module_type_declaration = {
 and module_type = {
   mt_desc : module_type_desc;
   mt_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
-  mt_attrs : Parsetree.attributes;
-      [@printer fun fmt _ -> fprintf fmt "<Parsetree.attributes>"]
+  mt_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* ... [@id1] [@id2] *)
 }
 [@@deriving show]
@@ -318,11 +301,11 @@ and module_type_desc =
   (* functor(X : MT1) -> MT2 *)
   | Mod_with of module_type * with_constraint list
   (* MT with ... *)
-  | Mod_typeof of Parsetree.module_expr
-      [@printer fun fmt _ -> fprintf fmt "Mod_typeof <Parsetree.module_expr>"]
+  | Mod_typeof of module_expr
+      [@printer fun fmt _ -> fprintf fmt "Mod_typeof <module_expr>"]
   (* module type of ME *)
-  | Mod_extension of Parsetree.extension
-      [@printer fun fmt _ -> fprintf fmt "Mod_extension <Parsetree.extension>"]
+  | Mod_extension of extension
+      [@printer fun fmt _ -> fprintf fmt "Mod_extension <extension>"]
   (* [%id] *)
   | Mod_alias of string list
 (* (module M) *)

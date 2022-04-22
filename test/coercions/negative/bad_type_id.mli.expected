@@ -16,4 +16,4 @@ type t1
 (*@ function c ...
     coercion *)
 File "bad_type_id.mli", line 3, characters 10-11:
-Error: Function c cannot be used as a coercion
+Error: The function `c' does not have a valid coercion type.

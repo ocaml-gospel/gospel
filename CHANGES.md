@@ -19,7 +19,7 @@
   [\#164](https://github.com/ocaml-gospel/gospel/pull/164)
 - Documentation improvements.
   [\#108](https://github.com/ocaml-gospel/gospel/pull/108) and
-  [\#110](https://github.com/ocaml-gospel/gospel/pull/110)
+  [\#110](https://github.com/ocaml-gospel/gospel/pull/110) and
   [\#149](https://github.com/ocaml-gospel/gospel/pull/149)
 - Added sanity checks to type invariants: invariants are only allowed on private
   or abstract types. [\#117](https://github.com/ocaml-gospel/gospel/pull/117)
@@ -42,6 +42,9 @@
 
 ## Internals
 
+- Refactored the error handling: Gospel now only raises a single `Gospel.Error`
+  exception.
+  [\#189](https://github.com/ocaml-gospel/gospel/pull/189)
 - Fixed the representation for type variables in `ts_tuple` and `fs_tuple`.
   [\#183](https://github.com/ocaml-gospel/gospel/pull/183)
 - Added `int` as a primitive type.

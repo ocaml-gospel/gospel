@@ -25,4 +25,4 @@ type t5 = int A.t2
 
 (*@ function f5 ... *)
 File "c.mli", line 1, characters 0-34:
-Error: Type checking error: no module with name Ocamlstdlib or file with name ocamlstdlib.mli
+Error: No module with name `Ocamlstdlib'.

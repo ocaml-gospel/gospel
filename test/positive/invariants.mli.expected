@@ -46,7 +46,7 @@ module invariants.mli
       function constr#t1 (_:int) : t1
       
     Field Symbols
-      function a (_:t1) : int
+      function a_1 (_:t1) : int
       
     Exception Symbols
       
@@ -57,11 +57,12 @@ module invariants.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    type t1 = {a:int}
+    type t1 = {a_1:int}
            function constr#t1 (_:int) : t1
-           function a (_:t1) : int
+           function a_1 (_:t1) : int
          (*@ 
-             invariant ((integer_of_int  (a ):int):integer >= 0:integer):prop *)
+             invariant ((integer_of_int 
+                       (a_1 ):int):integer >= 0:integer):prop *)
     
     type t2 = A of 
               function A  : t2

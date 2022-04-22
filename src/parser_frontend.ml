@@ -8,15 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
-
-exception Ocaml_syntax_error of Location.t
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Ocaml_syntax_error loc -> Some (make ~loc ~sub:[] "OCaml syntax error")
-    | _ -> None)
 
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
@@ -45,7 +38,7 @@ let parse_ocaml_lb lb =
   with _ ->
     let loc_start, loc_end = (lb_pps.lex_start_p, lb_pps.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
-    raise (Ocaml_syntax_error loc)
+    W.error ~loc W.Syntax_error
 
 let parse_ocaml file =
   let lb =

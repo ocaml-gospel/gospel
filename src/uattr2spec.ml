@@ -8,9 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
-open Utils
-open Parsetree
 open Uast
 
 let is_spec attr = attr.attr_name.txt = "gospel"
@@ -41,15 +40,6 @@ let get_inner_spec attr =
   | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
   | _ -> assert false
 
-exception Syntax_error of Location.t
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Syntax_error loc ->
-        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str)) "syntax error"
-    | _ -> None)
-
 (* XXX: Use Lexing.set_position when moving to OCaml 4.11 *)
 let set_position (lexbuf : Lexing.lexbuf) (position : Lexing.position) =
   lexbuf.lex_curr_p <- { position with pos_fname = lexbuf.lex_curr_p.pos_fname };
@@ -69,7 +59,7 @@ let parse_gospel ~filename parse attr =
     let loc =
       { loc_start = lb.lex_start_p; loc_end = lb.lex_curr_p; loc_ghost = false }
     in
-    raise (Syntax_error loc)
+    W.error ~loc W.Syntax_error
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
@@ -109,7 +99,7 @@ let val_description ~filename v =
 let ghost_spec ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  let sigs = try Parse.interface lb with _ -> raise (Syntax_error loc) in
+  let sigs = try Parse.interface lb with _ -> W.error ~loc W.Syntax_error in
   match sigs with
   | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
       let type_ = type_declaration ~filename t in
@@ -153,11 +143,11 @@ let floating_spec ~filename a =
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
-  with Syntax_error _ -> (
+  with W.Error (_, W.Syntax_error) -> (
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
       Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
-    with Syntax_error _ -> ghost_spec ~filename a)
+    with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a)
 
 let with_constraint c =
   let no_spec_type_decl t =

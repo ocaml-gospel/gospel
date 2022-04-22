@@ -31,7 +31,7 @@ type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 and dterm_node =
   | DTattr of dterm * string list
   | DTvar of Preid.t
-  | DTconst of Parsetree.constant
+  | DTconst of constant
   | DTapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
@@ -80,6 +80,3 @@ val denv_add_var_quant : denv -> (Identifier.Preid.t * dty) list -> denv
 val term : vsymbol Mstr.t -> dterm -> term
 val fmla : vsymbol Mstr.t -> dterm -> term
 val pattern : dpattern -> Tterm.pattern * vsymbol Mstr.t
-
-exception DuplicatedVar of string
-exception UnboundVar of string

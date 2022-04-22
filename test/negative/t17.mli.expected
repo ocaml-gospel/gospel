@@ -13,4 +13,4 @@ val f : int -> int -> int
 (*@ r = f ~x y
      *)
 File "t17.mli", line 12, characters 8-9:
-Error: Type checking error: parameter do not match with val type
+Error: Type checking error: parameter do not match with val type.

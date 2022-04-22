@@ -13,4 +13,4 @@ type t = (int * int)
   (*@ invariant ...
        *)
 File "invariant3.mli", line 1, characters 0-51:
-Error: Invariant on non-private type t
+Error: Invariant on public type `t'.

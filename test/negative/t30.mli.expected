@@ -25,4 +25,4 @@ val f : 'a -> 'a
     with ...
      *)
 File "t30.mli", line 18, characters 11-44:
-Error: Type checking error: exception pattern doesn't match its type
+Error: Type checking error: Exception pattern doesn't match its type.

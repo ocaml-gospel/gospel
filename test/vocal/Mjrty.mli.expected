@@ -59,36 +59,36 @@ module Mjrty.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ function num (a:string seq) (v:string) (lo:integer) (hi:integer): 
+    (*@ function num (a_1:string seq) (v:string) (lo:integer) (hi:integer): 
         integer
     *)
     
-    (*@ axiom num_base: forall a_1:string seq v_1:string lo_1:integer
+    (*@ axiom num_base: forall a_2:string seq v_1:string lo_1:integer
                                hi_1:integer. (hi_1:integer <= lo_1:integer):prop -> ((num 
-    a_1:string seq v_1:string lo_1:integer hi_1:integer):integer = 0:
+    a_2:string seq v_1:string lo_1:integer hi_1:integer):integer = 0:
     integer):prop *)
     
-    (*@ axiom num_ind: forall a_2:string seq v_2:string lo_2:integer
+    (*@ axiom num_ind: forall a_3:string seq v_2:string lo_2:integer
                               hi_2:integer. (0:integer <= lo_2:integer):prop /\ (
     lo_2:integer < hi_2:integer):prop /\ (hi_2:integer <= (length 
-    a_2:string seq):integer):prop -> ((num 
-    a_2:string seq v_2:string lo_2:integer hi_2:integer):integer = (if ((mixfix [_] 
-    a_2:string seq lo_2:integer):string = v_2:string):prop then 1:integer else 0:
+    a_3:string seq):integer):prop -> ((num 
+    a_3:string seq v_2:string lo_2:integer hi_2:integer):integer = (if ((mixfix [_] 
+    a_3:string seq lo_2:integer):string = v_2:string):prop then 1:integer else 0:
     integer + (num 
-    a_2:string seq v_2:string (lo_2:integer + 1:integer):integer hi_2:integer):
+    a_3:string seq v_2:string (lo_2:integer + 1:integer):integer hi_2:integer):
     integer):integer):prop *)
     
     val mjrty : string array -> string
-    (*@ r:string = mjrty a_3:string array
-        requires (1:integer <= (length_1  a_3:string array):integer):prop
+    (*@ r:string = mjrty a_4:string array
+        requires (1:integer <= (length_1  a_4:string array):integer):prop
         ensures ((2:integer * (num 
-                (to_seq  a_3:string array):string seq r:string 0:integer
-                (length_1  a_3:string array):integer):integer):integer > (length_1 
-                a_3:string array):integer):prop
+                (to_seq  a_4:string array):string seq r:string 0:integer
+                (length_1  a_4:string array):integer):integer):integer > (length_1 
+                a_4:string array):integer):prop
         raisesNot_found  -> forall c:string. ((2:integer * (num 
-                            (to_seq  a_3:string array):string seq c:string
-                            0:integer (length_1  a_3:string array):integer):
+                            (to_seq  a_4:string array):string seq c:string
+                            0:integer (length_1  a_4:string array):integer):
                             integer):integer <= (length_1 
-                            a_3:string array):integer):prop*)
+                            a_4:string array):integer):prop*)
 
 OK

@@ -1,5 +1,5 @@
 (ocamllex
- (modules wc))
+ (modules cloc))
 
 (executable
  (name cli)

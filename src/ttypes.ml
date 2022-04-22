@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
 open Utils
 module Ident = Identifier.Ident
@@ -87,15 +88,13 @@ let fresh_ty_var ?(loc = Location.none) s =
 
 let ty_of_var tv = { ty_node = Tyvar tv }
 
-(* let ty_app ts tl = {ty_node = Tyapp (ts,tl)} *)
-
 (** smart constructors & utils *)
-
-exception BadTypeArity of tysymbol * int
 
 let ty_app ts tyl =
   if ts_arity ts = List.length tyl then { ty_node = Tyapp (ts, tyl) }
-  else raise (BadTypeArity (ts, List.length tyl))
+  else
+    W.error ~loc:ts.ts_ident.id_loc
+      (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl))
 
 let rec ty_full_inst m ty =
   match ty.ty_node with
@@ -104,7 +103,9 @@ let rec ty_full_inst m ty =
 
 let ts_match_args ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
-  with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
+  with Invalid_argument _ ->
+    W.error ~loc:ts.ts_ident.id_loc
+      (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tl))
 
 let ty_app ts tyl =
   match ts.ts_alias with
@@ -309,19 +310,3 @@ let print_exn_type f = function
       list ~sep:semi ~first:rbrace ~last:lbrace print_arg f args
 
 let print_xs f x = pp f "%a" Ident.pp x.xs_ident
-
-(* register exceptions *)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | TypeMismatch (ty1, ty2) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type mismatch between %a and %a" print_ty ty1 print_ty ty2
-    | BadTypeArity (ts, i) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type %a expects %d arguments as opposed to %d" print_ts_name ts
-          (ts_arity ts) i
-    | _ -> None)

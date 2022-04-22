@@ -27,4 +27,5 @@ val f : t -> int
     ensures ...
      *)
 File "constructor_arity4.mli", line 7, characters 8-17:
-Error: Function L expects 2 arguments as opposed to 1
+Error: The constructor `L' expects `2' argument(s)
+       but is applied to 1 argument(s) here.

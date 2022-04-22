@@ -31,7 +31,7 @@ let load_path =
 
 let files = Arg.(non_empty & pos_all ocaml_file [] & info [] ~docv:"FILE")
 
-let run_tc verbose load_path file =
+let run_check verbose load_path file =
   let load_path =
     List.fold_left
       (fun acc f ->
@@ -39,7 +39,7 @@ let run_tc verbose load_path file =
         if not (List.mem dir acc) then dir :: acc else acc)
       load_path file
   in
-  let b = Tc.run { verbose; load_path } file in
+  let b = Check.run { verbose; load_path } file in
   if not b then exit 125 else ()
 
 let run_dumpast load_path file =
@@ -50,7 +50,8 @@ let run_dumpast load_path file =
         if not (List.mem dir acc) then dir :: acc else acc)
       load_path file
   in
-  Dumpast.run load_path file
+  let b = Dumpast.run { load_path } file in
+  if not b then exit 125 else ()
 
 let dumpast =
   let doc = "Gospel dump ast." in
@@ -61,7 +62,7 @@ let dumpast =
 let tc =
   let doc = "Gospel type-checker." in
   let info = Cmd.info "check" ~doc in
-  let term = Term.(const run_tc $ verbose $ load_path $ files) in
+  let term = Term.(const run_check $ verbose $ load_path $ files) in
   Cmd.v info term
 
 let pps =
@@ -73,7 +74,7 @@ let pps =
 let wc =
   let doc = "Gospel line count." in
   let info = Cmd.info "cloc" ~doc in
-  let term = Term.(const Wc.run $ files) in
+  let term = Term.(const Cloc.run $ files) in
   Cmd.v info term
 
 let () =

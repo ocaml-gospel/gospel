@@ -8,8 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
-open Utils
 open Identifier
 open Ttypes
 open Symbols
@@ -40,13 +40,11 @@ let empty_ns =
     ns_tns = Mstr.empty;
   }
 
-exception NameClash of string
-
 let add ~allow_duplicate ~equal ~loc ns s x =
   if allow_duplicate then Mstr.add s x ns
   else
     match Mstr.find s ns with
-    | t when not (equal t x) -> error ~loc (NameClash s)
+    | t when not (equal t x) -> W.error ~loc (W.Name_clash s)
     | _ | (exception Not_found) -> Mstr.add s x ns
 
 let ns_add_ts ~allow_duplicate ns s ts =
@@ -520,12 +518,3 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp
     fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | NameClash s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "A declaration for `%s' already exists in this context" s
-    | _ -> None)

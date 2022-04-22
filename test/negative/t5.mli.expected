@@ -23,4 +23,4 @@
     ensures ...
      *)
 File "t5.mli", line 12, characters 10-11:
-Error: Type mismatch. Cannot match integer with bool
+Error: This term has type `integer' but a term was expected of type `bool'.

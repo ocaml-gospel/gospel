@@ -514,115 +514,115 @@ module Vector.mli
         writes a_11:'a t*)
     
     val blit : 'a t -> int -> 'a t -> int -> int -> unit
-    (*@  blit a1:'a t ofs1:int a2:'a t ofs2:int n_6:int
+    (*@  blit a1_1:'a t ofs1:int a2_1:'a t ofs2:int n_6:int
         requires (0:integer <= (integer_of_int  n_6:int):integer):prop
                  requires (0:integer <= (integer_of_int 
                           ofs1:int):integer):prop /\ (((integer_of_int 
                           ofs1:int):integer + (integer_of_int 
                           n_6:int):integer):integer <= (length 
-                          (a1:'a t).view):integer):prop
+                          (a1_1:'a t).view):integer):prop
                  requires (0:integer <= (integer_of_int 
                           ofs2:int):integer):prop /\ (((integer_of_int 
                           ofs2:int):integer + (integer_of_int 
                           n_6:int):integer):integer <= (length 
-                          (a2:'a t).view):integer):prop
+                          (a2_1:'a t).view):integer):prop
         ensures forall i_8:integer. (0:integer <= i_8:integer):prop /\ (
                 i_8:integer < (integer_of_int 
                 ofs2:int):integer):prop \/ (((integer_of_int 
                 ofs2:int):integer + (integer_of_int 
                 n_6:int):integer):integer <= i_8:integer):prop /\ (i_8:
                                                                    integer < (length 
-                (a2:'a t).view):integer):prop -> ((mixfix [_] 
-                (a2:'a t).view i_8:integer):'a = (mixfix [_] 
-                (old (a2:'a t)).view i_8:integer):'a):prop
+                (a2_1:'a t).view):integer):prop -> ((mixfix [_] 
+                (a2_1:'a t).view i_8:integer):'a = (mixfix [_] 
+                (old (a2_1:'a t)).view i_8:integer):'a):prop
                 ensures forall i_9:integer. ((integer_of_int 
                         ofs2:int):integer <= i_9:integer):prop /\ (i_9:
                                                                    integer < ((integer_of_int 
                         ofs2:int):integer + (integer_of_int 
                         n_6:int):integer):integer):prop -> ((mixfix [_] 
-                        (a2:'a t).view i_9:integer):'a = (mixfix [_] 
-                        (old (a1:'a t)).view (((integer_of_int 
+                        (a2_1:'a t).view i_9:integer):'a = (mixfix [_] 
+                        (old (a1_1:'a t)).view (((integer_of_int 
                         ofs1:int):integer + i_9:integer):integer - (integer_of_int 
                         ofs2:int):integer):integer):'a):prop
-        writes a2:'a t*)
+        writes a2_1:'a t*)
     
     val append : 'a t -> 'a t -> 'a t
-    (*@ a3:'a t = append a1_1:'a t a2_1:'a t
-        requires (((length  (a1_1:'a t).view):integer + (length 
-                 (a2_1:'a t).view):integer):integer <= (max_array_length ):
-                 integer):prop
-        ensures ((length  (a3:'a t).view):integer = ((length 
-                (a1_1:'a t).view):integer + (length 
-                (a2_1:'a t).view):integer):integer):prop
-                ensures forall i_10:integer. (0:integer <= i_10:integer):prop /\ (
-                        i_10:integer < (length 
-                        (a1_1:'a t).view):integer):prop -> ((mixfix [_] 
-                        (a3:'a t).view i_10:integer):'a = (mixfix [_] 
-                        (a1_1:'a t).view i_10:integer):'a):prop
-                ensures forall i_11:integer. (0:integer <= i_11:integer):prop /\ (
-                        i_11:integer < (length 
-                        (a2_1:'a t).view):integer):prop -> ((mixfix [_] 
-                        (a3:'a t).view ((length 
-                        (a1_1:'a t).view):integer + i_11:integer):integer):'a = (mixfix [_] 
-                        (a2_1:'a t).view i_11:integer):'a):prop*)
-    
-    val merge_right : 'a t -> 'a t -> unit
-    (*@  merge_right a1_2:'a t a2_2:'a t
+    (*@ a3_1:'a t = append a1_2:'a t a2_2:'a t
         requires (((length  (a1_2:'a t).view):integer + (length 
                  (a2_2:'a t).view):integer):integer <= (max_array_length ):
                  integer):prop
-        ensures ((length  (a2_2:'a t).view):integer = 0:integer):prop
-                ensures ((length  (a1_2:'a t).view):integer = ((length 
-                        (old (a1_2:'a t)).view):integer + (length 
-                        (old (a2_2:'a t)).view):integer):integer):prop
+        ensures ((length  (a3_1:'a t).view):integer = ((length 
+                (a1_2:'a t).view):integer + (length 
+                (a2_2:'a t).view):integer):integer):prop
+                ensures forall i_10:integer. (0:integer <= i_10:integer):prop /\ (
+                        i_10:integer < (length 
+                        (a1_2:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a3_1:'a t).view i_10:integer):'a = (mixfix [_] 
+                        (a1_2:'a t).view i_10:integer):'a):prop
+                ensures forall i_11:integer. (0:integer <= i_11:integer):prop /\ (
+                        i_11:integer < (length 
+                        (a2_2:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a3_1:'a t).view ((length 
+                        (a1_2:'a t).view):integer + i_11:integer):integer):'a = (mixfix [_] 
+                        (a2_2:'a t).view i_11:integer):'a):prop*)
+    
+    val merge_right : 'a t -> 'a t -> unit
+    (*@  merge_right a1_3:'a t a2_3:'a t
+        requires (((length  (a1_3:'a t).view):integer + (length 
+                 (a2_3:'a t).view):integer):integer <= (max_array_length ):
+                 integer):prop
+        ensures ((length  (a2_3:'a t).view):integer = 0:integer):prop
+                ensures ((length  (a1_3:'a t).view):integer = ((length 
+                        (old (a1_3:'a t)).view):integer + (length 
+                        (old (a2_3:'a t)).view):integer):integer):prop
                 ensures forall i_12:integer. (0:integer <= i_12:integer):prop /\ (
                         i_12:integer < (length 
-                        (old (a1_2:'a t)).view):integer):prop -> ((mixfix [_] 
-                        (a1_2:'a t).view i_12:integer):'a = (mixfix [_] 
-                        (old (a1_2:'a t)).view i_12:integer):'a):prop
+                        (old (a1_3:'a t)).view):integer):prop -> ((mixfix [_] 
+                        (a1_3:'a t).view i_12:integer):'a = (mixfix [_] 
+                        (old (a1_3:'a t)).view i_12:integer):'a):prop
                 ensures forall i_13:integer. (0:integer <= i_13:integer):prop /\ (
                         i_13:integer < (length 
-                        (old (a2_2:'a t)).view):integer):prop -> ((mixfix [_] 
-                        (a1_2:'a t).view ((length 
-                        (old (a1_2:'a t)).view):integer + i_13:integer):
+                        (old (a2_3:'a t)).view):integer):prop -> ((mixfix [_] 
+                        (a1_3:'a t).view ((length 
+                        (old (a1_3:'a t)).view):integer + i_13:integer):
                         integer):'a = (mixfix [_] 
-                        (old (a2_2:'a t)).view i_13:integer):'a):prop
-        writes a1_2:'a t
-               writes a2_2:'a t*)
+                        (old (a2_3:'a t)).view i_13:integer):'a):prop
+        writes a1_3:'a t
+               writes a2_3:'a t*)
     
     val map : dummy:'b -> 'a t -> ('a -> 'b) -> 'b t
-    (*@ a2_3:'b t = map ~dummy_3:'b a1_3:'a t f_1:'a -> 'b
-        ensures ((length  (a2_3:'b t).view):integer = (length 
-                (a1_3:'a t).view):integer):prop
-                ensures forall i_14:integer. (0:integer <= i_14:integer):prop /\ (
-                        i_14:integer < (length 
-                        (a1_3:'a t).view):integer):prop -> ((mixfix [_] 
-                        (a2_3:'b t).view i_14:integer):'b = (apply 
-                        f_1:'a -> 'b (mixfix [_] 
-                        (a1_3:'a t).view i_14:integer):'a):'b):prop*)
-    
-    val mapi : dummy:'b -> 'a t -> (int -> 'a -> 'b) -> 'b t
-    (*@ a2_4:'b t = mapi ~dummy_4:'b a1_4:'a t f_2:int -> 'a -> 'b
+    (*@ a2_4:'b t = map ~dummy_3:'b a1_4:'a t f_1:'a -> 'b
         ensures ((length  (a2_4:'b t).view):integer = (length 
                 (a1_4:'a t).view):integer):prop
+                ensures forall i_14:integer. (0:integer <= i_14:integer):prop /\ (
+                        i_14:integer < (length 
+                        (a1_4:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_4:'b t).view i_14:integer):'b = (apply 
+                        f_1:'a -> 'b (mixfix [_] 
+                        (a1_4:'a t).view i_14:integer):'a):'b):prop*)
+    
+    val mapi : dummy:'b -> 'a t -> (int -> 'a -> 'b) -> 'b t
+    (*@ a2_5:'b t = mapi ~dummy_4:'b a1_5:'a t f_2:int -> 'a -> 'b
+        ensures ((length  (a2_5:'b t).view):integer = (length 
+                (a1_5:'a t).view):integer):prop
                 ensures forall i_15:int. (0:integer <= (integer_of_int 
                         i_15:int):integer):prop /\ ((integer_of_int 
                         i_15:int):integer < (length 
-                        (a1_4:'a t).view):integer):prop -> ((mixfix [_] 
-                        (a2_4:'b t).view (integer_of_int  i_15:int):integer):'b = (apply 
+                        (a1_5:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_5:'b t).view (integer_of_int  i_15:int):integer):'b = (apply 
                         (apply  f_2:int -> 'a -> 'b i_15:int):'a -> 'b
                         (mixfix [_] 
-                        (a1_4:'a t).view (integer_of_int  i_15:int):integer):'a):'b):prop*)
+                        (a1_5:'a t).view (integer_of_int  i_15:int):integer):'a):'b):prop*)
     
     val copy : 'a t -> 'a t
-    (*@ a2_5:'a t = copy a1_5:'a t
-        ensures ((length  (a2_5:'a t).view):integer = (length 
-                (a1_5:'a t).view):integer):prop
+    (*@ a2_6:'a t = copy a1_6:'a t
+        ensures ((length  (a2_6:'a t).view):integer = (length 
+                (a1_6:'a t).view):integer):prop
                 ensures forall i_16:integer. (0:integer <= i_16:integer):prop /\ (
                         i_16:integer < (length 
-                        (a1_5:'a t).view):integer):prop -> ((mixfix [_] 
-                        (a2_5:'a t).view i_16:integer):'a = (mixfix [_] 
-                        (a1_5:'a t).view i_16:integer):'a):prop*)
+                        (a1_6:'a t).view):integer):prop -> ((mixfix [_] 
+                        (a2_6:'a t).view i_16:integer):'a = (mixfix [_] 
+                        (a1_6:'a t).view i_16:integer):'a):prop*)
     
     val fold_left : 'b t -> ('a -> 'b -> 'a) -> 'a -> 'a
     (*@ r_2:'a = fold_left a_12:'b t f_3:'a -> 'b -> 'a acc:'a

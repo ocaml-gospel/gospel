@@ -18,5 +18,5 @@ x: int }
   
 
 (*@ function f ... *)
-File "t33.mli", lines 14-15, characters 4-16:
-Error: Type mismatch. Cannot match t with int
+File "t33.mli", line 14, characters 4-33:
+Error: This term has type `t' but a term was expected of type `int'.

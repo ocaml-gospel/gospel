@@ -75,38 +75,38 @@ module CountingSort.mli
   Signatures
     (*@ open Gospelstdlib *)
     
-    (*@ predicate k_values (k:int) (a:int array) =
+    (*@ predicate k_values (k:int) (a_1:int array) =
         forall i:integer. (0:integer <= i:integer):prop /\ (i:integer < (length 
-        a:int array):integer):prop -> (0:integer <= (integer_of_int 
-        (get  a:int array i:integer):int):integer):prop /\ ((integer_of_int 
-        (get  a:int array i:integer):int):integer < (integer_of_int 
+        a_1:int array):integer):prop -> (0:integer <= (integer_of_int 
+        (get  a_1:int array i:integer):int):integer):prop /\ ((integer_of_int 
+        (get  a_1:int array i:integer):int):integer < (integer_of_int 
         k:int):integer):prop
     *)
     
-    (*@ predicate sorted (a_1:int array) =
+    (*@ predicate sorted (a_2:int array) =
         forall i_1:integer j:integer. (0:integer <= i_1:integer):prop /\ (
         i_1:integer <= j:integer):prop /\ (j:integer < (length 
-        a_1:int array):integer):prop -> ((integer_of_int 
-        (get  a_1:int array i_1:integer):int):integer <= (integer_of_int 
-        (get  a_1:int array j:integer):int):integer):prop
+        a_2:int array):integer):prop -> ((integer_of_int 
+        (get  a_2:int array i_1:integer):int):integer <= (integer_of_int 
+        (get  a_2:int array j:integer):int):integer):prop
     *)
     
     val counting_sort : int -> int array -> int array -> unit
-    (*@  counting_sort k_1:int a_2:int array b:int array
+    (*@  counting_sort k_1:int a_3:int array b:int array
         requires (0:integer < (integer_of_int  k_1:int):integer):prop
-                 requires (k_values  k_1:int a_2:int array):prop
-                 requires ((length  a_2:int array):integer = (length 
+                 requires (k_values  k_1:int a_3:int array):prop
+                 requires ((length  a_3:int array):integer = (length 
                           b:int array):integer):prop
         ensures (sorted  b:int array):prop
-                ensures (permut  a_2:int array b:int array):prop
+                ensures (permut  a_3:int array b:int array):prop
         writes b:int array*)
     
     val in_place_counting_sort : int -> int array -> unit
-    (*@  in_place_counting_sort k_2:int a_3:int array
+    (*@  in_place_counting_sort k_2:int a_4:int array
         requires (0:integer < (integer_of_int  k_2:int):integer):prop
-                 requires (k_values  k_2:int a_3:int array):prop
-        ensures (sorted  a_3:int array):prop
-                ensures (permut  old (a_3:int array) a_3:int array):prop
-        writes a_3:int array*)
+                 requires (k_values  k_2:int a_4:int array):prop
+        ensures (sorted  a_4:int array):prop
+                ensures (permut  old (a_4:int array) a_4:int array):prop
+        writes a_4:int array*)
 
 OK

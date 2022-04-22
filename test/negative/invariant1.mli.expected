@@ -15,4 +15,4 @@ a: int }
   (*@ invariant ...
        *)
 File "invariant1.mli", line 1, characters 0-54:
-Error: Invariant on non-private type t
+Error: Invariant on public type `t'.

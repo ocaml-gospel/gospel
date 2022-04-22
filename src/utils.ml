@@ -8,8 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Ppxlib
-
 let rec split_at_f f = function
   | [] -> ([], [])
   | x :: xs when f x ->
@@ -45,28 +43,3 @@ module Fmt = struct
 end
 
 module Sstr = Set.Make (String)
-
-exception TypeCheckingError of string
-exception NotSupported of string
-exception Located of Location.t * exn
-
-let error ~loc e = raise (Located (loc, e))
-let check ~loc c exn = if not c then error ~loc exn
-let error_report ~loc s = error ~loc (TypeCheckingError s)
-let check_report ~loc c s = check ~loc c (TypeCheckingError s)
-let not_supported ~loc s = error ~loc (NotSupported s)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Located (loc, exn) ->
-        of_exn exn |> Option.map (fun t -> Location.Error.update_loc t loc)
-    | TypeCheckingError s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type checking error: %s" s
-    | NotSupported s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not supported: %s" s
-    | _ -> None)

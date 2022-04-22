@@ -11,4 +11,4 @@
 
 (*@ predicate pred ... *)
 File "t4.mli", line 11, characters 26-27:
-Error: Type mismatch. Cannot match int with bool
+Error: This term has type `int' but a term was expected of type `bool'.

@@ -13,4 +13,4 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
 (*@ r = f x y
      *)
 File "t23.mli", line 12, characters 5-6:
-Error: Type checking error: too few parameters
+Error: Type checking error: too few parameters.
