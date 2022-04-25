@@ -127,14 +127,4 @@ let mk_function ?result ls r params def spec loc =
       List.iter (check_ty (Some ty_integer)) spec.fun_variant;
       List.iter (check_ty None) spec.fun_ens)
     spec;
-
   function_ ls r params def spec loc
-
-let () =
-  let open Ppxlib.Location.Error in
-  register_error_of_exn (function
-    | DuplicatedArg vs ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:vs.vs_name.id_loc ~sub:[] str))
-          "Duplicated argument %a" print_vs vs
-    | _ -> None)

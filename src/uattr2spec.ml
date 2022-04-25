@@ -8,9 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module W = Gospel.Warnings
+module W = Warnings
 open Ppxlib
-open Utils
 open Uast
 open Attrs
 
