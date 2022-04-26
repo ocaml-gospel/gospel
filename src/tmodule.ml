@@ -406,12 +406,14 @@ let ty_of_core_type (_ct : core_type) : ty = assert false
 
 let label_declaration_to_lsymbol (ts : tysymbol) (ld : label_declaration) :
     lsymbol =
+  (* XXX is it the good place to create an ident?*)
   let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
   let ty = ty_app ts [] in
   lsymbol ~field:false id [ ty_of_core_type ld.pld_type ] (Some ty)
 
 let constructor_declaration_to_lsymbol (ts : tysymbol)
     (cd : constructor_declaration) : lsymbol =
+  (* XXX is it the good place to create an ident?*)
   let id = Ident.create ~loc:cd.pcd_loc cd.pcd_name.txt in
   let ty = ty_app ts [] in
   let args =
@@ -458,10 +460,22 @@ let add_function muc sig_ f =
   in
   add_kid muc f.fun_ls.ls_name sig_
 
-let add_open muc sig_ (o : open_description) =
-  let nm = List.hd (List.rev opn_id) in
-  let ns = ns_find_ns (get_top_import muc) opn_id in
+let flatten (lid : longident) : string list =
+  let rec aux acc = function
+    | Lident s -> s :: acc
+    | Ldot (ld, s) -> aux (s :: acc) ld
+    | Lapply (_, _) -> assert false (* XXX How to handle*)
+  in
+  List.rev (aux [] lid)
+
+let add_open muc _sig_ (o : open_description) =
+  let path = flatten o.popen_expr.txt in
+  let nm = List.hd (List.rev path) in
+  let ns = ns_find_ns (get_top_import muc) path in
   add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
+
+(* XXX TODO *)
+let exn_type_from_type_exception (_te : type_exception) = assert false
 
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in
@@ -476,11 +490,13 @@ let add_sig_contents muc sig_ =
       | Open o -> add_open muc sig_ o)
   | Psig_type (_, tdl) -> add_type muc sig_ tdl
   | Psig_exception te ->
-      (* XXX where to find xsymbols? *)
       let s = te.ptyexn_constructor.pext_name.txt in
-      let xs = te.exn_constructor.ext_xs in
+      (* XXX is it the good place to create an ident?*)
+      let id = Ident.create ~loc:te.ptyexn_loc s in
+      let exn_type = exn_type_from_type_exception te in
+      let xs = xsymbol id exn_type in
       let muc = add_xs ~export:true muc s xs in
-      add_kid muc te.exn_constructor.ext_ident sig_
+      add_kid muc id sig_
   | Psig_open o -> add_open muc sig_ o
   | _ -> muc
 
@@ -506,7 +522,6 @@ let wrap_up_muc (muc : module_uc) =
 (** Pretty printing *)
 
 open Utils.Fmt
-open Tast_printer
 
 let rec tree_ns f fmt ns =
   Mstr.iter
@@ -550,5 +565,6 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
  * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
+  let open Tast_printer in
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp
-    fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
+    fl_nm (print_ns fl_nm.id_str) fl_export signature fl_sigs
