@@ -393,45 +393,61 @@ let add_value muc sig_ v =
   let spec = Attrs.typed_of_val_spec v in
   match spec with
   | Some sp when sp.sp_pure ->
+      (* add only pure functions *)
       let tyl = List.map ty_of_lb_arg sp.sp_args in
       let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
-      let ls = lsymbol ~field:false v.vd_name tyl (Some ty) in
+      let ls = lsymbol ~field:false sp.sp_val tyl (Some ty) in
       let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
       add_kid muc ls.ls_name sig_
   | _ -> muc
 
-let add_type muc sig_ tdl =
-  let get_cs_pjs = function
-    | Ptype_abstract | Ptype_open -> []
-    | Ptype_variant cdl -> List.map (fun cd -> cd.cd_cs) cdl
-    | Ptype_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
+(* XXX TODO *)
+let ty_of_core_type (_ct : core_type) : ty = assert false
+
+let label_declaration_to_lsymbol (ts : tysymbol) (ld : label_declaration) :
+    lsymbol =
+  let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
+  let ty = ty_app ts [] in
+  lsymbol ~field:false id [ ty_of_core_type ld.pld_type ] (Some ty)
+
+let constructor_declaration_to_lsymbol (ts : tysymbol)
+    (cd : constructor_declaration) : lsymbol =
+  let id = Ident.create ~loc:cd.pcd_loc cd.pcd_name.txt in
+  let ty = ty_app ts [] in
+  let args =
+    match cd.pcd_args with
+    | Pcstr_tuple ctys -> List.map ty_of_core_type ctys
+    | Pcstr_record lds -> List.map (fun ld -> ty_of_core_type ld.pld_type) lds
   in
-  let add_td muc td =
-    let s = (ts_ident td.td_ts).id_str in
-    let muc = add_ts ~export:true muc s td.td_ts in
-    let csl = get_cs_pjs td.td_kind in
-    let muc =
+  lsymbol ~constr:true ~field:false id args (Some ty)
+
+let get_cs_pjs (ts : tysymbol) : type_kind -> lsymbol list = function
+  | Ptype_abstract | Ptype_open -> []
+  | Ptype_variant cdl -> List.map (constructor_declaration_to_lsymbol ts) cdl
+  | Ptype_record rd -> List.map (label_declaration_to_lsymbol ts) rd
+
+let add_td sig_ muc (td : type_declaration) =
+  match Attrs.typed_of_type_spec td with
+  | None -> muc
+  | Some sp ->
+      let muc = add_ts ~export:true muc td.ptype_name.txt sp.ty_ts in
+      let csl = get_cs_pjs sp.ty_ts td.ptype_kind in
+      let fields = List.map fst sp.ty_fields in
       List.fold_left
         (fun muc cs ->
           (if cs.ls_field then add_fd else add_ls)
             ~export:true muc cs.ls_name.id_str cs)
         muc csl
-    in
-    let fields =
-      Option.fold ~none:[]
-        ~some:(fun spec -> List.map fst spec.ty_fields)
-        td.td_spec
-    in
-    let muc =
+      |> fun muc ->
       List.fold_left
         (fun muc ls ->
           (if ls.ls_field then add_fd else add_ls)
             ~export:true muc ls.ls_name.id_str ls)
         muc fields
-    in
-    add_kid muc td.td_ts.ts_ident sig_
-  in
-  List.fold_left add_td muc tdl
+      |> fun muc -> add_kid muc sp.ty_ts.ts_ident sig_
+
+let add_type muc sig_ (tdl : type_declaration list) =
+  List.fold_left (add_td sig_) muc tdl
 
 let add_function muc sig_ f =
   let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
@@ -460,6 +476,7 @@ let add_sig_contents muc sig_ =
       | Open o -> add_open muc sig_ o)
   | Psig_type (_, tdl) -> add_type muc sig_ tdl
   | Psig_exception te ->
+      (* XXX where to find xsymbols? *)
       let s = te.ptyexn_constructor.pext_name.txt in
       let xs = te.exn_constructor.ext_xs in
       let muc = add_xs ~export:true muc s xs in

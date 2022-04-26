@@ -23,6 +23,7 @@ type lb_arg =
 [@@deriving show]
 
 type val_spec = {
+  sp_val : Ident.t;
   sp_args : lb_arg list;  (** Arguments *)
   sp_ret : lb_arg list;
       (** Return values. This is a list because of tuple destruction. *)
@@ -44,6 +45,7 @@ type val_spec = {
 [@@deriving show]
 
 type type_spec = {
+  ty_ts : tysymbol;
   ty_ephemeral : bool;  (** Ephemeral *)
   ty_fields : (lsymbol * bool) list;  (** Models (field symbol * mutable) *)
   ty_invariants : term list;  (** Invariants *)

@@ -8,6 +8,7 @@ val ty_of_lb_arg : lb_arg -> ty
 val vs_of_lb_arg : lb_arg -> vsymbol
 
 val type_spec :
+  tysymbol ->
   bool ->
   (lsymbol * bool) list ->
   term list ->
@@ -16,6 +17,7 @@ val type_spec :
   type_spec
 
 val mk_val_spec :
+  Identifier.Ident.t ->
   lb_arg list ->
   lb_arg list ->
   term list ->
