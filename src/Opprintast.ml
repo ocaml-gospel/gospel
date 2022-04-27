@@ -519,10 +519,14 @@ and pattern1 ctxt (f : Format.formatter) (x : pattern) : unit =
         if (* FIXME The third field always false *)
            txt = Lident "::" then pp f "%a" pattern_list_helper x
         else
-          (match po with
-           | Some ([], x) -> pp f "%a@;%a"  longident_loc li (simple_pattern ctxt) x
-           | Some ({loc; _} :: _, _) -> Utils.not_supported ~loc "gospel: named existentials aren't supported yet"
-           | None -> pp f "%a" longident_loc li)
+          match po with
+          | Some ([], x) ->
+              pp f "%a@;%a" longident_loc li (simple_pattern ctxt) x
+          | Some (vl, x) ->
+              pp f "%a@ (type %a)@;%a" longident_loc li
+                (list ~sep:"@ " string_loc)
+                vl (simple_pattern ctxt) x
+          | None -> pp f "%a" longident_loc li)
     | _ -> simple_pattern ctxt f x
 
 and simple_pattern ctxt (f : Format.formatter) (x : pattern) : unit =
@@ -1669,9 +1673,9 @@ and constructor_declaration ctxt f (name, vars, args, res, attrs) =
 and extension_constructor ctxt f x =
   (* Cf: #7200 *)
   match x.pext_kind with
-  | Pext_decl([], l, r) ->
-      constructor_declaration ctxt f (x.pext_name.txt, l, r, x.pext_attributes)
-  | Pext_decl({loc; _} :: _, _, _) -> Utils.not_supported ~loc "gospel: explicit binders for type variables aren't supported yet"
+  | Pext_decl (v, l, r) ->
+      constructor_declaration ctxt f
+        (x.pext_name.txt, v, l, r, x.pext_attributes)
   | Pext_rebind li ->
       pp f "%s@;=@;%a%a" x.pext_name.txt longident_loc li (attributes ctxt)
         x.pext_attributes
