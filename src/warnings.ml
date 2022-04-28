@@ -147,8 +147,10 @@ let pp_kind ppf = function
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
 let pp ppf (loc, k) =
-  pf ppf "%a@\n%a: @[%a.@]"
+  pf ppf "%a@\n%a%a: @[%a.@]"
     (styled `Bold Location.print)
     loc
+    (Pp_loc.pp ~max_lines:10 ~input:(Pp_loc.Input.file loc.loc_start.pos_fname))
+    [Pp_loc.Position.of_lexing loc.loc_start, Pp_loc.Position.of_lexing loc.loc_end]
     (styled_list [ `Red; `Bold ] string)
     "Error" pp_kind k
