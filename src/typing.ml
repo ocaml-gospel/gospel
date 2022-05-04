@@ -14,7 +14,8 @@ open Utils
 open Identifier
 open Uast
 open Ttypes
-open Tmodule
+
+(* open Tmodule *)
 open Tast_helper
 open Symbols
 
@@ -37,17 +38,17 @@ let rec q_loc = function Qpreid pid -> pid.pid_loc | Qdot (q, _) -> q_loc q
 
 let ns_find ~loc f ns sl =
   match sl with
-  | s :: _ :: _ when not (ns_exists_ns ns s) ->
+  | s :: _ :: _ when not (Tmodule.ns_exists_ns ns s) ->
       raise (Ns_not_found (loc, s))
       (* this will be caught to try to find file s *)
   | _ -> ( try f ns sl with Not_found -> W.error ~loc (W.Symbol_not_found sl))
 
-let find_ts ~loc = ns_find ~loc ns_find_ts
-let find_ls ~loc = ns_find ~loc ns_find_ls
-let find_fd ~loc = ns_find ~loc ns_find_fd
-let find_xs ~loc = ns_find ~loc ns_find_xs
-let find_ns ~loc = ns_find ~loc ns_find_ns
-let find_tns ~loc = ns_find ~loc ns_find_tns
+let find_ts ~loc = ns_find ~loc Tmodule.ns_find_ts
+let find_ls ~loc = ns_find ~loc Tmodule.ns_find_ls
+let find_fd ~loc = ns_find ~loc Tmodule.ns_find_fd
+let find_xs ~loc = ns_find ~loc Tmodule.ns_find_xs
+let find_ns ~loc = ns_find ~loc Tmodule.ns_find_ns
+let find_tns ~loc = ns_find ~loc Tmodule.ns_find_tns
 
 let find_q (f : loc:Location.t -> 'a) ns q =
   let ln = string_list_of_qualid q in
@@ -103,12 +104,20 @@ open Tast
 
 let dty_of_pty ns dty = dty_of_ty (ty_of_pty ns dty)
 
-let find_constructors kid ts =
-  match (Mid.find ts.ts_ident kid).sig_desc with
-  | Sig_type (_, tdl, _) -> (
-      match (List.find (fun td -> td.td_ts = ts) tdl).td_kind with
-      | Pty_record { rd_cs; rd_ldl } ->
-          (rd_cs, List.map (fun ld -> ld.ld_field) rd_ldl)
+let find_constructors kid (ts : tysymbol) =
+  match (Tmodule.Mid.find ts.ts_ident kid).psig_desc with
+  | Psig_type (_, tdl) -> (
+      match
+        (* XXX Should we switch to Ident being `name loc` as in Parsetree? *)
+        (List.find
+           (fun (td : type_declaration) ->
+             td.ptype_name.txt = ts.ts_ident.id_str
+             && td.ptype_name.loc = ts.ts_ident.id_loc)
+           tdl)
+          .ptype_kind
+      with
+      (* find lsymbol (and what is rd_cs) *)
+      | Ptype_record rd_ldl -> (rd_cs, List.map (fun ld -> ld.ld_field) rd_ldl)
       | _ -> assert false)
   | _ -> assert false
 
@@ -459,26 +468,27 @@ let mutable_flag = function
   | Asttypes.Mutable -> Mutable
   | Asttypes.Immutable -> Immutable
 
-let process_type_spec kid crcm ns ty spec =
+let process_type_spec td_ts kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty in
     let ls_inv = fsymbol ~field:true (Ident.of_preid f.f_preid) [] f_ty in
-    ( ns_add_ls ~allow_duplicate:true ns f.f_preid.pid_str ls_inv,
+    ( Tmodule.ns_add_ls ~allow_duplicate:true ns f.f_preid.pid_str ls_inv,
       (ls, f.f_mutable) :: fields )
   in
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
   let env = Mstr.empty in
   let invariant = List.map (fmla kid crcm ns env) spec.ty_invariant in
-  type_spec spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
+  type_spec td_ts spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
-let type_type_declaration kid crcm ns tdl =
-  let add_new tdm td =
-    if Mstr.mem td.tname.txt tdm then
-      W.error ~loc:td.tname.loc (W.Name_clash td.tname.txt)
-    else Mstr.add td.tname.txt td tdm
+let type_type_declaration kid crcm ns (tdl : type_declaration list) :
+    type_declaration list =
+  let add_new tdm (td : type_declaration) : type_declaration Dterm.Mstr.t =
+    if Mstr.mem td.ptype_name.txt tdm then
+      W.error ~loc:td.ptype_name.loc (W.Name_clash td.ptype_name.txt)
+    else Mstr.add td.ptype_name.txt td tdm
   in
   let tdm = List.fold_left add_new Mstr.empty tdl in
   let hts = Hashtbl.create 0 in
@@ -530,15 +540,16 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let tvl, params, variance_list =
-      List.fold_right parse_params td.tparams (Mstr.empty, [], [])
+      List.fold_right parse_params td.ptype_params (Mstr.empty, [], [])
     in
 
     let manifest =
-      Option.map (parse_core (Sstr.add s alias) tvl) td.tmanifest
+      Option.map (parse_core (Sstr.add s alias) tvl) td.ptype_manifest
     in
-    let td_ts = mk_ts (Ident.create ~loc:td.tname.loc s) params manifest in
+    let td_ts = mk_ts (Ident.create ~loc:td.ptype_name.loc s) params manifest in
     Hashtbl.add hts s td_ts;
 
+    (* HERE we can put the fields in the specs *)
     let process_record ty alias ldl =
       let cs_id = Ident.create ~loc:Location.none ("constr#" ^ s) in
       let fields_ty =
@@ -552,12 +563,14 @@ let type_type_declaration kid crcm ns tdl =
         let field_inv = fsymbol ~field:true id [] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
-        (ld :: ldl, ns_add_ls ~allow_duplicate:true ns id.id_str field_inv)
+        ( ld :: ldl,
+          Tmodule.ns_add_ls ~allow_duplicate:true ns id.id_str field_inv )
       in
       let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
       ({ rd_cs; rd_ldl }, ns)
     in
 
+    (* HERE we can put the constructors in the specs *)
     let process_variant ty alias cd =
       let loc = cd.pcd_loc in
       if cd.pcd_res != None then
@@ -587,40 +600,51 @@ let type_type_declaration kid crcm ns tdl =
     let ty = ty_app td_ts (List.map ty_of_var params) in
     let kind, ns =
       let alias = Sstr.empty in
-      match td.tkind with
-      | Ptype_abstract -> (Pty_abstract, ns)
+      match td.ptype_kind with
+      | Ptype_abstract -> (Ptype_abstract, ns)
       | Ptype_variant cdl ->
-          (Pty_variant (List.map (process_variant ty alias) cdl), ns)
+          (Ptype_variant (List.map (process_variant ty alias) cdl), ns)
       | Ptype_record ldl ->
           let record, ns = process_record ty alias ldl in
-          (Pty_record record, ns)
+          (Ptype_record record, ns)
       | Ptype_open -> assert false
     in
     (* invariants are only allowed on abstract/private types *)
-    (match ((td.tkind, td.tmanifest), td.tspec) with
+    (match
+       ((td.ptype_kind, td.ptype_manifest), Attrs.parsed_of_type_spec td)
+     with
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
         Some { ty_invariant = _ :: _; _ } )
-      when td.tprivate = Public ->
-        W.error ~loc:td.tloc (W.Public_type_invariant td_ts.ts_ident.id_str)
+      when td.ptype_private = Public ->
+        W.error ~loc:td.ptype_loc
+          (W.Public_type_invariant td_ts.ts_ident.id_str)
     | _, _ -> ());
 
     let params = List.combine params variance_list in
-    let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
+    (* HERE specifications are typed *)
+    let spec =
+      Attrs.parsed_of_type_spec td
+      |> Option.map (process_type_spec td_ts kid crcm ns ty)
+    in
 
-    if td.tcstrs != [] then
-      W.error ~loc:td.tloc (W.Unsupported "type constraints");
+    if td.ptype_cstrs != [] then
+      W.error ~loc:td.ptype_loc (W.Unsupported "type constraints");
 
+    (* XXX return the same td except with typed spec in attributes *)
     let td =
-      type_declaration td_ts params [] kind (private_flag td.tprivate) manifest
-        td.tattributes spec td.tloc
+      type_declaration td_ts params [] kind
+        (private_flag td.ptype_private)
+        manifest td.ptype_attributes spec td.ptype_loc
     in
     Hashtbl.add htd s td
   in
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
-  List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl
+  List.map (fun td -> Hashtbl.find htd td.ptype_name.txt) tdl
 
-let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
+let process_sig_type ~loc ?(ghost = Nonghost)
+    (kid : signature_item Tmodule.Mid.t) (crcm : Coercion.t) (ns : namespace) r
+    (tdl : type_declaration list) =
   let tdl = type_type_declaration kid crcm ns tdl in
   let sig_desc = Sig_type (rec_flag r, tdl, ghost) in
   mk_sig_item sig_desc loc
@@ -639,7 +663,7 @@ let rec val_parse_core_type ns cty =
    2 - no duplicated names in arguments and arguments in header
    match core type
 *)
-let process_val_spec kid crcm ns id args ret vs =
+let process_val_spec kid crcm ns id args ret (vs : Uast.val_spec) =
   let header = Option.get vs.sp_header in
   let loc = header.sp_hd_nm.pid_loc in
   let id_val = id.Ident.id_str in
@@ -784,7 +808,8 @@ let process_val_spec kid crcm ns id args ret vs =
       W.type_checking_error ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
       W.type_checking_error ~loc "a pure function cannot raise exceptions");
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
+  (* XXX need some more arguments *)
+  mk_val_spec id args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
     vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args =
@@ -811,21 +836,22 @@ let mk_dummy_var i (ty, arg) =
   | Labelled s -> Uast.Lnamed (Preid.create ~loc s)
   | Optional s -> Uast.Loptional (Preid.create ~loc s)
 
-let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
-  let id = Ident.create ~loc:vd.vloc vd.vname.txt in
-  let args, ret = val_parse_core_type ns vd.vtype in
+let process_val ~loc ?(ghost = Nonghost) kid crcm ns (vd : value_description) =
+  let id = Ident.create ~loc:vd.pval_loc vd.pval_name.txt in
+  let args, ret = val_parse_core_type ns vd.pval_type in
   let spec =
-    match vd.vspec with
+    match Attrs.parsed_of_val_spec vd with
+    (* XXX maybe just a predicate? *)
     | None | Some { sp_header = None; _ } -> (
-        let id = Preid.create ~loc:vd.vloc vd.vname.txt in
+        let id = Preid.create ~loc:vd.pval_loc vd.pval_name.txt in
         let ret =
           if ty_equal ret ty_unit then Uast.Lunit
           else
             Uast.Lnone
-              (if args = [] then id else Preid.create ~loc:vd.vloc "result")
+              (if args = [] then id else Preid.create ~loc:vd.pval_loc "result")
         in
         let args = List.mapi mk_dummy_var args in
-        match vd.vspec with
+        match Attrs.parsed_of_val_spec vd with
         | None -> empty_spec id [ ret ] args
         | Some s ->
             {
@@ -836,7 +862,7 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
     | Some s -> s
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
-  let so = Option.map (fun _ -> spec) vd.vspec in
+  let so = Attrs.parsed_of_val_spec vd |> Option.map (fun _ -> spec) in
   let () =
     (* check there is a modifies clause if the return type is unit, through a warning if not *)
     if Ttypes.(ty_equal ret ty_unit) then
@@ -847,10 +873,11 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
             W.error ~loc (W.Return_unit_without_modifies id.id_str)
   in
   let vd =
-    mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
-      spec.sp_ret so vd.vloc
+    (* XX return the same vd except with typed spec in attributes *)
+    mk_val_description id vd.pval_type vd.pval_prim vd.pval_attributes
+      spec.sp_args spec.sp_ret so vd.pval_loc
   in
-  mk_sig_item (Sig_val (vd, ghost)) loc
+  mk_sig_item (Psig_value vd) loc
 
 (** Typing function, axiom, and exception declarations *)
 
@@ -868,7 +895,8 @@ let process_function kid crcm ns f =
 
   let ls = lsymbol ~field:false (Ident.of_preid f.fun_name) tyl f_ty in
   let ns =
-    if f.fun_rec then ns_add_ls ~allow_duplicate:true ns f.fun_name.pid_str ls
+    if f.fun_rec then
+      Tmodule.ns_add_ls ~allow_duplicate:true ns f.fun_name.pid_str ls
     else ns
   in
 
@@ -961,17 +989,17 @@ let penv lpaths parsing = { lpaths; parsing }
 
 let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;
-  try add_ns ~export:true muc nm (get_file muc nm).fl_export
+  try Tmodule.add_ns ~export:true muc nm (Tmodule.get_file muc nm).fl_export
   with Not_found ->
     let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
     let sl =
       let file = Parser_frontend.with_loadpath penv.lpaths file_nm in
       Parser_frontend.parse_ocaml_gospel file
     in
-    let muc = open_empty_module muc nm in
+    let muc = Tmodule.open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in
     let muc = List.fold_left (type_sig_item penv) muc sl in
-    let muc = close_module_file muc in
+    let muc = Tmodule.close_module_file muc in
     muc
 
 and module_as_file ~loc penv muc nm =
@@ -983,7 +1011,7 @@ and process_open ~loc ?(ghost = Nonghost) penv muc od =
   let qd_loc = od.popen_loc in
   let hd = List.hd qd in
   let muc =
-    if ns_exists_ns (get_top_import muc) hd then muc
+    if Tmodule.ns_exists_ns (Tmodule.get_top_import muc) hd then muc
     else module_as_file ~loc:qd_loc penv muc hd
   in
   let od =
@@ -998,7 +1026,7 @@ and process_open ~loc ?(ghost = Nonghost) penv muc od =
 
 (* assumes that a new namespace has been opened *)
 and process_modtype penv muc umty =
-  match umty.mdesc with
+  match umty.pmod_desc with
   | Mod_signature usig ->
       let muc = List.fold_left (type_sig_item penv) muc usig in
       let tsig = Mod_signature (get_top_sigs muc) in
@@ -1112,7 +1140,7 @@ and process_modtype penv muc umty =
         | Unit -> W.error ~loc:umty.mloc (W.Unsupported "generative functor")
         | Named ({ txt; loc }, mt) -> (Option.value ~default:"_" txt, mt, loc)
       in
-      let muc = open_module muc nm in
+      let muc = Tmodule.open_module muc nm in
       let muc, tmty_arg = process_modtype penv muc mty_arg in
       let muc = close_module_functor muc in
       let muc, tmty = process_modtype penv muc mt in
@@ -1139,7 +1167,7 @@ and process_mod penv loc m muc =
       md_loc = m.mdloc;
     }
   in
-  (close_module muc, mk_sig_item (Sig_module decl) loc)
+  (Tmodule.close_module muc, mk_sig_item (Sig_module decl) loc)
 
 and process_modtype_decl penv loc decl muc =
   let nm = decl.mtdname.txt in
@@ -1156,14 +1184,15 @@ and process_modtype_decl penv loc decl muc =
       mtd_loc = decl.mtdloc;
     }
   in
-  (close_module_type muc, mk_sig_item (Sig_modtype decl) loc)
+  (Tmodule.close_module_type muc, mk_sig_item (Sig_modtype decl) loc)
 
-and process_sig_item penv muc { sdesc; sloc } =
+and process_sig_item _penv _muc (*{ sdesc; sloc }*) =
   let process_sig_item si muc =
-    let kid, ns, crcm = (muc.muc_kid, get_top_import muc, muc.muc_crcm) in
+    let kid, ns, crcm =
+      Tmodule.(muc.muc_kid, get_top_import muc, muc.muc_crcm)
+    in
     match si with
-    | Uast.Sig_type (r, tdl) ->
-        (muc, process_sig_type ~loc:sloc kid crcm ns r tdl)
+    | Psig_type (r, tdl) -> (muc, process_sig_type ~loc:sloc kid crcm ns r tdl)
     | Uast.Sig_val vd -> (muc, process_val ~loc:sloc kid crcm ns vd)
     | Uast.Sig_typext te -> (muc, mk_sig_item (Sig_typext te) sloc)
     | Uast.Sig_module m -> process_mod penv sloc m muc

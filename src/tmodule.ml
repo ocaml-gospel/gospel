@@ -475,7 +475,8 @@ let add_open muc _sig_ (o : open_description) =
   add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
 
 (* XXX TODO *)
-let exn_type_from_type_exception (_te : type_exception) = assert false
+let exn_type_from_type_exception (te : type_exception) : exn_type =
+  match te.ptyexn_constructor.pext_kind with _ -> assert false
 
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in

@@ -110,7 +110,7 @@ type field = {
 }
 
 type type_spec = {
-  ty_name : Preid.t;
+  ty_name : Preid.t option;
   ty_ephemeral : bool;
   ty_field : field list;
   ty_invariant : term list;

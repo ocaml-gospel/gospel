@@ -9,7 +9,6 @@
 (*                                                                  *)
 (********************************************************************)
 
-open Tast
 open Tmodule
 
 type parse_env
@@ -21,9 +20,12 @@ val penv : string list -> Utils.Sstr.t -> parse_env
     for modules dependencies. *)
 
 val process_sig_item :
-  parse_env -> module_uc -> Uast.s_signature_item -> module_uc * signature_item
+  parse_env ->
+  module_uc ->
+  Ppxlib.signature_item ->
+  module_uc * Ppxlib.signature_item
 (** `process_sig_item penv muc s` returns a new module under construction after
     type checking `s` and the typed signature obtained from `s` and `muc`. *)
 
-val type_sig_item : parse_env -> module_uc -> Uast.s_signature_item -> module_uc
+val type_sig_item : parse_env -> module_uc -> Ppxlib.signature_item -> module_uc
 (** the same as above but it drops the typed signature *)
