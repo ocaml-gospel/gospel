@@ -147,10 +147,27 @@ let pp_kind ppf = function
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
 let pp ppf (loc, k) =
+  let input_filename = loc.loc_start.pos_fname in
+  let input = Pp_loc.Input.file input_filename in
+  (* because of the preprocessor (gospel pps), we may obtain locations that:
+     - have correct line numbers and correct offsets within a line (pos_cnum -
+       pos_bol) (where "correct" means that they refer to the user-written file
+       before preprocessing); but
+     - where the [pos_cnum] and [pos_bol] fields refer to offsets within the
+       file *after* preprocessing rather than *before*.
+
+     We thus use helpers from [Pp_loc.Position] to recompute full positions from
+     line/column numbers with respect to the input file before preprocessing.
+  *)
+  let repair_pos (p: Lexing.position): Lexing.position =
+    Pp_loc.Position.of_line_col p.pos_lnum (p.pos_cnum - p.pos_bol + 1)
+    |> Pp_loc.Position.to_lexing ~filename:input_filename input
+  in
+  let start_pos, end_pos = repair_pos loc.loc_start, repair_pos loc.loc_end in
   pf ppf "%a@\n%a%a: @[%a.@]"
     (styled `Bold Location.print)
-    loc
-    (Pp_loc.pp ~max_lines:10 ~input:(Pp_loc.Input.file loc.loc_start.pos_fname))
-    [Pp_loc.Position.of_lexing loc.loc_start, Pp_loc.Position.of_lexing loc.loc_end]
+    { loc_start = start_pos; loc_end = end_pos; loc_ghost = false }
+    (Pp_loc.pp ~max_lines:10 ~input)
+    [Pp_loc.Position.of_lexing start_pos, Pp_loc.Position.of_lexing end_pos]
     (styled_list [ `Red; `Bold ] string)
     "Error" pp_kind k
