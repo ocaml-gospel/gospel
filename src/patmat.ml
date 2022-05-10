@@ -6,147 +6,109 @@ open Tterm
 open Tterm_helper
 open Fmt
 
-module PMutils : sig
-  val mex : int array -> int
-  val is_builtin : ty -> bool
-  val ts_of_ty : ty -> tysymbol option
-end = struct
-  exception Brk of int
+let swap a i j =
+  let tmp = a.(i) in
+  a.(i) <- a.(j);
+  a.(j) <- tmp
 
-  let swap a i j =
-    let tmp = a.(i) in
-    a.(i) <- a.(j);
-    a.(j) <- tmp
-
-  let mex a =
-    let n = Array.length a in
-    let i = ref 0 in
-    while !i < n do
-      let x = a.(!i) in
-      if x < 0 || x >= n then incr i
-      else if x < !i then (
-        swap a !i x;
-        incr i)
-      else if a.(x) = x then incr i
-      else swap a !i x
+let mex a =
+  let exception Brk of int in
+  let n = Array.length a in
+  let i = ref 0 in
+  while !i < n do
+    let x = a.(!i) in
+    if x < 0 || x >= n then incr i
+    else if x < !i then (
+      swap a !i x;
+      incr i)
+    else if a.(x) = x then incr i
+    else swap a !i x
+  done;
+  try
+    for i = 0 to n - 1 do
+      if a.(i) <> i then raise (Brk i)
     done;
-    try
-      for i = 0 to n - 1 do
-        if a.(i) <> i then raise (Brk i)
-      done;
-      n
-    with Brk i -> i
+    n
+  with Brk i -> i
 
-  let ts_of_ty { ty_node } =
-    match ty_node with Tyvar _ -> None | Tyapp (ts, _) -> Some ts
+let ts_of_ty { ty_node } =
+  match ty_node with Tyvar _ -> None | Tyapp (ts, _) -> Some ts
 
-  let is_builtin ty =
-    ty_equal ty ty_int
-    || ty_equal ty ty_string
-    || ty_equal ty ty_float
-    || ty_equal ty ty_integer
-    || ty_equal ty ty_char
-    ||
-    match ts_of_ty ty with
-    | Some ts -> ts_equal ts ts_option || ts_equal ts ts_list
-    | None -> false
-end
+let is_builtin ty =
+  ty_equal ty ty_int
+  || ty_equal ty ty_string
+  || ty_equal ty ty_float
+  || ty_equal ty ty_integer
+  || ty_equal ty ty_char
+  ||
+  match ts_of_ty ty with
+  | Some ts -> ts_equal ts ts_option || ts_equal ts ts_list
+  | None -> false
 
+let mk_wild = List.map (fun ty -> mk_pattern Pwild ty)
+
+(** This module is used to represent pattern matrices.*)
 module Pmatrix : sig
-  type mat = pattern list list
-  type t = private { rows : int; cols : int; mat : mat }
+  type t = private { rows : int; cols : int; mat : pattern list list }
+  (** The type for pattern matrices with forces dimensions. Each line represents
+      a case of the pattern-matching. *)
 
   val empty : t
-  val from_mat : ?cols:int -> pattern list list -> t
+  (** The empty matrix *)
+
+  val from_matrix : ?cols:int -> pattern list list -> t
+  (** Creates a matrix from a pattern matrix. If [cols] is provided, TODO *)
+
   val from_pat : pattern list -> t
+  (** Creates a matrix *)
+
   val add_col : t -> pattern -> t
-  val mk_wild : ty list -> pattern list
-  val from_lines : pattern list list -> t
   val encap_row : lsymbol -> int -> t -> t
   val remove_or_col1 : t -> t
   val fst : t -> Tterm.pattern
-  val pp : Format.formatter -> t -> unit [@@warning "-32"]
-  val remove_interval : Tterm.pattern -> Tterm.pattern [@@warning "-32"]
 end = struct
-  type mat = pattern list list
-  type t = { rows : int; cols : int; mat : mat }
+  type t = { rows : int; cols : int; mat : pattern list list }
 
-  let from_mat ?cols mat =
+  let empty = { mat = []; rows = 0; cols = 0 }
+
+  let from_matrix ?cols mat =
     let cols =
       Option.value cols
         ~default:(match mat with [] -> 0 | e :: _ -> List.length e)
     in
     { rows = List.length mat; cols; mat }
 
-  let rec remove_as pat =
-    match pat.p_node with
-    | Por (p1, p2) -> { pat with p_node = Por (remove_as p1, remove_as p2) }
-    | Pas (pat, _) -> remove_as pat
-    | Papp (l, pl) -> { pat with p_node = Papp (l, List.map remove_as pl) }
-    | _ -> pat
-
-  let rec remove_or ?(sub_app = false) pat =
+  let rec remove_or ~sub_app pat =
     match pat.p_node with
     | Por (p1, p2) -> remove_or ~sub_app p1 @ remove_or ~sub_app p2
     | Pas (pat, _) -> remove_or ~sub_app pat
     | Papp (l, pl) when sub_app ->
-        let pl = List.map (remove_or ~sub_app) pl in
-        List.map (fun e -> { pat with p_node = Papp (l, e) }) pl
+        List.map
+          (fun e -> { pat with p_node = Papp (l, remove_or ~sub_app e) })
+          pl
     | _ -> [ pat ]
 
-  let rec remove_interval pat =
-    match pat.p_node with
-    | Pinterval (c1, c2) ->
-        let rec loop c1 c2 =
-          if c1 = c2 then Pconst (Pconst_char c1)
-          else
-            Por
-              ( { pat with p_node = Pconst (Pconst_char c1) },
-                { pat with p_node = loop (Char.chr (Char.code c1 + 1)) c2 } )
-        in
-        let p = if c1 <= c2 then loop c1 c2 else loop c2 c1 in
-        { pat with p_node = p }
-    | Pas (p, a) -> { pat with p_node = Pas (remove_interval p, a) }
-    | Papp (l, pl) ->
-        { pat with p_node = Papp (l, List.map remove_interval pl) }
-    | Por (p1, p2) ->
-        { pat with p_node = Por (remove_interval p1, remove_interval p2) }
-    | _ -> pat
-    [@@warning "-32"]
+  let from_pat pat =
+    if pat = [] then invalid_arg "Pmatrix.from_pat";
+    let mat = List.map (fun e -> [ e ]) pat in
+    { mat; rows = List.length mat; cols = 1 }
 
   let remove_or_col1 pmat =
-    if pmat.cols = 0 then invalid_arg "pmatrix.rm_or_col1";
-    let m =
+    if pmat.cols = 0 then invalid_arg "Pmatrix.rm_or_col1";
+    let mat =
       List.fold_left
         (fun acc e ->
           match e with
           | [] -> assert false
-          | h :: t -> (
-              match h.p_node with
-              | Por _ ->
-                  List.map (fun el -> el :: t) (remove_or ~sub_app:true h) @ acc
-              | _ -> e :: acc))
+          | ({ p_node = Por _; _ } as h) :: t ->
+              List.map (fun el -> el :: t) (remove_or ~sub_app:true h) @ acc
+          | _ :: _ -> e :: acc)
         [] pmat.mat
     in
-    { mat = m; rows = List.length m; cols = pmat.cols }
-
-  let from_pat pat =
-    if pat = [] then invalid_arg "pmatrix.from_pat";
-    let mat =
-      List.fold_left
-        (fun acc e ->
-          remove_as e |> remove_or |> List.map (fun e -> [ e ]) |> fun e ->
-          e @ acc)
-        [] pat
-    in
-    { mat; rows = List.length mat; cols = 1 }
-
-  let empty = { mat = []; rows = 0; cols = 0 }
+    { mat; rows = List.length mat; cols = pmat.cols }
 
   let fst pmat =
-    match pmat.mat with
-    | [] | [] :: _ :: _ | [ [] ] -> invalid_arg "pmat.fst"
-    | (h :: _) :: _ -> h
+    match pmat.mat with (h :: _) :: _ -> h | _ -> invalid_arg "Pmatrix.fst"
 
   let add_col pmat col_elt =
     if pmat = empty then { rows = 1; cols = 1; mat = [ [ col_elt ] ] }
@@ -156,11 +118,6 @@ end = struct
         cols = pmat.cols + 1;
         mat = List.map (fun e -> col_elt :: e) pmat.mat;
       }
-
-  let add_line_hd pmat l =
-    let cols = List.length l in
-    assert (pmat = empty || pmat.cols = cols);
-    { mat = l :: pmat.mat; cols; rows = pmat.rows + 1 }
 
   let encap_row ck ak pmat =
     let rec split acc i l =
@@ -175,61 +132,32 @@ end = struct
         let hd = mk_pattern (Papp (ck, args)) (Option.get ck.ls_value) in
         { rows = 1; cols = pmat.cols - ak + 1; mat = [ hd :: l ] }
     | _ -> assert false
-
-  let from_lines l = List.fold_left add_line_hd empty (List.rev l)
-  let mk_wild = List.map (fun ty -> mk_pattern Pwild ty)
-
-  let rec pp_pattern ppf pat =
-    match pat.p_node with
-    | Pwild -> pf ppf "_"
-    | Pvar v -> pf ppf "%s" v.vs_name.id_str
-    | Pas (p, a) -> pf ppf "%a as %s" pp_pattern p a.vs_name.id_str
-    | Papp (p, []) ->
-        let s = p.ls_name.id_str in
-        pf ppf "%s" s
-    | Papp (p, pl) ->
-        let s = p.ls_name.id_str in
-        pf ppf "%s(%a)" s (list ~sep:comma pp_pattern) pl
-    | Por (p1, p2) -> pf ppf "(%a | %a)" pp_pattern p1 pp_pattern p2
-    | Pinterval (c1, c2) -> pf ppf "%C..%C" c1 c2
-    | Pconst cc ->
-        let v =
-          match cc with
-          | Pconst_integer (s, _) -> s
-          | Pconst_char c -> Format.sprintf "%C" c
-          | Pconst_string (s, _, _) -> Format.sprintf "%S" s
-          | Pconst_float (s, _) -> s
-        in
-        pf ppf "%s" v
-
-  let newline = any ",@\n" [@@warning "-32"]
-  let line = list ~sep:comma pp_pattern
-  let mat = list ~sep:newline line
-
-  let pp ppf { mat = m; rows; cols } =
-    pf ppf "%dx%d@\n%a" rows cols (brackets mat) m
 end
 
 module Sigma : sig
   type e = ty list
   type t
 
-  val mk : Pmatrix.mat -> t
+  val mk : pattern list list -> t
   val is_full : ty -> t -> Pmatrix.t -> bool
   val is_empty : t -> bool
   val other_one : ty -> t -> Pmatrix.t -> pattern_node
   val exists : (lsymbol -> e -> bool) -> t -> bool
   val iter : (lsymbol -> e -> unit) -> t -> unit
-  val pp : Format.formatter -> t -> unit [@@warning "-32"]
   val get_typ_cols : e -> lsymbol -> e
-  val cardinal : t -> int [@@warning "-32"]
 end = struct
   type e = ty list
   type t = e Mls.t
 
-  let cardinal = Mls.cardinal
-
   let rec mk p =
+    let f _key e1 e2 =
+      match (e1, e2) with
+      | None, None -> None
+      | Some e, None -> Some e
+      | None, Some e -> Some e
+      | Some e1, Some e2 when e1 = e2 -> Some e1
+      | _ -> assert false
+    in
     List.fold_left
       (fun acc e ->
         match e with
@@ -237,16 +165,12 @@ end = struct
         | { p_node = Por (p1, p2); _ } :: _ ->
             let map1 = mk [ [ p1 ] ] in
             let map2 = mk [ [ p2 ] ] in
-            let f _key e1 e2 =
-              match (e1, e2) with
-              | None, None -> None
-              | Some e, None -> Some e
-              | None, Some e -> Some e
-              | Some e1, Some e2 when e1 = e2 -> Some e1
-              | _ -> assert false
-            in
+
             let map3 = Mls.merge f map1 map2 in
             Mls.merge f acc map3
+        | { p_node = Pas (p, _); _ } :: _ ->
+            let map = mk [ [ p ] ] in
+            Mls.merge f acc map
         | _ -> acc)
       Mls.empty p
 
@@ -254,19 +178,9 @@ end = struct
   let exists = Mls.exists
   let iter = Mls.iter
 
-  let pp ppf sigma =
-    if is_empty sigma then pf ppf "sigma : ø"
-    else (
-      pf ppf "sigma : %d@.\t@[" (Mls.cardinal sigma);
-      iter
-        (fun ls tyl ->
-          pf ppf "ls : (%a) -- tyl : (%a)@." pp_lsymbol ls (list pp_ty) tyl)
-        sigma;
-      pf ppf "@]")
-
   let get_constructors ty : lsymbol list option =
     try
-      match PMutils.ts_of_ty ty with
+      match ts_of_ty ty with
       | Some ts -> (
           let td = Hts.find Tmodule.type_declarations ts in
           match td.td_kind with
@@ -297,7 +211,7 @@ end = struct
       []
       Pmatrix.(pmat.mat)
     |> Array.of_list
-    |> PMutils.mex
+    |> mex
 
   let case_int pmat mark =
     let pmat = Pmatrix.remove_or_col1 pmat in
@@ -314,16 +228,30 @@ end = struct
     let len = case String.length pmat in
     Pconst (Pconst_string (String.make len '?', Location.none, None))
 
-  let i = ref ~-1
+  let rec remove_interval pat =
+    match pat.p_node with
+    | Pinterval (c1, c2) ->
+        let rec loop c1 c2 =
+          if c1 = c2 then Pconst (Pconst_char c1)
+          else
+            Por
+              ( { pat with p_node = Pconst (Pconst_char c1) },
+                { pat with p_node = loop (Char.chr (Char.code c1 + 1)) c2 } )
+        in
+        let p = if c1 <= c2 then loop c1 c2 else loop c2 c1 in
+        { pat with p_node = p }
+    | Pas (p, a) -> { pat with p_node = Pas (remove_interval p, a) }
+    | Papp (l, pl) ->
+        { pat with p_node = Papp (l, List.map remove_interval pl) }
+    | Por (p1, p2) ->
+        { pat with p_node = Por (remove_interval p1, remove_interval p2) }
+    | _ -> pat
 
   let case_char pmat =
-    incr i;
     let pmat = Pmatrix.remove_or_col1 pmat in
     let pmat =
-      List.map
-        (function [] -> [] | h :: t -> Pmatrix.remove_interval h :: t)
-        pmat.mat
-      |> Pmatrix.from_mat
+      List.map (function [] -> [] | h :: t -> remove_interval h :: t) pmat.mat
+      |> Pmatrix.from_matrix
     in
     let pmat = Pmatrix.remove_or_col1 pmat in
     List.fold_left
@@ -341,7 +269,7 @@ end = struct
       []
       Pmatrix.(pmat.mat)
     |> Array.of_list
-    |> PMutils.mex
+    |> mex
     |> fun e ->
     if e > 255 then None else Some (Pconst (Pconst_char (Char.chr e)))
 
@@ -355,7 +283,7 @@ end = struct
     | _ -> assert false
 
   let other_one ty ens pmat =
-    let ts = PMutils.ts_of_ty ty |> Option.get in
+    let ts = ts_of_ty ty |> Option.get in
     if ts_equal ts ts_int then case_int pmat (Some 'i')
     else if ts_equal ts ts_integer then case_int pmat None
     else if ts_equal ts ts_string then case_str pmat
@@ -366,11 +294,11 @@ end = struct
       match get_constructors ty with
       | Some e ->
           let cc = List.find (fun ls -> not (Mls.mem ls ens)) e in
-          Papp (cc, Pmatrix.mk_wild cc.ls_args)
+          Papp (cc, mk_wild cc.ls_args)
       | None -> assert false
 
   let is_full ty ens pmat =
-    match PMutils.ts_of_ty ty with
+    match ts_of_ty ty with
     | Some ts -> (
         if is_ts_tuple ts then true
         else if ts_equal ts ts_bool then
@@ -395,13 +323,13 @@ let rec mk_default p =
         | Papp _ | Pconst _ | Pinterval _ -> []
         | Pvar _ | Pwild -> [ cols ]
         | Por (t1, t2) ->
-            let mat = Pmatrix.from_lines [ t1 :: cols; t2 :: cols ] in
+            let mat = Pmatrix.from_matrix [ t2 :: cols; t1 :: cols ] in
             let r = mk_default mat in
             Pmatrix.(r.mat)
         | Pas (p, _) -> mk_line nb_cols (p :: cols))
   in
   let mat = List.map (mk_line p.cols) p.mat |> List.flatten in
-  Pmatrix.from_mat mat ~cols:(p.cols - 1)
+  Pmatrix.from_matrix mat ~cols:(p.cols - 1)
 
 let rec mk_spec ?constr ?char a p =
   let rec mk_si = function
@@ -423,16 +351,16 @@ let rec mk_spec ?constr ?char a p =
         | Pconst _ | Papp _ -> []
         | Pinterval _ -> []
         | Pvar _ | Pwild ->
-            let ll = Pmatrix.mk_wild a in
+            let ll = mk_wild a in
             [ ll @ cols ]
         | Por (t1, t2) ->
-            let mat = Pmatrix.from_lines [ t1 :: cols; t2 :: cols ] in
+            let mat = Pmatrix.from_matrix [ t2 :: cols; t1 :: cols ] in
             let m = mk_spec ?constr ?char a mat in
             Pmatrix.(m.mat)
         | Pas (p, _) -> mk_si (p :: cols))
   in
   let mat = List.map mk_si p.mat |> List.flatten in
-  Pmatrix.from_mat mat ~cols:(p.cols + List.length a - 1)
+  Pmatrix.from_matrix mat ~cols:(p.cols + List.length a - 1)
 
 let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
   assert (List.length qvec = pmat.cols);
@@ -460,7 +388,7 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
           else
             Sigma.exists
               (fun ck tyl ->
-                let q = Pmatrix.mk_wild ck.ls_args @ ll in
+                let q = mk_wild ck.ls_args @ ll in
                 let typ_cols = Sigma.get_typ_cols typ_cols ck @ tl in
                 usefulness typ_cols (mk_spec ~constr:ck tyl pmat) q)
               sigma
@@ -510,23 +438,20 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
       match ui tl (mk_default pmat) with
       | None -> None
       | Some pm ->
-          if Sigma.is_empty sigma && not (PMutils.is_builtin thd) then
+          if Sigma.is_empty sigma && not (is_builtin thd) then
             Some (Pmatrix.add_col pm (mk_pattern Pwild thd))
           else
             let pat_node = Sigma.other_one thd sigma pmat in
             let pat = mk_pattern pat_node thd in
             Some (Pmatrix.add_col pm pat)
 
-let exhaustivite typ pat ~loc =
-  let pmat = Pmatrix.from_pat pat in
-  let q = Pmatrix.mk_wild [ (List.hd pat |> fun p -> p.p_ty) ] in
-  (not (usefulness [ typ ] pmat q))
-  || ui [ typ ] pmat |> Option.get |> fun pm ->
-     let s = Pmatrix.fst pm |> Fmt.str "@[%a@]" Tterm_printer.print_pattern in
-     W.error ~loc (W.Pattern_not_exhaustive s)
+let ui tyl pmat = Option.get (ui tyl pmat) |> Pmatrix.fst
 
-let check_exhaustive (ty : ty) (cases : (pattern * term) list)
-    ~(loc : Location.t) =
+let check_exhaustive ~loc ty cases =
   let pat = List.map fst cases in
-  try (exhaustivite ty pat ~loc : bool) |> ignore
-  with Not_found -> assert false
+  let pmat = Pmatrix.from_pat pat in
+  let q = mk_wild [ (List.hd pat |> fun p -> p.p_ty) ] in
+  if usefulness [ ty ] pmat q then
+    let pm = ui [ ty ] pmat in
+    let s = Fmt.str "@[%a@]" Tterm_printer.print_pattern pm in
+    W.error ~loc (W.Pattern_not_exhaustive s)
