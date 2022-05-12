@@ -31,6 +31,9 @@
 
 ## Fixed
 
+- Fixed incorrectly rejected interfaces with absent\partial function contracts
+  in the presence of tuples as return values.
+  [\#193](https://github.com/ocaml-gospel/gospel/pull/193)
 - Fixed support for types containing functions.
   [\#186](https://github.com/ocaml-gospel/gospel/pull/186)
 - Fixed wrong syntax errors in patterns.

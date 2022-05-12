@@ -363,6 +363,19 @@
  (action (diff %{dep:test2.mli.expected} %{dep:test2.mli.output})))
 
 (rule
+ (targets tuple_result.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:tuple_result.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:tuple_result.mli.expected} %{dep:tuple_result.mli.output})))
+
+(rule
  (targets type_decl.mli.output)
  (deps (source_tree .))
  (action

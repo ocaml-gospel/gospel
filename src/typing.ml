@@ -807,7 +807,7 @@ let mk_dummy_var i (ty, arg) =
   let loc = Location.none in
   match arg with
   | _ when ty_equal ty ty_unit -> Uast.Lunit
-  | Nolabel -> Uast.Lnone (Preid.create ~loc ("$x" ^ string_of_int i))
+  | Nolabel -> Uast.Lnone (Preid.create ~loc ("__arg" ^ string_of_int i))
   | Labelled s -> Uast.Lnamed (Preid.create ~loc s)
   | Optional s -> Uast.Loptional (Preid.create ~loc s)
 
@@ -818,20 +818,22 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
     match vd.vspec with
     | None | Some { sp_header = None; _ } -> (
         let id = Preid.create ~loc:vd.vloc vd.vname.txt in
-        let ret =
-          if ty_equal ret ty_unit then Uast.Lunit
-          else
-            Uast.Lnone
-              (if args = [] then id else Preid.create ~loc:vd.vloc "result")
+        let rets =
+          match ret with
+          | { ty_node = Tyapp (ts, _) } when is_ts_tuple ts ->
+              let arity = ts_arity ts in
+              List.init arity (fun i ->
+                  Uast.Lnone (Preid.create ~loc:vd.vloc (Fmt.str "result%d" i)))
+          | _ -> [ Uast.Lnone (Preid.create ~loc:vd.vloc "result") ]
         in
         let args = List.mapi mk_dummy_var args in
         match vd.vspec with
-        | None -> empty_spec id [ ret ] args
+        | None -> empty_spec id rets args
         | Some s ->
             {
               s with
               sp_header =
-                Some { sp_hd_nm = id; sp_hd_ret = [ ret ]; sp_hd_args = args };
+                Some { sp_hd_nm = id; sp_hd_ret = rets; sp_hd_args = args };
             })
     | Some s -> s
   in
