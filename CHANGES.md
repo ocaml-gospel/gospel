@@ -34,6 +34,9 @@
 
 ## Fixed
 
+- Fixed the type-checking of interfaces involving the OCaml Stdlib, which was
+  not opened by default.
+  [\#195](https://github.com/ocaml-gospel/gospel/pull/195)
 - Fixed incorrectly rejected interfaces with absent\partial function contracts
   in the presence of tuples as return values.
   [\#193](https://github.com/ocaml-gospel/gospel/pull/193)

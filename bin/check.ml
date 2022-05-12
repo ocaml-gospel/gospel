@@ -22,6 +22,7 @@ let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
 let type_check load_path name sigs =
+  let load_path = Findlib.package_directory "stdlib" :: load_path in
   let md = init_muc name in
   let penv =
     path2module name |> Utils.Sstr.singleton |> Typing.penv load_path

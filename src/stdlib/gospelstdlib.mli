@@ -41,9 +41,6 @@
 (*@ type 'a ref *)
 (** The type for references. *)
 
-(*@ type 'a array *)
-(** The type for arrays. *)
-
 (*@ type 'a set *)
 (** The type for finite unordered sets. *)
 
