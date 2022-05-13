@@ -64,7 +64,7 @@ module stdlib_exceptions.mli
                             f:'a -> bool x_1:'a):bool = (True ):bool):prop*)
     
     val invalid_arg : string -> 'a
-    (*@ result:'a = invalid_arg $x0:string
+    (*@ result:'a = invalid_arg __arg0:string
         ensures false:prop
         raisesInvalid_argument _ -> true:prop*)
 

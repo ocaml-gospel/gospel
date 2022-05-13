@@ -56,7 +56,7 @@ module pure.mli
          
     
     val f : int -> int
-    (*@ result:int = f $x0:int*)
+    (*@ result:int = f __arg0:int*)
     
     val g : int -> int
     (*@ y:int = g x:int
