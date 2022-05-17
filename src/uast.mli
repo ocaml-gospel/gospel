@@ -160,17 +160,17 @@ type prop = {
 }
 
 type ind_case = {
-  in_case_loc  : Location.t;
+  in_case_loc : Location.t;
   in_case_name : Preid.t;
-  in_case_def  : term;
+  in_case_def : term;
 }
 
 type ind_decl = {
-  in_loc    : Location.t;
-  in_name   : Preid.t;
+  in_loc : Location.t;
+  in_name : Preid.t;
   in_params : param list;
-  in_def    : ind_case list;
-  in_text   : string;
+  in_def : ind_case list;
+  in_text : string;
 }
 
 (* Modified OCaml constructs with specification attached *)

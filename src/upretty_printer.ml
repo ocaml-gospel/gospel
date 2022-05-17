@@ -293,8 +293,7 @@ let rec s_signature_item f x =
       item_extension reset_ctxt f e;
       item_attributes reset_ctxt f a
   | Sig_function x -> function_ f x
-  | Sig_inductive ind ->
-    inductive f ind
+  | Sig_inductive ind -> inductive f ind
   | Sig_axiom x -> axiom f x
   | Sig_ghost_type (rf, l) ->
       pp f "@[%a@]" (spec s_type_declaration_rec_flag) (rf, l)
