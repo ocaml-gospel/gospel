@@ -1,5 +1,6 @@
 type t = private { size : int; mutable mask : int }
-(*@ invariant 0 <= self.size <= 63
+(*@ with self
+    invariant 0 <= self.size <= 63
     invariant 0 <= self.mask < pow 2 self.size *)
 
 (*@ predicate mem (i: integer) (bv: t) = logand bv.mask (pow 2 i) <> 0 *)

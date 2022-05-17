@@ -5,7 +5,7 @@
 type t = int -> int
 type u = (int -> int) ref
 type v = private {
-  x: int -> int }[@@gospel {| invariant self.x 0i = 0 |}]
+  x: int -> int }[@@gospel {| with self invariant self.x 0i = 0 |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -60,7 +60,6 @@ module record_functions.mli
           function x (_:v) : int -> int
          (*@ 
              invariant ((integer_of_int 
-                       (apply  ((self ):v).x 0i:int):int):integer = 0:
-                       integer):prop *)
+                       (apply  (self:v).x 0i:int):int):integer = 0:integer):prop *)
 
 OK

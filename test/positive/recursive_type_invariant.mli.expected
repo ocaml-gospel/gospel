@@ -7,14 +7,16 @@ type t = private
   | B of t 
   | C of {
   x: t } [@@gospel
-           {| invariant match self with
+           {| with self
+    invariant match self with
               | A -> true
               | B t' -> self = t'
               | C a -> a.x = self |}]
 type u = private {
   tag: int ;
   next: u }[@@gospel
-             {| invariant self.tag = self.next.tag = self.next.next.tag |}]
+             {| with self
+    invariant self.tag = self.next.tag = self.next.next.tag |}]
 val f : u -> u[@@gospel {| y = f x
     requires x.tag = 0 |}]
 
@@ -78,11 +80,11 @@ module recursive_type_invariant.mli
              | C of {x:t}
                function C (_:t) : t
          (*@ 
-             invariant (match (self ):t with
+             invariant (match self:t with
                        | A -> (True ):bool
-                       | B t':t -> if ((self ):t = t':t):prop then (True ):
+                       | B t':t -> if (self:t = t':t):prop then (True ):
                                    bool else (False ):bool
-                       | C a_1:t -> if ((a_1:t).x = (self ):t):prop then (True ):
+                       | C a_1:t -> if ((a_1:t).x = self:t):prop then (True ):
                                     bool else (False ):bool
                        end::bool = (True ):bool):prop *)
     
@@ -91,8 +93,8 @@ module recursive_type_invariant.mli
           function tag (_:u) : int
           function next (_:u) : u
          (*@ 
-             invariant (((self_1 ):u).tag = (((self_1 ):u).next).tag):prop /\ ((((self_1 ):
-                       u).next).tag = ((((self_1 ):u).next).next).tag):prop *)
+             invariant ((self_1:u).tag = ((self_1:u).next).tag):prop /\ (((
+                       self_1:u).next).tag = (((self_1:u).next).next).tag):prop *)
     
     val f : u -> u
     (*@ y:u = f x_1:u

@@ -13,6 +13,7 @@
 type 'a buffer
 (*@ mutable model sequence: 'a seq
             model capacity: integer
+    with self
     invariant length self.sequence <= self.capacity <= Sys.max_array_length *)
 
 val create : int -> 'a -> 'a buffer

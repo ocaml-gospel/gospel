@@ -111,7 +111,7 @@ type field = {
 type type_spec = {
   ty_ephemeral : bool;
   ty_field : field list;
-  ty_invariant : term list;
+  ty_invariant : Preid.t option * term list;
   ty_text : string;
   ty_loc : Location.t;
 }

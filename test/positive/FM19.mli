@@ -72,6 +72,7 @@ type elem
 (*@ mutable model dom: elem set
     mutable model rep: elem -> elem
     mutable model internal: unit
+    with self
     invariant forall x. Set.mem x self.dom -> Set.mem (self.rep x) self.dom
     invariant forall x. Set.mem x self.dom -> self.rep (self.rep x) = self.rep x *)
 

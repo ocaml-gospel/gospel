@@ -6,6 +6,7 @@
 type 'a buffer[@@gospel
                 {| mutable model sequence: 'a seq
             model capacity: integer
+    with self
     invariant length self.sequence <= self.capacity <= Sys.max_array_length |}]
 val create : int -> 'a -> 'a buffer[@@gospel
                                      {| b = create n dummy
@@ -146,8 +147,8 @@ module RingBuffer.mli
              mutable model sequence : 'a seq
              model capacity : integer
              invariant ((length 
-                       ((self ):'a40 buffer).sequence):integer <= ((self ):'a42 
-                       buffer).capacity):prop /\ (((self ):'a42 buffer).capacity <= (max_array_length ):
+                       (self:'a buffer).sequence):integer <= (self:'a buffer).capacity):prop /\ ((
+                       self:'a buffer).capacity <= (max_array_length ):
                        integer):prop *)
     
     val create : int -> 'a -> 'a buffer

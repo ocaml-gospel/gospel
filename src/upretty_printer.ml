@@ -43,9 +43,9 @@ let type_spec f ts =
     pp f "@[<v>%a%a%a@]" ephemeral ts.ty_ephemeral (list_keyword "model ...")
       ts.ty_field
       (list_keyword "invariant ...")
-      ts.ty_invariant
+      (snd ts.ty_invariant)
   in
-  if ts.ty_ephemeral || ts.ty_field != [] || ts.ty_invariant != [] then
+  if ts.ty_ephemeral || ts.ty_field != [] || snd ts.ty_invariant != [] then
     pp f "@[%a@]" (spec print_tspec) ts
   else ()
 

@@ -4,8 +4,10 @@
 *******************************
 [@@@ocaml.text
   " Vectors (aka resizable arrays, growing arrays, dynamic arrays, etc.)\n\n    This module implements arrays that automatically expand as necessary. Its\n    implementation uses a traditional array and replaces it with a larger array\n    when needed (and elements are copied from the old array to the new one). The\n    current implementation doubles the capacity when growing the array (and\n    shrinks it whenever the number of elements comes to one fourth of the\n    capacity).\n\n    The unused part of the internal array is filled with a dummy value, which is\n    user-provided at creation time (and referred to below as ``the dummy\n    value''). Consequently, vectors do not retain pointers to values that are\n    not used anymore after a shrinking.\n\n    Vectors provide an efficient implementation of stacks, with a better\n    locality of reference than list-based implementations (such as standard\n    library {!Stack}). A stack interface is provided, similar to that of\n    {!Stack} (though {!Vector.push} have arguments in the other way round).\n    Inserting [n] elements with {!Vector.push} has overall complexity O(n) i.e.\n    each insertion has amortized constant time complexity. "]
-type 'a t[@@gospel {| mutable model view: 'a seq |}][@@gospel
-                                                      {| invariant Seq.length view <= Sys.max_array_length |}]
+type 'a t[@@gospel
+           {| mutable model view: 'a seq
+    with self
+    invariant Seq.length self.view <= Sys.max_array_length |}]
 [@@@ocaml.text
   " {2 Operations proper to vectors, or with a different type and/or semantics\n    than those of module [Array]} "]
 val create : ?capacity:int -> dummy:'a -> 'a t[@@gospel
@@ -160,9 +162,10 @@ val top_opt : 'a t -> 'a option[@@gospel
 [@@@ocaml.text
   " Vectors (aka resizable arrays, growing arrays, dynamic arrays, etc.)\n\n    This module implements arrays that automatically expand as necessary. Its\n    implementation uses a traditional array and replaces it with a larger array\n    when needed (and elements are copied from the old array to the new one). The\n    current implementation doubles the capacity when growing the array (and\n    shrinks it whenever the number of elements comes to one fourth of the\n    capacity).\n\n    The unused part of the internal array is filled with a dummy value, which is\n    user-provided at creation time (and referred to below as ``the dummy\n    value''). Consequently, vectors do not retain pointers to values that are\n    not used anymore after a shrinking.\n\n    Vectors provide an efficient implementation of stacks, with a better\n    locality of reference than list-based implementations (such as standard\n    library {!Stack}). A stack interface is provided, similar to that of\n    {!Stack} (though {!Vector.push} have arguments in the other way round).\n    Inserting [n] elements with {!Vector.push} has overall complexity O(n) i.e.\n    each insertion has amortized constant time complexity. "]
 
-type 'a t[@@gospel {| invariant Seq.length view <= Sys.max_array_length |}]
+type 'a t
   (*@ ephemeral
       model ...
+      invariant ...
        *)
 
 [@@@ocaml.text
@@ -373,7 +376,10 @@ module Vector.mli
     
     type 'a t
          (*@ ephemeral
-             mutable model view : 'a seq *)
+             mutable model view : 'a seq
+             invariant ((length 
+                       (self:'a t).view):integer <= (max_array_length ):
+                       integer):prop *)
     
     [@@@ocaml.text
       " {2 Operations proper to vectors, or with a different type and/or semantics\n    than those of module [Array]} "]

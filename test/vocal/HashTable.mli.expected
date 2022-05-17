@@ -26,8 +26,9 @@ functor (K : HashedType) ->
     type 'a table[@@gospel
                    {| ephemeral
       mutable model dom : key set
-      invariant forall x y: key. Set.mem x self.dom -> Set.mem y self.dom -> K.equiv x y -> x = y
       mutable model view: key -> 'a list
+      with self
+      invariant forall x y: key. Set.mem x self.dom -> Set.mem y self.dom -> K.equiv x y -> x = y
       invariant forall k: key. not (Set.mem k self.dom) -> self.view k = [] |}]
     type 'a t = 'a table
     val create : int -> 'a t[@@gospel
@@ -294,12 +295,12 @@ module HashTable.mli
                  mutable model dom : t set
                  mutable model view : t -> 'a list
                  invariant forall x_8:t y_5:t. (mem 
-                           x_8:t ((self ):'a41 table).dom):prop -> (mem 
-                           y_5:t ((self ):'a44 table).dom):prop -> (equiv 
+                           x_8:t (self:'a table).dom):prop -> (mem 
+                           y_5:t (self:'a table).dom):prop -> (equiv 
                            x_8:t y_5:t):prop -> (x_8:t = y_5:t):propinvariant
                            forall k:t. not (mem 
-                           k:t ((self ):'a48 table).dom):prop -> ((apply 
-                           ((self ):'a51 table).view k:t):'a51 list = ([] ):'a51 
+                           k:t (self:'a table).dom):prop -> ((apply 
+                           (self:'a table).view k:t):'a list = ([] ):'a 
                            list):prop *)
         type 'a t_1 = 'a table
              

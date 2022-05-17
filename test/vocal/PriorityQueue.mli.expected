@@ -17,8 +17,10 @@ functor (X :
   end) ->
   sig
     type elt = X.t
-    type heap[@@gospel {| mutable model bag : elt bag |}][@@gospel
-                                                           {| invariant card bag <= Sys.max_array_length |}]
+    type heap[@@gospel
+               {| mutable model bag : elt bag
+      with self
+      invariant Bag.cardinal self.bag <= Sys.max_array_length |}]
     [@@@gospel
       {| predicate mem (x: elt) (h: heap) = Bag.occurrences x h.bag > 0 |}]
     val create : unit -> heap[@@gospel
@@ -85,9 +87,10 @@ sig
 end) ->
 sig
   type elt = X.t
-    type heap[@@gospel {| invariant card bag <= Sys.max_array_length |}]
+    type heap
     (*@ ephemeral
         model ...
+        invariant ...
          *)
   (*@ predicate mem ... *)
   val create : unit -> heap
@@ -197,7 +200,10 @@ module PriorityQueue.mli
              
         type heap
              (*@ ephemeral
-                 mutable model bag_1 : t bag *)
+                 mutable model bag_1 : t bag
+                 invariant ((cardinal 
+                           (self:heap).bag_1):integer <= (max_array_length ):
+                           integer):prop *)
         (*@ predicate mem (x_1:t) (h:heap) =
             ((occurrences  x_1:t (h:heap).bag_1):integer > 0:integer):prop
         *)

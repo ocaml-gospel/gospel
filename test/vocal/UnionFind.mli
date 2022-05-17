@@ -17,6 +17,7 @@ type 'a elem
 (*@ mutable model dom : 'a elem set
     mutable model rep : 'a elem -> 'a elem
     mutable model img : 'a elem -> 'a
+    with self
     invariant forall x: 'a elem. mem x self.dom -> self.img x = self.img (self.rep x)
     invariant forall x: 'a elem. mem x self.dom -> self.rep (self.rep x) = self.rep x
     invariant forall x: 'a elem. mem x self.dom -> mem (self.rep x) self.dom *)

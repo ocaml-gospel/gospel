@@ -142,6 +142,32 @@
  (action (diff %{dep:invariant3.mli.expected} %{dep:invariant3.mli.output})))
 
 (rule
+ (targets invariant4.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:invariant4.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:invariant4.mli.expected} %{dep:invariant4.mli.output})))
+
+(rule
+ (targets invariant5.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:invariant5.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:invariant5.mli.expected} %{dep:invariant5.mli.output})))
+
+(rule
  (targets t1.mli.output)
  (deps (source_tree .))
  (action

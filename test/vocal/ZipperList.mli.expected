@@ -6,6 +6,7 @@
 type 'a t[@@gospel
            {| model seq: 'a seq
     model idx: integer
+    with self
     invariant 0 <= self.idx <= Seq.length self.seq |}]
 val empty : unit -> 'a t[@@gospel
                           {| z = empty ()
@@ -201,9 +202,8 @@ module ZipperList.mli
          (*@ 
              model seq_1 : 'a seq
              model idx : integer
-             invariant (0:integer <= ((self ):'a39 t).idx):prop /\ (((self ):'a39 
-                       t).idx <= (length 
-                       ((self ):'a42 t).seq_1):integer):prop *)
+             invariant (0:integer <= (self:'a t).idx):prop /\ ((self:'a t).idx <= (length 
+                       (self:'a t).seq_1):integer):prop *)
     
     val empty : unit -> 'a t
     (*@ z:'a t = empty ()

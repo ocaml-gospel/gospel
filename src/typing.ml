@@ -469,8 +469,14 @@ let process_type_spec kid crcm ns ty spec =
   in
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
-  let env = Mstr.empty in
-  let invariant = List.map (fmla kid crcm ns env) spec.ty_invariant in
+  let env =
+    match fst spec.ty_invariant with
+    | None -> Mstr.empty
+    | Some x ->
+        let vs = create_vsymbol x ty in
+        Mstr.singleton x.pid_str vs
+  in
+  let invariant = List.map (fmla kid crcm ns env) (snd spec.ty_invariant) in
   type_spec spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
@@ -601,15 +607,10 @@ let type_type_declaration kid crcm ns tdl =
       | Ptype_open -> assert false
     in
 
-    (* Adding a `self` variable of type `t` in the namespace for invariants *)
-    let self_ident = Ident.create ~loc:Location.none "self" in
-    let self_ls = lsymbol ~constr:false ~field:false self_ident [] (Some ty) in
-    let ns = ns_add_ls ~allow_duplicate:true ns "self" self_ls in
-
     (* invariants are only allowed on abstract/private types *)
     (match ((td.tkind, td.tmanifest), td.tspec) with
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
-        Some { ty_invariant = _ :: _; _ } )
+        Some { ty_invariant = _, _ :: _; _ } )
       when td.tprivate = Public ->
         W.error ~loc:td.tloc (W.Public_type_invariant td_ts.ts_ident.id_str)
     | _, _ -> ());
