@@ -51,8 +51,9 @@ type elem
                           {| mutable model dom: elem set
     mutable model rep: elem -> elem
     mutable model internal: unit
-    invariant forall x. Set.mem x dom -> Set.mem (rep x) dom
-    invariant forall x. Set.mem x dom -> rep (rep x) = rep x |}]]
+    with self
+    invariant forall x. Set.mem x self.dom -> Set.mem (self.rep x) self.dom
+    invariant forall x. Set.mem x self.dom -> self.rep (self.rep x) = self.rep x |}]]
 val equiv : elem -> elem -> bool[@@gospel
                                   {| b = equiv [uf: uf_instance] e1 e2
     requires Set.mem e1 uf.dom && Set.mem e2 uf.dom
@@ -343,23 +344,25 @@ module FM19.mli
                  mutable model rep : elem -> elem
                  mutable model internal : unit
                  invariant forall x_1:elem. (mem 
-                           x_1:elem (dom_1 ):elem set):prop -> (mem 
-                           (apply  (rep_1 ):elem -> elem x_1:elem):elem
-                           (dom_1 ):elem set):propinvariantforall x_2:elem. (mem 
-                                                           x_2:elem
-                                                           (dom_1 ):elem 
-                                                           set):prop -> ((apply 
-                                                           (rep_1 ):elem ->
-                                                                    elem
-                                                           (apply 
-                                                           (rep_1 ):elem ->
-                                                                    elem
-                                                           x_2:elem):
-                                                           elem):elem = (apply 
-                                                           (rep_1 ):elem ->
-                                                                    elem
-                                                           x_2:elem):
-                                                           elem):prop *) *)
+                           x_1:elem (self:uf_instance).dom):prop -> (mem 
+                           (apply  (self:uf_instance).rep x_1:elem):elem
+                           (self:uf_instance).dom):propinvariantforall 
+                                                                x_2:elem. (mem 
+                                                                x_2:elem
+                                                                (self:
+                                                                 uf_instance).dom):prop -> ((apply 
+                                                                (self:
+                                                                 uf_instance).rep
+                                                                (apply 
+                                                                (self:
+                                                                 uf_instance).rep
+                                                                x_2:elem):
+                                                                elem):
+                                                                elem = (apply 
+                                                                (self:
+                                                                 uf_instance).rep
+                                                                x_2:elem):
+                                                                elem):prop *) *)
     
     val equiv : elem -> elem -> bool
     (*@ b_2:bool = equiv [uf:uf_instance: uf_instance] e1:elem e2:elem

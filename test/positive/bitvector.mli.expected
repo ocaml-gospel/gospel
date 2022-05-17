@@ -5,8 +5,9 @@
 type t = private {
   size: int ;
   mutable mask: int }[@@gospel
-                       {| invariant 0 <= size <= 63
-    invariant 0 <= mask < pow 2 size |}]
+                       {| with self
+    invariant 0 <= self.size <= 63
+    invariant 0 <= self.mask < pow 2 self.size |}]
 [@@@gospel
   {| predicate mem (i: integer) (bv: t) = logand bv.mask (pow 2 i) <> 0 |}]
 val create : int -> t[@@gospel
@@ -88,12 +89,12 @@ module bitvector.mli
           function mask (_:t) : int
          (*@ 
              invariant (0:integer <= (integer_of_int 
-                       (size ):int):integer):prop /\ ((integer_of_int 
-                       (size ):int):integer <= 63:integer):propinvariant
+                       (self:t).size):integer):prop /\ ((integer_of_int 
+                       (self:t).size):integer <= 63:integer):propinvariant
                        (0:integer <= (integer_of_int 
-                       (mask ):int):integer):prop /\ ((integer_of_int 
-                       (mask ):int):integer < (pow 
-                       2:integer (integer_of_int  (size ):int):integer):
+                       (self:t).mask):integer):prop /\ ((integer_of_int 
+                       (self:t).mask):integer < (pow 
+                       2:integer (integer_of_int  (self:t).size):integer):
                        integer):prop *)
     
     (*@ predicate mem (i:integer) (bv:t) =

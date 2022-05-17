@@ -72,8 +72,9 @@ type elem
 (*@ mutable model dom: elem set
     mutable model rep: elem -> elem
     mutable model internal: unit
-    invariant forall x. Set.mem x dom -> Set.mem (rep x) dom
-    invariant forall x. Set.mem x dom -> rep (rep x) = rep x *)
+    with self
+    invariant forall x. Set.mem x self.dom -> Set.mem (self.rep x) self.dom
+    invariant forall x. Set.mem x self.dom -> self.rep (self.rep x) = self.rep x *)
 
 val equiv : elem -> elem -> bool
 (*@ b = equiv [uf: uf_instance] e1 e2

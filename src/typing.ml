@@ -250,8 +250,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         if extra = [] then dt else map_apply dt extra
   in
   let fun_app ~loc ls tl =
-    if ls.ls_field && ls.ls_args <> [] then
-      W.error ~loc (W.Field_application ls.ls_name.id_str);
+    if ls.ls_field then W.error ~loc (W.Field_application ls.ls_name.id_str);
     gen_app ~loc ls tl
   in
   let qualid_app q tl =
@@ -296,6 +295,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tpreid q ->
       (* in this case it must be a constant *)
       let ls = find_q_ls ns q in
+      if ls.ls_field then
+        W.error ~loc (W.Symbol_not_found (string_list_of_qualid q));
       if ls.ls_args <> [] then
         W.error ~loc (W.Partial_application ls.ls_name.id_str);
       let _, dty = specialize_ls ls in
@@ -463,14 +464,19 @@ let process_type_spec kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty in
-    let ls_inv = fsymbol ~field:true (Ident.of_preid f.f_preid) [] f_ty in
-    ( ns_add_ls ~allow_duplicate:true ns f.f_preid.pid_str ls_inv,
+    ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
       (ls, f.f_mutable) :: fields )
   in
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
-  let env = Mstr.empty in
-  let invariant = List.map (fmla kid crcm ns env) spec.ty_invariant in
+  let env =
+    match fst spec.ty_invariant with
+    | None -> Mstr.empty
+    | Some x ->
+        let vs = create_vsymbol x ty in
+        Mstr.singleton x.pid_str vs
+  in
+  let invariant = List.map (fmla kid crcm ns env) (snd spec.ty_invariant) in
   type_spec spec.ty_ephemeral fields invariant spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
@@ -489,10 +495,8 @@ let type_type_declaration kid crcm ns tdl =
     | Ptyp_any -> W.error ~loc (W.Unsupported "_ type parameters")
     | Ptyp_var s -> (
         try { ty_node = Tyvar (Mstr.find s tvl) }
-        with Not_found -> W.error ~loc (W.Unbound_variable s))
-    | Ptyp_arrow (lbl, ct1, ct2) ->
-        assert (lbl = Nolabel);
-        (* TODO check what to do *)
+        with Not_found -> W.error ~loc:core.ptyp_loc (W.Unbound_variable s))
+    | Ptyp_arrow (_lbl, ct1, ct2) ->
         let ty1, ty2 = (parse_core alias tvl ct1, parse_core alias tvl ct2) in
         ty_app ts_arrow [ ty1; ty2 ]
     | Ptyp_tuple ctl ->
@@ -549,39 +553,44 @@ let type_type_declaration kid crcm ns tdl =
         let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
         let field = fsymbol ~field:true id [ ty ] ty_res in
-        let field_inv = fsymbol ~field:true id [] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
-        (ld :: ldl, ns_add_ls ~allow_duplicate:true ns id.id_str field_inv)
+        (ld :: ldl, ns_add_fd ~allow_duplicate:true ns id.id_str field)
       in
       let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
       ({ rd_cs; rd_ldl }, ns)
     in
 
-    let process_variant ty alias cd =
+    let process_variant ty_res alias cd (acc, ns) =
       let loc = cd.pcd_loc in
       if cd.pcd_res != None then
         W.error ~loc (W.Unsupported "type in constructors");
       let cs_id = Ident.create ~loc cd.pcd_name.txt in
-      let cd_cs, cd_ld =
+      let cd_cs, cd_ld, ns =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
             let tyl = List.map (parse_core alias tvl) ctl in
-            (fsymbol ~constr:true ~field:false cs_id tyl ty, [])
+            let ls = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            (ls, [], ns_add_ls ~allow_duplicate:true ns cs_id.id_str ls)
         | Pcstr_record ldl ->
-            let add ld (ldl, tyl) =
+            let add ld (ldl, tyl, ns) =
               let id = Ident.create ~loc:ld.pld_loc ld.pld_name.txt in
               let ty = parse_core alias tvl ld.pld_type in
-              let field = (id, ty) in
               let mut = mutable_flag ld.pld_mutable in
-              let loc, attrs = (ld.pld_loc, ld.pld_attributes) in
-              let ld = label_declaration field mut loc attrs in
-              (ld :: ldl, ty :: tyl)
+              let field = fsymbol ~constr:false ~field:true id [ ty_res ] ty in
+              let ld =
+                label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
+              in
+              ( ld :: ldl,
+                ty :: tyl,
+                ns_add_fd ~allow_duplicate:true ns id.id_str field )
             in
-            let ldl, tyl = List.fold_right add ldl ([], []) in
-            (fsymbol ~constr:true ~field:false cs_id tyl ty, ldl)
+            let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
+            let cs = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
+            (cs, ldl, ns)
       in
-      constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes
+      (constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes :: acc, ns)
     in
 
     let ty = ty_app td_ts (List.map ty_of_var params) in
@@ -590,16 +599,18 @@ let type_type_declaration kid crcm ns tdl =
       match td.tkind with
       | Ptype_abstract -> (Pty_abstract, ns)
       | Ptype_variant cdl ->
-          (Pty_variant (List.map (process_variant ty alias) cdl), ns)
+          let v, ns = List.fold_right (process_variant ty alias) cdl ([], ns) in
+          (Pty_variant v, ns)
       | Ptype_record ldl ->
           let record, ns = process_record ty alias ldl in
           (Pty_record record, ns)
       | Ptype_open -> assert false
     in
+
     (* invariants are only allowed on abstract/private types *)
     (match ((td.tkind, td.tmanifest), td.tspec) with
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
-        Some { ty_invariant = _ :: _; _ } )
+        Some { ty_invariant = _, _ :: _; _ } )
       when td.tprivate = Public ->
         W.error ~loc:td.tloc (W.Public_type_invariant td_ts.ts_ident.id_str)
     | _, _ -> ());
@@ -705,23 +716,12 @@ let process_val_spec kid crcm ns id args ret vs =
   let env, args = process_args header.sp_hd_args args Mstr.empty [] in
 
   let pre = List.map (fmla kid crcm ns env) vs.sp_pre in
-
   let checks = List.map (fmla kid crcm ns env) vs.sp_checks in
-
   let wr =
-    List.map
-      (fun t ->
-        let dt = dterm kid crcm ns env t in
-        term env dt)
-      vs.sp_writes
+    List.map (fun t -> dterm kid crcm ns env t |> term env) vs.sp_writes
   in
-
   let cs =
-    List.map
-      (fun t ->
-        let dt = dterm kid crcm ns env t in
-        term env dt)
-      vs.sp_consumes
+    List.map (fun t -> dterm kid crcm ns env t |> term env) vs.sp_consumes
   in
 
   let process_xpost (loc, exn) =

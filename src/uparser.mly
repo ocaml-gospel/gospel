@@ -64,14 +64,6 @@
     fun_loc = Location.none;
   }
 
-  let empty_tspec = {
-    ty_ephemeral = false;
-    ty_field = [];
-    ty_invariant = [];
-    ty_text = "";
-    ty_loc = Location.none;
-  }
-
   let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
 
   let qualid_preid = function Qpreid p | Qdot (_, p) -> p
@@ -196,18 +188,27 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| EOF { empty_tspec }
-| nonempty_type_spec EOF { $1 }
+| e=ts_ephemeral m=list(type_spec_model) i=ts_invariants EOF
+  { { ty_ephemeral = e || List.exists (fun f -> f.f_mutable) m;
+      ty_field = m;
+      ty_invariant = i;
+      ty_text = "";
+      ty_loc = Location.none;
+  } }
+;
 
-nonempty_type_spec:
-| EPHEMERAL ts=type_spec
-  { { ts with ty_ephemeral = true } }
-| field=type_spec_model ts=type_spec
-  { { ts with
-      ty_field = field :: ts.ty_field;
-      ty_ephemeral = ts.ty_ephemeral || field.f_mutable } }
-| INVARIANT inv=term ts=type_spec
-  { { ts with ty_invariant = inv :: ts.ty_invariant } }
+ts_ephemeral:
+| EPHEMERAL { true }
+|           { false }
+;
+
+ts_invariants:
+| l=list(ts_invariant) { None, l }
+| WITH id=lident l=nonempty_list(ts_invariant) { Some id, l }
+;
+
+ts_invariant:
+| INVARIANT inv=term { inv }
 ;
 
 type_spec_model:
