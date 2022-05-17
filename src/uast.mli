@@ -144,6 +144,20 @@ type axiom = {
   ax_text : string;
 }
 
+type ind_case = {
+  in_case_loc : Location.t;
+  in_case_name : Preid.t;
+  in_case_def : term;
+}
+
+type ind_decl = {
+  in_loc : Location.t;
+  in_name : Preid.t;
+  in_params : param list;
+  in_def : ind_case list;
+  in_text : string;
+}
+
 (* Modified OCaml constructs with specification attached *)
 
 type s_val_description = {
@@ -233,6 +247,7 @@ type s_signature_item_desc =
   (* Specific to specification *)
   | Sig_function of function_
   | Sig_axiom of axiom
+  | Sig_inductive of ind_decl
   | Sig_ghost_type of rec_flag * s_type_declaration list
   | Sig_ghost_val of s_val_description
   | Sig_ghost_open of open_description

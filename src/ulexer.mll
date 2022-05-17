@@ -29,6 +29,7 @@
         "function", FUNCTION;
         "if", IF;
         "in", IN;
+        "inductive", INDUCTIVE;
         "invariant", INVARIANT;
         "let", LET;
         "match", MATCH;
