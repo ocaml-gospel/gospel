@@ -57,7 +57,8 @@ module Pmatrix : sig
   (** The empty matrix *)
 
   val from_matrix : ?cols:int -> pattern list list -> t
-  (** Creates a matrix from a pattern matrix. If [cols] is provided, TODO *)
+  (** Creates a matrix from a pattern matrix. If [cols] is provided, the value
+      is used to force dimensions *)
 
   val from_pat : pattern list -> t
   (** Creates a matrix *)
@@ -135,21 +136,23 @@ end = struct
 end
 
 module Sigma : sig
-  type e = ty list
-  type t
+  type t = private ty list Mls.t
+  (** The type representing the sigma set *)
 
-  val mk : pattern list list -> t
+  val from_matrix : pattern list list -> t
+  (** Creates a set *)
+
   val is_full : ty -> t -> Pmatrix.t -> bool
   val is_empty : t -> bool
   val other_one : ty -> t -> Pmatrix.t -> pattern_node
-  val exists : (lsymbol -> e -> bool) -> t -> bool
-  val iter : (lsymbol -> e -> unit) -> t -> unit
-  val get_typ_cols : e -> lsymbol -> e
-end = struct
-  type e = ty list
-  type t = e Mls.t
 
-  let rec mk p =
+  val exists : (lsymbol -> ty list -> bool) -> t -> bool
+  val iter : (lsymbol -> ty list -> unit) -> t -> unit
+  val get_typ_cols : ty list -> lsymbol -> ty list
+end = struct
+  type t = ty list Mls.t
+
+  let rec from_matrix p =
     let f _key e1 e2 =
       match (e1, e2) with
       | None, None -> None
@@ -163,13 +166,13 @@ end = struct
         match e with
         | { p_node = Papp (c, _); _ } :: _ -> Mls.add c c.ls_args acc
         | { p_node = Por (p1, p2); _ } :: _ ->
-            let map1 = mk [ [ p1 ] ] in
-            let map2 = mk [ [ p2 ] ] in
+            let map1 = from_matrix [ [ p1 ] ] in
+            let map2 = from_matrix [ [ p2 ] ] in
 
             let map3 = Mls.merge f map1 map2 in
             Mls.merge f acc map3
         | { p_node = Pas (p, _); _ } :: _ ->
-            let map = mk [ [ p ] ] in
+            let map = from_matrix [ [ p ] ] in
             Mls.merge f acc map
         | _ -> acc)
       Mls.empty p
@@ -379,7 +382,7 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
           (mk_spec ~constr:c (List.map (fun p -> p.p_ty) pl) pmat)
           (pl @ ll)
     | { p_node = Pvar _ | Pwild; _ } :: ll ->
-        let sigma = Sigma.mk pmat.mat in
+        let sigma = Sigma.from_matrix pmat.mat in
         if Sigma.is_full thd sigma pmat then
           if ty_equal thd ty_char then
             List.exists
@@ -402,7 +405,7 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
   if pmat.cols = 0 then if pmat.rows = 0 then Some Pmatrix.empty else None
   else
     let thd, tl = match typ_cols with [] -> assert false | h :: t -> (h, t) in
-    let sigma = Sigma.mk pmat.mat in
+    let sigma = Sigma.from_matrix pmat.mat in
     if Sigma.is_full thd sigma pmat then
       let exception Brk of Pmatrix.t in
       try
