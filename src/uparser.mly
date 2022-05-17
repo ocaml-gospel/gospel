@@ -14,9 +14,9 @@
   open Uast
 
   let mk_loc (s, e) = {
-    Location.loc_start = s;
-    Location.loc_end = e;
-    Location.loc_ghost = false;
+    Ocaml_common.Location.loc_start = s;
+    Ocaml_common.Location.loc_end = e;
+    Ocaml_common.Location.loc_ghost = false;
   }
 
   let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
@@ -107,7 +107,7 @@
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
 
 %token AS
-%token LET MATCH PREDICATE
+%token LET MATCH PREDICATE INDUCTIVE
 %token WITH ANDKW
 
 (* symbols *)
@@ -152,6 +152,7 @@
 %start <Uast.fun_spec> func_spec
 %start <Uast.loop_spec> loop_spec
 %start <Uast.prop> prop
+%start <Uast.ind_decl> ind_decl
 %start <Uast.s_with_constraint list> with_constraint
 
 %%
@@ -185,6 +186,21 @@ func:
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
       fun_loc = mk_loc $loc; fun_text = "" } }
 ;
+
+ind_decl:
+| INDUCTIVE lident_rich params ind_defn EOF
+  { { in_loc = mk_loc $loc; in_name = $2;
+      in_def = $4; in_params = $3; in_text = "" } }
+;
+
+ind_defn:
+| (* epsilon *)             { [] }
+| EQUAL bar_list1(ind_case) { $2 }
+
+ind_case:
+| lident COLON def = term
+  { { in_case_loc = mk_loc $loc; in_case_name = $1;
+      in_case_def = def } }
 
 func_name:
 | lident_rich {$1}

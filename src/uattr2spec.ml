@@ -152,7 +152,11 @@ let floating_spec ~filename a =
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
       Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
-    with Syntax_error _ -> ghost_spec ~filename a)
+    with Syntax_error _ -> (
+      try
+        let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
+        Sig_inductive { ind_decl with in_text; in_loc = a.attr_loc }
+      with Syntax_error _ -> ghost_spec ~filename a))
 
 let ghost_spec_str ~filename attr =
   let spec, loc = get_spec_content attr in
@@ -201,7 +205,11 @@ let floating_spec_str ~filename a =
     else Str_function fun_
   with Syntax_error _ -> (
     try Str_prop (snd (parse_gospel ~filename Uparser.prop a))
-    with Syntax_error _ -> ghost_spec_str ~filename a)
+    with Syntax_error _ -> (
+      try
+        let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
+        Str_inductive { ind_decl with in_text; in_loc = a.attr_loc }
+      with Syntax_error _ -> ghost_spec_str ~filename a))
 
 let with_constraint c =
   let no_spec_type_decl t =
@@ -465,7 +473,7 @@ and structure_item ~filename str_item =
   | Pstr_open popen -> [ mk_s_structure_item (Str_open popen) ~loc ]
   | Pstr_class _ -> assert false (* TODO *)
   | Pstr_class_type _ -> assert false (* TODO *)
-  | Pstr_include _ -> assert false (* TODO *)
+  | Pstr_include _ -> failwith "Include expressions are not supported yet"
   | Pstr_extension _ -> assert false
 (* TODO *)
 
