@@ -148,11 +148,10 @@ let floating_spec ~filename a =
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
       Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
     with W.Error (_, W.Syntax_error) -> (
-        try
-          let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
-          Sig_inductive { ind_decl with in_text; in_loc = a.attr_loc }
-        with W.Error (_, W.Syntax_error) -> (
-      ghost_spec ~filename a)))
+      try
+        let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
+        Sig_inductive { ind_decl with in_text; in_loc = a.attr_loc }
+      with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a))
 
 let with_constraint c =
   let no_spec_type_decl t =
