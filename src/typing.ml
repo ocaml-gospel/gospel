@@ -598,6 +598,11 @@ let type_type_declaration kid crcm ns tdl =
       let alias = Sstr.empty in
       match td.tkind with
       | Ptype_abstract -> (Pty_abstract, ns)
+      | Ptype_variant cdl
+        when List.exists (fun cd -> Option.is_some cd.pcd_res) cdl ->
+          (* GADT *)
+          (* TODO: Add a warning here *)
+          (Pty_abstract, ns)
       | Ptype_variant cdl ->
           let v, ns = List.fold_right (process_variant ty alias) cdl ([], ns) in
           (Pty_variant v, ns)
