@@ -641,6 +641,16 @@ let type_type_declaration kid crcm ns tdl =
     | _, _ -> ());
 
     let params = List.combine params variance_list in
+
+    (* We add a temporary type declaration without spec, to be able to type
+       recursive invariants and check exhaustivity for pattern-matchings. We
+       replace it with the real one afterwards. *)
+    let inv_td =
+      type_declaration td_ts params [] kind (private_flag td.tprivate) manifest
+        td.tattributes None td.tloc
+    in
+    Hts.add type_declarations td_ts inv_td;
+
     let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
 
     if td.tcstrs != [] then
@@ -655,7 +665,7 @@ let type_type_declaration kid crcm ns tdl =
 
   Mstr.iter (visit ~alias:Sstr.empty) tdm;
   let tdl = List.map (fun td -> Hashtbl.find htd td.tname.txt) tdl in
-  List.iter (fun td -> Hts.add type_declarations td.td_ts td) tdl;
+  List.iter (fun td -> Hts.replace type_declarations td.td_ts td) tdl;
   tdl
 
 let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =

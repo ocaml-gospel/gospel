@@ -16,6 +16,8 @@
 
 ## Improved
 
+- Check for pattern-matching exhaustivity in terms.
+  [\#170](https://github.com/ocaml-gospel/gospel/pull/185)
 - Issue a warning when a function returns `unit` but has no `modifies` clause.
   [\#185](https://github.com/ocaml-gospel/gospel/pull/185)
 - Improved locations for syntax errors in specs.

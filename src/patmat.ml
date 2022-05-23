@@ -145,7 +145,6 @@ module Sigma : sig
   val is_full : ty -> t -> Pmatrix.t -> bool
   val is_empty : t -> bool
   val other_one : ty -> t -> Pmatrix.t -> pattern_node
-
   val exists : (lsymbol -> ty list -> bool) -> t -> bool
   val iter : (lsymbol -> ty list -> unit) -> t -> unit
   val get_typ_cols : ty list -> lsymbol -> ty list
@@ -298,7 +297,9 @@ end = struct
       | Some e ->
           let cc = List.find (fun ls -> not (Mls.mem ls ens)) e in
           Papp (cc, mk_wild cc.ls_args)
-      | None -> assert false
+      | None ->
+          Ttypes.pp_ty Fmt.stderr ty;
+          assert false
 
   let is_full ty ens pmat =
     match ts_of_ty ty with

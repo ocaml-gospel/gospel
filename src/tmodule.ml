@@ -147,6 +147,23 @@ let rec ns_subst_ty old_ts new_ts ty
   }
 
 (** Primitives types and functions *)
+let mk_td ts kind =
+  {
+    Tast.td_ts = ts;
+    td_params = [];
+    td_cstrs = [];
+    td_kind = kind;
+    td_private = Tast.Public;
+    td_manifest = None;
+    td_attrs = [];
+    td_spec = None;
+    td_loc = Location.none;
+  }
+
+let mk_abstract_td ts =
+  mk_td
+    { Ttypes.ts_ident = ts.ts_ident; ts_args = []; ts_alias = None }
+    Tast.Pty_abstract
 
 let ns_with_primitives =
   (* reason for the following types to be built-in:
@@ -184,61 +201,6 @@ let ns_with_primitives =
       ("format6", ts_format6);
       ("lazy", ts_lazy);
     ]
-  in
-
-  let mk_td ts kind =
-    {
-      Tast.td_ts = ts;
-      td_params = [];
-      td_cstrs = [];
-      td_kind = kind;
-      td_private = Tast.Public;
-      td_manifest = None;
-      td_attrs = [];
-      td_spec = None;
-      td_loc = Location.none;
-    }
-  in
-
-  let td_unit =
-    mk_td
-      { Ttypes.ts_ident = ts_unit.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-
-  let td_bool =
-    mk_td
-      { Ttypes.ts_ident = ts_bool.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-
-  let td_int =
-    mk_td
-      { Ttypes.ts_ident = ts_int.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-
-  let td_integer =
-    mk_td
-      { Ttypes.ts_ident = ts_integer.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-
-  let td_float =
-    mk_td
-      { Ttypes.ts_ident = ts_float.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-
-  let td_string =
-    mk_td
-      { Ttypes.ts_ident = ts_string.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
-  in
-  let td_char =
-    mk_td
-      { Ttypes.ts_ident = ts_char.ts_ident; ts_args = []; ts_alias = None }
-      Tast.Pty_abstract
   in
 
   let td_list =
@@ -279,13 +241,28 @@ let ns_with_primitives =
          ])
   in
 
-  Hts.add type_declarations ts_unit td_unit;
-  Hts.add type_declarations ts_bool td_bool;
-  Hts.add type_declarations ts_integer td_integer;
-  Hts.add type_declarations ts_int td_int;
-  Hts.add type_declarations ts_float td_float;
-  Hts.add type_declarations ts_string td_string;
-  Hts.add type_declarations ts_char td_char;
+  let abstract_ts =
+    [
+      ts_unit;
+      ts_bool;
+      ts_int;
+      ts_integer;
+      ts_float;
+      ts_string;
+      ts_char;
+      ts_bytes;
+      ts_exn;
+      ts_int32;
+      ts_int64;
+      ts_nativeint;
+      ts_format6;
+      ts_lazy;
+    ]
+  in
+
+  List.iter
+    (fun ts -> Hts.add type_declarations ts (mk_abstract_td ts))
+    abstract_ts;
   Hts.add type_declarations ts_option td_option;
   Hts.add type_declarations ts_list td_list;
 
