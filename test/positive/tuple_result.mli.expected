@@ -8,6 +8,8 @@ val f : int -> (int * int * int)[@@gospel {| pure |}]
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : int -> (int * int)
@@ -36,6 +38,8 @@ module tuple_result.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     val f_1 : int -> (int * int)

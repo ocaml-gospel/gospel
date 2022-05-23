@@ -70,6 +70,8 @@ functor (X :
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text
@@ -175,6 +177,8 @@ module PriorityQueue.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text

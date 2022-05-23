@@ -9,6 +9,8 @@ val f : int -> unit[@@gospel {| f i
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 exception E of int * int 

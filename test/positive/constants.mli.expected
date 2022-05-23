@@ -15,6 +15,8 @@ val g : char -> string[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text " Tests for constant literals "]
@@ -50,6 +52,8 @@ module constants.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text " Tests for constant literals "]

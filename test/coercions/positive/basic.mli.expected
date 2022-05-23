@@ -9,6 +9,8 @@ type t2
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t1
@@ -42,6 +44,8 @@ module basic.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t1

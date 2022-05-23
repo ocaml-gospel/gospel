@@ -14,6 +14,8 @@ val map : ('a -> 'b) -> 'a list -> 'b list[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text
@@ -45,6 +47,8 @@ module Lists.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text

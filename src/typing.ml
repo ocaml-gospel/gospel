@@ -964,7 +964,8 @@ type parse_env = {
       (* files being parsed; used to avoid circular dependencies *)
 }
 
-let penv lpaths parsing = { lpaths; parsing }
+let penv lpaths parsing =
+  { lpaths = lpaths @ [ Findlib.package_directory "stdlib" ]; parsing }
 
 let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;

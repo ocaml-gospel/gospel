@@ -31,6 +31,8 @@
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ open Type_decl *)
@@ -126,6 +128,8 @@ module abstract_functions.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ open Type_decl *)

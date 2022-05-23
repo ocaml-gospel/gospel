@@ -9,6 +9,8 @@ val no_modifies_while_returning_unit : int -> unit[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val no_modifies_while_returning_unit : int -> unit

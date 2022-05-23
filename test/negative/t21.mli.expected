@@ -7,6 +7,8 @@ val f : y:int -> int -> int[@@gospel {| r = f ?y x|}]
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : y:int -> int -> int

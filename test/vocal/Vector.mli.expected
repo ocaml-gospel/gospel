@@ -157,6 +157,8 @@ val top_opt : 'a t -> 'a option[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text
@@ -369,6 +371,8 @@ module Vector.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text

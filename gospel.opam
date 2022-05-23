@@ -14,7 +14,24 @@ authors: [
 ]
 license: "MIT"
 homepage: "https://github.com/ocaml-gospel/gospel"
+dev-repo: "git://github.com/ocaml-gospel/gospel"
 bug-reports: "https://github.com/ocaml-gospel/gospel/issues"
+
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+  name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+  "@doc" {with-doc}
+  ]
+]
+
 depends: [
   "ocaml" {>= "4.09"}
   "dune" {>= "2.4.0"}
@@ -26,9 +43,3 @@ depends: [
   "ppx_deriving" {>= "5.2.1"}
   "ocamlfind"
 ]
-build: [
-  ["dune" "subst"] {dev}
-  ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name] {with-test}
-]
-dev-repo: "git://github.com/ocaml-gospel/gospel"

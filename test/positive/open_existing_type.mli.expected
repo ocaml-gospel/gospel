@@ -8,6 +8,8 @@ type 'a t = 'a list
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type 'a t = 'a list
@@ -35,6 +37,8 @@ module open_existing_type.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type 'a t = 'a list

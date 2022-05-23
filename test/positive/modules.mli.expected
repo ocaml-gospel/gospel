@@ -54,6 +54,8 @@ val default : MF.ft -> MF.ft[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 module MA :
@@ -277,6 +279,8 @@ module modules.mli
           
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     module MA :

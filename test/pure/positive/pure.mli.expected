@@ -11,6 +11,8 @@ val g : int -> int[@@gospel {| y = g x
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t = {
@@ -48,6 +50,8 @@ module pure.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t = {f_1:int}

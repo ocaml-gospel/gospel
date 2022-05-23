@@ -23,6 +23,8 @@ val f : u -> u[@@gospel {| y = f x
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t = private
@@ -71,6 +73,8 @@ module recursive_type_invariant.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t = A of 

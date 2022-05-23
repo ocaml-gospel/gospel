@@ -107,6 +107,8 @@ val union : 'a elem -> 'a elem -> unit[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ open Set *)
@@ -233,6 +235,8 @@ module UnionFind.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ open Set *)

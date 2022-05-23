@@ -53,6 +53,8 @@ val knuth_shuffle : 'a array -> unit[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text " {2 Additional operations on arrays} "]
@@ -130,6 +132,8 @@ module Arrays.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text " {2 Additional operations on arrays} "]

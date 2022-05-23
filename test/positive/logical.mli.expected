@@ -26,6 +26,8 @@ val merge : int array -> int array -> int array[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ function powm ... *)
@@ -70,6 +72,8 @@ module logical.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ function powm (x:integer) (y:integer) (m:integer): integer =

@@ -73,6 +73,8 @@ val focused : 'a t -> 'a option[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 [@@@ocaml.text " Zippers for lists "]
@@ -194,6 +196,8 @@ module ZipperList.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     [@@@ocaml.text " Zippers for lists "]

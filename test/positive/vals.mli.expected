@@ -24,6 +24,8 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : int -> int -> int
@@ -97,6 +99,8 @@ module vals.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     val f : int -> int -> int

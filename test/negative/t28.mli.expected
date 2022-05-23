@@ -10,6 +10,8 @@
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)

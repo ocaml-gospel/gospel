@@ -26,6 +26,8 @@ val f : int -> int -> int[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : int -> int -> int
@@ -75,6 +77,8 @@ module complex_vals.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     val f : int -> int -> int

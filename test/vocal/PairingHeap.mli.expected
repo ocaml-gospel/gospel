@@ -54,6 +54,8 @@ functor (X :
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 module Make : functor (X :
@@ -144,6 +146,8 @@ module PairingHeap.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     module Make :

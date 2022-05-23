@@ -21,6 +21,8 @@ val mjrty : string array -> string[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ function num ... *)
@@ -57,6 +59,8 @@ module Mjrty.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ function num (a_1:string seq) (v:string) (lo:integer) (hi:integer): 

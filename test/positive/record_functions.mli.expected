@@ -10,6 +10,8 @@ type v = private {
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t = int -> int
@@ -47,6 +49,8 @@ module record_functions.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t = int -> int

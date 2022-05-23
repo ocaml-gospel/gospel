@@ -27,6 +27,8 @@ val transfer : 'a t -> 'a t -> unit[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type 'a t
@@ -86,6 +88,8 @@ module Queue.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type 'a t

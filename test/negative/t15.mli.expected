@@ -18,6 +18,8 @@ type 'a t2 =
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type 'a t2 =

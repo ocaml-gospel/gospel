@@ -10,6 +10,8 @@ type t3 = (t1 * int t2)
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ open Ocamlstdlib *)

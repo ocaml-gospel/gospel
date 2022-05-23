@@ -7,6 +7,8 @@ type t = (int * int)[@@gospel {| invariant 1 > 0 |}]
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t = (int * int)
