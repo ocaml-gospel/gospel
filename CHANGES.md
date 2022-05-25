@@ -51,6 +51,8 @@
 
 ## Internals
 
+- Fixed the order of exceptional postconditions in the AST.
+  [\#200](https://github.com/ocaml-gospel/gospel/pull/200)
 - Refactored the error handling: Gospel now only raises a single `Gospel.Error`
   exception.
   [\#189](https://github.com/ocaml-gospel/gospel/pull/189)

@@ -769,7 +769,7 @@ let process_val_spec kid crcm ns id args ret vs =
     List.fold_left process Mxs.empty exn |> Mxs.bindings
   in
   let xpost =
-    List.fold_left (fun acc xp -> process_xpost xp @ acc) [] vs.sp_xpost
+    List.fold_right (fun xp acc -> process_xpost xp @ acc) vs.sp_xpost []
   in
 
   let env, ret =
