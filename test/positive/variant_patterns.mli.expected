@@ -112,8 +112,8 @@ module variant_patterns.mli
                           | A | B _ | C _ _ | C _ _ | D (_, _) | D (_, _) | D
                             _ -> (True ):bool
                           end::bool = (True ):bool):prop
-        raisesF _, _ -> true:prop
+        raisesF _ -> true:prop
         raisesE _, _ -> true:prop
-        raisesF _ -> true:prop*)
+        raisesF _, _ -> true:prop*)
 
 OK
