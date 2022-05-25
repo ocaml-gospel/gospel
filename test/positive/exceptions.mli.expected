@@ -44,6 +44,8 @@ val f : 'a -> 'a[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 exception E 
@@ -130,6 +132,8 @@ module exceptions.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     exception E

@@ -31,6 +31,8 @@ val f : int -> t -> bool[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t =
@@ -81,6 +83,8 @@ module variant_patterns.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t = A of 

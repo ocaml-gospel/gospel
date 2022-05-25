@@ -11,6 +11,8 @@ type int
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 module type TA  = sig type 'a t
@@ -77,6 +79,8 @@ module test2.mli
           
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     module type TA  =

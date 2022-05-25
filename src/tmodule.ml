@@ -166,13 +166,21 @@ let ns_with_primitives =
     [
       ("integer", ts_integer);
       ("int", ts_int);
-      ("string", ts_string);
       ("char", ts_char);
+      ("bytes", ts_bytes);
+      ("string", ts_string);
       ("float", ts_float);
       ("bool", ts_bool);
-      ("option", ts_option);
-      ("list", ts_list);
       ("unit", ts_unit);
+      ("exn", ts_exn);
+      ("array", ts_array);
+      ("list", ts_list);
+      ("option", ts_option);
+      ("int32", ts_int32);
+      ("int64", ts_int64);
+      ("nativeint", ts_nativeint);
+      ("format6", ts_format6);
+      ("lazy", ts_lazy);
     ]
   in
   let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in

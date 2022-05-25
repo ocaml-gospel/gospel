@@ -99,6 +99,8 @@ functor (K : HashedType) ->
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 module type HashedType  =
@@ -256,6 +258,8 @@ module HashTable.mli
           
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     module type HashedType  =

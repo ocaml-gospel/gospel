@@ -27,6 +27,8 @@ val in_place_counting_sort : int -> int array -> unit[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ predicate k_values ... *)
@@ -73,6 +75,8 @@ module CountingSort.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ predicate k_values (k:int) (a_1:int array) =

@@ -1,4 +1,10 @@
 opam-version: "2.0"
+synopsis: "A tool-agnostic formal specification language for OCaml"
+description: """\
+Gospel is a behavioural specification language for OCaml program. It provides
+developers with a non-invasive and easy-to-use syntax to annotate their module
+interfaces with formal contracts that describe type invariants, mutability,
+function pre-conditions and post-conditions, effects, exceptions, and much more!"""
 maintainer: "Jean-Christophe.Filliatre@lri.fr"
 authors: [
   "Jean-Christophe Filliâtre"
@@ -12,9 +18,18 @@ dev-repo: "git://github.com/ocaml-gospel/gospel"
 bug-reports: "https://github.com/ocaml-gospel/gospel/issues"
 
 build: [
-  ["dune" "subst"] {dev}
-  ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name] {with-test}
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+  name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+  "@doc" {with-doc}
+  ]
 ]
 
 depends: [
@@ -26,12 +41,5 @@ depends: [
   "ocaml-compiler-libs" {>= "v0.12.0"}
   "ppxlib" {>= "0.26.0"}
   "ppx_deriving" {>= "5.2.1"}
+  "ocamlfind"
 ]
-
-synopsis: "A tool-agnostic formal specification language for OCaml"
-description:"""
-Gospel is a behavioural specification language for OCaml program. It provides
-developers with a non-invasive and easy-to-use syntax to annotate their module
-interfaces with formal contracts that describe type invariants, mutability,
-function pre-conditions and post-conditions, effects, exceptions, and much more!
-"""

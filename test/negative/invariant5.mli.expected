@@ -8,6 +8,8 @@ type 'a t = private {
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type 'a t = private {

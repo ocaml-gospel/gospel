@@ -598,6 +598,11 @@ let type_type_declaration kid crcm ns tdl =
       let alias = Sstr.empty in
       match td.tkind with
       | Ptype_abstract -> (Pty_abstract, ns)
+      | Ptype_variant cdl
+        when List.exists (fun cd -> Option.is_some cd.pcd_res) cdl ->
+          (* GADT *)
+          (* TODO: Add a warning here *)
+          (Pty_abstract, ns)
       | Ptype_variant cdl ->
           let v, ns = List.fold_right (process_variant ty alias) cdl ([], ns) in
           (Pty_variant v, ns)
@@ -959,7 +964,8 @@ type parse_env = {
       (* files being parsed; used to avoid circular dependencies *)
 }
 
-let penv lpaths parsing = { lpaths; parsing }
+let penv lpaths parsing =
+  { lpaths = lpaths @ [ Findlib.package_directory "stdlib" ]; parsing }
 
 let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;

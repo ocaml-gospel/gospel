@@ -12,6 +12,8 @@ type t3 = private (int * int)[@@gospel {| invariant 1 > 0 |}]
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t1 = private {
@@ -55,6 +57,8 @@ module invariants.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t1 = {a_1:int}

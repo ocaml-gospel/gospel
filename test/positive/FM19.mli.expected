@@ -83,6 +83,8 @@ val f : tt -> tt -> tt -> tt -> int -> (tt * tt * int)[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type 'a t
@@ -250,6 +252,8 @@ module FM19.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type 'a t

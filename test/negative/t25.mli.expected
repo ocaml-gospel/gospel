@@ -7,6 +7,8 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c[@@gospel {| r = f x y z |}]
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c

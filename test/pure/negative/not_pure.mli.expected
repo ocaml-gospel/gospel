@@ -9,6 +9,8 @@ val g : int -> int[@@gospel {| y = g x
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val f : int -> int

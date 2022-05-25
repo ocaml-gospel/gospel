@@ -20,6 +20,8 @@ val log2_existsb : int -> int[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val log2 : int -> int
@@ -63,6 +65,8 @@ module log2.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     val log2 : int -> int

@@ -102,6 +102,8 @@ type 'a t6 = {
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ axiom ... *)
@@ -256,6 +258,8 @@ module basic_functions_axioms.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ axiom a1_1: true:prop *)

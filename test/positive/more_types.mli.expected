@@ -24,6 +24,8 @@ type ('a, 'b) t7 = 'a t6
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t1
@@ -89,6 +91,8 @@ module more_types.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t1

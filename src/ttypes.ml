@@ -171,22 +171,50 @@ let ty_equal_check ty1 ty2 =
 
 (** Built-in symbols *)
 
-let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
-let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
 let ts_int = ts (Ident.create ~loc:Location.none "int") []
-let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
-let ts_float = ts (Ident.create ~loc:Location.none "float") []
 let ts_char = ts (Ident.create ~loc:Location.none "char") []
+let ts_bytes = ts (Ident.create ~loc:Location.none "bytes") []
 let ts_string = ts (Ident.create ~loc:Location.none "string") []
+let ts_float = ts (Ident.create ~loc:Location.none "float") []
+let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
+let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
+let ts_exn = ts (Ident.create ~loc:Location.none "exn") []
+let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
+
+let ts_array =
+  ts
+    (Ident.create ~loc:Location.none "array")
+    [ fresh_tv ~loc:Location.none "a" ]
+
+let ts_list =
+  ts
+    (Ident.create ~loc:Location.none "list")
+    [ fresh_tv ~loc:Location.none "a" ]
 
 let ts_option =
   ts
     (Ident.create ~loc:Location.none "option")
     [ fresh_tv ~loc:Location.none "a" ]
 
-let ts_list =
+let ts_int32 = ts (Ident.create ~loc:Location.none "int32") []
+let ts_int64 = ts (Ident.create ~loc:Location.none "int64") []
+let ts_nativeint = ts (Ident.create ~loc:Location.none "nativeint") []
+
+let ts_format6 =
   ts
-    (Ident.create ~loc:Location.none "list")
+    (Ident.create ~loc:Location.none "format6")
+    [
+      fresh_tv ~loc:Location.none "a";
+      fresh_tv ~loc:Location.none "b";
+      fresh_tv ~loc:Location.none "c";
+      fresh_tv ~loc:Location.none "d";
+      fresh_tv ~loc:Location.none "e";
+      fresh_tv ~loc:Location.none "f";
+    ]
+
+let ts_lazy =
+  ts
+    (Ident.create ~loc:Location.none "lazy")
     [ fresh_tv ~loc:Location.none "a" ]
 
 let ts_tuple =

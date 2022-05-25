@@ -12,6 +12,8 @@ val f : 'a -> 'a[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 exception E of int * int 

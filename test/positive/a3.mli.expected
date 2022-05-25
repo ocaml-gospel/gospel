@@ -8,6 +8,8 @@
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ type t3 = A2.t2
@@ -46,7 +48,6 @@ module a3.mli
         Namespaces
           Namespace: Gospelstdlib
             Type symbols
-              ('a) array
               ('a) bag
               ('a) ref
               ('a) seq
@@ -347,6 +348,73 @@ module a3.mli
               
             Type Namespaces
               
+          Namespace: Stdlib
+            Type symbols
+              ('a, 'b, 'c) format [=('a, 'b, 'c, 'c, 'c, 'c) format6]
+              ('a, 'b, 'c, 'd) format4 [=('a, 'b, 'c, 'c, 'c, 'd) format6]
+              ('a, 'b, 'c, 'd, 'e, 'f) format6_1 [=('a, 'b, 'c, 'd, 'e, 'f) 
+              format6]
+               fpclass
+               in_channel
+               open_flag
+               out_channel
+              ('a) ref_1
+              ('a, 'b) result
+              
+            Logic Symbols
+              function Error (_:'b) : ('a, 'b) result
+              function FP_infinite  : fpclass
+              function FP_nan  : fpclass
+              function FP_normal  : fpclass
+              function FP_subnormal  : fpclass
+              function FP_zero  : fpclass
+              function Ok (_:'a) : ('a, 'b) result
+              function Open_append  : open_flag
+              function Open_binary  : open_flag
+              function Open_creat  : open_flag
+              function Open_excl  : open_flag
+              function Open_nonblock  : open_flag
+              function Open_rdonly  : open_flag
+              function Open_text  : open_flag
+              function Open_trunc  : open_flag
+              function Open_wronly  : open_flag
+              function constr#ref (_:'a) : 'a ref_1
+              
+            Field Symbols
+              function contents (_:'a ref_1) : 'a
+              
+            Exception Symbols
+              Assert_failure
+              Division_by_zero
+              End_of_file
+              Exit
+              Failure_1
+              Invalid_argument_1
+              Match_failure
+              Not_found_1
+              Out_of_memory
+              Stack_overflow
+              Sys_blocked_io
+              Sys_error
+              Undefined_recursive_module
+              
+            Namespaces
+              Namespace: LargeFile
+                Type symbols
+                  
+                Logic Symbols
+                  
+                Field Symbols
+                  
+                Exception Symbols
+                  
+                Namespaces
+                  
+                Type Namespaces
+                  
+              
+            Type Namespaces
+              
           
         Type Namespaces
           
@@ -354,6 +422,8 @@ module a3.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ use A2 *)

@@ -29,6 +29,8 @@ val mem : int -> t -> bool[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 type t = private {
@@ -81,6 +83,8 @@ module bitvector.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     type t = {size:int; mutable mask:int}

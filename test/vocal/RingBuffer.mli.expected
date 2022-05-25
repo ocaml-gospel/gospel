@@ -51,6 +51,8 @@ val copy : 'a buffer -> 'a buffer[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 (*@ open Seq *)
@@ -138,6 +140,8 @@ module RingBuffer.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     (*@ open Seq *)

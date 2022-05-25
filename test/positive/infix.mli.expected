@@ -9,6 +9,8 @@ val (==) : 'a -> 'a -> bool[@@gospel
 *******************************
 ****** GOSPEL translation *****
 *******************************
+(*@ open Stdlib *)
+
 (*@ open Gospelstdlib *)
 
 val (==) : 'a -> 'a -> bool
@@ -35,6 +37,8 @@ module infix.mli
     Type Namespaces
       
   Signatures
+    (*@ open Stdlib *)
+    
     (*@ open Gospelstdlib *)
     
     val == : 'a -> 'a -> bool
