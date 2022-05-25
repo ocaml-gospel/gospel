@@ -45,6 +45,63 @@ val f : u -> u
 (*@ y = f x
     requires ...
      *)
-gospel: internal error, uncaught exception:
-        File "src/patmat.ml", line 370, characters 16-22: Assertion failed
-        
+
+*******************************
+********* Typed GOSPEL ********
+*******************************
+module recursive_type_invariant.mli
+
+  Namespace: recursive_type_invariant.mli
+    Type symbols
+       t
+       u
+      
+    Logic Symbols
+      function A  : t
+      function B (_:t) : t
+      function C (_:t) : t
+      function constr#u (_:int) (_:u) : u
+      
+    Field Symbols
+      function next (_:u) : u
+      function tag (_:u) : int
+      
+    Exception Symbols
+      
+    Namespaces
+      
+    Type Namespaces
+      
+  Signatures
+    (*@ open Stdlib *)
+    
+    (*@ open Gospelstdlib *)
+    
+    type t = A of 
+             function A  : t
+             | B of t
+               function B (_:t) : t
+             | C of {x:t}
+               function C (_:t) : t
+         (*@ 
+             invariant (match self:t with
+                       | A -> (True ):bool
+                       | B t':t -> if (self:t = t':t):prop then (True ):
+                                   bool else (False ):bool
+                       | C a_1:t -> if ((a_1:t).x = self:t):prop then (True ):
+                                    bool else (False ):bool
+                       end::bool = (True ):bool):prop *)
+    
+    type u = {tag:int; next:u}
+          function constr#u (_:int) (_:u) : u
+          function tag (_:u) : int
+          function next (_:u) : u
+         (*@ 
+             invariant ((self_1:u).tag = ((self_1:u).next).tag):prop /\ (((
+                       self_1:u).next).tag = (((self_1:u).next).next).tag):prop *)
+    
+    val f : u -> u
+    (*@ y:u = f x_1:u
+        requires ((integer_of_int  (x_1:u).tag):integer = 0:integer):prop*)
+
+OK

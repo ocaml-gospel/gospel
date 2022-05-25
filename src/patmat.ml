@@ -64,9 +64,18 @@ module Pmatrix : sig
   (** Creates a matrix *)
 
   val add_col : t -> pattern -> t
+  (** Adds the pattern in the front of each row of the matrix *)
+
   val encap_row : lsymbol -> int -> t -> t
+  (** [m' = encap_row c k m] The first row of m' differ from m such that the k
+      first elements of the row are packed under the c constructor *)
+
   val remove_or_col1 : t -> t
+  (** Expand in depth all or-patterns of the first column *)
+
   val fst : t -> Tterm.pattern
+  (** Returns the first pattern of the first row (top left pattern of the
+      matrix) *)
 end = struct
   type t = { rows : int; cols : int; mat : pattern list list }
 
@@ -143,11 +152,22 @@ module Sigma : sig
   (** Creates a set *)
 
   val is_full : ty -> t -> Pmatrix.t -> bool
+  (** The result is true iff the sigma set contains every constructor of ty *)
+
   val is_empty : t -> bool
-  val other_one : ty -> t -> Pmatrix.t -> pattern_node
+  (** From Map *)
+
   val exists : (lsymbol -> ty list -> bool) -> t -> bool
+  (** From Map *)
+
   val iter : (lsymbol -> ty list -> unit) -> t -> unit
+  (** From Map *)
+
+  val other_one : ty -> t -> Pmatrix.t -> pattern_node
+  (** Returns a constructor of type ty such that it is absent from the sigma set *)
+
   val get_typ_cols : ty list -> lsymbol -> ty list
+  (** Instanciate type variables *)
 end = struct
   type t = ty list Mls.t
 
@@ -319,6 +339,7 @@ end = struct
     | None -> false
 end
 
+(** Default matrix creation *)
 let rec mk_default p =
   let rec mk_line nb_cols = function
     | [] -> []
@@ -335,6 +356,7 @@ let rec mk_default p =
   let mat = List.map (mk_line p.cols) p.mat |> List.flatten in
   Pmatrix.from_matrix mat ~cols:(p.cols - 1)
 
+(** Specialised matrix creation *)
 let rec mk_spec ?constr ?char a p =
   let rec mk_si = function
     | [] -> []
@@ -366,6 +388,7 @@ let rec mk_spec ?constr ?char a p =
   let mat = List.map mk_si p.mat |> List.flatten in
   Pmatrix.from_matrix mat ~cols:(p.cols + List.length a - 1)
 
+(** Usefulness check *)
 let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
   assert (List.length qvec = pmat.cols);
   if pmat.cols = 0 then pmat.rows = 0
@@ -402,6 +425,7 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
     | { p_node = Pas (p, _); _ } :: l -> usefulness typ_cols pmat (p :: l)
     | _ -> assert false
 
+(** Usefulness specialisation to create a pattern that is not matched *)
 let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
   if pmat.cols = 0 then if pmat.rows = 0 then Some Pmatrix.empty else None
   else
