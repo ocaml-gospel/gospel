@@ -1193,6 +1193,8 @@ and process_sig_item penv muc { sdesc; sloc } =
     | Uast.Sig_ghost_val vd ->
         (muc, process_val ~loc:sloc ~ghost:Ghost kid crcm ns vd)
     | Uast.Sig_ghost_open od -> process_open ~loc:sloc ~ghost:Ghost penv muc od
+    | Uast.Sig_inductive _ -> assert false
+    (* TODO --> in particular, implement positivity checking *)
   in
   let rec process_and_import si muc =
     try process_sig_item si muc

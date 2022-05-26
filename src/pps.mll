@@ -42,7 +42,8 @@ rule scan = parse
     { push (); Queue.push (Spaces s) queue; scan lexbuf }
   | "(*@"
       (space*
-       ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k)
+       ("function" | "type" | "predicate" | "axiom"
+       | "val" | "open" | "inductive" ) as k)
       {
         push ();
         Buffer.add_string buf k;
