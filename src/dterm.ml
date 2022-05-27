@@ -114,7 +114,7 @@ and dterm_node =
   | DTapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
-  | DTcase of dterm * (dpattern * dterm) list
+  | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
   | DTbinop of binop * dterm * dterm
   | DTnot of dterm
@@ -396,11 +396,16 @@ and term_node ~loc env prop dty dterm_node =
       t_quant q (List.rev vsl) t (Option.map ty_of_dty dty) loc
   | DTcase (dt, ptl) ->
       let t = term env false dt in
-      let branch (dp, dt) =
+      let branch (dp, guard, dt) =
         let p, vars = pattern dp in
         let join _ _ vs = Some vs in
         let env = Mstr.union join env vars in
-        (p, term env false dt)
+        let dt = term env false dt in
+        let guard =
+          match guard with
+          | None-> None
+          | Some g -> Some (term env false g) in
+        (p, guard, dt)
       in
       let pl = List.map branch ptl in
       let ty = ty_of_dty (Option.get dt.dt_dty) in

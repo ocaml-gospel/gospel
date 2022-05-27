@@ -101,8 +101,12 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
         pp fmt "%a %a. %a" print_quantifier q (list ~sep:sp print_vs) vsl
           print_term t
     | Tcase (t, ptl) ->
-        let print_branch fmt (p, t) =
-          pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t
+        let print_branch fmt (p, g, t) =
+          match g with
+          | None -> pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t
+          | Some g ->
+              pp fmt "| @[%a@] when @[%a@] -> @[%a@]" print_pattern p print_term
+                g print_term t
         in
         pp fmt "match %a with@\n%a@\nend:%a" print_term t
           (list ~sep:newline print_branch)

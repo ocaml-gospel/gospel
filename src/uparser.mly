@@ -110,6 +110,8 @@
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
+%token WHEN
+
 
 (* priorities *)
 
@@ -334,7 +336,7 @@ term_:
       match pat.pat_desc with
       | Pvar id -> Tlet (id, def, $6)
       | Pwild -> Tlet (id_anonymous pat.pat_loc, def, $6)
-      | _ -> Tcase (def, [pat, $6]) }
+      | _ -> Tcase (def, [pat, None, $6]) }
 | LET attrs(lident_op_id) EQUAL term IN term
     { Tlet ($2, $4, $6) }
 | MATCH term WITH match_cases(term)
@@ -364,8 +366,21 @@ term_rec_field(X):
 ;
 
 match_cases(X):
-| cl = bar_list1(separated_pair(pattern, ARROW, X)) { cl }
+| cl = bar_list1(separated_pair(pattern_when_opt, ARROW, X)) {
+  List.map (fun ((a,b),c) -> a,b,c) cl
+}
+(* | cl = bar_list1(match_case(X)) { cl } *)
 ;
+
+pattern_when_opt:
+| pattern WHEN term { $1, Some $3 } (* problème car -> dans terme : "implies" *)
+| pattern { $1, None }
+;
+
+(* match_case(X):
+| p=pattern ARROW t=X             { p, None, t }
+| p=pattern WHEN g=term ARROW t=X { p, Some g, t}
+; *)
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }
