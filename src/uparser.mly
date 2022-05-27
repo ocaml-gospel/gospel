@@ -34,12 +34,6 @@
   let array_get l =
     Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
 
-(*
-    sp_hd_ret = [];
-    sp_hd_nm = mk_pid "" (Lexing.dummy_pos, Lexing.dummy_pos);
-    sp_hd_args = [];
-*)
-
   let empty_vspec = {
     sp_header = None;
     sp_pre = [];
@@ -220,6 +214,9 @@ type_spec_model:
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*
   { { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
+| ret=ret_name arg1=fun_arg nm=op_symbol arg2=fun_arg
+  { let sp_hd_nm = Preid.create ~loc:(mk_loc $loc(nm)) nm in
+    { sp_hd_nm; sp_hd_ret = ret; sp_hd_args = [ arg1; arg2 ] } }
 | nm=lident_rich args=fun_arg*
   { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
 ;

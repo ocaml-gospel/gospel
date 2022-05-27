@@ -5,6 +5,9 @@
 val (==) : 'a -> 'a -> bool[@@gospel
                              {| r = (==) x y
       ensures r <-> x = y |}]
+val (==) : 'a -> 'a -> bool[@@gospel
+                             {| r = x == y
+      ensures r <-> x = y |}]
 
 *******************************
 ****** GOSPEL translation *****
@@ -15,6 +18,11 @@ val (==) : 'a -> 'a -> bool[@@gospel
 
 val (==) : 'a -> 'a -> bool
 (*@ r = infix == x y
+    ensures ...
+     *)
+
+val (==) : 'a -> 'a -> bool
+(*@ r = == x y
     ensures ...
      *)
 
@@ -44,5 +52,9 @@ module infix.mli
     val == : 'a -> 'a -> bool
     (*@ r:bool = == x:'a y:'a
         ensures (r:bool = (True ):bool):prop <-> (x:'a = y:'a):prop*)
+    
+    val ==_1 : 'a -> 'a -> bool
+    (*@ r_1:bool = ==_1 x_1:'a y_1:'a
+        ensures (r_1:bool = (True ):bool):prop <-> (x_1:'a = y_1:'a):prop*)
 
 OK

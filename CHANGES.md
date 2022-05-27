@@ -36,6 +36,8 @@
 
 ## Fixed
 
+- Infix operators in specificaion headers are now accepted.
+  [\#205](https://github.com/ocaml-gospel/gospel/pull/205)
 - Fix inconsistencies in typing/parsing of exceptional postconditions patterns.
   [\#203](https://github.com/ocaml-gospel/gospel/pull/203)
 - Fixed the type-checking of interfaces involving the OCaml Stdlib, which was
