@@ -277,6 +277,8 @@ raises:
   { q, Some (mk_pat (Ptuple []) $loc(q), t) }
 | q=uqualid p=pat_arg ARROW t=term
   { q, Some (p, t) }
+| q=uqualid p=pat_arg
+  { q, Some (p, mk_term Ttrue $loc(p)) }
 | q=uqualid
   { q, None}
 ;

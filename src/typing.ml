@@ -772,7 +772,12 @@ let process_val_spec kid crcm ns id args ret vs =
     let process mxs (q, pt) =
       let xs = find_q_xs ns q in
       match pt with
-      | None -> Mxs.update xs (merge_xpost None) mxs
+      | None -> (
+          match xs.xs_type with
+          | Exn_tuple [] -> Mxs.update xs (merge_xpost None) mxs
+          | _ ->
+              W.type_checking_error ~loc
+                "Exception pattern does not match its type")
       | Some (p, t) ->
           let dp = dpattern kid ns p in
           let ty =
