@@ -3,9 +3,12 @@ name: documentation
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'docs/**'
   push:
     branches: [main]
-
+    paths:
+      - 'docs/**'
 jobs:
   checks:
     if: github.event_name != 'push'
