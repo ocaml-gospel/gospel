@@ -53,6 +53,7 @@
         "pure", PURE;
         "ephemeral", EPHEMERAL;
         "model", MODEL;
+        "when", WHEN;
       ]
 
   (* to translate escape sequences *)

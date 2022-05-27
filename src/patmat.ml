@@ -476,7 +476,7 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
 let ui tyl pmat = Option.get (ui tyl pmat) |> Pmatrix.fst
 
 let check_exhaustive ~loc ty cases =
-  let pat = List.map fst cases in
+  let pat = List.map (fun (p, _, _) -> p) cases in
   let pmat = Pmatrix.from_pat pat in
   let q = mk_wild [ (List.hd pat |> fun p -> p.p_ty) ] in
   if usefulness [ ty ] pmat q then

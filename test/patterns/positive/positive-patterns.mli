@@ -163,3 +163,18 @@ val f15 : t15 * t15 * t15 * t15 -> int
      | _,_,_,A
      | _,_,_,B -> true
 *)
+
+(* guards *)
+
+type t16 = A | B of t16 | C of t16 * t16
+
+val f16 : t16 -> int
+(*@ r = f16 x
+  requires match x with
+           | A when true  -> true
+           | B y when y=A -> true
+           | B y when false -> true && y=A
+           | C (y,z) when y=A && z=A -> true
+           | C (y,z) when (y=A -> z=A) -> true
+           | C (y,z) when (match y with A -> true | _ -> false) -> true
+*)

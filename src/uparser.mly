@@ -110,15 +110,19 @@
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
+%token WHEN
+
 
 (* priorities *)
 
 %nonassoc IN
+/* %nonassoc WITH */
 %nonassoc DOT ELSE
 %nonassoc prec_named
 %right COLON AS
 
 %right ARROW LRARROW
+%nonassoc WHEN
 %nonassoc RIGHTSQ
 %right OR BARBAR
 %right AND AMPAMP
@@ -334,7 +338,7 @@ term_:
       match pat.pat_desc with
       | Pvar id -> Tlet (id, def, $6)
       | Pwild -> Tlet (id_anonymous pat.pat_loc, def, $6)
-      | _ -> Tcase (def, [pat, $6]) }
+      | _ -> Tcase (def, [pat, None, $6]) }
 | LET attrs(lident_op_id) EQUAL term IN term
     { Tlet ($2, $4, $6) }
 | MATCH term WITH match_cases(term)
@@ -364,8 +368,46 @@ term_rec_field(X):
 ;
 
 match_cases(X):
-| cl = bar_list1(separated_pair(pattern, ARROW, X)) { cl }
+/* | BAR? match_cases_ { $2 } */
+| cl = bar_list1(separated_pair(patterng, ARROW, X))
+    { List.map (fun ((a,g),c) -> a,g,c) cl }
 ;
+
+patterng:
+| pattern { $1, None }
+| pattern WHEN term { $1, Some $3 }
+;
+
+(*
+match_cases_:
+| match_case { [$1] }
+| match_case BAR match_cases_ { $1::$3 }
+;
+
+match_case:
+| pattern ARROW term { $1, None, $3 }
+| pattern WHEN term ARROW term { $1, Some $3, $5 }
+;
+*)
+
+(* reversed_preceded_or_separated_nonempty_llist(delimiter, X):
+| ioption(delimiter) x = X
+    { [x] }
+| xs=reversed_preceded_or_separated_nonempty_llist(delimiter, X) delimiter x=X
+    { x :: xs }
+; *)
+
+(* %inline preceded_or_separated_nonempty_llist(delimiter, X):
+(* | xs = rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
+    { xs } *)
+| ioption(delimiter) l=separated_nonempty_list(delimiter, X)
+    { l }
+; *)
+
+(* match_case(X):
+| p=pattern ARROW t=X             { p, None, t }
+| p=pattern WHEN g=term ARROW t=X { p, Some g, t}
+; *)
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }

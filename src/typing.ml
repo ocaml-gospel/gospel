@@ -411,18 +411,30 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tcase (t, ptl) ->
       let dt = dterm kid crcm ns denv t in
       let dt_dty = dty_of_dterm dt in
-      let branch (p, t) =
+      let branch (p, g, t) =
         let dp = dpattern kid ns p in
         dpattern_unify dp dt_dty;
         let choose_snd _ _ x = Some x in
         let denv = Mstr.union choose_snd denv dp.dp_vars in
         let dt = dterm kid crcm ns denv t in
-        (dp, dt)
+        let dg =
+          match g with
+          | None -> None
+          | Some g -> Some (dterm kid crcm ns denv g)
+        in
+        (dp, dg, dt)
       in
       let pdtl = List.map branch ptl in
-      let dty = max_dty crcm (List.map snd pdtl) in
+      let dty = max_dty crcm (List.map (fun (_p, _g, t) -> t) pdtl) in
       let pdtl =
-        List.map (fun (pat, dt) -> (pat, dterm_expected_op crcm dt dty)) pdtl
+        List.map
+          (fun (pat, guard, dt) ->
+            ( pat,
+              (match guard with
+              | None -> None
+              | Some g -> Some (dfmla_expected crcm g)),
+              dterm_expected_op crcm dt dty ))
+          pdtl
       in
       mk_dterm ~loc (DTcase (dt, pdtl)) dty
   | Uast.Tcast (t, pty) ->

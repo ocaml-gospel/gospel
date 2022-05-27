@@ -40,7 +40,7 @@ let rec t_free_vars t =
       let t_fvs = t_free_vars t in
       let pl_fvs =
         List.fold_left
-          (fun _ (p, t) -> Svs.diff (t_free_vars t) (p_vars p))
+          (fun _ (p, _g, t) -> Svs.diff (t_free_vars t) (p_vars p))
           Svs.empty pl
       in
       Svs.union t_fvs pl_fvs
@@ -140,7 +140,7 @@ let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
 let t_case t1 ptl =
   match ptl with
   | [] -> assert false (* this is a syntax error *)
-  | (_, t) :: _ -> mk_term (Tcase (t1, ptl)) t.t_ty
+  | (_, _, t) :: _ -> mk_term (Tcase (t1, ptl)) t.t_ty
 
 let t_quant q vsl t ty = mk_term (Tquant (q, vsl, t)) ty
 let t_binop b t1 t2 = mk_term (Tbinop (b, t1, t2)) None

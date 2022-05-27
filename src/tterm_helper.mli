@@ -36,7 +36,7 @@ val t_app : lsymbol -> term list -> ty option -> Location.t -> term
 val t_field : term -> lsymbol -> ty option -> Location.t -> term
 val t_if : term -> term -> term -> Location.t -> term
 val t_let : vsymbol -> term -> term -> Location.t -> term
-val t_case : term -> (pattern * term) list -> Location.t -> term
+val t_case : term -> (pattern * term option * term) list -> Location.t -> term
 val t_binop : binop -> term -> term -> Location.t -> term
 val t_not : term -> Location.t -> term
 val t_old : term -> Location.t -> term

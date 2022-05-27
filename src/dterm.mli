@@ -37,7 +37,7 @@ and dterm_node =
   | DTapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
-  | DTcase of dterm * (dpattern * dterm) list
+  | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
   | DTbinop of binop * dterm * dterm
   | DTnot of dterm

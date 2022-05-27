@@ -38,6 +38,7 @@ type kind =
   | Predicate_symbol_expected of string
   | Function_symbol_expected of string
   | Pattern_not_exhaustive of string
+  | Patterng_not_exhaustive of string
 
 type error = location * kind
 
@@ -128,6 +129,11 @@ let pp_kind ppf = function
       pf ppf
         "This pattern-matching is not exhaustive.@\n\
          Here is an example of a case that is not matched:@\n\
+        \  %s" p
+  | Patterng_not_exhaustive p ->
+      pf ppf
+        "This pattern-matching may not be exhaustive because of the guard.@\n\
+         Here is an example of a case that may not be matched:@\n\
         \  %s" p
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
