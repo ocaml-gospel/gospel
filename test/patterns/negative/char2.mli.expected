@@ -1,0 +1,30 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type t =
+  | A of char 
+[@@@gospel
+  {| function f2 (x : t) : bool =
+      match x with
+      | A ('\000'..'\010') -> false
+      | A ('\011'..'a')
+      | A ('c'..'\255') -> false
+|}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Stdlib *)
+
+(*@ open Gospelstdlib *)
+
+type t =
+| A of char 
+  
+
+(*@ function f2 ... *)
+File "char2.mli", line 3, characters 6-111:
+Error: This pattern-matching is not exhaustive.
+       Here is an example of a case that is not matched:
+         A 'b'.

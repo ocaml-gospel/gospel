@@ -1,0 +1,26 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : 'a list -> int[@@gospel
+                        {| r = f l
+    requires match l with
+      | [] -> true
+      | x::y::_ -> false
+|}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Stdlib *)
+
+(*@ open Gospelstdlib *)
+
+val f : 'a list -> int
+(*@ r = f l
+    requires ...
+     *)
+File "list1.mli", line 3, characters 13-69:
+Error: This pattern-matching is not exhaustive.
+       Here is an example of a case that is not matched:
+         infix :: (_, []).

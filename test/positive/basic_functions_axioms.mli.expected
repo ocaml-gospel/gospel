@@ -354,7 +354,7 @@ module basic_functions_axioms.mli
     
     (*@ function i (a_6:'a t1): int =
         match a_6:'a t1 with
-        | C _ y_2:int -> y_2:int
+        | C (_, y_2:int) -> y_2:int
         end::int
     *)
     
@@ -374,7 +374,7 @@ module basic_functions_axioms.mli
         match x_12:'a t2 with
         | C2 x_13:'a -> x_13:'a
         | C3 b_3:bool -> (gnr ):'a
-        | C4 i_5:int x_14:'a -> (g_2  x_14:'a x_14:'a i_5:int):'a
+        | C4 (i_5:int, x_14:'a) -> (g_2  x_14:'a x_14:'a i_5:int):'a
         end::'a
     *)
     
@@ -419,19 +419,19 @@ module basic_functions_axioms.mli
     
     (*@ function g_3 (a_7:t4) (b_4:t4 t5): t4 t6 =
         match b_4:t4 t5 with
-        | constr#t5 x_19:int A -> (constr#t6  (B ):t4 x_19:int):t4 t6
-        | constr#t5 x_20:int B -> (constr#t6 
-                                  (b_4:t4 t5).y (int_of_integer 
-                                  10:integer):int):t4 t6
+        | constr#t5 (x_19:int, A) -> (constr#t6  (B ):t4 x_19:int):t4 t6
+        | constr#t5 (x_20:int, B) -> (constr#t6 
+                                     (b_4:t4 t5).y (int_of_integer 
+                                     10:integer):int):t4 t6
         end::t4 t6
     *)
     
     (*@ function g (a_8:t4) (b_5:t4 t5): t4 t6 =
         match b_5:t4 t5 with
-        | constr#t5 x_21:int y_6:t4 -> (constr#t6  y_6:t4 x_21:int):t4 t6
-        | constr#t5 x_22:int B -> (constr#t6 
-                                  (b_5:t4 t5).y (int_of_integer 
-                                  10:integer):int):t4 t6
+        | constr#t5 (x_21:int, y_6:t4) -> (constr#t6  y_6:t4 x_21:int):t4 t6
+        | constr#t5 (x_22:int, B) -> (constr#t6 
+                                     (b_5:t4 t5).y (int_of_integer 
+                                     10:integer):int):t4 t6
         end::t4 t6
     *)
 

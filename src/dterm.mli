@@ -23,6 +23,8 @@ and dpattern_node =
   | DPor of dpattern * dpattern
   | DPas of dpattern * Preid.t
   | DPcast of dpattern * dty
+  | DPconst of Parsetree.constant
+  | DPinterval of char * char
 
 type dbinder = Preid.t * dty
 

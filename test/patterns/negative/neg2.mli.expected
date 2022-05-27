@@ -1,0 +1,31 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+type 'a t = ('a * int)
+val f : int t -> int[@@gospel
+                      {| r = f a
+    ensures
+      match a with
+      | x, 0i -> true
+      | 1i, x -> false
+|}]
+
+*******************************
+****** GOSPEL translation *****
+*******************************
+(*@ open Stdlib *)
+
+(*@ open Gospelstdlib *)
+
+type 'a t = ('a * int)
+  
+
+val f : int t -> int
+(*@ r = f a
+    ensures ...
+     *)
+File "neg2.mli", line 6, characters 6-63:
+Error: This pattern-matching is not exhaustive.
+       Here is an example of a case that is not matched:
+         0i, 1i.

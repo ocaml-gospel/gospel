@@ -116,7 +116,7 @@
 %nonassoc IN
 %nonassoc DOT ELSE
 %nonassoc prec_named
-%right COLON
+%right COLON AS
 
 %right ARROW LRARROW
 %nonassoc RIGHTSQ
@@ -522,7 +522,7 @@ pat_conj_:
 
 pat_uni_:
 | pat_arg_                              { $1 }
-| pat_arg COLONCOLON pat_arg
+| pat_arg COLONCOLON mk_pat(pat_uni_)
     { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
 | uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
 | uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
@@ -541,6 +541,10 @@ pat_arg_no_lpar_:
 | attrs(lident)                         { Pvar $1 }
 | UNDERSCORE                            { Pwild }
 | uqualid                               { Papp ($1,[]) }
+| constant                              { Pconst $1 }
+| CHAR DOTDOT CHAR                      { Pinterval ($1,$3) }
+| TRUE                                  { Ptrue }
+| FALSE                                 { Pfalse }
 | LEFTSQRIGHTSQ
   { Papp (Qpreid (mk_pid "[]"  $loc), []) }
 | LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }

@@ -37,6 +37,7 @@ type kind =
   | Cyclic_type_declaration of string
   | Predicate_symbol_expected of string
   | Function_symbol_expected of string
+  | Pattern_not_exhaustive of string
 
 type error = location * kind
 
@@ -123,6 +124,11 @@ let pp_kind ppf = function
       pf ppf "The type declaration for `%s' contains a cycle" t
   | Predicate_symbol_expected s -> pf ppf "Not a predicate symbol: `%s'" s
   | Function_symbol_expected s -> pf ppf "Not a function symbol: `%s'" s
+  | Pattern_not_exhaustive p ->
+      pf ppf
+        "This pattern-matching is not exhaustive.@\n\
+         Here is an example of a case that is not matched:@\n\
+        \  %s" p
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 

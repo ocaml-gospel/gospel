@@ -8,15 +8,16 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
+open Ppxlib
 open Tterm
 open Ttypes
 open Symbols
 module Ident = Identifier.Ident
-module W = Warnings
 
 let rec p_vars p =
   match p.p_node with
-  | Pwild -> Svs.empty
+  | Pwild | Pconst _ | Pinterval _ -> Svs.empty
   | Pvar vs -> Svs.singleton vs
   | Papp (_, pl) ->
       List.fold_left (fun vsl p -> Svs.union (p_vars p) vsl) Svs.empty pl
@@ -109,6 +110,15 @@ let p_or p1 p2 = mk_pattern (Por (p1, p2)) p1.p_ty
 (* CHECK vars p1 = vars p2 *)
 let p_as p vs = mk_pattern (Pas (p, vs)) p.p_ty
 (* CHECK type vs = type p *)
+
+let p_interval c1 c2 = mk_pattern (Pinterval (c1, c2)) ty_char
+
+let p_const c =
+  match c with
+  | Pconst_integer _ -> mk_pattern (Pconst c) ty_int
+  | Pconst_char _ -> mk_pattern (Pconst c) ty_char
+  | Pconst_string _ -> mk_pattern (Pconst c) ty_string
+  | Pconst_float _ -> mk_pattern (Pconst c) ty_float
 
 (** Terms constructors *)
 

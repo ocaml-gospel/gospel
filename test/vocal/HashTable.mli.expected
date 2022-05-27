@@ -371,7 +371,7 @@ module HashTable.mli
         (*@ function tail (l:'a list): 'a list =
             match l:'a list with
             | [] -> ([] ):'a list
-            | infix :: _ s:'a list -> s:'a list
+            | infix :: (_, s:'a list) -> s:'a list
             end::'a list
         *)
         val remove : 'a t -> key -> unit
@@ -388,7 +388,7 @@ module HashTable.mli
             ensures (r:'a option = match (apply 
                     (h_9:'a table).view k_8:t):'a list with
                     | [] -> (None ):'a option
-                    | infix :: x_9:'a _ -> (Some  x_9:'a):'a option
+                    | infix :: (x_9:'a, _) -> (Some  x_9:'a):'a option
                     end::'a option):prop*)
         val find_all : 'a t -> key -> 'a list
         (*@ l_1:'a list = find_all h_10:'a table k_9:t

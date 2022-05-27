@@ -135,7 +135,7 @@ module pattern_matching.mli
     
     (*@ function f (x_3:t2): unit =
         match x_3:t2 with
-        | B _ _ -> (unit_1 ):unit
+        | B (_, _) -> (unit_1 ):unit
         end::unit
     *)
 

@@ -3,7 +3,8 @@
 
 (menhir
  (modules uparser)
- (flags (-v)))
+ (flags
+  (-v --explain)))
 
 (library
  (public_name gospel)
