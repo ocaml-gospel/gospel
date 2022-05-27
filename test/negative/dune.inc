@@ -77,6 +77,19 @@
  (action (diff %{dep:empty_match.mli.expected} %{dep:empty_match.mli.output})))
 
 (rule
+ (targets exception_no_pattern.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:exception_no_pattern.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:exception_no_pattern.mli.expected} %{dep:exception_no_pattern.mli.output})))
+
+(rule
  (targets exn_arity.mli.output)
  (deps (source_tree .))
  (action
