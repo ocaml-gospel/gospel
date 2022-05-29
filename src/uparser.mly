@@ -119,6 +119,7 @@
 %nonassoc DOT ELSE
 %nonassoc prec_named
 %right COLON AS
+%left BAR
 
 %right ARROW LRARROW
 %nonassoc RIGHTSQ
@@ -135,8 +136,6 @@
 %nonassoc prec_prefix_op
 %nonassoc LEFTSQ
 %nonassoc OPPREF
-
-%left BAR
 
 %start <Uast.function_> func
 %start <Uast.axiom> axiom
@@ -339,9 +338,9 @@ term_:
       | _ -> Tcase (def, [pat, None, $6]) }
 | LET attrs(lident_op_id) EQUAL term IN term
     { Tlet ($2, $4, $6) }
-| MATCH term WITH match_cases(term)
+| MATCH term WITH match_cases
     { Tcase ($2, $4) }
-| MATCH comma_list2(term) WITH match_cases(term)
+| MATCH comma_list2(term) WITH match_cases
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
 | quant comma_list1(quant_vars) DOT term
     { Tquant ($1, List.concat $2, $4) }
@@ -365,16 +364,29 @@ term_rec_field(X):
           }
 ;
 
-match_cases(X):
-| cl = bar_list1(separated_pair(pattern_when_opt, ARROW, X)) {
-  List.map (fun ((a,b),c) -> a,b,c) cl
-}
-(* | cl = bar_list1(match_case(X)) { cl } *)
+match_cases:
+| xs=preceded_or_separated_nonempty_llist(BAR, match_case)
+    { xs }
+| cl = bar_list1(separated_pair(pattern, ARROW, term))
+{
+  List.map (fun (a,c) -> a,None,c) cl }
 ;
 
-pattern_when_opt:
-| pattern WHEN term { $1, Some $3 } (* problème car -> dans terme : "implies" *)
-| pattern { $1, None }
+match_case:
+(* | pattern ARROW term { $1, None, $3 } *)
+| pattern WHEN term ARROW term { $1, Some $3, $5 }
+;
+
+reversed_preceded_or_separated_nonempty_llist(delimiter, X):
+| ioption(delimiter) x = X
+    { [x] }
+| xs=reversed_preceded_or_separated_nonempty_llist(delimiter, X) delimiter x=X
+    { x :: xs }
+;
+
+%inline preceded_or_separated_nonempty_llist(delimiter, X):
+  xs = rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
+    { xs }
 ;
 
 (* match_case(X):
