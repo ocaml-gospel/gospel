@@ -404,7 +404,7 @@ and term_node ~loc env prop dty dterm_node =
         let guard =
           match guard with
           | None-> None
-          | Some g -> Some (term env false g) in
+          | Some g -> Some (term env true g) in
         (p, guard, dt)
       in
       let pl = List.map branch ptl in

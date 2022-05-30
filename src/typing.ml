@@ -432,7 +432,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
             ( pat,
               (match guard with
               | None -> None
-              | Some g -> Some (dterm_expected_op crcm g dty)),
+              | Some g -> Some (dfmla_expected crcm g)),
               dterm_expected_op crcm dt dty ))
           pdtl
       in
