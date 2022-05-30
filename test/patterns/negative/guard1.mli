@@ -1,5 +1,7 @@
-val f16 : int -> int
-(*@ r = f16 x
+val f : int -> int
+(*@ r = f x
   requires 0 = match x with
-           | _ when false->true -> 1 (* read as false -> (true -> 1) *)
+           | _ when false->true -> 1
 *)
+
+(* read as false -> (true -> 1) *)

@@ -1,4 +1,17 @@
 (rule
+ (targets ambiguous.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:ambiguous.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:ambiguous.mli.expected} %{dep:ambiguous.mli.output})))
+
+(rule
  (targets base.mli.output)
  (deps (source_tree .))
  (action
@@ -62,6 +75,58 @@
 (rule
  (alias runtest)
  (action (diff %{dep:float.mli.expected} %{dep:float.mli.output})))
+
+(rule
+ (targets guard1.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:guard1.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:guard1.mli.expected} %{dep:guard1.mli.output})))
+
+(rule
+ (targets guard2.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:guard2.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:guard2.mli.expected} %{dep:guard2.mli.output})))
+
+(rule
+ (targets guard3.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:guard3.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:guard3.mli.expected} %{dep:guard3.mli.output})))
+
+(rule
+ (targets guard4.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:guard4.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:guard4.mli.expected} %{dep:guard4.mli.output})))
 
 (rule
  (targets int.mli.output)

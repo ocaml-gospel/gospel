@@ -285,19 +285,6 @@
  (action (diff %{dep:open_existing_type.mli.expected} %{dep:open_existing_type.mli.output})))
 
 (rule
- (targets pattern_matching.mli.output)
- (deps (source_tree .))
- (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:pattern_matching.mli}")))))
-
-(rule
- (alias runtest)
- (action (diff %{dep:pattern_matching.mli.expected} %{dep:pattern_matching.mli.output})))
-
-(rule
  (targets record_functions.mli.output)
  (deps (source_tree .))
  (action
