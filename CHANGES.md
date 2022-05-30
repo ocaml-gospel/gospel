@@ -39,6 +39,8 @@
 
 ## Fixed
 
+- Constants can now be referenced in specifications.
+  [\#211](https://github.com/ocaml-gospel/gospel/pull/211)
 - Infix operators in specificaion headers are now accepted.
   [\#205](https://github.com/ocaml-gospel/gospel/pull/205)
 - Fix inconsistencies in typing/parsing of exceptional postconditions patterns.

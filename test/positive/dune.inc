@@ -175,6 +175,17 @@
  (action (diff %{dep:invariants.mli} %{dep:invariants.mli.output})))
 
 (rule
+ (target literals.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:literals.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:literals.mli} %{dep:literals.mli.output})))
+
+(rule
  (target log2.mli.output)
  (deps (source_tree .))
  (action

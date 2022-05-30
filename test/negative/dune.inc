@@ -10,6 +10,17 @@
  (action (diff %{dep:char1.mli} %{dep:char1.mli.output})))
 
 (rule
+ (target constants1.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:constants1.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:constants1.mli} %{dep:constants1.mli.output})))
+
+(rule
  (target constructor_arity1.mli.output)
  (deps (source_tree .))
  (action
