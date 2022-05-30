@@ -116,6 +116,7 @@
 (* priorities *)
 
 %nonassoc IN
+%nonassoc WITH
 %nonassoc DOT ELSE
 %nonassoc prec_named
 %right COLON AS
@@ -365,29 +366,33 @@ term_rec_field(X):
 ;
 
 match_cases:
-| xs=preceded_or_separated_nonempty_llist(BAR, match_case)
-    { xs }
-| cl = bar_list1(separated_pair(pattern, ARROW, term))
-{
-  List.map (fun (a,c) -> a,None,c) cl }
+| BAR? match_cases_ { $2 }
+(* | cl = bar_list1(separated_pair(pattern, ARROW, term))
+    { List.map (fun (a,c) -> a,None,c) cl } *)
+;
+match_cases_:
+| match_case { [$1] }
+| match_case BAR match_cases_ { $1::$3 }
 ;
 
 match_case:
-(* | pattern ARROW term { $1, None, $3 } *)
+| pattern ARROW term { $1, None, $3 }
 | pattern WHEN term ARROW term { $1, Some $3, $5 }
 ;
 
-reversed_preceded_or_separated_nonempty_llist(delimiter, X):
+(* reversed_preceded_or_separated_nonempty_llist(delimiter, X):
 | ioption(delimiter) x = X
     { [x] }
 | xs=reversed_preceded_or_separated_nonempty_llist(delimiter, X) delimiter x=X
     { x :: xs }
-;
+; *)
 
-%inline preceded_or_separated_nonempty_llist(delimiter, X):
-  xs = rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
-    { xs }
-;
+(* %inline preceded_or_separated_nonempty_llist(delimiter, X):
+(* | xs = rev(reversed_preceded_or_separated_nonempty_llist(delimiter, X))
+    { xs } *)
+| ioption(delimiter) l=separated_nonempty_list(delimiter, X)
+    { l }
+; *)
 
 (* match_case(X):
 | p=pattern ARROW t=X             { p, None, t }
