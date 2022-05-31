@@ -1,15 +1,15 @@
-(** Tests for constant literals *)
+val x : int ref
+val incr_x : unit -> unit
+(*@ incr_x ()
+    modifies x
+    ensures !x = old !x + 1 *)
 
-val f : int -> float
-(*@ y = f x
-    requires x = 0
-    ensures y = 0. *)
+type t
 
-val g : char -> string
-(*@ y = g x
-    requires x = 'c'
-    ensures y = "c" *)
-
+val y : t
+val modify_y : unit -> unit
+(*@ modify_y ()
+    modifies y *)
 (* EXPECTED
    [0] OK
 *)

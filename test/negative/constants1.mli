@@ -1,0 +1,8 @@
+val x : int -> int
+val invalid_modifies : unit -> unit
+(*@ invalid_modifies ()
+    modifies x *)
+(* EXPECTED
+   [125] File "constants1.mli", line 4, characters 13-14:
+         Error: Symbol x not found.
+*)
