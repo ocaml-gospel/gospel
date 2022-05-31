@@ -1,3 +1,32 @@
+type t = O | S of t
+
+val succ : t -> t
+(*@ y = succ x
+    ensures y = S x *)
+
+val test1 : t -> t -> t
+(*@ r = test1 x y
+    requires x <> O && y = O
+    ensures  match x, y with
+             | _, S _ -> false
+             | O, _   -> false
+             | S a, O -> r = S (S a) *)
+
+(* pattern of type unit *)
+val f_unit : int array -> unit
+(*@ x1 = f_unit a
+     modifies a
+     ensures match x1 with () -> true *)
+
+(*@ function fun_unit (x: unit): string =
+    match x with
+    | () -> "out" *)
+
+type t0 = B of int * int
+
+(*@ function f (x: t0) : unit =
+    match x with B _ -> () *)
+
 type t1 = A1 | A2 | B of t1
 
 (*@ function f (x: t1): integer =
@@ -162,4 +191,20 @@ val f15 : t15 * t15 * t15 * t15 -> int
      | _,_,B,B
      | _,_,_,A
      | _,_,_,B -> true
+*)
+
+(* guards *)
+
+type t16 = A | B of t16 | C of t16 * t16
+
+val f16 : t16 -> int
+(*@ r = f16 x
+  requires match x with
+           | A when true  -> true
+           | B y when y=A -> true
+           | B y when false -> true && y=A
+           | C (y,z) when y=A && z=A -> true
+           | C (y,z) when (y=A -> z=A) -> true
+           | C (y,z) when (match y with A -> true | _ -> false) -> true
+           | _ -> true
 *)

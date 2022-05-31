@@ -2,6 +2,7 @@
 
 ## Added
 
+- Added `when` guards in pattern-matching [\#206](https://github.com/ocaml-gospel/gospel/pull/206)
 - Added a `with` construct to name a variable in type invariants referring to a
   value of the specified type.
   [\#187](https://github.com/ocaml-gospel/gospel/pull/187)

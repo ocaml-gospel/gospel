@@ -1,0 +1,9 @@
+
+*******************************
+********** Parsed file ********
+*******************************
+val f : int -> int[@@gospel
+                    {| y = f x
+      requires 0 = match x with _ when match 1 with _ -> true -> 1 | _ -> 2 |}]
+File "guard2.mli", line 3, characters 76-76:
+Error: Syntax error.

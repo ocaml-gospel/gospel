@@ -70,7 +70,7 @@ and term_desc =
   | Tquant of quant * binder list * term
   | Tattr of string * term
   | Tlet of Preid.t * term * term
-  | Tcase of term * (pattern * term) list
+  | Tcase of term * (pattern * term option * term) list
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term) list

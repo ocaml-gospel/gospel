@@ -63,8 +63,12 @@ module Pmatrix : sig
   val from_pat : pattern list -> t
   (** Creates a matrix *)
 
-  val add_col : t -> pattern -> t
+  val push_col : t -> pattern -> t
   (** Adds the pattern in the front of each row of the matrix *)
+
+  val enqueue_col : t -> int -> t
+  (** Appends _ at the back of each row except for the i-th one where it put the
+      Boolean pattern true *)
 
   val encap_row : lsymbol -> int -> t -> t
   (** [m' = encap_row c k m] The first row of m' differ from m such that the k
@@ -120,7 +124,7 @@ end = struct
   let fst pmat =
     match pmat.mat with (h :: _) :: _ -> h | _ -> invalid_arg "Pmatrix.fst"
 
-  let add_col pmat col_elt =
+  let push_col pmat col_elt =
     if pmat = empty then { rows = 1; cols = 1; mat = [ [ col_elt ] ] }
     else
       {
@@ -128,6 +132,18 @@ end = struct
         cols = pmat.cols + 1;
         mat = List.map (fun e -> col_elt :: e) pmat.mat;
       }
+
+  let enqueue_col pmat i =
+    {
+      rows = pmat.rows;
+      cols = pmat.cols + 1;
+      mat =
+        List.mapi
+          (fun i' e ->
+            if i = i' then e @ [ mk_pattern (Papp (fs_bool_true, [])) ty_bool ]
+            else e @ [ mk_pattern Pwild ty_bool ])
+          pmat.mat;
+    }
 
   let encap_row ck ak pmat =
     let rec split acc i l =
@@ -447,7 +463,7 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
                       p_loc = None;
                     }
                   in
-                  let pm = Pmatrix.add_col pm c in
+                  let pm = Pmatrix.push_col pm c in
                   raise (Brk pm))
             (List.init 256 (fun i -> i))
         else
@@ -467,19 +483,47 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
       | None -> None
       | Some pm ->
           if Sigma.is_empty sigma && not (is_builtin thd) then
-            Some (Pmatrix.add_col pm (mk_pattern Pwild thd))
+            Some (Pmatrix.push_col pm (mk_pattern Pwild thd))
           else
             let pat_node = Sigma.other_one thd sigma pmat in
             let pat = mk_pattern pat_node thd in
-            Some (Pmatrix.add_col pm pat)
+            Some (Pmatrix.push_col pm pat)
 
 let ui tyl pmat = Option.get (ui tyl pmat) |> Pmatrix.fst
 
+let check_ambiguous ~loc cases =
+  let rec contains_or p =
+    match p.p_node with
+    | Por _ -> true
+    | Pas (p, _) -> contains_or p
+    | Papp (_, pl) -> List.exists contains_or pl
+    | _ -> false
+  in
+  List.iter
+    (function
+      | p, Some _, _ ->
+          if contains_or p then
+            W.error ~loc:(Option.value p.p_loc ~default:loc) W.Ambiguous_pattern
+      | _, None, _ -> ())
+    cases
+
 let check_exhaustive ~loc ty cases =
-  let pat = List.map fst cases in
+  check_ambiguous ~loc cases;
+  let whens = ref [] in
+  let pat =
+    List.mapi
+      (fun i (p, g, _) ->
+        if Option.is_some g then whens := i :: !whens;
+        p)
+      cases
+  in
   let pmat = Pmatrix.from_pat pat in
-  let q = mk_wild [ (List.hd pat |> fun p -> p.p_ty) ] in
-  if usefulness [ ty ] pmat q then
-    let pm = ui [ ty ] pmat in
+  let pmat = List.fold_left Pmatrix.enqueue_col pmat !whens in
+  let bools = List.map (fun _ -> ty_bool) !whens in
+  let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
+  if usefulness (ty :: bools) pmat q then
+    let pm = ui (ty :: bools) pmat in
     let s = Fmt.str "@[%a@]" Tterm_printer.print_pattern pm in
-    W.error ~loc (W.Pattern_not_exhaustive s)
+    match bools with
+    | [] -> W.error ~loc (W.Pattern_not_exhaustive s)
+    | _ -> W.error ~loc (W.Pattern_guard_not_exhaustive s)

@@ -61,7 +61,7 @@ and term_node =
   | Tfield of term * lsymbol
   | Tif of term * term * term
   | Tlet of vsymbol * term * term
-  | Tcase of term * (pattern * term) list
+  | Tcase of term * (pattern * term option * term) list
   | Tquant of quant * vsymbol list * term
   | Tbinop of binop * term * term
   | Tnot of term
