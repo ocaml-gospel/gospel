@@ -59,3 +59,7 @@ val default : MF.ft -> MF.ft
     requires MF.fp1 y
     ensures MF.fp2 x
 *)
+
+(* EXPECTED
+   [0] OK
+*)

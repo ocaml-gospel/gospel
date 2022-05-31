@@ -10,3 +10,10 @@ type a = A of string | B
     | A "4444"
     | A "55555"
     | A "666666" -> () *)
+
+(* EXPECTED
+   [125] File "str.mli", line 4, characters 4-128:
+         Error: This pattern-matching is not exhaustive.
+                Here is an example of a case that is not matched:
+                  A "???????".
+*)

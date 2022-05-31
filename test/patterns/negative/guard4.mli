@@ -6,3 +6,9 @@ val f : t -> int
            | A when 1 = 1 -> true
            | _ when true -> false
 *)
+(* EXPECTED
+   [125] File "guard4.mli", line 5, characters 11-91:
+         Error: This pattern-matching may not be exhaustive because of the guard.
+                Here is an example of a case that may not be matched:
+                  A.
+*)

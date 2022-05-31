@@ -1,65 +1,55 @@
 (rule
- (targets bad_type_id.mli.output)
+ (target bad_type_id.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:bad_type_id.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:bad_type_id.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:bad_type_id.mli.expected} %{dep:bad_type_id.mli.output})))
+ (action (diff %{dep:bad_type_id.mli} %{dep:bad_type_id.mli.output})))
 
 (rule
- (targets bad_type_multiple_args.mli.output)
+ (target bad_type_multiple_args.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:bad_type_multiple_args.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:bad_type_multiple_args.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:bad_type_multiple_args.mli.expected} %{dep:bad_type_multiple_args.mli.output})))
+ (action (diff %{dep:bad_type_multiple_args.mli} %{dep:bad_type_multiple_args.mli.output})))
 
 (rule
- (targets complex_cycle.mli.output)
+ (target complex_cycle.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:complex_cycle.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:complex_cycle.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:complex_cycle.mli.expected} %{dep:complex_cycle.mli.output})))
+ (action (diff %{dep:complex_cycle.mli} %{dep:complex_cycle.mli.output})))
 
 (rule
- (targets double_definition.mli.output)
+ (target double_definition.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:double_definition.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:double_definition.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:double_definition.mli.expected} %{dep:double_definition.mli.output})))
+ (action (diff %{dep:double_definition.mli} %{dep:double_definition.mli.output})))
 
 (rule
- (targets simple_cycle.mli.output)
+ (target simple_cycle.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:simple_cycle.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:simple_cycle.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:simple_cycle.mli.expected} %{dep:simple_cycle.mli.output})))
+ (action (diff %{dep:simple_cycle.mli} %{dep:simple_cycle.mli.output})))
 

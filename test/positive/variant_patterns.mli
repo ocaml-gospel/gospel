@@ -21,3 +21,7 @@ val f : int -> t -> bool
     raises F _ -> true
     raises E (_, _) -> true
     raises F (_, _) -> true *)
+
+(* EXPECTED
+   [0] OK
+*)

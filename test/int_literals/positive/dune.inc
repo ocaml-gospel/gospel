@@ -1,13 +1,11 @@
 (rule
- (targets ints.mli.output)
+ (target ints.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:ints.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:ints.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ints.mli.expected} %{dep:ints.mli.output})))
+ (action (diff %{dep:ints.mli} %{dep:ints.mli.output})))
 

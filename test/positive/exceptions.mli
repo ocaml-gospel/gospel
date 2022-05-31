@@ -43,3 +43,7 @@ val f : 'a -> 'a
                    | [] -> true
                    | y :: ys -> y = i
     raises E5 f -> integer_of_int (f (int_of_integer 3)) = 4 *)
+
+(* EXPECTED
+   [0] OK
+*)

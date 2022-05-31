@@ -3,3 +3,7 @@ val f : int -> int * int
 
 val f : int -> int * int * int
 (*@ pure *)
+
+(* EXPECTED
+   [0] OK
+*)

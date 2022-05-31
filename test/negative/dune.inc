@@ -1,689 +1,583 @@
 (rule
- (targets char1.mli.output)
+ (target char1.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:char1.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:char1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:char1.mli.expected} %{dep:char1.mli.output})))
+ (action (diff %{dep:char1.mli} %{dep:char1.mli.output})))
 
 (rule
- (targets constructor_arity1.mli.output)
+ (target constructor_arity1.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:constructor_arity1.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity1.mli.expected} %{dep:constructor_arity1.mli.output})))
+ (action (diff %{dep:constructor_arity1.mli} %{dep:constructor_arity1.mli.output})))
 
 (rule
- (targets constructor_arity2.mli.output)
+ (target constructor_arity2.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:constructor_arity2.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity2.mli.expected} %{dep:constructor_arity2.mli.output})))
+ (action (diff %{dep:constructor_arity2.mli} %{dep:constructor_arity2.mli.output})))
 
 (rule
- (targets constructor_arity3.mli.output)
+ (target constructor_arity3.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:constructor_arity3.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity3.mli.expected} %{dep:constructor_arity3.mli.output})))
+ (action (diff %{dep:constructor_arity3.mli} %{dep:constructor_arity3.mli.output})))
 
 (rule
- (targets constructor_arity4.mli.output)
+ (target constructor_arity4.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:constructor_arity4.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity4.mli.expected} %{dep:constructor_arity4.mli.output})))
+ (action (diff %{dep:constructor_arity4.mli} %{dep:constructor_arity4.mli.output})))
 
 (rule
- (targets empty_match.mli.output)
+ (target empty_match.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:empty_match.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:empty_match.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:empty_match.mli.expected} %{dep:empty_match.mli.output})))
+ (action (diff %{dep:empty_match.mli} %{dep:empty_match.mli.output})))
 
 (rule
- (targets exception_no_pattern.mli.output)
+ (target exception_no_pattern.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:exception_no_pattern.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:exception_no_pattern.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:exception_no_pattern.mli.expected} %{dep:exception_no_pattern.mli.output})))
+ (action (diff %{dep:exception_no_pattern.mli} %{dep:exception_no_pattern.mli.output})))
 
 (rule
- (targets exn_arity.mli.output)
+ (target exn_arity.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:exn_arity.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:exn_arity.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:exn_arity.mli.expected} %{dep:exn_arity.mli.output})))
+ (action (diff %{dep:exn_arity.mli} %{dep:exn_arity.mli.output})))
 
 (rule
- (targets field_application.mli.output)
+ (target field_application.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:field_application.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:field_application.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:field_application.mli.expected} %{dep:field_application.mli.output})))
+ (action (diff %{dep:field_application.mli} %{dep:field_application.mli.output})))
 
 (rule
- (targets invariant1.mli.output)
+ (target invariant1.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invariant1.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invariant1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant1.mli.expected} %{dep:invariant1.mli.output})))
+ (action (diff %{dep:invariant1.mli} %{dep:invariant1.mli.output})))
 
 (rule
- (targets invariant2.mli.output)
+ (target invariant2.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invariant2.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invariant2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant2.mli.expected} %{dep:invariant2.mli.output})))
+ (action (diff %{dep:invariant2.mli} %{dep:invariant2.mli.output})))
 
 (rule
- (targets invariant3.mli.output)
+ (target invariant3.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invariant3.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invariant3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant3.mli.expected} %{dep:invariant3.mli.output})))
+ (action (diff %{dep:invariant3.mli} %{dep:invariant3.mli.output})))
 
 (rule
- (targets invariant4.mli.output)
+ (target invariant4.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invariant4.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invariant4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant4.mli.expected} %{dep:invariant4.mli.output})))
+ (action (diff %{dep:invariant4.mli} %{dep:invariant4.mli.output})))
 
 (rule
- (targets invariant5.mli.output)
+ (target invariant5.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invariant5.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invariant5.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant5.mli.expected} %{dep:invariant5.mli.output})))
+ (action (diff %{dep:invariant5.mli} %{dep:invariant5.mli.output})))
 
 (rule
- (targets t1.mli.output)
+ (target t1.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t1.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t1.mli.expected} %{dep:t1.mli.output})))
+ (action (diff %{dep:t1.mli} %{dep:t1.mli.output})))
 
 (rule
- (targets t10.mli.output)
+ (target t10.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t10.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t10.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t10.mli.expected} %{dep:t10.mli.output})))
+ (action (diff %{dep:t10.mli} %{dep:t10.mli.output})))
 
 (rule
- (targets t11.mli.output)
+ (target t11.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t11.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t11.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t11.mli.expected} %{dep:t11.mli.output})))
+ (action (diff %{dep:t11.mli} %{dep:t11.mli.output})))
 
 (rule
- (targets t12.mli.output)
+ (target t12.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t12.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t12.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t12.mli.expected} %{dep:t12.mli.output})))
+ (action (diff %{dep:t12.mli} %{dep:t12.mli.output})))
 
 (rule
- (targets t13.mli.output)
+ (target t13.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t13.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t13.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t13.mli.expected} %{dep:t13.mli.output})))
+ (action (diff %{dep:t13.mli} %{dep:t13.mli.output})))
 
 (rule
- (targets t14.mli.output)
+ (target t14.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t14.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t14.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t14.mli.expected} %{dep:t14.mli.output})))
+ (action (diff %{dep:t14.mli} %{dep:t14.mli.output})))
 
 (rule
- (targets t15.mli.output)
+ (target t15.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t15.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t15.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t15.mli.expected} %{dep:t15.mli.output})))
+ (action (diff %{dep:t15.mli} %{dep:t15.mli.output})))
 
 (rule
- (targets t16.mli.output)
+ (target t16.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t16.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t16.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t16.mli.expected} %{dep:t16.mli.output})))
+ (action (diff %{dep:t16.mli} %{dep:t16.mli.output})))
 
 (rule
- (targets t17.mli.output)
+ (target t17.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t17.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t17.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t17.mli.expected} %{dep:t17.mli.output})))
+ (action (diff %{dep:t17.mli} %{dep:t17.mli.output})))
 
 (rule
- (targets t18.mli.output)
+ (target t18.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t18.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t18.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t18.mli.expected} %{dep:t18.mli.output})))
+ (action (diff %{dep:t18.mli} %{dep:t18.mli.output})))
 
 (rule
- (targets t19.mli.output)
+ (target t19.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t19.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t19.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t19.mli.expected} %{dep:t19.mli.output})))
+ (action (diff %{dep:t19.mli} %{dep:t19.mli.output})))
 
 (rule
- (targets t2.mli.output)
+ (target t2.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t2.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t2.mli.expected} %{dep:t2.mli.output})))
+ (action (diff %{dep:t2.mli} %{dep:t2.mli.output})))
 
 (rule
- (targets t20.mli.output)
+ (target t20.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t20.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t20.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t20.mli.expected} %{dep:t20.mli.output})))
+ (action (diff %{dep:t20.mli} %{dep:t20.mli.output})))
 
 (rule
- (targets t21.mli.output)
+ (target t21.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t21.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t21.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t21.mli.expected} %{dep:t21.mli.output})))
+ (action (diff %{dep:t21.mli} %{dep:t21.mli.output})))
 
 (rule
- (targets t22.mli.output)
+ (target t22.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t22.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t22.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t22.mli.expected} %{dep:t22.mli.output})))
+ (action (diff %{dep:t22.mli} %{dep:t22.mli.output})))
 
 (rule
- (targets t23.mli.output)
+ (target t23.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t23.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t23.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t23.mli.expected} %{dep:t23.mli.output})))
+ (action (diff %{dep:t23.mli} %{dep:t23.mli.output})))
 
 (rule
- (targets t24.mli.output)
+ (target t24.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t24.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t24.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t24.mli.expected} %{dep:t24.mli.output})))
+ (action (diff %{dep:t24.mli} %{dep:t24.mli.output})))
 
 (rule
- (targets t25.mli.output)
+ (target t25.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t25.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t25.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t25.mli.expected} %{dep:t25.mli.output})))
+ (action (diff %{dep:t25.mli} %{dep:t25.mli.output})))
 
 (rule
- (targets t26.mli.output)
+ (target t26.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t26.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t26.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t26.mli.expected} %{dep:t26.mli.output})))
+ (action (diff %{dep:t26.mli} %{dep:t26.mli.output})))
 
 (rule
- (targets t27.mli.output)
+ (target t27.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t27.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t27.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t27.mli.expected} %{dep:t27.mli.output})))
+ (action (diff %{dep:t27.mli} %{dep:t27.mli.output})))
 
 (rule
- (targets t28.mli.output)
+ (target t28.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t28.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t28.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t28.mli.expected} %{dep:t28.mli.output})))
+ (action (diff %{dep:t28.mli} %{dep:t28.mli.output})))
 
 (rule
- (targets t29.mli.output)
+ (target t29.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t29.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t29.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t29.mli.expected} %{dep:t29.mli.output})))
+ (action (diff %{dep:t29.mli} %{dep:t29.mli.output})))
 
 (rule
- (targets t3.mli.output)
+ (target t3.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t3.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t3.mli.expected} %{dep:t3.mli.output})))
+ (action (diff %{dep:t3.mli} %{dep:t3.mli.output})))
 
 (rule
- (targets t30.mli.output)
+ (target t30.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t30.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t30.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t30.mli.expected} %{dep:t30.mli.output})))
+ (action (diff %{dep:t30.mli} %{dep:t30.mli.output})))
 
 (rule
- (targets t31.mli.output)
+ (target t31.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t31.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t31.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t31.mli.expected} %{dep:t31.mli.output})))
+ (action (diff %{dep:t31.mli} %{dep:t31.mli.output})))
 
 (rule
- (targets t32.mli.output)
+ (target t32.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t32.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t32.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t32.mli.expected} %{dep:t32.mli.output})))
+ (action (diff %{dep:t32.mli} %{dep:t32.mli.output})))
 
 (rule
- (targets t33.mli.output)
+ (target t33.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t33.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t33.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t33.mli.expected} %{dep:t33.mli.output})))
+ (action (diff %{dep:t33.mli} %{dep:t33.mli.output})))
 
 (rule
- (targets t34.mli.output)
+ (target t34.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t34.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t34.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t34.mli.expected} %{dep:t34.mli.output})))
+ (action (diff %{dep:t34.mli} %{dep:t34.mli.output})))
 
 (rule
- (targets t35.mli.output)
+ (target t35.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t35.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t35.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t35.mli.expected} %{dep:t35.mli.output})))
+ (action (diff %{dep:t35.mli} %{dep:t35.mli.output})))
 
 (rule
- (targets t36.mli.output)
+ (target t36.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t36.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t36.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t36.mli.expected} %{dep:t36.mli.output})))
+ (action (diff %{dep:t36.mli} %{dep:t36.mli.output})))
 
 (rule
- (targets t37.mli.output)
+ (target t37.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t37.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t37.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t37.mli.expected} %{dep:t37.mli.output})))
+ (action (diff %{dep:t37.mli} %{dep:t37.mli.output})))
 
 (rule
- (targets t38.mli.output)
+ (target t38.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t38.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t38.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t38.mli.expected} %{dep:t38.mli.output})))
+ (action (diff %{dep:t38.mli} %{dep:t38.mli.output})))
 
 (rule
- (targets t39.mli.output)
+ (target t39.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t39.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t39.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t39.mli.expected} %{dep:t39.mli.output})))
+ (action (diff %{dep:t39.mli} %{dep:t39.mli.output})))
 
 (rule
- (targets t4.mli.output)
+ (target t4.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t4.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t4.mli.expected} %{dep:t4.mli.output})))
+ (action (diff %{dep:t4.mli} %{dep:t4.mli.output})))
 
 (rule
- (targets t5.mli.output)
+ (target t5.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t5.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t5.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t5.mli.expected} %{dep:t5.mli.output})))
+ (action (diff %{dep:t5.mli} %{dep:t5.mli.output})))
 
 (rule
- (targets t6.mli.output)
+ (target t6.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t6.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t6.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t6.mli.expected} %{dep:t6.mli.output})))
+ (action (diff %{dep:t6.mli} %{dep:t6.mli.output})))
 
 (rule
- (targets t7.mli.output)
+ (target t7.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t7.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t7.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t7.mli.expected} %{dep:t7.mli.output})))
+ (action (diff %{dep:t7.mli} %{dep:t7.mli.output})))
 
 (rule
- (targets t8.mli.output)
+ (target t8.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t8.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t8.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t8.mli.expected} %{dep:t8.mli.output})))
+ (action (diff %{dep:t8.mli} %{dep:t8.mli.output})))
 
 (rule
- (targets t9.mli.output)
+ (target t9.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:t9.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:t9.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t9.mli.expected} %{dep:t9.mli.output})))
+ (action (diff %{dep:t9.mli} %{dep:t9.mli.output})))
 

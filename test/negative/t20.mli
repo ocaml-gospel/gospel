@@ -15,3 +15,8 @@ val f : ?y:int -> int -> int
    Line 12
    the first parameter is optional but named in spec header
    replace ~ by ? line 12 *)
+
+(* EXPECTED
+   [125] File "t20.mli", line 12, characters 8-9:
+         Error: Type checking error: parameter do not match with val type.
+*)

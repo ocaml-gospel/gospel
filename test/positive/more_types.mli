@@ -30,3 +30,7 @@ type ('a, 'b) t7 = 'a t6
   match x with
   | {x;y} -> {x;y}
 *)
+
+(* EXPECTED
+   [0] OK
+*)

@@ -5,3 +5,10 @@ type t = A of char
       | A ('\011'..'a')
       | A ('c'..'\255') -> false
 *)
+
+(* EXPECTED
+   [125] File "char2.mli", line 3, characters 6-111:
+         Error: This pattern-matching is not exhaustive.
+                Here is an example of a case that is not matched:
+                  A 'b'.
+*)

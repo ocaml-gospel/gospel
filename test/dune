@@ -1,0 +1,15 @@
+; This is a hack to work around https://github.com/ocaml/dune/issues/3499
+; We first build the binary, then copy it to a new name.
+; This allows us to add in the run-time dependency on gospel in the
+; copy step.
+
+(rule
+ (target gospel_check.ml)
+ (deps
+  (package gospel))
+ (action
+  (copy test.ml gospel_check.ml)))
+
+(executable
+ (name gospel_check)
+ (libraries fmt))

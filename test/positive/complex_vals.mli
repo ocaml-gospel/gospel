@@ -30,3 +30,7 @@ val f : int -> int -> int
     ensures r = x + y
     ensures r > 2
     ensures r = 3 *)
+
+(* EXPECTED
+   [0] OK
+*)

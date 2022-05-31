@@ -10,3 +10,10 @@ type t3
 
 (*@ function c3 (x: t3) : t1 *)
 (*@ coercion *)
+
+(* EXPECTED
+   [125] File "complex_cycle.mli", line 11, characters 10-12:
+         Error: This coercion introduces a cycle:
+                  c1: t1 -> t2
+                  c2: t2 -> t3.
+*)

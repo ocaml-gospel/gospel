@@ -15,3 +15,8 @@ val f : z:int -> int -> int
    Line 12
    first parameter does not match the name in the type
    remove replace x by z in line 12 *)
+
+(* EXPECTED
+   [125] File "t18.mli", line 12, characters 8-9:
+         Error: Type checking error: parameter do not match with val type.
+*)

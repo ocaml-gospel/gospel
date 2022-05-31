@@ -11,3 +11,8 @@
 (*@ axiom a1: 1 *)
 
 (* ERROR: axiom should be a formula *)
+
+(* EXPECTED
+   [125] File "t1.mli", line 11, characters 11-12:
+         Error: This term has type `integer' but a term was expected of type `bool'.
+*)

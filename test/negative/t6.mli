@@ -16,3 +16,8 @@
     ensures x > 1 *)
 
 (* ERROR: the term in the variant clause should be of type integer *)
+
+(* EXPECTED
+   [125] File "t6.mli", line 13, characters 12-17:
+         Error: A term was expected.
+*)

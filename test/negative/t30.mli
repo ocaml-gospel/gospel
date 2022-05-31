@@ -21,3 +21,8 @@ val f : 'a -> 'a
    Line 18
    exception E has two arguments
    change pattern in line 18, or define E, as exception E of (int * int) *)
+
+(* EXPECTED
+   [125] File "t30.mli", line 18, characters 11-44:
+         Error: Type checking error: Exception pattern doesn't match its type.
+*)
