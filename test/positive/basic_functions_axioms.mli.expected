@@ -95,8 +95,8 @@ type 'a t6 = {
 [@@@gospel
   {| function g (a: t4) (b: t4 t5) : t4 t6 =
   match b with
-  | {x; y} -> {xx=y;yy=x}
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
+  | {x; y} -> {xx=y;yy=x}
 |}]
 
 *******************************
@@ -428,10 +428,10 @@ module basic_functions_axioms.mli
     
     (*@ function g (a_8:t4) (b_5:t4 t5): t4 t6 =
         match b_5:t4 t5 with
-        | constr#t5 (x_21:int, y_6:t4) -> (constr#t6  y_6:t4 x_21:int):t4 t6
-        | constr#t5 (x_22:int, B) -> (constr#t6 
+        | constr#t5 (x_21:int, B) -> (constr#t6 
                                      (b_5:t4 t5).y (int_of_integer 
                                      10:integer):int):t4 t6
+        | constr#t5 (x_22:int, y_6:t4) -> (constr#t6  y_6:t4 x_22:int):t4 t6
         end::t4 t6
     *)
 

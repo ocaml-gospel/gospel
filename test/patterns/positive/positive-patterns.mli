@@ -71,9 +71,7 @@ val f5 : bool -> int
 
 (*@ r = f5 x
     ensures match x with
-      | true
-      | false
-      | true -> r <> 1
+      | false -> r <> 1
       | true -> true
     ensures match true with _ -> true
     ensures match true with x -> true
@@ -122,10 +120,8 @@ val f10 : bool -> int
 (*@ r = f10 x
     ensures
       match x with
-      | true
-      | false
       | true -> r <> 1
-      | true -> true
+      | false -> true
     ensures
       match true with
       | _ -> true
@@ -192,8 +188,6 @@ val f15 : t15 * t15 * t15 * t15 -> int
      | _,_,_,A
      | _,_,_,B -> true
 *)
-
-(* guards *)
 
 type t16 = A | B of t16 | C of t16 * t16
 

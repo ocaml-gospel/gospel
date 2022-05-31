@@ -39,6 +39,7 @@ type kind =
   | Function_symbol_expected of string
   | Pattern_not_exhaustive of string
   | Pattern_guard_not_exhaustive of string
+  | Pattern_redundant of string
   | Ambiguous_pattern
 
 type error = location * kind
@@ -137,6 +138,11 @@ let pp_kind ppf = function
          Here is an example of a case that may not be matched:@\n\
         \  %s" p
   | Ambiguous_pattern -> pf ppf "Ambiguous or-pattern under guard"
+  | Pattern_redundant p ->
+      pf ppf
+        "The pattern-matching is redundant.@\n\
+         Here is a case that is unused:@\n\
+        \  %s" p
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
