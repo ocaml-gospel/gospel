@@ -23,5 +23,7 @@ val f : 'a -> 'a
 
 (* {gospel_expected|
    [125] File "t29.mli", line 17, characters 31-32:
+         17 |                   | y :: ys -> y = 2 *)
+                                             ^
          Error: This term has type `float' but a term was expected of type `integer'.
    |gospel_expected} *)

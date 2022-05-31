@@ -13,6 +13,8 @@
 (* ERROR: axiom should be a formula *)
 
 (* {gospel_expected|
-   [125] File "t1.mli", line 11, characters 11-12:
+   [125] File "t1.mli", line 11, characters 14-15:
+         11 | (*@ axiom a1: 1 *)
+                            ^
          Error: This term has type `integer' but a term was expected of type `bool'.
    |gospel_expected} *)

@@ -17,6 +17,8 @@ val f : ?y:int -> int -> int
    replace ~ by ? line 12 *)
 
 (* {gospel_expected|
-   [125] File "t20.mli", line 12, characters 8-9:
+   [125] File "t20.mli", line 12, characters 11-12:
+         12 | (*@ r = f ~y x*)
+                         ^
          Error: Type checking error: parameter do not match with val type.
    |gospel_expected} *)

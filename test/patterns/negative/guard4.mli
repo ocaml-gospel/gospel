@@ -8,6 +8,9 @@ val f : t -> int
 *)
 (* {gospel_expected|
    [125] File "guard4.mli", line 5, characters 11-91:
+         5 | ...........match x with
+         6 |            | A when 1 = 1 -> true
+         7 |            | _ when true -> false
          Error: This pattern-matching may not be exhaustive because of the guard.
                 Here is an example of a case that may not be matched:
                   A.

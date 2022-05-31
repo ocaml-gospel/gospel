@@ -18,5 +18,7 @@ type t2 = t1
 
 (* {gospel_expected|
    [125] File "t39.mli", line 12, characters 10-12:
+         12 | type t2 = t1
+                        ^^
          Error: The type `t1' expects 1 argument(s) but was given 0 argument(s) here.
    |gospel_expected} *)

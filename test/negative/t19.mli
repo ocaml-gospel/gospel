@@ -17,6 +17,8 @@ val f : y:int -> int -> int
    remove replace the second y by z in line 12 *)
 
 (* {gospel_expected|
-   [125] File "t19.mli", line 12, characters 10-11:
+   [125] File "t19.mli", line 12, characters 13-14:
+         12 | (*@ r = f ~y y*)
+                           ^
          Error: The variable `y' is duplicated in this pattern.
    |gospel_expected} *)

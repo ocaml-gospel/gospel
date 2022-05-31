@@ -18,6 +18,8 @@
 (* ERROR: the term in the requires clause should be of type bool or prop *)
 
 (* {gospel_expected|
-   [125] File "t5.mli", line 12, characters 10-11:
+   [125] File "t5.mli", line 12, characters 13-14:
+         12 | (*@ requires x
+                           ^
          Error: This term has type `integer' but a term was expected of type `bool'.
    |gospel_expected} *)
