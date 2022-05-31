@@ -31,6 +31,7 @@ let mex a =
     n
   with Brk i -> i
 
+(* To be removed when upgrade to OCaml 4.11 will be done *)
 let filteri p l =
   let rec aux i acc = function
     | [] -> List.rev acc
