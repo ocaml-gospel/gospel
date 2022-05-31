@@ -125,3 +125,7 @@ type 'a t6 = { xx : 'a; yy : int }
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
   | {x; y} -> {xx=y;yy=x}
 *)
+
+(* EXPECTED
+   [0] OK
+*)

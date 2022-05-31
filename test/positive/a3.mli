@@ -3,3 +3,7 @@
 
 (* @ open A1 *)
 (*@ type t4 = A1.t *)
+
+(* EXPECTED
+   [0] OK
+*)

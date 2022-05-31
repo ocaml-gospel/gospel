@@ -9,3 +9,7 @@ val g : char -> string
 (*@ y = g x
     requires x = 'c'
     ensures y = "c" *)
+
+(* EXPECTED
+   [0] OK
+*)

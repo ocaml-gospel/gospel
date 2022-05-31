@@ -202,3 +202,6 @@ val f16 : t16 -> int
            | C (y,z) when (match y with A -> true | _ -> false) -> true
            | _ -> true
 *)
+(* EXPECTED
+   [0] OK
+*)

@@ -11,3 +11,8 @@
 (*@ function f (x:float): bool = x = 2 *)
 
 (* ERROR Type mismatch float and integer *)
+
+(* EXPECTED
+   [125] File "t3.mli", line 11, characters 30-31:
+         Error: This term has type `float' but a term was expected of type `integer'.
+*)

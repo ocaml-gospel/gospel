@@ -18,3 +18,8 @@ type 'a t = { x : int; y : 'a }
    Line 13
    type t must have one argument
    add one argument to type t in line 13 *)
+
+(* EXPECTED
+   [125] File "t36.mli", line 11, characters 8-9:
+         Error: The type `t' expects 1 argument(s) but was given 0 argument(s) here.
+*)

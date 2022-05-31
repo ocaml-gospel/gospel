@@ -1,156 +1,132 @@
 (rule
- (targets Arrays.mli.output)
+ (target Arrays.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Arrays.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:Arrays.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Arrays.mli.expected} %{dep:Arrays.mli.output})))
+ (action (diff %{dep:Arrays.mli} %{dep:Arrays.mli.output})))
 
 (rule
- (targets CountingSort.mli.output)
+ (target CountingSort.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:CountingSort.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:CountingSort.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:CountingSort.mli.expected} %{dep:CountingSort.mli.output})))
+ (action (diff %{dep:CountingSort.mli} %{dep:CountingSort.mli.output})))
 
 (rule
- (targets HashTable.mli.output)
+ (target HashTable.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:HashTable.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:HashTable.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:HashTable.mli.expected} %{dep:HashTable.mli.output})))
+ (action (diff %{dep:HashTable.mli} %{dep:HashTable.mli.output})))
 
 (rule
- (targets Lists.mli.output)
+ (target Lists.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Lists.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:Lists.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Lists.mli.expected} %{dep:Lists.mli.output})))
+ (action (diff %{dep:Lists.mli} %{dep:Lists.mli.output})))
 
 (rule
- (targets Mjrty.mli.output)
+ (target Mjrty.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Mjrty.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:Mjrty.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Mjrty.mli.expected} %{dep:Mjrty.mli.output})))
+ (action (diff %{dep:Mjrty.mli} %{dep:Mjrty.mli.output})))
 
 (rule
- (targets PairingHeap.mli.output)
+ (target PairingHeap.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:PairingHeap.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:PairingHeap.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PairingHeap.mli.expected} %{dep:PairingHeap.mli.output})))
+ (action (diff %{dep:PairingHeap.mli} %{dep:PairingHeap.mli.output})))
 
 (rule
- (targets PriorityQueue.mli.output)
+ (target PriorityQueue.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:PriorityQueue.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:PriorityQueue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PriorityQueue.mli.expected} %{dep:PriorityQueue.mli.output})))
+ (action (diff %{dep:PriorityQueue.mli} %{dep:PriorityQueue.mli.output})))
 
 (rule
- (targets Queue.mli.output)
+ (target Queue.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Queue.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:Queue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Queue.mli.expected} %{dep:Queue.mli.output})))
+ (action (diff %{dep:Queue.mli} %{dep:Queue.mli.output})))
 
 (rule
- (targets RingBuffer.mli.output)
+ (target RingBuffer.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:RingBuffer.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:RingBuffer.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:RingBuffer.mli.expected} %{dep:RingBuffer.mli.output})))
+ (action (diff %{dep:RingBuffer.mli} %{dep:RingBuffer.mli.output})))
 
 (rule
- (targets UnionFind.mli.output)
+ (target UnionFind.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:UnionFind.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:UnionFind.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:UnionFind.mli.expected} %{dep:UnionFind.mli.output})))
+ (action (diff %{dep:UnionFind.mli} %{dep:UnionFind.mli.output})))
 
 (rule
- (targets Vector.mli.output)
+ (target Vector.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Vector.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:Vector.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Vector.mli.expected} %{dep:Vector.mli.output})))
+ (action (diff %{dep:Vector.mli} %{dep:Vector.mli.output})))
 
 (rule
- (targets ZipperList.mli.output)
+ (target ZipperList.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:ZipperList.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:ZipperList.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ZipperList.mli.expected} %{dep:ZipperList.mli.output})))
+ (action (diff %{dep:ZipperList.mli} %{dep:ZipperList.mli.output})))
 

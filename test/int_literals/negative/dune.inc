@@ -1,26 +1,22 @@
 (rule
- (targets bad_constr_arg.mli.output)
+ (target bad_constr_arg.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:bad_constr_arg.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:bad_constr_arg.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:bad_constr_arg.mli.expected} %{dep:bad_constr_arg.mli.output})))
+ (action (diff %{dep:bad_constr_arg.mli} %{dep:bad_constr_arg.mli.output})))
 
 (rule
- (targets invalid_literal.mli.output)
+ (target invalid_literal.mli.output)
  (deps (source_tree .))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:invalid_literal.mli}")))))
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:invalid_literal.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invalid_literal.mli.expected} %{dep:invalid_literal.mli.output})))
+ (action (diff %{dep:invalid_literal.mli} %{dep:invalid_literal.mli.output})))
 

@@ -18,3 +18,8 @@ type t = { x : int }
    Line 15
    x is of type t and not int
    replace x by y in the term of line 15 *)
+
+(* EXPECTED
+   [125] File "t33.mli", line 14, characters 4-33:
+         Error: This term has type `t' but a term was expected of type `int'.
+*)

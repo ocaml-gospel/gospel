@@ -15,3 +15,8 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    Line 12
    insufficient parameters in function header
    add another parameter after y in line 12 *)
+
+(* EXPECTED
+   [125] File "t23.mli", line 12, characters 5-6:
+         Error: Type checking error: too few parameters.
+*)

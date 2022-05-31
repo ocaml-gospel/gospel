@@ -6,3 +6,7 @@ val f : int -> int
     requires 42 = 42i
     requires 42i = 42i
     requires A 42i = A 43i *)
+
+(* EXPECTED
+   [0] OK
+*)

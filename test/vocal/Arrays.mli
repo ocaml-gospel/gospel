@@ -73,3 +73,7 @@ val knuth_shuffle : 'a array -> unit
 (*@ knuth_shuffle a
       modifies a
       ensures  Array.permut (old a) a *)
+
+(* EXPECTED
+   [0] OK
+*)

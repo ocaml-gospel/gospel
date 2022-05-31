@@ -9,3 +9,7 @@ val find : ('a -> bool) -> 'a list -> 'a
 val invalid_arg : string -> 'a
 (*@ raises  Invalid_argument _ -> true
     ensures false *)
+
+(* EXPECTED
+   [0] OK
+*)

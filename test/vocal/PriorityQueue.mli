@@ -84,3 +84,7 @@ end) : sig
       modifies h
       ensures  h.bag = Bag.add x (old h).bag *)
 end
+
+(* EXPECTED
+   [0] OK
+*)

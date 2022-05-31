@@ -6,3 +6,7 @@ val f : int -> int
 val g : int -> int
 (*@ y = g x
     requires f x > 0 *)
+
+(* EXPECTED
+   [0] OK
+*)

@@ -21,3 +21,9 @@ type 'a t2 = T of 'a * int
    Pattern mysmatch 'a t1 with 'b t2
    Replace T by C in line 8
 *)
+
+(* EXPECTED
+   [125] File "t14.mli", line 16, characters 8-15:
+         Error: This pattern matches values of type `'a40 t2'
+                but a pattern was expected which matches values of type `'a t1'.
+*)

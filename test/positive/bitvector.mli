@@ -22,3 +22,7 @@ val mem : int -> t -> bool
 (*@ b = mem i bv
     checks 0 <= i < bv.size
     ensures b <-> mem i bv *)
+
+(* EXPECTED
+   [0] OK
+*)

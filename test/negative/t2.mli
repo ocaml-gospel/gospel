@@ -11,3 +11,8 @@
 (*@ axiom a2: 1 = true *)
 
 (* ERROR: type mismatch bool and integer *)
+
+(* EXPECTED
+   [125] File "t2.mli", line 11, characters 11-12:
+         Error: This term has type `integer' but a term was expected of type `bool'.
+*)

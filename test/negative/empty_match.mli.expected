@@ -1,8 +1,0 @@
-
-*******************************
-********** Parsed file ********
-*******************************
-val f : int -> int[@@gospel {| y = f x
-    requires match x with |}]
-File "empty_match.mli", line 3, characters 26-26:
-Error: Syntax error.

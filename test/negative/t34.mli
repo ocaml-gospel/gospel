@@ -18,3 +18,8 @@ type t = { x : int }
    Line 15
    no record with field y
    replace y by x in line 15 *)
+
+(* EXPECTED
+   [125] File "t34.mli", line 15, characters 7-8:
+         Error: Symbol y not found.
+*)

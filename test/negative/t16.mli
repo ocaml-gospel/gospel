@@ -15,3 +15,8 @@ val f : x:int -> int -> int
    Line 12
    first parameter is named
    add ~ before x in line 12 *)
+
+(* EXPECTED
+   [125] File "t16.mli", line 12, characters 7-8:
+         Error: Type checking error: parameter do not match with val type.
+*)

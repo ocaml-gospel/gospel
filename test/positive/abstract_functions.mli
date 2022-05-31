@@ -61,3 +61,7 @@
 (*@ function h14 (x: 'a): test *)
 
 (*@ function h15 (x: test): integer *)
+
+(* EXPECTED
+   [0] OK
+*)

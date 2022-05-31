@@ -21,3 +21,9 @@ val f : 'a -> 'a
    Line 18
    Pattern for exception E does not match type
    remove one of the tuple elements in line 18 *)
+
+(* EXPECTED
+   [125] File "t31.mli", line 18, characters 13-20:
+         Error: This pattern matches values of type `'a41 * 'a42 * 'a43'
+                but a pattern was expected which matches values of type `int * int'.
+*)

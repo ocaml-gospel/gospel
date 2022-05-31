@@ -19,3 +19,8 @@ type ('a, 'b) t2 = 'a t1
    Line 15
    cannot match ('b,int) t2 with 'a t1
    replace 'b by 'a in the return type of function f *)
+
+(* EXPECTED
+   [125] File "t38.mli", line 15, characters 4-37:
+         Error: This term has type `'a t1' but a term was expected of type `'b t1'.
+*)

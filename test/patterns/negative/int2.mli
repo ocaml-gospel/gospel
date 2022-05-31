@@ -10,3 +10,10 @@ type a = A of int | B
 
     | A 5i
     | A 6i -> () *)
+
+(* EXPECTED
+   [125] File "int2.mli", line 4, characters 4-97:
+         Error: This pattern-matching is not exhaustive.
+                Here is an example of a case that is not matched:
+                  A 4i.
+*)

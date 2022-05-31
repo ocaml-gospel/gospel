@@ -7,3 +7,10 @@ val f : int t -> int
       | x, 0i -> true
       | 1i, x -> false
 *)
+
+(* EXPECTED
+   [125] File "neg2.mli", line 6, characters 6-63:
+         Error: This pattern-matching is not exhaustive.
+                Here is an example of a case that is not matched:
+                  0i, 1i.
+*)
