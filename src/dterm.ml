@@ -408,7 +408,7 @@ and term_node ~loc env prop dty dterm_node =
       in
       let pl = List.map branch ptl in
       let ty = ty_of_dty (Option.get dt.dt_dty) in
-      Patmat.check_exhaustive ty pl ~loc;
+      Patmat.checks ty pl ~loc;
       t_case t pl loc
 
 let fmla env dt = term env true dt

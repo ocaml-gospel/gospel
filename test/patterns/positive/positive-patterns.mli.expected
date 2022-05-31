@@ -72,9 +72,7 @@ type t4 =
 val f5 : bool -> int[@@gospel
                       {| r = f5 x
     ensures match x with
-      | true
-      | false
-      | true -> r <> 1
+      | false -> r <> 1
       | true -> true
     ensures match true with _ -> true
     ensures match true with x -> true
@@ -118,10 +116,8 @@ val f10 : bool -> int[@@gospel
                        {| r = f10 x
     ensures
       match x with
-      | true
-      | false
       | true -> r <> 1
-      | true -> true
+      | false -> true
     ensures
       match true with
       | _ -> true
@@ -526,9 +522,9 @@ module positive-patterns.mli
     val f5 : bool -> int
     (*@ r_2:int = f5 x_9:bool
         ensures (match x_9:bool with
-                | True | False | True -> if not ((integer_of_int 
-                                         r_2:int):integer = 1:integer):prop then (True ):
-                                         bool else (False ):bool
+                | False -> if not ((integer_of_int 
+                           r_2:int):integer = 1:integer):prop then (True ):
+                           bool else (False ):bool
                 | True -> (True ):bool
                 end::bool = (True ):bool):prop
                 ensures (match (True ):bool with
@@ -587,10 +583,10 @@ module positive-patterns.mli
     val f10 : bool -> int
     (*@ r_7:int = f10 x_13:bool
         ensures (match x_13:bool with
-                | True | False | True -> if not ((integer_of_int 
-                                         r_7:int):integer = 1:integer):prop then (True ):
-                                         bool else (False ):bool
-                | True -> (True ):bool
+                | True -> if not ((integer_of_int 
+                          r_7:int):integer = 1:integer):prop then (True ):
+                          bool else (False ):bool
+                | False -> (True ):bool
                 end::bool = (True ):bool):prop
                 ensures (match (True ):bool with
                         | _ -> (True ):bool

@@ -259,6 +259,45 @@
  (action (diff %{dep:record.mli.expected} %{dep:record.mli.output})))
 
 (rule
+ (targets redundant1.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:redundant1.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:redundant1.mli.expected} %{dep:redundant1.mli.output})))
+
+(rule
+ (targets redundant2.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:redundant2.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:redundant2.mli.expected} %{dep:redundant2.mli.output})))
+
+(rule
+ (targets redundant3.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{targets}
+      (with-accepted-exit-codes
+       (or :standard 125)
+       (system "%{bin:gospel} check --verbose %{dep:redundant3.mli}")))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:redundant3.mli.expected} %{dep:redundant3.mli.output})))
+
+(rule
  (targets str.mli.output)
  (deps (source_tree .))
  (action

@@ -31,6 +31,14 @@ let mex a =
     n
   with Brk i -> i
 
+(* To be removed when upgrade to OCaml 4.11 will be done *)
+let filteri p l =
+  let rec aux i acc = function
+    | [] -> List.rev acc
+    | x :: l -> aux (i + 1) (if p i x then x :: acc else acc) l
+  in
+  aux 0 [] l
+
 let ts_of_ty { ty_node } =
   match ty_node with Tyvar _ -> None | Tyapp (ts, _) -> Some ts
 
@@ -62,6 +70,10 @@ module Pmatrix : sig
 
   val from_pat : pattern list -> t
   (** Creates a matrix *)
+
+  val sub_mat : t -> int -> t * Tterm.pattern list
+  (** [p, r = sub_mat pmat i] Selects the i-th firsts rows of pmat and returns
+      the (i+1)th row as well *)
 
   val push_col : t -> pattern -> t
   (** Adds the pattern in the front of each row of the matrix *)
@@ -106,6 +118,18 @@ end = struct
     if pat = [] then invalid_arg "Pmatrix.from_pat";
     let mat = List.map (fun e -> [ e ]) pat in
     { mat; rows = List.length mat; cols = 1 }
+
+  let sub_mat pmat ilim =
+    assert (0 <= ilim && ilim < pmat.rows);
+    let next_row = ref [] in
+    let mat =
+      filteri
+        (fun idx e ->
+          if ilim = idx then next_row := e;
+          idx < ilim)
+        pmat.mat
+    in
+    ({ mat; rows = ilim; cols = pmat.cols }, !next_row)
 
   let remove_or_col1 pmat =
     if pmat.cols = 0 then invalid_arg "Pmatrix.rm_or_col1";
@@ -184,6 +208,9 @@ module Sigma : sig
 
   val get_typ_cols : ty list -> lsymbol -> ty list
   (** Instanciate type variables *)
+
+  val remove_interval : Tterm.pattern -> Tterm.pattern
+  (** Breaks the interval to or-patterns *)
 end = struct
   type t = ty list Mls.t
 
@@ -439,7 +466,9 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
     | { p_node = Por (p1, p2); _ } :: l ->
         usefulness typ_cols pmat (p1 :: l) || usefulness typ_cols pmat (p2 :: l)
     | { p_node = Pas (p, _); _ } :: l -> usefulness typ_cols pmat (p :: l)
-    | _ -> assert false
+    | ({ p_node = Pinterval (_, _); _ } as p) :: l ->
+        let p = Sigma.remove_interval p in
+        usefulness typ_cols pmat (p :: l)
 
 (** Usefulness specialisation to create a pattern that is not matched *)
 let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
@@ -507,7 +536,25 @@ let check_ambiguous ~loc cases =
       | _, None, _ -> ())
     cases
 
-let check_exhaustive ~loc ty cases =
+let check_redundancy ~loc tyl pmat =
+  for i = 1 to pmat.Pmatrix.rows - 1 do
+    let sub_mat, next_row = Pmatrix.sub_mat pmat i in
+    if not (usefulness tyl sub_mat next_row) then
+      let s =
+        Fmt.str "@[%a@]" (list ~sep:comma Tterm_printer.print_pattern) next_row
+      in
+      W.error ~loc (W.Pattern_redundant s)
+  done
+
+let check_exhaustive ~loc tyl pmat q bools =
+  if usefulness tyl pmat q then
+    let pm = ui tyl pmat in
+    let s = Fmt.str "@[%a@]" Tterm_printer.print_pattern pm in
+    match bools with
+    | [] -> W.error ~loc (W.Pattern_not_exhaustive s)
+    | _ -> W.error ~loc (W.Pattern_guard_not_exhaustive s)
+
+let checks ~loc ty cases =
   check_ambiguous ~loc cases;
   let whens = ref [] in
   let pat =
@@ -517,13 +564,9 @@ let check_exhaustive ~loc ty cases =
         p)
       cases
   in
-  let pmat = Pmatrix.from_pat pat in
-  let pmat = List.fold_left Pmatrix.enqueue_col pmat !whens in
+  let pmat = List.fold_left Pmatrix.enqueue_col (Pmatrix.from_pat pat) !whens in
   let bools = List.map (fun _ -> ty_bool) !whens in
   let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
-  if usefulness (ty :: bools) pmat q then
-    let pm = ui (ty :: bools) pmat in
-    let s = Fmt.str "@[%a@]" Tterm_printer.print_pattern pm in
-    match bools with
-    | [] -> W.error ~loc (W.Pattern_not_exhaustive s)
-    | _ -> W.error ~loc (W.Pattern_guard_not_exhaustive s)
+  let tyl = ty :: bools in
+  check_exhaustive ~loc tyl pmat q bools;
+  check_redundancy ~loc tyl pmat
