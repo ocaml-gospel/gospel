@@ -38,7 +38,7 @@ type kind =
   | Predicate_symbol_expected of string
   | Function_symbol_expected of string
   | Pattern_not_exhaustive of string
-  | Patterng_not_exhaustive of string
+  | Pattern_guard_not_exhaustive of string
   | Ambiguous_pattern
 
 type error = location * kind
@@ -131,7 +131,7 @@ let pp_kind ppf = function
         "This pattern-matching is not exhaustive.@\n\
          Here is an example of a case that is not matched:@\n\
         \  %s" p
-  | Patterng_not_exhaustive p ->
+  | Pattern_guard_not_exhaustive p ->
       pf ppf
         "This pattern-matching may not be exhaustive because of the guard.@\n\
          Here is an example of a case that may not be matched:@\n\

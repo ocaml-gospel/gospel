@@ -519,7 +519,6 @@ let check_exhaustive ~loc ty cases =
   in
   let pmat = Pmatrix.from_pat pat in
   let pmat = List.fold_left Pmatrix.enqueue_col pmat !whens in
-  (* List.iter (fun l -> List.iter (fun e -> epr "%a ;;; " pp_pattern e) l; epr "@.---\n") pmat.mat; *)
   let bools = List.map (fun _ -> ty_bool) !whens in
   let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
   if usefulness (ty :: bools) pmat q then
@@ -527,4 +526,4 @@ let check_exhaustive ~loc ty cases =
     let s = Fmt.str "@[%a@]" Tterm_printer.print_pattern pm in
     match bools with
     | [] -> W.error ~loc (W.Pattern_not_exhaustive s)
-    | _ -> W.error ~loc (W.Patterng_not_exhaustive s)
+    | _ -> W.error ~loc (W.Pattern_guard_not_exhaustive s)
