@@ -33,7 +33,7 @@ build: [
 ]
 
 depends: [
-  "ocaml" {>= "4.09"}
+  "ocaml" {>= "4.11"}
   "dune" {>= "2.4.0"}
   "menhir" {>= "20181006"}
   "cmdliner" {>= "1.1.0"}
