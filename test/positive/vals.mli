@@ -47,6 +47,14 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
 (*@ [b:integer],r,[a:'a] = f ~x [w:int] ~y [p:integer] z *)
 
+val f : int ref -> unit
+(*@ () = f x
+    modifies x *)
+
+val f : int ref -> unit
+(*@ f x
+    modifies x *)
+
 (* {gospel_expected|
    [0] OK
    |gospel_expected} *)
