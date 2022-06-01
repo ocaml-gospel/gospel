@@ -40,20 +40,11 @@ let get_inner_spec attr =
   | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
   | _ -> assert false
 
-(* XXX: Use Lexing.set_position when moving to OCaml 4.11 *)
-let set_position (lexbuf : Lexing.lexbuf) (position : Lexing.position) =
-  lexbuf.lex_curr_p <- { position with pos_fname = lexbuf.lex_curr_p.pos_fname };
-  lexbuf.lex_abs_pos <- position.pos_cnum
-
-(* XXX: Use Lexing.set_filename when moving to OCaml 4.11 *)
-let set_filename (lexbuf : Lexing.lexbuf) (fname : string) =
-  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = fname }
-
 let parse_gospel ~filename parse attr =
   let spec, _ = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  set_position lb attr.attr_loc.loc_start;
-  set_filename lb filename;
+  Lexing.set_position lb attr.attr_loc.loc_start;
+  Lexing.set_filename lb filename;
   try (spec, parse Ulexer.token lb)
   with Uparser.Error ->
     let loc =

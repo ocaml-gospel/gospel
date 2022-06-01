@@ -31,14 +31,6 @@ let mex a =
     n
   with Brk i -> i
 
-(* To be removed when upgrade to OCaml 4.11 will be done *)
-let filteri p l =
-  let rec aux i acc = function
-    | [] -> List.rev acc
-    | x :: l -> aux (i + 1) (if p i x then x :: acc else acc) l
-  in
-  aux 0 [] l
-
 let ts_of_ty { ty_node } =
   match ty_node with Tyvar _ -> None | Tyapp (ts, _) -> Some ts
 
@@ -123,7 +115,7 @@ end = struct
     assert (0 <= ilim && ilim < pmat.rows);
     let next_row = ref [] in
     let mat =
-      filteri
+      List.filteri
         (fun idx e ->
           if ilim = idx then next_row := e;
           idx < ilim)
