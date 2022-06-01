@@ -16,7 +16,7 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
    duplicated names in function header
    change name of z in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t26.mli", line 12, characters 21-22:
          Error: The variable `z' is duplicated in this pattern.
-*)
+   |gospel_expected} *)

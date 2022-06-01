@@ -4,6 +4,6 @@
 (* @ open A1 *)
 (*@ type t4 = A1.t *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

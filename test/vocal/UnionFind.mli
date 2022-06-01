@@ -122,6 +122,6 @@ val union : 'a elem -> 'a elem -> unit
                                          else old (uf2.img x)
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

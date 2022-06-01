@@ -17,6 +17,6 @@ type int
 
 (* @ function t1 (x:'a t1) : float = A.f x *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

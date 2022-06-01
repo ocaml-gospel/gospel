@@ -44,6 +44,6 @@ val f : 'a -> 'a
                    | y :: ys -> y = i
     raises E5 f -> integer_of_int (f (int_of_integer 3)) = 4 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

@@ -12,7 +12,7 @@
 
 (* ERROR: the term in predicates must have type prop or bool *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t4.mli", line 11, characters 26-27:
          Error: This term has type `int' but a term was expected of type `bool'.
-*)
+   |gospel_expected} *)

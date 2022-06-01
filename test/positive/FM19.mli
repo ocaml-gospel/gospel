@@ -109,6 +109,6 @@ val f : tt -> tt -> tt -> tt -> int -> tt * tt * int
     modifies p1, p2.left  consumes p3
     ensures  true (* Q in the paper *) *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

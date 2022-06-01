@@ -31,6 +31,6 @@ type ('a, 'b) t7 = 'a t6
   | {x;y} -> {x;y}
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

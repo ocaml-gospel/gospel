@@ -93,6 +93,6 @@ val focused : 'a t -> 'a option
             | None   -> z.idx = Seq.length z.seq
             | Some x -> z.idx < Seq.length z.seq /\ x = z.seq[z.idx] *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

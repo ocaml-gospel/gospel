@@ -17,7 +17,7 @@
 
 (* ERROR: the term in the requires clause should be of type bool or prop *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t5.mli", line 12, characters 10-11:
          Error: This term has type `integer' but a term was expected of type `bool'.
-*)
+   |gospel_expected} *)

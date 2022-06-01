@@ -6,8 +6,8 @@ val f : int -> t -> unit
              | C (_,_,_)
              | _ -> true *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "constructor_arity2.mli", line 6, characters 15-24:
          Error: The constructor `C' expects `2' argument(s)
                 but is applied to 3 argument(s) here.
-*)
+   |gospel_expected} *)

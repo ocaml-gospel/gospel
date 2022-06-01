@@ -19,7 +19,7 @@ type t = { x : int }
    no record with field z
    erase field z in pattern line 15 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t35.mli", line 15, characters 9-10:
          Error: Symbol z not found.
-*)
+   |gospel_expected} *)

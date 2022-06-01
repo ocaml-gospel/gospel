@@ -64,6 +64,6 @@ end) : sig
         ensures  Bag.cardinal h'.bag = Bag.cardinal h.bag - 1 *)
 end
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

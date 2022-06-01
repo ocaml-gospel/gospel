@@ -27,6 +27,6 @@ val mjrty : string array -> string
       raises   Not_found ->
                forall c. 2 * num a c 0 (Array.length a) <= Array.length a *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

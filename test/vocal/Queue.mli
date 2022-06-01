@@ -42,6 +42,6 @@ val transfer : 'a t -> 'a t -> unit
       ensures  q1.view = Seq.empty
       ensures  q2.view = old q2.view ++ old q1.view *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

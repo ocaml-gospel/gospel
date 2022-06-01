@@ -74,6 +74,6 @@ val knuth_shuffle : 'a array -> unit
       modifies a
       ensures  Array.permut (old a) a *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

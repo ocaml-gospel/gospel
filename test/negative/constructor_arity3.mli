@@ -7,7 +7,7 @@ val f : t -> int
       | L E E -> r = 1
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "constructor_arity3.mli", line 7, characters 12-13:
          Error: Syntax error.
-*)
+   |gospel_expected} *)

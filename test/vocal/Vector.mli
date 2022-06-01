@@ -331,6 +331,6 @@ val unsafe_get : 'a t -> int -> 'a
 val unsafe_set : 'a t -> int -> 'a -> unit
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

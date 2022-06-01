@@ -5,9 +5,9 @@
       | N 1
       | N 3 -> () *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "int3.mli", line 3, characters 6-60:
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   N 2.
-*)
+   |gospel_expected} *)

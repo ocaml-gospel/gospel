@@ -6,9 +6,9 @@ type t = bool * int
       | false, x -> false
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "tuple.mli", line 4, characters 6-69:
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   True, 1i.
-*)
+   |gospel_expected} *)

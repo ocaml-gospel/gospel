@@ -26,7 +26,7 @@
    type mysmatch float and int
    replace "int_of_integer 5" by "5." in line 21 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t12.mli", line 21, characters 11-12:
          Error: This term has type `float' but a term was expected of type `int'.
-*)
+   |gospel_expected} *)

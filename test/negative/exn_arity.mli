@@ -4,7 +4,7 @@ val f : int -> unit
 (*@ f i
     raises E _ -> false *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "exn_arity.mli", line 5, characters 11-23:
          Error: Type checking error: Exception pattern doesn't match its type.
-*)
+   |gospel_expected} *)

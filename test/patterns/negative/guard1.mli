@@ -5,7 +5,7 @@ val f : int -> int
 *)
 
 (* read as false -> (true -> 1) *)
-(* EXPECTED
+(* {gospel_expected|
    [125] File "guard1.mli", line 4, characters 35-36:
          Error: A formula was expected.
-*)
+   |gospel_expected} *)

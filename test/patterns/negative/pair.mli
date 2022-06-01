@@ -8,9 +8,9 @@ val f : int t -> int
       | P(1i, x) -> false
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "pair.mli", line 6, characters 6-69:
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   P (0i, 1i).
-*)
+   |gospel_expected} *)

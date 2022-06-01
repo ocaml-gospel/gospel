@@ -9,7 +9,7 @@ type 'a t2
 
 (*@ function f3 (x: int) : int t2 = f1 (f2 x) *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "a.mli", line 1, characters 0-34:
          Error: No module with name `Ocamlstdlib'.
-*)
+   |gospel_expected} *)

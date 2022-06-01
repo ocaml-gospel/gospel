@@ -22,8 +22,8 @@ type 'a t2 = T of 'a * int
    Replace T by C in line 8
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t14.mli", line 16, characters 8-15:
          Error: This pattern matches values of type `'a40 t2'
                 but a pattern was expected which matches values of type `'a t1'.
-*)
+   |gospel_expected} *)

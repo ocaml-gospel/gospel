@@ -16,7 +16,7 @@ val f : x:int -> int -> int
    first parameter is named
    add ~ before x in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t16.mli", line 12, characters 7-8:
          Error: Type checking error: parameter do not match with val type.
-*)
+   |gospel_expected} *)
