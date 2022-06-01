@@ -268,7 +268,7 @@ ret_value:
 ;
 
 ret_name:
-| LEFTPAR comma_list(ret_value) RIGHTPAR EQUAL
+| LEFTPAR separated_list(COMMA, ret_value) RIGHTPAR EQUAL
   { $2 }
 | comma_list(ret_value) EQUAL { $1 } ;
 
