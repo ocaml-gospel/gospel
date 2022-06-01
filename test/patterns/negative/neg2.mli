@@ -10,6 +10,9 @@ val f : int t -> int
 
 (* {gospel_expected|
    [125] File "neg2.mli", line 6, characters 6-63:
+         6 | ......match a with
+         7 |       | x, 0i -> true
+         8 |       | 1i, x -> false
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   0i, 1i.

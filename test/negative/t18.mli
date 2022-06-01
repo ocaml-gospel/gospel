@@ -17,6 +17,8 @@ val f : z:int -> int -> int
    remove replace x by z in line 12 *)
 
 (* {gospel_expected|
-   [125] File "t18.mli", line 12, characters 8-9:
+   [125] File "t18.mli", line 12, characters 11-12:
+         12 | (*@ r = f ~x y*)
+                         ^
          Error: Type checking error: parameter do not match with val type.
    |gospel_expected} *)

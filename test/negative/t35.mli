@@ -21,5 +21,7 @@ type t = { x : int }
 
 (* {gospel_expected|
    [125] File "t35.mli", line 15, characters 9-10:
+         15 |     | {x;z} -> x *)
+                       ^
          Error: Symbol z not found.
    |gospel_expected} *)

@@ -7,6 +7,10 @@
 
 (* {gospel_expected|
    [125] File "int3.mli", line 3, characters 6-60:
+         3 | ......match x with
+         4 |       | N 0
+         5 |       | N 1
+         6 |       | N 3 -> ()...
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   N 2.

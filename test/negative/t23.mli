@@ -17,6 +17,8 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    add another parameter after y in line 12 *)
 
 (* {gospel_expected|
-   [125] File "t23.mli", line 12, characters 5-6:
+   [125] File "t23.mli", line 12, characters 8-9:
+         12 | (*@ r = f x y *)
+                      ^
          Error: Type checking error: too few parameters.
    |gospel_expected} *)

@@ -13,6 +13,8 @@
 (* ERROR Type mismatch float and integer *)
 
 (* {gospel_expected|
-   [125] File "t3.mli", line 11, characters 30-31:
+   [125] File "t3.mli", line 11, characters 33-34:
+         11 | (*@ function f (x:float): bool = x = 2 *)
+                                               ^
          Error: This term has type `float' but a term was expected of type `integer'.
    |gospel_expected} *)

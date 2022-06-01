@@ -22,5 +22,7 @@ type ('a, 'b) t2 = 'a t1
 
 (* {gospel_expected|
    [125] File "t38.mli", line 15, characters 4-37:
+         15 | ....match x with
+         16 |     | {x;y} -> {x;y}...
          Error: This term has type `'a t1' but a term was expected of type `'b t1'.
    |gospel_expected} *)

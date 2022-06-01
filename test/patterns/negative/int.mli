@@ -8,6 +8,10 @@ type t = A | B of int
 
 (* {gospel_expected|
    [125] File "int.mli", line 4, characters 4-64:
+         4 | ....match x with
+         5 |     | A -> ()
+         6 |     | B 1i -> ()
+         7 |     | B 2i -> ()...
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   B 0i.

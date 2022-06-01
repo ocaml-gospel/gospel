@@ -24,6 +24,8 @@ type 'a t2 = T of 'a * int
 
 (* {gospel_expected|
    [125] File "t14.mli", line 16, characters 8-15:
+         16 |       | T (_,y) -> y
+                      ^^^^^^^
          Error: This pattern matches values of type `'a40 t2'
                 but a pattern was expected which matches values of type `'a t1'.
    |gospel_expected} *)

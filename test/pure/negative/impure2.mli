@@ -4,6 +4,8 @@ val f : int -> int
     diverges *)
 
 (* {gospel_expected|
-   [125] File "impure2.mli", line 2, characters 5-6:
+   [125] File "impure2.mli", line 2, characters 8-9:
+         2 | (*@ y = f x
+                     ^
          Error: Type checking error: a pure function cannot diverge.
    |gospel_expected} *)

@@ -19,5 +19,7 @@
 
 (* {gospel_expected|
    [125] File "t6.mli", line 13, characters 12-17:
+         13 |     variant x = 0
+                          ^^^^^
          Error: A term was expected.
    |gospel_expected} *)

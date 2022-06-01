@@ -24,6 +24,8 @@ val f : 'a -> 'a
 
 (* {gospel_expected|
    [125] File "t31.mli", line 18, characters 13-20:
+         18 |     raises E (x,y,z) -> integer_of_int x = 1 *)
+                           ^^^^^^^
          Error: This pattern matches values of type `'a41 * 'a42 * 'a43'
                 but a pattern was expected which matches values of type `int * int'.
    |gospel_expected} *)

@@ -17,6 +17,8 @@ val f : x:int -> int -> int
    add ~ before x in line 12 *)
 
 (* {gospel_expected|
-   [125] File "t16.mli", line 12, characters 7-8:
+   [125] File "t16.mli", line 12, characters 10-11:
+         12 | (*@ r = f x y*)
+                        ^
          Error: Type checking error: parameter do not match with val type.
    |gospel_expected} *)

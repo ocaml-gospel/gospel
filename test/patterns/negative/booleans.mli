@@ -16,6 +16,11 @@ val f : bool -> int
 
 (* {gospel_expected|
    [125] File "booleans.mli", line 4, characters 6-88:
+         4 | ......match x with
+         5 |       | true
+         6 |       | true
+         7 |       | true -> r <> 1
+         8 |       | true -> true
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   False.

@@ -7,6 +7,9 @@ val f : 'a list -> int
 
 (* {gospel_expected|
    [125] File "list1.mli", line 3, characters 13-69:
+         3 | .............match l with
+         4 |       | [] -> true
+         5 |       | x::y::_ -> false
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   infix :: (_, []).

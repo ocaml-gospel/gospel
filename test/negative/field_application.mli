@@ -6,5 +6,7 @@ val f : t -> int
 
 (* {gospel_expected|
    [125] File "field_application.mli", line 5, characters 18-19:
+         5 |       ensures r = a x *)
+                               ^
          Error: Symbol a not found.
    |gospel_expected} *)

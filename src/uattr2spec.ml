@@ -28,11 +28,15 @@ let get_spec_content attr =
         {
           pstr_desc =
             Pstr_eval
-              ({ pexp_desc = Pexp_constant (Pconst_string (spec, _, _)); _ }, _);
+              ( {
+                  pexp_desc = Pexp_constant (Pconst_string (spec, spec_loc, _));
+                  _;
+                },
+                _ );
           _;
         };
       ] ->
-      (spec, attr.attr_loc)
+      (spec, spec_loc)
   | _ -> assert false
 
 let get_inner_spec attr =
@@ -41,9 +45,9 @@ let get_inner_spec attr =
   | _ -> assert false
 
 let parse_gospel ~filename parse attr =
-  let spec, _ = get_spec_content attr in
+  let spec, spec_loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  Lexing.set_position lb attr.attr_loc.loc_start;
+  Lexing.set_position lb spec_loc.loc_start;
   Lexing.set_filename lb filename;
   try (spec, parse Ulexer.token lb)
   with Uparser.Error ->

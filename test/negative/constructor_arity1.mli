@@ -6,5 +6,7 @@ val f : int -> t -> unit
 
 (* {gospel_expected|
    [125] File "constructor_arity1.mli", line 5, characters 31-32:
+         5 |     requires let x = (n, n) in C x = C x *)
+                                            ^
          Error: The symbol `C' cannot be partially applied.
    |gospel_expected} *)

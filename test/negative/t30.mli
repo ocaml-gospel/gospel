@@ -24,5 +24,7 @@ val f : 'a -> 'a
 
 (* {gospel_expected|
    [125] File "t30.mli", line 18, characters 11-44:
+         18 |     raises E x -> integer_of_int (fst x) = 1 *)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          Error: Type checking error: Exception pattern doesn't match its type.
    |gospel_expected} *)

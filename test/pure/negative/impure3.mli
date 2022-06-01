@@ -4,6 +4,8 @@ val f : int -> int
     raises Not_found -> true *)
 
 (* {gospel_expected|
-   [125] File "impure3.mli", line 2, characters 5-6:
+   [125] File "impure3.mli", line 2, characters 8-9:
+         2 | (*@ y = f x
+                     ^
          Error: Type checking error: a pure function cannot raise exceptions.
    |gospel_expected} *)
