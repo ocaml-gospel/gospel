@@ -25,6 +25,6 @@ val map : ('a -> 'b) -> 'a list -> 'b list
                 List.nth r i = f (List.nth l i)
       equivalent "List.rev (List.map f (List.rev l))" *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

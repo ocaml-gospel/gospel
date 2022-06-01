@@ -7,6 +7,6 @@ val f : int -> int
     requires 42i = 42i
     requires A 42i = A 43i *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

@@ -60,6 +60,6 @@ val default : MF.ft -> MF.ft
     ensures MF.fp2 x
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

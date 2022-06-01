@@ -6,9 +6,9 @@ val f : t -> int
     | A | B _ -> false
     | B (B A) -> false
     | _ -> true *)
-(* EXPECTED
+(* {gospel_expected|
    [125] File "redundant3.mli", line 5, characters 12-86:
          Error: The pattern-matching is redundant.
                 Here is a case that is unused:
                   B B A.
-*)
+   |gospel_expected} *)

@@ -2,6 +2,6 @@
 
 (*@ function f (x : Test.t) : integer *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

@@ -23,7 +23,7 @@
    replace in line 9 "a" by "int_of_float a"
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t13.mli", line 18, characters 12-13:
          Error: This term has type `float' but a term was expected of type `integer'.
-*)
+   |gospel_expected} *)

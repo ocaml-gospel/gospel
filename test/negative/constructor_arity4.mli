@@ -7,8 +7,8 @@ val f : t -> int
       | L ((x,y)) -> x=y
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "constructor_arity4.mli", line 7, characters 8-17:
          Error: The constructor `L' expects `2' argument(s)
                 but is applied to 1 argument(s) here.
-*)
+   |gospel_expected} *)

@@ -20,6 +20,6 @@ val merge : int array -> int array -> int array
     variant n
     ensures result >= 0 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

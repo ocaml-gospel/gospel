@@ -16,7 +16,7 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    named parameter not specified in function header
    add ~ before x in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t25.mli", line 12, characters 7-8:
          Error: Type checking error: parameter do not match with val type.
-*)
+   |gospel_expected} *)

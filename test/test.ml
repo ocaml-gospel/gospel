@@ -1,6 +1,6 @@
 open Fmt
 
-let result_start = "(* EXPECTED"
+let result_start = "(* {gospel_expected|"
 
 let print ppf file =
   let ch = open_in file in
@@ -26,8 +26,8 @@ let test_file file =
   let command = str "gospel check %s > %s 2> %s" file stdout stderr in
   let status = Sys.command command in
   let output = if status = 0 then stdout else stderr in
-  pr "%a@\n%s@\n   [%d] @[%a@]\n*)@\n" print file result_start status
-    print_and_delete output
+  pr "%a@\n(* @[{gospel_expected|@\n[%d] @[%a@]@\n|gospel_expected}@] *)@\n"
+    print file status print_and_delete output
 
 let () =
   let file = Sys.argv.(1) in

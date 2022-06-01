@@ -21,7 +21,7 @@ val f : 'a -> 'a
    y is of type float and 2 of type integer
    replace "2" by "2." in line 18 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t29.mli", line 17, characters 31-32:
          Error: This term has type `float' but a term was expected of type `integer'.
-*)
+   |gospel_expected} *)

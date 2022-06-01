@@ -8,9 +8,9 @@ type t = A1 | A2 | B of t
     | B (B (B A1))
     | B (B (B A2)) -> () *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "base.mli", line 4, characters 4-118:
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   B B B B _.
-*)
+   |gospel_expected} *)

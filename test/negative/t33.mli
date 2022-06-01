@@ -19,7 +19,7 @@ type t = { x : int }
    x is of type t and not int
    replace x by y in the term of line 15 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t33.mli", line 14, characters 4-33:
          Error: This term has type `t' but a term was expected of type `int'.
-*)
+   |gospel_expected} *)

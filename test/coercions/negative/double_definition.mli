@@ -7,8 +7,8 @@ type t2
 (*@ function c2 (x: t1) : t2 *)
 (*@ coercion *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "double_definition.mli", line 7, characters 10-12:
          Error: A coercion between these types already exists:
                   c1: t1 -> t2.
-*)
+   |gospel_expected} *)

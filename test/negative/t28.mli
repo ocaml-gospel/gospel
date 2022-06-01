@@ -17,7 +17,7 @@
    y is of type float and 2 of type integer
    replace "2" by "2." in line 13 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t28.mli", line 13, characters 17-18:
          Error: This term has type `float' but a term was expected of type `integer'.
-*)
+   |gospel_expected} *)

@@ -31,6 +31,6 @@ val in_place_counting_sort : int -> int array -> unit
       ensures  sorted a
       ensures  Array.permut (old a) a *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

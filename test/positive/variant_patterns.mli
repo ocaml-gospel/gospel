@@ -22,6 +22,6 @@ val f : int -> t -> bool
     raises E (_, _) -> true
     raises F (_, _) -> true *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

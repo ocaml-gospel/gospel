@@ -16,7 +16,7 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    too many parameters in function header
    add one parameter less in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t24.mli", line 12, characters 13-14:
          Error: Type checking error: parameter do not match with val type.
-*)
+   |gospel_expected} *)

@@ -16,7 +16,7 @@ val f : y:int -> int -> int
    duplicated vars in val header
    remove replace the second y by z in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t19.mli", line 12, characters 10-11:
          Error: The variable `y' is duplicated in this pattern.
-*)
+   |gospel_expected} *)

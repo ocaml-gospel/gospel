@@ -17,7 +17,7 @@
 
 (* ERROR: the term in the variant clause should be of type integer *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t6.mli", line 13, characters 12-17:
          Error: A term was expected.
-*)
+   |gospel_expected} *)

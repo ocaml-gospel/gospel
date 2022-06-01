@@ -3,7 +3,7 @@ val f : int -> int
       requires 0 = match x with _ when match 1 with _ -> true -> 1 | _ -> 2 *)
 
 (* missing parentheses around nested match *)
-(* EXPECTED
+(* {gospel_expected|
    [125] File "guard2.mli", line 3, characters 76-76:
          Error: Syntax error.
-*)
+   |gospel_expected} *)

@@ -16,7 +16,7 @@ val f : ('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    insufficient parameters in function header
    add another parameter after y in line 12 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t23.mli", line 12, characters 5-6:
          Error: Type checking error: too few parameters.
-*)
+   |gospel_expected} *)

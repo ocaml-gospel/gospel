@@ -31,6 +31,6 @@ val f : int -> int -> int
     ensures r > 2
     ensures r = 3 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

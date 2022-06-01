@@ -36,6 +36,9 @@
 }
 
 let space = [ ' ' '\t' '\r' '\n' ]
+let blank = [ ' ' '\t' ]
+let newline = ('\n' | "\r\n")
+let lowercase = [ 'a'-'z' '_' ]
 
 rule scan = parse
   | space+ as s
@@ -79,8 +82,51 @@ and comment = parse
         Buffer.add_string buf "(*";
         comment lexbuf;
         Buffer.add_string buf "*)";
-        comment lexbuf }
-  | _ as c { Buffer.add_char buf c; comment lexbuf }
+        comment lexbuf
+      }
+  | "{" (lowercase* as delim) "|"
+      {
+        Buffer.add_char buf '{';
+        Buffer.add_string buf delim;
+        Buffer.add_char buf '|';
+        quoted_string delim lexbuf;
+        Buffer.add_char buf '|';
+        Buffer.add_string buf delim;
+        Buffer.add_char buf '}';
+        comment lexbuf
+      }
+   | "\""
+      {
+        Buffer.add_char buf '\"';
+        string lexbuf;
+        Buffer.add_char buf '\"';
+        comment lexbuf
+      }
+   | newline as nl { Buffer.add_string buf nl; Lexing.new_line lexbuf; comment lexbuf }
+   | _ as c { Buffer.add_char buf c; comment lexbuf }
+
+and string = parse
+    '\"'
+      { }
+  | newline as nl
+      {
+        Lexing.new_line lexbuf;
+        Buffer.add_string buf nl;
+        string lexbuf
+      }
+   | _ as c { Buffer.add_char buf c; string lexbuf }
+
+and quoted_string delim = parse
+  | ("|" (lowercase* as edelim) "}" as s)
+      { if delim = edelim then ()
+        else (Buffer.add_string buf s; quoted_string delim lexbuf) }
+  | newline as nl
+      {
+        Lexing.new_line lexbuf;
+        Buffer.add_string buf nl;
+        quoted_string delim lexbuf
+      }
+   | _ as c { Buffer.add_char buf c; quoted_string delim lexbuf }
 
 {
   let run lb =

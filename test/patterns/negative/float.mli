@@ -11,9 +11,9 @@ type t = A | B of t * float
     | B (A, 3.)
     | B (A, x) -> () *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "float.mli", line 4, characters 4-182:
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   B (B (A, 3.), 0.).
-*)
+   |gospel_expected} *)

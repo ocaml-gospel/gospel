@@ -126,6 +126,6 @@ type 'a t6 = { xx : 'a; yy : int }
   | {x; y} -> {xx=y;yy=x}
 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

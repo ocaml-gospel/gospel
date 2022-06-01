@@ -21,6 +21,6 @@ val log2_existsb : int -> int
     requires exists i. i >= 0 /\ x = pow 2 i
     ensures x = pow 2 r *)
 
-(* EXPECTED
+(* {gospel_expected|
    [0] OK
-*)
+   |gospel_expected} *)

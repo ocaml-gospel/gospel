@@ -25,7 +25,7 @@ type 'a t2 = C2 of 'a | C3 of bool | C4 of int * 'a
    type mysmatch bool with 'a
    replace true by x in line 21 *)
 
-(* EXPECTED
+(* {gospel_expected|
    [125] File "t15.mli", line 21, characters 18-19:
          Error: This term has type `'a' but a term was expected of type `bool'.
-*)
+   |gospel_expected} *)
