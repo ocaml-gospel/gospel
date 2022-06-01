@@ -18,6 +18,8 @@
 
 ## Improved
 
+- Allow unit result in function header
+  [\#215](https://github.com/ocaml-gospel/gospel/pull/215)
 - Highlight source locations when reporting errors.
   [\#214](https://github.com/ocaml-gospel/gospel/pull/214)
 - Check for pattern-matching redundancy in terms.
