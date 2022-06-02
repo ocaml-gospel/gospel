@@ -159,15 +159,15 @@ let pp ppf (loc, k) =
      We thus use helpers from [Pp_loc.Position] to recompute full positions from
      line/column numbers with respect to the input file before preprocessing.
   *)
-  let repair_pos (p: Lexing.position): Lexing.position =
+  let repair_pos (p : Lexing.position) : Lexing.position =
     Pp_loc.Position.of_line_col p.pos_lnum (p.pos_cnum - p.pos_bol + 1)
     |> Pp_loc.Position.to_lexing ~filename:input_filename input
   in
-  let start_pos, end_pos = repair_pos loc.loc_start, repair_pos loc.loc_end in
+  let start_pos, end_pos = (repair_pos loc.loc_start, repair_pos loc.loc_end) in
   pf ppf "%a@\n%a%a: @[%a.@]"
     (styled `Bold Location.print)
     { loc_start = start_pos; loc_end = end_pos; loc_ghost = false }
     (Pp_loc.pp ~max_lines:10 ~input)
-    [Pp_loc.Position.of_lexing start_pos, Pp_loc.Position.of_lexing end_pos]
+    [ (Pp_loc.Position.of_lexing start_pos, Pp_loc.Position.of_lexing end_pos) ]
     (styled_list [ `Red; `Bold ] string)
     "Error" pp_kind k
