@@ -880,7 +880,11 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
               let arity = ts_arity ts in
               List.init arity (fun i ->
                   Uast.Lnone (Preid.create ~loc:vd.vloc (Fmt.str "result%d" i)))
-          | _ -> [ Uast.Lnone (Preid.create ~loc:vd.vloc "result") ]
+          | _ ->
+              [
+                Uast.Lnone
+                  (if args = [] then id else Preid.create ~loc:vd.vloc "result");
+              ]
         in
         let args = List.mapi mk_dummy_var args in
         match vd.vspec with
