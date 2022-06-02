@@ -6,6 +6,7 @@
   [\#206](https://github.com/ocaml-gospel/gospel/pull/206)
 - Added a `with` construct to name a variable in type invariants referring to a
   value of the specified type.
+  [\#218](https://github.com/ocaml-gospel/gospel/pull/218) and
   [\#187](https://github.com/ocaml-gospel/gospel/pull/187)
 - Added support for `int` literals.
   [\#175](https://github.com/ocaml-gospel/gospel/pull/175) and
