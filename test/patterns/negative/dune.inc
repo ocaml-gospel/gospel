@@ -109,6 +109,17 @@
  (action (diff %{dep:guard4.mli} %{dep:guard4.mli.output})))
 
 (rule
+ (target guard5.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:guard5.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:guard5.mli} %{dep:guard5.mli.output})))
+
+(rule
  (target int.mli.output)
  (deps (source_tree .))
  (action

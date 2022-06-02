@@ -2,6 +2,8 @@
 
 ## Added
 
+- Add specific error message for patterns with guard on every clause.
+  [\#220](https://github.com/ocaml-gospel/gospel/pull/220)
 - Added `when` guards in pattern-matching
   [\#206](https://github.com/ocaml-gospel/gospel/pull/206)
 - Added a `with` construct to name a variable in type invariants referring to a

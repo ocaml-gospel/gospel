@@ -39,6 +39,7 @@ type kind =
   | Function_symbol_expected of string
   | Pattern_not_exhaustive of string
   | Pattern_guard_not_exhaustive of string
+  | Pattern_fully_guarded
   | Pattern_redundant of string
   | Ambiguous_pattern
 
@@ -138,6 +139,8 @@ let pp_kind ppf = function
          Here is an example of a case that may not be matched:@\n\
         \  %s" p
   | Ambiguous_pattern -> pf ppf "Ambiguous or-pattern under guard"
+  | Pattern_fully_guarded ->
+      pf ppf "All clauses in this pattern-matching are guarded."
   | Pattern_redundant p ->
       pf ppf
         "The pattern-matching is redundant.@\n\
