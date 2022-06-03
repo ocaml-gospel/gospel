@@ -549,13 +549,16 @@ let check_exhaustive ~loc tyl pmat q bools =
 let checks ~loc ty cases =
   check_ambiguous ~loc cases;
   let whens = ref [] in
+  let fully_guarded = ref true in
   let pat =
     List.mapi
       (fun i (p, g, _) ->
-        if Option.is_some g then whens := i :: !whens;
+        if Option.is_some g then whens := i :: !whens
+        else fully_guarded := false;
         p)
       cases
   in
+  if !fully_guarded then W.error ~loc W.Pattern_fully_guarded;
   let pmat = List.fold_left Pmatrix.enqueue_col (Pmatrix.from_pat pat) !whens in
   let bools = List.map (fun _ -> ty_bool) !whens in
   let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
