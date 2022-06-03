@@ -140,7 +140,7 @@ let pp_kind ppf = function
         \  %s" p
   | Ambiguous_pattern -> pf ppf "Ambiguous or-pattern under guard"
   | Pattern_fully_guarded ->
-      pf ppf "All clauses in this pattern-matching are guarded."
+      pf ppf "All clauses in this pattern-matching are guarded"
   | Pattern_redundant p ->
       pf ppf
         "The pattern-matching is redundant.@\n\

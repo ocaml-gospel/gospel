@@ -6,5 +6,5 @@ val f : int -> int
    [125] File "guard5.mli", line 3, characters 12-44:
          3 |     ensures match x with _ when true -> true
                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-         Error: All clauses in this pattern-matching are guarded..
+         Error: All clauses in this pattern-matching are guarded.
    |gospel_expected} *)

@@ -11,5 +11,5 @@ val f : t -> int
          5 | ...........match x with
          6 |            | A when 1 = 1 -> true
          7 |            | _ when true  -> false
-         Error: All clauses in this pattern-matching are guarded..
+         Error: All clauses in this pattern-matching are guarded.
    |gospel_expected} *)
