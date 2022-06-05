@@ -22,6 +22,8 @@
 
 ## Improved
 
+-  Pattern-matching redundancy is now a warning instead of an error.
+  [\#222](https://github.com/ocaml-gospel/gospel/pull/222)
 - Allow unit result in function header
   [\#215](https://github.com/ocaml-gospel/gospel/pull/215)
 - Highlight source locations when reporting errors.

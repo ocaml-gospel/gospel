@@ -568,4 +568,4 @@ let checks ~loc ty cases =
     let tyl = ty :: bools in
     check_exhaustive ~loc tyl pmat q bools;
     check_redundancy ~loc tyl pmat
-  with W.Warning e -> Fmt.epr "%a@." W.pp_warn e
+  with W.Warning e -> Fmt.pr "%a@." W.pp_warn e
