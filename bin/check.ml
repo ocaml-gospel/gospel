@@ -55,7 +55,7 @@ let run_file config file =
     pp fmt "OK\n";
     true
   with W.Error e ->
-    Fmt.epr "%a@." W.pp e;
+    Fmt.epr "%a@." W.pp_err e;
     false
 
 let run config files =

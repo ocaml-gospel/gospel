@@ -44,10 +44,13 @@ type kind =
   | Ambiguous_pattern
 
 type error = location * kind
+type warning = location * kind
 
 exception Error of error
+exception Warning of warning
 
 let error ~loc k = raise (Error (loc, k))
+let warning ~loc k = raise (Warning (loc, k))
 let type_checking_error ~loc s = error ~loc (Type_checking_error s)
 let unsupported ~loc s = error ~loc (Unsupported s)
 
@@ -149,7 +152,7 @@ let pp_kind ppf = function
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
-let pp ppf (loc, k) =
+let pp ppf (loc, k) str color =
   let input_filename = loc.loc_start.pos_fname in
   let input = Pp_loc.Input.file input_filename in
   (* because of the preprocessor (gospel pps), we may obtain locations that:
@@ -172,5 +175,8 @@ let pp ppf (loc, k) =
     { loc_start = start_pos; loc_end = end_pos; loc_ghost = false }
     (Pp_loc.pp ~max_lines:10 ~input)
     [ (Pp_loc.Position.of_lexing start_pos, Pp_loc.Position.of_lexing end_pos) ]
-    (styled_list [ `Red; `Bold ] string)
-    "Error" pp_kind k
+    (styled_list [ color; `Bold ] string)
+    str pp_kind k
+
+let pp_warn ppf p = pp ppf p "Warning" `Yellow
+let pp_err ppf p = pp ppf p "Error" `Red

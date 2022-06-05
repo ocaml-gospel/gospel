@@ -535,7 +535,7 @@ let check_redundancy ~loc tyl pmat =
       let s =
         Fmt.str "@[%a@]" (list ~sep:comma Tterm_printer.print_pattern) next_row
       in
-      W.error ~loc (W.Pattern_redundant s)
+      W.warning ~loc (W.Pattern_redundant s)
   done
 
 let check_exhaustive ~loc tyl pmat q bools =
@@ -547,21 +547,25 @@ let check_exhaustive ~loc tyl pmat q bools =
     | _ -> W.error ~loc (W.Pattern_guard_not_exhaustive s)
 
 let checks ~loc ty cases =
-  check_ambiguous ~loc cases;
-  let whens = ref [] in
-  let fully_guarded = ref true in
-  let pat =
-    List.mapi
-      (fun i (p, g, _) ->
-        if Option.is_some g then whens := i :: !whens
-        else fully_guarded := false;
-        p)
-      cases
-  in
-  if !fully_guarded then W.error ~loc W.Pattern_fully_guarded;
-  let pmat = List.fold_left Pmatrix.enqueue_col (Pmatrix.from_pat pat) !whens in
-  let bools = List.map (fun _ -> ty_bool) !whens in
-  let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
-  let tyl = ty :: bools in
-  check_exhaustive ~loc tyl pmat q bools;
-  check_redundancy ~loc tyl pmat
+  try
+    check_ambiguous ~loc cases;
+    let whens = ref [] in
+    let fully_guarded = ref true in
+    let pat =
+      List.mapi
+        (fun i (p, g, _) ->
+          if Option.is_some g then whens := i :: !whens
+          else fully_guarded := false;
+          p)
+        cases
+    in
+    if !fully_guarded then W.error ~loc W.Pattern_fully_guarded;
+    let pmat =
+      List.fold_left Pmatrix.enqueue_col (Pmatrix.from_pat pat) !whens
+    in
+    let bools = List.map (fun _ -> ty_bool) !whens in
+    let q = mk_wild ((List.hd pat |> fun p -> p.p_ty) :: bools) in
+    let tyl = ty :: bools in
+    check_exhaustive ~loc tyl pmat q bools;
+    check_redundancy ~loc tyl pmat
+  with W.Warning e -> Fmt.epr "%a@." W.pp_warn e
