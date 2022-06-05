@@ -12,7 +12,8 @@
   [\#187](https://github.com/ocaml-gospel/gospel/pull/187)
 - Added support for `int` literals.
   [\#175](https://github.com/ocaml-gospel/gospel/pull/175) and
-  [\#177](https://github.com/ocaml-gospel/gospel/pull/177)
+  [\#177](https://github.com/ocaml-gospel/gospel/pull/177) and
+  [\#223](https://github.com/ocaml-gospel/gospel/pull/223)
 - Added the `Failure` exception to the Stdlib.
   [\#154](https://github.com/ocaml-gospel/gospel/pull/154)
 - Added a `gospel dumpast` command.
