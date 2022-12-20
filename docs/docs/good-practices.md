@@ -6,7 +6,7 @@ sidebar_position: 5
 
 ## Function Clauses Ordering
 
-Always orgainse the clauses in the same order for the best results:
+Always organise the clauses in the same order for the best results:
 
 - `requires` preconditions
 - `checks` preconditions
