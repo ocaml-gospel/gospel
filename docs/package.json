@@ -25,7 +25,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "rehype-katex": "5",
-    "remark-definition-list": "^1.1.0",
+    "remark-definition-list": "^1.2.0",
     "remark-math": "3",
     "url-loader": "^4.1.1"
   },
