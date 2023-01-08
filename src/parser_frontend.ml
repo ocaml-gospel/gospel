@@ -12,9 +12,7 @@ module W = Warnings
 open Ppxlib
 
 let stdlib = "Stdlib"
-let stdlib_file = "stdlib.mli"
 let gospelstdlib = "Gospelstdlib"
-let gospelstdlib_file = "gospelstdlib.mli"
 
 let with_loadpath load_path file =
   let exception Break of string in
@@ -24,8 +22,7 @@ let with_loadpath load_path file =
       if Sys.file_exists f then raise (Break f)
     with Sys_error _ -> ()
   in
-  if file = gospelstdlib_file then file
-  else if Filename.is_relative file then
+  if Filename.is_relative file then
     try
       List.iter try_open load_path;
       raise Not_found
@@ -42,33 +39,8 @@ let parse_ocaml_lb lb =
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     W.error ~loc W.Syntax_error
 
-let string_equal_sub s1 s2 i =
-  let n = String.length s1 in
-  let rec aux j = j = n - 1 || (s1.[j] = s2.[i + j] && aux (succ j)) in
-  aux 0
-
-(** This is bad, but it's not my fault. See
-    https://github.com/ocaml/ocaml/blob/trunk/stdlib/remove_module_aliases.awk *)
-let remove_after_module_aliases s =
-  let magic_string = "(*MODULE_ALIASES*)" in
-  let rec find i =
-    if string_equal_sub magic_string s i then i else find (pred i)
-  in
-  let index = find (String.length s - String.length magic_string) in
-  String.sub s 0 (index - 1)
-
 let parse_ocaml file =
-  let lb =
-    if String.equal file gospelstdlib_file then
-      Lexing.from_string Gospelstdlib.contents
-    else if String.equal (Filename.basename file) stdlib_file then
-      let ic = open_in file in
-      in_channel_length ic
-      |> really_input_string ic
-      |> remove_after_module_aliases
-      |> Lexing.from_string
-    else open_in file |> Lexing.from_channel
-  in
+  let lb = open_in file |> Lexing.from_channel in
   Location.init lb file;
   parse_ocaml_lb lb
 
