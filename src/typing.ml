@@ -900,8 +900,8 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
   let spec = process_val_spec kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
   let () =
-    (* check there is a modifies clause if the return type is unit, through a warning if not *)
-    if Ttypes.(ty_equal ret ty_unit) then
+    (* check there is a modifies clause if the return type is unit, throw a warning if not *)
+    if Ttypes.(ty_equal ret ty_unit) && args <> [] then
       match so with
       | None -> ()
       | Some sp ->
