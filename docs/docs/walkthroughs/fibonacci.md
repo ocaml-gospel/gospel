@@ -30,7 +30,7 @@ uninterpreted logical function along with an axiom defining it.
 
 ```ocaml
 (*@ function fibonacci (n: integer) : integer *)
-(*@ axiom A: 
+(*@ axiom a:
          fibonacci 0 = 0
       /\ fibonacci 1 = 1
       /\ forall n. n >= 2 -> fibonacci n = fibonacci (n-1) + fibonacci (n-2) *) 
