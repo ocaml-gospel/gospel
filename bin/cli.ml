@@ -77,8 +77,14 @@ let wc =
   let term = Term.(const Cloc.run $ files) in
   Cmd.v info term
 
+let pps_doc =
+  let doc = "Gospel preprocessor for Odoc." in
+  let info = Cmd.info "pps-doc" ~doc in
+  let term = Term.(const Pps_doc.run $ files) in
+  Cmd.v info term
+
 let () =
   let doc = "Gospel command line tool." in
   let info = Cmd.info "gospel" ~doc ~version:"gospel version %%VERSION%%" in
-  let commands = Cmd.group info [ tc; wc; pps; dumpast ] in
+  let commands = Cmd.group info [ tc; wc; pps; pps_doc; dumpast ] in
   Stdlib.exit (Cmd.eval commands)
