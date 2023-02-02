@@ -173,8 +173,9 @@ element` function. We can also add two invariants:
 (*@ type 'a universe *)
 (*@ mutable model dom : 'a element set
     mutable model rep : 'a element -> 'a element
-    invariant forall e. Set.mem e dom -> Set.mem (rep e) dom
-    invariant forall e. Set.mem e dom -> rep (rep e) = rep e *)
+    with u
+    invariant forall e. Set.mem e u.dom -> Set.mem (u.rep e) u.dom
+    invariant forall e. Set.mem e u.dom -> u.rep (u.rep e) = u.rep e *)
 ```
 
 :::caution
@@ -228,7 +229,7 @@ are in the same subset (or equivalence class). This is the case iff they have
 the same subset representative:
 
 ```ocaml
-(*@ predicate equivalent (u: 'a universe) (x y: 'a element) =
+(*@ predicate equiv (u: 'a universe) (x y: 'a element) =
       u.rep x = u.rep y *)
 ```
 
@@ -236,14 +237,14 @@ We can now use that to state that elements that are not equivalent to `x` or `y`
 have the same representative:
 
 ```ocaml {7-9}
-val union : 'a elements -> 'a elements -> unit
+val union : 'a element -> 'a element -> unit
 (*@ union [u: 'a universe] x y
     requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
     ensures u.dom = old u.dom
     ensures forall e.
-      not (old (equivalent u x e \/ equivalent u y e))
+      not (old (equiv u x e \/ equiv u y e))
       -> u.rep e = old (u.rep e) *)
 ```
 
@@ -258,10 +259,10 @@ val union : 'a element -> 'a element -> unit
     requires Set.mem y u.dom
     modifies u
     ensures u.dom = old u.dom
-    ensures forall e. not (old (equivalent u x e \/ equivalent u y e))
+    ensures forall e. not (old (equiv u x e \/ equiv u y e))
                       -> u.rep e = old (u.rep e)
     ensures exists r. (r = old (u.rep x) \/ r = old (u.rep y))
-      /\ forall e. old (equivalent u x e \/ equivalent u y e)
+      /\ forall e. old (equiv u x e \/ equiv u y e)
                    -> u.rep e = r *)
 ```
 

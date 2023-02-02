@@ -82,8 +82,8 @@ exception Empty
 val pop: 'a t -> 'a
 (*@ v = pop q
     modifies q
-    ensures  old q.view = q.view ++ Seq.cons v empty
-    raises   Empty -> q.view = old q.view = empty *)
+    ensures  old q.view = q.view ++ Seq.cons v Seq.empty
+    raises   Empty -> q.view = old q.view = Seq.empty *)
 ```
 
 We have two post-conditions:
@@ -107,10 +107,10 @@ keyword `requires`:
 
 ```ocaml {3}
 val unsafe_pop: 'a t -> 'a
-(*@ v = pop q
-    requires q.view <> empty
+(*@ v = unsafe_pop q
+    requires q.view <> Seq.empty
     modifies q
-    ensures  old q.view = q.view ++ (Seq.cons v empty) *)
+    ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
 ```
 
 ### Defensive version
@@ -123,9 +123,9 @@ behavior, using `checks` instead of `requires`:
 ```ocaml {3}
 val pop: 'a t -> 'a
 (*@ v = pop q
-      checks   q.view <> empty
+      checks   q.view <> Seq.empty
       modifies q
-      ensures  old q.view = q.view ++ (Seq.cons v empty) *)
+      ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
 ```
 
 The `checks` keyword means that function itself checks the pre-condition
@@ -142,7 +142,7 @@ declaration for an emptiness test, together with its contract:
 ```ocaml
 val is_empty: 'a t -> bool
 (*@ b = is_empty q
-      ensures b <-> q.view = empty *)
+      ensures b <-> q.view = Seq.empty *)
 ```
 
 The post-conditions captures that the function returns `true` if and only if the
@@ -160,7 +160,7 @@ specification are as follows:
 ```ocaml
 val create: unit -> 'a t
 (*@ q = create ()
-      ensures q.view = empty *)
+      ensures q.view = Seq.empty *)
 ```
 
 The newly created queue has no elements: its `view` model equals the `empty`
@@ -185,7 +185,7 @@ another, with the following specification:
 val transfer: 'a t -> 'a t -> unit
 (*@ transfer src dst
     modifies src, dst
-    ensures  src.view = empty
+    ensures  src.view = Seq.empty
     ensures  dst.view = old dst.view ++ old src.view *)
 ```
 

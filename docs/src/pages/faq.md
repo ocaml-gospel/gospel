@@ -36,7 +36,7 @@ every possible array:
 val total_weight : weight:('a array -> int) -> ('a array) list -> int
 (*@ y = total_weight ~weight l
     requires forall a. weight a >= 0
-    ensures y = List.fold_left (fun acc a -> acc + weight a) l *)
+    ensures y = List.fold_left (fun acc a -> acc + weight a) 0 l *)
 ```
 
 <hr />
@@ -120,7 +120,9 @@ argument by some of your OCaml functions:
 
 ```ocaml
 (*@ type t *)
+```
 
+```ocaml invalidSyntax
 val f : int -> int
 (*@ y = f [t : t] x
     pure
@@ -131,16 +133,17 @@ Now, every specification that refers to `f` needs to pass the `t` argument to
 that function. You can propagate that requirement again, but you may also need
 to actually instantiate such a value and pass it directly:
 
-```ocaml
+<!-- set as invalidSyntax because make is defined later -->
+```ocaml invalidSyntax
 val g : int -> int
 (*@ y = g x
-    requires let t = make () in
-             f t x = y *)
+    ensures let t = make () in
+            f t x = y *)
 ```
 
 Of course, that `make` function does not exist either, so you also need to
 declare it as a ghost value:
 
 ```ocaml
-(*@ val make : unit -> t *)
+(*@ function make : unit -> t *)
 ```
