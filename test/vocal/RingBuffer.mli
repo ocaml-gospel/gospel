@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Seq *)
+(*@ open Sequence *)
 
 type 'a buffer
 (*@ mutable model sequence: 'a seq

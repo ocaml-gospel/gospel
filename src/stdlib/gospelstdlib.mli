@@ -129,7 +129,7 @@
 (*@ function ([_..]) (s: 'a seq) (i: integer): 'a seq *)
 (*@ function ([.._]) (s: 'a seq) (i: integer): 'a seq *)
 
-module Seq : sig
+module Sequence : sig
   (*@ type 'a t = 'a seq *)
   (** An alias for {!'a seq} *)
 
@@ -265,10 +265,10 @@ module List : sig
   (*@ predicate mem (x: 'a) (l: 'a t) *)
   (** [mem x l] holds iff [x] is equal to an element of [l] *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
 
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Arrays} *)
@@ -340,9 +340,9 @@ module Array : sig
   (*@ function to_list (a: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (a: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (a: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 
   (*@ function to_bag (a: 'a t) : 'a bag *)
 
@@ -449,8 +449,8 @@ module Bag : sig
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (b: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (b: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Sets} *)
@@ -537,8 +537,8 @@ module Set : sig
   (*@ function to_list (s: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)

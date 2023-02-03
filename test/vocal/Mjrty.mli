@@ -15,7 +15,7 @@
 (*@ axiom num_base:
       forall a v lo hi. hi <= lo -> num a v lo hi = 0 *)
 (*@ axiom num_ind:
-      forall a v lo hi. 0 <= lo < hi <= Seq.length a ->
+      forall a v lo hi. 0 <= lo < hi <= Sequence.length a ->
       num a v lo hi = (if a[lo] = v then 1 else 0) + num a v (lo+1) hi *)
 
 val mjrty : string array -> string
