@@ -144,7 +144,6 @@ type fun_spec = {
   fun_req : term list;  (** Preconditions *)
   fun_ens : term list;  (** Postconditions *)
   fun_variant : term list;  (** Variant *)
-  fun_coer : bool;  (** Coercion *)
   fun_text : string;
       (** String containing the original specificaion as written by the user *)
   fun_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]

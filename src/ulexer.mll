@@ -21,7 +21,6 @@
       [
         "as", AS;
         "axiom", AXIOM;
-        "coercion", COERCION;
         "else", ELSE;
         "exists", EXISTS;
         "false", FALSE;

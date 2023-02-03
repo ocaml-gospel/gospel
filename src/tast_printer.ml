@@ -164,9 +164,7 @@ let print_function f x =
   let print_term f t = pp f "@[%a@]" print_term t in
   let print_term f t = pp f "@[%a@]" print_term t in
   let func_spec f x =
-    pp f "%a%a%a%a"
-      (fun f _ -> if x.fun_coer then pp f "@\ncoercion" else ())
-      ()
+    pp f "%a%a%a"
       (list
          ~first:(newline ++ const string "variant ")
          ~sep:(newline ++ const string "variant ")

@@ -124,7 +124,6 @@ type fun_spec = {
   fun_req : term list;
   fun_ens : term list;
   fun_variant : term list;
-  fun_coer : bool;
   fun_text : string;
   fun_loc : Location.t;
 }

@@ -86,10 +86,10 @@ let mk_axiom id t l =
   t_ty_check t None;
   axiom id t l
 
-let fun_spec fun_req fun_ens fun_variant fun_coer fun_text fun_loc =
-  { fun_req; fun_ens; fun_variant; fun_coer; fun_text; fun_loc }
+let fun_spec fun_req fun_ens fun_variant fun_text fun_loc =
+  { fun_req; fun_ens; fun_variant; fun_text; fun_loc }
 
-let mk_fun_spec req ens var coer =
+let mk_fun_spec req ens var =
   let t_ty_check ty t = t_ty_check t ty in
   (* Check that preconditions are of type prop *)
   List.iter (t_ty_check None) req;
@@ -97,7 +97,7 @@ let mk_fun_spec req ens var coer =
   List.iter (t_ty_check None) ens;
   (* Check that variants are of type integer *)
   List.iter (t_ty_check (Some ty_integer)) var;
-  fun_spec req ens var coer
+  fun_spec req ens var
 
 let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
   { fun_ls; fun_rec; fun_params; fun_def; fun_spec; fun_loc; fun_text }
@@ -107,7 +107,6 @@ let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
        variant v
        requires treq
        ensures tens
-       coercion
    *)
    we check the following
    1 - no duplicate arguments (Ident.tifiers may have the same

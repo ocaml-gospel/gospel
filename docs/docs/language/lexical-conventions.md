@@ -13,8 +13,8 @@ etc. There are however a number of exceptions:
 - There are reserved keywords:
   ```
   axiom     checks    consumes    diverges    ephemeral    equivalent    model
-  modifies  pure      raises      requires    variant      coercion      ensures
-  exists    forall    invariant   predicate
+  modifies  pure      raises      requires    variant      ensures       exists
+  forall    invariant   predicate
   ```
 
 - There are reserved symbols:

@@ -53,7 +53,6 @@
     fun_req = [];
     fun_ens = [];
     fun_variant = [];
-    fun_coer = false;
     fun_text = "";
     fun_loc = Location.none;
   }
@@ -86,7 +85,6 @@
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC
 %token INVARIANT
-%token COERCION
 %token IF IN
 %token OLD NOT RAISES
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
@@ -180,8 +178,6 @@ nonempty_func_spec:
   { { bd with fun_ens = t :: bd.fun_ens } }
 | VARIANT t=term bd=func_spec
   { { bd with fun_variant = t :: bd.fun_variant } }
-| COERCION bd=func_spec
-  { { bd with fun_coer = true } }
 ;
 
 type_spec:
