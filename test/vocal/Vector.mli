@@ -31,7 +31,7 @@
 
 type 'a t
 (** The polymorphic type of vectors. This is a mutable data type. *)
-(*@ mutable model view: 'a seq
+(*@ mutable model view: 'a sequence
     with self
     invariant Sequence.length self.view <= Sys.max_array_length *)
 

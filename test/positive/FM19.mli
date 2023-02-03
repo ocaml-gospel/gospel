@@ -9,7 +9,7 @@
 (**************************************************************************)
 
 type 'a t
-(*@ mutable model view: 'a seq *)
+(*@ mutable model view: 'a sequence *)
 
 val push : 'a -> 'a t -> unit
 (*@ push v q

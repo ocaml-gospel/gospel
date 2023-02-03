@@ -11,7 +11,7 @@
 (** Zippers for lists *)
 
 type 'a t
-(*@ model seq: 'a seq
+(*@ model seq: 'a sequence
     model idx: integer
     with self
     invariant 0 <= self.idx <= Sequence.length self.seq *)

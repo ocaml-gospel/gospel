@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ function num (a: string seq) (v: string) (lo hi: integer) : integer *)
+(*@ function num (a: string sequence) (v: string) (lo hi: integer) : integer *)
 (** the number of occurrences of [v] in [a] between index [lo] included and
     index [hi] excluded *)
 

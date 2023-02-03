@@ -22,6 +22,8 @@
 
 ## Improved
 
+- Rename standard library `Seq` and `'a seq` to `Sequence` and `'a sequence`.
+  [\#253](https://github.com/ocaml-gospel/gospel/pull/253)
 - Allow unit result in function header
   [\#215](https://github.com/ocaml-gospel/gospel/pull/215)
 - Highlight source locations when reporting errors.
