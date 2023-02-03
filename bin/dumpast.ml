@@ -35,7 +35,7 @@ let run_file { load_path } file =
     Fmt.pf Fmt.stdout "%s\n" (Tast.show_signature file.fl_sigs);
     true
   with W.Error e ->
-    Fmt.epr "%a@." W.pp e;
+    Fmt.epr "%a@." W.pp_err e;
     false
 
 let run config files =
