@@ -8,10 +8,10 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Seq *)
+(*@ open Sequence *)
 
 type 'a buffer
-(*@ mutable model sequence: 'a seq
+(*@ mutable model sequence: 'a sequence
             model capacity: integer
     with self
     invariant length self.sequence <= self.capacity <= Sys.max_array_length *)

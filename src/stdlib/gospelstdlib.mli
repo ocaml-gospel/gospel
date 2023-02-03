@@ -32,7 +32,7 @@
    predicate (=) (x y: 'a)
 *)
 
-(*@ type 'a seq *)
+(*@ type 'a sequence *)
 (** The type for finite sequences. *)
 
 (*@ type 'a bag *)
@@ -119,19 +119,19 @@
 
 (** {1 Sequences} *)
 
-(*@ function (++) (s s': 'a seq) : 'a seq *)
+(*@ function (++) (s s': 'a sequence) : 'a sequence *)
 (** [s ++ s'] is the sequence [s] followed by the sequence [s']. *)
 
-(*@ function ([_]) (s: 'a seq) (i: integer): 'a *)
+(*@ function ([_]) (s: 'a sequence) (i: integer): 'a *)
 (** [s\[i\]] is the [i]th element of the sequence [s]. *)
 
-(*@ function ([_.._]) (s: 'a seq) (i1: integer) (i2: integer): 'a seq *)
-(*@ function ([_..]) (s: 'a seq) (i: integer): 'a seq *)
-(*@ function ([.._]) (s: 'a seq) (i: integer): 'a seq *)
+(*@ function ([_.._]) (s: 'a sequence) (i1: integer) (i2: integer): 'a sequence *)
+(*@ function ([_..]) (s: 'a sequence) (i: integer): 'a sequence *)
+(*@ function ([.._]) (s: 'a sequence) (i: integer): 'a sequence *)
 
-module Seq : sig
-  (*@ type 'a t = 'a seq *)
-  (** An alias for {!'a seq} *)
+module Sequence : sig
+  (*@ type 'a t = 'a sequence *)
+  (** An alias for {!'a sequence} *)
 
   (*@ function length (s: 'a t): integer *)
   (** [length s] is the length of the sequence [s]. *)
@@ -142,13 +142,13 @@ module Seq : sig
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton] is an alias for {!return}. *)
 
-  (*@ function init (n: integer) (f: integer -> 'a) : 'a seq *)
+  (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
 
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
   (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
 
-  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
+  (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
   (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
 
   (*@ function hd (s: 'a t) : 'a *)
@@ -162,7 +162,7 @@ module Seq : sig
   (*@ function append (s s': 'a t) : 'a t *)
   (** [append s s'] is [s ++ s']. *)
 
-  (*@ predicate mem (s: 'a seq) (x: 'a) *)
+  (*@ predicate mem (s: 'a t) (x: 'a) *)
   (** [mem s x] holds iff [x] is in [s]. *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
@@ -183,15 +183,15 @@ module Seq : sig
   (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
   (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
 
-  (*@ function rev (s: 'a seq) : 'a seq *)
+  (*@ function rev (s: 'a t) : 'a t *)
   (** [rev s] is the sequence containing the same elements as [s], in reverse
       order. *)
 
-  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b seq) : 'a *)
+  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b sequence) : 'a *)
   (** [fold_left f acc s] is [f (... (f (f acc s\[0\]) s\[1\]) ...) s\[n-1\]],
       where [n] is the length of [s]. *)
 
-  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b *)
+  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a t) (acc: 'b) : 'b *)
   (** [fold_right f s acc] is [f s\[1\] (f s\[2\] (... (f s\[n\] acc) ...))]
       where [n] is the length of [s]. *)
 end
@@ -265,10 +265,10 @@ module List : sig
   (*@ predicate mem (x: 'a) (l: 'a t) *)
   (** [mem x l] holds iff [x] is equal to an element of [l] *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
 
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Arrays} *)
@@ -340,9 +340,9 @@ module Array : sig
   (*@ function to_list (a: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (a: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (a: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 
   (*@ function to_bag (a: 'a t) : 'a bag *)
 
@@ -449,8 +449,8 @@ module Bag : sig
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (b: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (b: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Sets} *)
@@ -509,8 +509,7 @@ module Set : sig
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
-      [x1 ...
-      xN] are the elements of [s]. *)
+      [x1 ... xN] are the elements of [s]. *)
 
   (*@ function fold (f: 'a -> 'b -> 'b) (s: 'a t) (a: 'b) : 'b *)
   (** [fold f s a] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
@@ -537,8 +536,8 @@ module Set : sig
   (*@ function to_list (s: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)

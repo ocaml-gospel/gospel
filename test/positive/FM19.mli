@@ -9,31 +9,31 @@
 (**************************************************************************)
 
 type 'a t
-(*@ mutable model view: 'a seq *)
+(*@ mutable model view: 'a sequence *)
 
 val push : 'a -> 'a t -> unit
 (*@ push v q
     modifies q
-    ensures  q.view = Seq.cons v (old q.view) *)
+    ensures  q.view = Sequence.cons v (old q.view) *)
 
 val pop : 'a t -> 'a
 (*@ v = pop q
-    requires q.view <> Seq.empty
+    requires q.view <> Sequence.empty
     modifies q
-    ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
+    ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
 
 val is_empty : 'a t -> bool
 (*@ b = is_empty q
-    ensures b <-> q.view = Seq.empty *)
+    ensures b <-> q.view = Sequence.empty *)
 
 val create : unit -> 'a t
 (*@ q = create ()
-    ensures q.view = Seq.empty *)
+    ensures q.view = Sequence.empty *)
 
 val in_place_concat : 'a t -> 'a t -> unit
 (*@ in_place_concat q1 q2
     modifies q1, q2
-    ensures  q1.view = Seq.empty
+    ensures  q1.view = Sequence.empty
     ensures  q2.view = old q1.view ++ old q2.view *)
 
 val in_place_destructive_concat : 'a t -> 'a t -> unit
@@ -47,8 +47,8 @@ val nondestructive_concat : 'a t -> 'a t -> 'a t
 
 val map : ('a -> 'b) -> 'a t -> 'b t
 (*@ r = map f q
-    ensures Seq.length r.view = Seq.length q.view
-    ensures forall i. 0 <= i < Seq.length q.view ->
+    ensures Sequence.length r.view = Sequence.length q.view
+    ensures forall i. 0 <= i < Sequence.length q.view ->
                       r.view[i] = f q.view[i] *)
 
 (*@ function power (x y: integer): integer *)
