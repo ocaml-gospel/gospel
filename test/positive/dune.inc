@@ -131,6 +131,17 @@
  (action (diff %{dep:constants.mli} %{dep:constants.mli.output})))
 
 (rule
+ (target empty.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:empty.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:empty.mli} %{dep:empty.mli.output})))
+
+(rule
  (target exceptions.mli.output)
  (deps (source_tree .))
  (action
@@ -283,6 +294,17 @@
 (rule
  (alias runtest)
  (action (diff %{dep:recursive_type_invariant.mli} %{dep:recursive_type_invariant.mli.output})))
+
+(rule
+ (target stdlib.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:stdlib.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:stdlib.mli} %{dep:stdlib.mli.output})))
 
 (rule
  (target stdlib_exceptions.mli.output)

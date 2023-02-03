@@ -52,10 +52,14 @@ let string_equal_sub s1 s2 i =
 let remove_after_module_aliases s =
   let magic_string = "(*MODULE_ALIASES*)" in
   let rec find i =
-    if string_equal_sub magic_string s i then i else find (pred i)
+    if i < 0 then raise Not_found
+    else if string_equal_sub magic_string s i then i
+    else find (pred i)
   in
-  let index = find (String.length s - String.length magic_string) in
-  String.sub s 0 (index - 1)
+  try
+    let index = find (String.length s - String.length magic_string) in
+    String.sub s 0 index
+  with Not_found -> s
 
 let parse_ocaml file =
   let lb =
