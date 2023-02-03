@@ -765,7 +765,15 @@ let process_val_spec kid ns id args ret vs =
   let pre = List.map (fmla kid ns env) vs.sp_pre in
   let checks = List.map (fmla kid ns env) vs.sp_checks in
   let wr = List.map (fun t -> dterm kid ns env t |> term env) vs.sp_writes in
-  let cs = List.map (fun t -> dterm kid ns env t |> term env) vs.sp_consumes in
+  let consumes =
+    List.map (fun t -> dterm kid ns env t |> term env) vs.sp_consumes
+  in
+  let preserves =
+    List.map (fun t -> dterm kid ns env t |> term env) vs.sp_preserves
+  in
+  let produces =
+    List.map (fun t -> dterm kid ns env t |> term env) vs.sp_produces
+  in
 
   let process_xpost (loc, exn) =
     let merge_xpost t tl =
@@ -832,8 +840,8 @@ let process_val_spec kid ns id args ret vs =
       W.type_checking_error ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
       W.type_checking_error ~loc "a pure function cannot raise exceptions");
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
-    vs.sp_equiv vs.sp_text vs.sp_loc
+  mk_val_spec args ret pre checks post xpost wr consumes preserves produces
+    vs.sp_diverge vs.sp_pure vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args =
   {
@@ -844,6 +852,8 @@ let empty_spec preid ret args =
     sp_xpost = [];
     sp_writes = [];
     sp_consumes = [];
+    sp_preserves = [];
+    sp_produces = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];

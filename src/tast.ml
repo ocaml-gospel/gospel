@@ -32,7 +32,9 @@ type val_spec = {
   sp_xpost : (xsymbol * (pattern * term) list) list;
       (** Exceptional postconditions. *)
   sp_wr : term list;  (** Writes *)
-  sp_cs : term list;  (** Consumes *)
+  sp_consumes : term list;  (** Consumes *)
+  sp_preserves : term list;  (** Preserves *)
+  sp_produces : term list;  (** Produces *)
   sp_diverge : bool;  (** Diverges *)
   sp_pure : bool;  (** Pure *)
   sp_equiv : string list;  (** Equivalent *)

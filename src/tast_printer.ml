@@ -117,7 +117,7 @@ let print_vd_spec val_id fmt spec =
   match spec with
   | None -> ()
   | Some vs ->
-      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
+      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a%a%a*)"
         (list ~sep:comma print_lb_arg)
         vs.sp_ret
         (if vs.sp_ret = [] then "" else " =")
@@ -148,7 +148,17 @@ let print_vd_spec val_id fmt spec =
            ~first:(newline ++ const string "consumes ")
            ~sep:(newline ++ const string "consumes ")
            print_term)
-        vs.sp_cs
+        vs.sp_consumes
+        (list
+           ~first:(newline ++ const string "preserves ")
+           ~sep:(newline ++ const string "preserves ")
+           print_term)
+        vs.sp_preserves
+        (list
+           ~first:(newline ++ const string "produces ")
+           ~sep:(newline ++ const string "produces ")
+           print_term)
+        vs.sp_produces
         (list
            ~first:(newline ++ const string "equivalent ")
            ~sep:(newline ++ const string "equivalent ")

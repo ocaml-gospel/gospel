@@ -12,8 +12,8 @@ let ty_of_lb_arg = function
   | Lunit -> ty_unit
   | Lnone vs | Loptional vs | Lnamed vs | Lghost vs -> vs.vs_ty
 
-let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
-    sp_diverge sp_pure sp_equiv sp_text sp_loc =
+let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_consumes
+    sp_preserves sp_produces sp_diverge sp_pure sp_equiv sp_text sp_loc =
   {
     sp_args;
     sp_ret;
@@ -22,7 +22,9 @@ let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
     sp_post;
     sp_xpost;
     sp_wr;
-    sp_cs;
+    sp_consumes;
+    sp_preserves;
+    sp_produces;
     sp_diverge;
     sp_pure;
     sp_equiv;
@@ -37,7 +39,8 @@ let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
    TODO:
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
-let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
+let mk_val_spec args ret pre checks post xpost wr consumes preserves produces dv
+    pure equiv txt loc =
   let add args = function
     | Lunit -> args
     | a ->
@@ -51,7 +54,8 @@ let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
   List.iter (ty_check None) pre;
   List.iter (ty_check None) checks;
   List.iter (ty_check None) post;
-  val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc
+  val_spec args ret pre checks post xpost wr consumes preserves produces dv pure
+    equiv txt loc
 
 let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
     vd_loc =

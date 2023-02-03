@@ -14,7 +14,7 @@ etc. There are however a number of exceptions:
   ```
   axiom     checks    consumes    diverges    ephemeral    equivalent    model
   modifies  pure      raises      requires    variant      ensures       exists
-  forall    invariant   predicate
+  forall    invariant predicate   preserves   produces
   ```
 
 - There are reserved symbols:

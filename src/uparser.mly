@@ -41,7 +41,9 @@
     sp_post = [];
     sp_xpost = [];
     sp_writes = [];
-    sp_consumes= [];
+    sp_consumes = [];
+    sp_preserves = [];
+    sp_produces = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
@@ -77,7 +79,7 @@
 
 (* Spec Tokens *)
 
-%token REQUIRES ENSURES CONSUMES VARIANT
+%token REQUIRES ENSURES CONSUMES PRESERVES PRODUCES VARIANT
 
 (* keywords *)
 
@@ -230,6 +232,10 @@ val_spec_body:
   { { bd with sp_writes = wr @ bd.sp_writes } }
 | CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
+| PRESERVES cs=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_preserves = cs @ bd.sp_preserves } }
+| PRODUCES cs=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_produces = cs @ bd.sp_produces } }
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }
 | CHECKS t=term bd=val_spec_body
