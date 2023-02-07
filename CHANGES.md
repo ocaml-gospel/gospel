@@ -50,6 +50,9 @@
 
 ## Fixed
 
+- Avoid uncaught exception when displaying a warning on a dummy
+  position
+  [\#262](https://github.com/ocaml-gospel/gospel/pull/262)
 - Constants can now be referenced in specifications.
   [\#211](https://github.com/ocaml-gospel/gospel/pull/211)
 - Infix operators in specificaion headers are now accepted.
