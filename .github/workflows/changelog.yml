@@ -9,11 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog-needed') }}
+
     steps:
     - uses: actions/checkout@v1
 
     - name: git diff
-      if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog-needed') }}
       env:
         BASE_REF: ${{ github.event.pull_request.base.ref }}
       run: |
