@@ -2,6 +2,8 @@
 
 ## Added
 
+- Added a `gospel pps-doc` command.
+  [\#264](https://github.com/ocaml-gospel/gospel/pull/264)
 - Add specific error message for patterns with guard on every clause.
   [\#220](https://github.com/ocaml-gospel/gospel/pull/220)
 - Added `when` guards in pattern-matching
