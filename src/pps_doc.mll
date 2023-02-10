@@ -18,7 +18,7 @@
   let print_gospel start_p end_p s =
     let open Lexing in
     Fmt.str "(**\n\
-%s {@gospel[\n%s]}\n\
+%s {@gospel[\nGospel specification:\n%s]}\n\
 %s*)"
       (String.make (start_p.pos_cnum - start_p.pos_bol) ' ') s
       (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
@@ -26,7 +26,7 @@
   let print_ghost start_p end_p s =
     let open Lexing in
      Fmt.str "(**\n\
-%s {@gospel[\n%s]}\n\
+%s {@gospel[\nGospel declaration:\n%s]}\n\
 %s*)"
       (String.make (start_p.pos_cnum - start_p.pos_bol) ' ') s
       (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
