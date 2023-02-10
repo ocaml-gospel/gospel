@@ -91,15 +91,9 @@
 (** Shift to the right with truncation, equivalent to a multiplication by a
     power of two with rounding toward 0 *)
 
-(** {2 Machine integers}
-
-    There is a coercion from type [int] to type [integer], so that Gospel
-    specifications can be written using type [integer] only, and yet use OCaml's
-    variables of type [int]. The Gospel typechecker will automatically apply
-    [integer_of_int] whenever necessary. *)
+(** {2 Machine integers} *)
 
 (*@ function integer_of_int (x: int) : integer *)
-(*@ coercion *)
 
 (*@ function max_int : integer *)
 (*@ function min_int : integer *)
@@ -266,8 +260,6 @@ module List : sig
   (** [mem x l] holds iff [x] is equal to an element of [l] *)
 
   (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
-  (*@ coercion *)
-
   (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
@@ -341,7 +333,6 @@ module Array : sig
   (*@ function of_list (l: 'a list) : 'a t *)
 
   (*@ function to_seq (a: 'a t) : 'a Sequence.t *)
-  (*@ coercion *)
   (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 
   (*@ function to_bag (a: 'a t) : 'a bag *)
@@ -548,7 +539,7 @@ module Map : sig
 end
 
 module Order : sig
-  (*@ predicate is_pre_order (cmp: 'a -> 'a -> int) =
+  (*@ predicate is_pre_order (cmp: 'a -> 'a -> integer) =
       (forall x. cmp x x = 0) /\
       (forall x y. cmp x y <= 0 <-> cmp y x >= 0) /\
       (forall x y z.

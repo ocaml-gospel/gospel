@@ -98,6 +98,8 @@ type val_spec = {
   sp_xpost : xpost list;
   sp_writes : term list;
   sp_consumes : term list;
+  sp_preserves : term list;
+  sp_produces : term list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_equiv : string list;
@@ -124,7 +126,6 @@ type fun_spec = {
   fun_req : term list;
   fun_ens : term list;
   fun_variant : term list;
-  fun_coer : bool;
   fun_text : string;
   fun_loc : Location.t;
 }

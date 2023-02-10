@@ -3,9 +3,6 @@ open Utils
 
 type kind =
   | Return_unit_without_modifies of string
-  | Invalid_coercion_type of string
-  | Coercion_cycle of (string * string * string) list
-  | Coercion_already_defined of (string * string * string) list
   | Not_a_constructor of string
   | Formula_expected
   | Term_expected
@@ -61,16 +58,6 @@ let pp_kind ppf = function
         "The function `%s' returns `unit'@ but its specifications does not \
          contain any `modifies' clause"
         f
-  | Invalid_coercion_type f ->
-      pf ppf "The function `%s' does not have a valid coercion type" f
-  | Coercion_cycle fl ->
-      pf ppf "This coercion introduces a cycle:@\n  @[%a@]"
-        (list ~sep:newline function_)
-        fl
-  | Coercion_already_defined fl ->
-      pf ppf "A coercion between these types already exists:@\n  @[%a@]"
-        (list ~sep:newline function_)
-        fl
   | Not_a_constructor f -> pf ppf "The symbol `%s' is not a constructor" f
   | Formula_expected -> pf ppf "A formula was expected"
   | Term_expected -> pf ppf "A term was expected"

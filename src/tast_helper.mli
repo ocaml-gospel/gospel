@@ -27,6 +27,8 @@ val mk_val_spec :
   (xsymbol * (pattern * term) list) list ->
   term list ->
   term list ->
+  term list ->
+  term list ->
   bool ->
   bool ->
   string list ->
@@ -35,13 +37,7 @@ val mk_val_spec :
   val_spec
 
 val mk_fun_spec :
-  term list ->
-  term list ->
-  term list ->
-  bool ->
-  string ->
-  Location.t ->
-  fun_spec
+  term list -> term list -> term list -> string -> Location.t -> fun_spec
 
 val mk_function :
   ?result:vsymbol ->

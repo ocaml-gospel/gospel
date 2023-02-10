@@ -156,9 +156,7 @@ let function_ f x =
     | _ -> pp f "@\n"
   in
   let func_spec f x =
-    pp f "%a%a%a%a%a"
-      (fun f _ -> if x.fun_coer then pp f "@\ncoercion" else ())
-      () sep x
+    pp f "%a%a%a%a" sep x
       (list_keyword "variant ...")
       x.fun_variant
       (list_keyword "requires ...")

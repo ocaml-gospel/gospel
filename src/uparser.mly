@@ -41,7 +41,9 @@
     sp_post = [];
     sp_xpost = [];
     sp_writes = [];
-    sp_consumes= [];
+    sp_consumes = [];
+    sp_preserves = [];
+    sp_produces = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
@@ -53,7 +55,6 @@
     fun_req = [];
     fun_ens = [];
     fun_variant = [];
-    fun_coer = false;
     fun_text = "";
     fun_loc = Location.none;
   }
@@ -78,7 +79,7 @@
 
 (* Spec Tokens *)
 
-%token REQUIRES ENSURES CONSUMES VARIANT
+%token REQUIRES ENSURES CONSUMES PRESERVES PRODUCES VARIANT
 
 (* keywords *)
 
@@ -86,7 +87,6 @@
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC
 %token INVARIANT
-%token COERCION
 %token IF IN
 %token OLD NOT RAISES
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
@@ -180,8 +180,6 @@ nonempty_func_spec:
   { { bd with fun_ens = t :: bd.fun_ens } }
 | VARIANT t=term bd=func_spec
   { { bd with fun_variant = t :: bd.fun_variant } }
-| COERCION bd=func_spec
-  { { bd with fun_coer = true } }
 ;
 
 type_spec:
@@ -234,6 +232,10 @@ val_spec_body:
   { { bd with sp_writes = wr @ bd.sp_writes } }
 | CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
+| PRESERVES cs=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_preserves = cs @ bd.sp_preserves } }
+| PRODUCES cs=separated_list(COMMA, term) bd=val_spec_body
+  { { bd with sp_produces = cs @ bd.sp_produces } }
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }
 | CHECKS t=term bd=val_spec_body

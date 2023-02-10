@@ -21,42 +21,41 @@
       [
         "as", AS;
         "axiom", AXIOM;
-        "coercion", COERCION;
+        "checks", CHECKS;
+        "consumes", CONSUMES;
+        "diverges", DIVERGES;
         "else", ELSE;
+        "ensures", ENSURES;
+        "ephemeral", EPHEMERAL;
+        "equivalent", EQUIVALENT;
         "exists", EXISTS;
         "false", FALSE;
         "forall", FORALL;
+        "fun", FUN;
         "function", FUNCTION;
         "if", IF;
         "in", IN;
         "invariant", INVARIANT;
         "let", LET;
         "match", MATCH;
-        "not", NOT;
-        "predicate", PREDICATE;
-        "then", THEN;
-        "true", TRUE;
-        "with", WITH;
+        "model", MODEL;
+        "modifies", MODIFIES;
         "mutable", MUTABLE;
-        "ensures", ENSURES;
-        "consumes", CONSUMES;
-        "fun", FUN;
+        "not", NOT;
         "old", OLD;
+        "predicate", PREDICATE;
+        "preserves", PRESERVES;
+        "produces", PRODUCES;
+        "pure", PURE;
         "raises", RAISES;
         "rec", REC;
         "requires", REQUIRES;
-        "variant", VARIANT;
-        "modifies", MODIFIES;
-        "equivalent", EQUIVALENT;
-        "checks", CHECKS;
-        "diverges", DIVERGES;
-        "pure", PURE;
-        "ephemeral", EPHEMERAL;
-        "model", MODEL;
+        "then", THEN;
+        "true", TRUE; 
+        "variant", VARIANT; 
         "when", WHEN;
+        "with", WITH;
       ]
-
-  (* to translate escape sequences *)
 
   let digit_value c =
     match c with
