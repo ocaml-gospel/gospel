@@ -68,7 +68,7 @@ let tc =
 let pps =
   let doc = "Gospel preprocessor." in
   let info = Cmd.info "pps" ~doc in
-  let term = Term.(const Pps.run $ files) in
+  let term = Term.(const (Pps.run `For_check) $ files) in
   Cmd.v info term
 
 let wc =
@@ -80,7 +80,7 @@ let wc =
 let pps_doc =
   let doc = "Gospel preprocessor for Odoc." in
   let info = Cmd.info "pps-doc" ~doc in
-  let term = Term.(const Pps_doc.run $ files) in
+  let term = Term.(const (Pps.run `For_doc) $ files) in
   Cmd.v info term
 
 let () =

@@ -8,11 +8,11 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-let run_file file =
+let run_file print file =
   let ic = open_in file in
   let lexbuf = Lexing.from_channel ic in
   Lexing.set_filename lexbuf file;
-  print_endline (Gospel.Pps.run lexbuf);
+  print_endline (Gospel.Pps.run print lexbuf);
   close_in ic
 
-let run = List.iter run_file
+let run pp = List.iter (run_file pp)

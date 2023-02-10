@@ -1,5 +1,5 @@
 (ocamllex
- (modules pps pps_doc ulexer))
+ (modules pps ulexer))
 
 (menhir
  (modules uparser)

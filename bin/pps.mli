@@ -8,4 +8,4 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val run : string list -> unit
+val run : [ `For_check | `For_doc ] -> string list -> unit
