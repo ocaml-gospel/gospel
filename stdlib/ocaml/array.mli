@@ -14,14 +14,24 @@
 (**************************************************************************)
 
 type 'a t = 'a array
+(*@ model { len: integer; mutable contents: 'a Sequence.t }
+    invariant len = Sequence.length contents *)
 (** An alias for the type of arrays. *)
 
 (** Array operations. *)
 
 external length : 'a array -> int = "%array_length"
+(*@ l = length a
+    pure
+    ensures l = a.len *)
 (** Return the length (number of elements) of the given array. *)
 
 external get : 'a array -> int -> 'a = "%array_safe_get"
+(*@ v = get a i
+    pure
+    duplicable 'a
+    requires 0 <= i < length a
+    ensures  v = Sequence.get a.contents i *)
 (** [Array.get a n] returns the element number [n] of array [a].
    The first element has number 0.
    The last element has number [Array.length a - 1].
@@ -39,6 +49,12 @@ external set : 'a array -> int -> 'a -> unit = "%array_safe_set"
    if [n] is outside the range 0 to [Array.length a - 1]. *)
 
 external make : int -> 'a -> 'a array = "caml_make_vect"
+(*@ a = make n v
+    duplicable 'a
+    requires n >= 0
+    ensures  a.len = n
+    ensures  forall i: integer. 0 <= i < n -> get a i = v
+*)
 (** [Array.make n x] returns a fresh array of length [n],
    initialized with [x].
    All the elements of this new array are initially
@@ -65,6 +81,31 @@ val make_float: int -> float array
 (** @deprecated [Array.make_float] is an alias for {!Array.create_float}. *)
 
 val init : int -> (int -> 'a) -> 'a array
+(*@ a = init n f
+    pure f (* : integer -> model of 'a *)
+    requires n >= 0
+    ensures  a.len = n
+    ensures  forall i: integer. 0 <= i < n -> get a i = f i
+    ensures  a.contents = Sequence.init n f
+*)
+(*
+    impure f (*@ v = f i
+                   requires 0 <= i < n
+                   ensures  v = f' i*)
+    ensures  forall i: integer. 0 <= i < n -> get a i = f' i
+*)
+
+(* questions:
+
+   let copy a = Array.init (Array.length a) (Array.get a)
+
+   let bad_matrix n m v = Array.make n (Array.make m v)
+      REJECTED since 'a array is not duplicable
+
+   let matrix n m f = Array.init n (fun i -> Array.init m (f i))
+
+*)
+
 (** [Array.init n f] returns a fresh array of length [n],
    with element number [i] initialized to the result of [f i].
    In other terms, [Array.init n f] tabulates the results of [f]
@@ -92,6 +133,22 @@ val create_matrix : int -> int -> 'a -> 'a array array
 (** @deprecated [Array.create_matrix] is an alias for {!Array.make_matrix}. *)
 
 val append : 'a array -> 'a array -> 'a array
+(*@ a = append a1 a2
+    consumes a1, a2
+    ensures a.len = a1.len + a2.len
+    ensures a.contents = Sequence.append a1.contents a2.contents
+    produces a1@(any array), a2@(any array)
+*)
+(* duplicable 'a not needed here, since a1 and a2 are consumed *)
+(*
+  when 'a is duplicable, the simpler spec
+
+    duplicable 'a
+    ensures a.len = a1.len + a2.len
+    ensures a.contents = Sequence.append a1.contents a2.contents
+
+  is a consequence of the previous one
+*)
 (** [Array.append v1 v2] returns a fresh array containing the
    concatenation of the arrays [v1] and [v2].
 
@@ -122,6 +179,21 @@ val fill : 'a array -> int -> int -> 'a -> unit
    designate a valid subarray of [a]. *)
 
 val blit : 'a array -> int -> 'a array -> int -> int -> unit
+(*@ blit a1 ofs1 a2 ofs2 len
+    consumes a1 (* or more precise: a1[ofs1..ofs1+len] *)
+    requires 0 <= ofs1 <= ofs1+len <= a1.len
+    requires 0 <= ofs2 <= ofs2+len <= a2.len
+    modifies a2
+    produces a1@(any array)
+    ensures  forall i. 0 <= i < ofs2 -> get a2 i = old (get a2 i)
+    ensures  forall i. ofs2+len <= i < length a2 -> get a2 i = old (get a2 i)
+    ensures  forall i. ofs2 <= i < ofs2+len -> get a2 i =  get a1 (ofs1+i-ofs2)
+*)
+(* ALT
+    ensures  forall i. 0 <= i < len -> get a2 (ofs2 + i) =  get a1 (ofs1 + i)
+    ensures  Sequence.slice a2.contents ofs2 len
+           = Sequence.slice a1.contents ofs1 len
+*)
 (** [Array.blit v1 o1 v2 o2 len] copies [len] elements
    from array [v1], starting at element number [o1], to array [v2],
    starting at element number [o2]. It works correctly even if
