@@ -1,0 +1,5 @@
+version = 0.24.1
+parse-docstrings = true
+break-infix = fit-or-vertical
+module-item-spacing = compact
+doc-comments = before
