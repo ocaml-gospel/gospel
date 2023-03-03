@@ -206,6 +206,8 @@ val blit : 'a array -> int -> 'a array -> int -> int -> unit
 
 val to_list : 'a array -> 'a list
 (** [Array.to_list a] returns the list of all the elements of [a]. *)
+(*@ pure
+    ensures ... *)
 
 val of_list : 'a list -> 'a array
 (** [Array.of_list l] returns a fresh array containing the elements
@@ -222,16 +224,36 @@ val iter : ('a -> unit) -> 'a array -> unit
 (** [Array.iter f a] applies function [f] in turn to all
    the elements of [a].  It is equivalent to
    [f a.(0); f a.(1); ...; f a.(Array.length a - 1); ()]. *)
+(*@ iter f a
+  equivalent "for i = 0 to length - 1 do f (get a i) done"
+  equivalent "List.iter f (to_list a)"
+  equivalent "Seq.iter f (to_seq a)"
+  deterministic_finite_iterator a.contents f
+  deterministic_iterator f
+    (fun s -> Sequence.length s <= length a /\
+      forall i. 0 <= i < Sequence.length a.contents -> s[i] = a.contents[i])
+    (fun s -> Sequence.length s = Sequence.length a.contents)
+  iterator f a.contents
+  modifies ???
+  ownership ???
+*)
 
 val iteri : (int -> 'a -> unit) -> 'a array -> unit
 (** Same as {!Array.iter}, but the
    function is applied with the index of the element as first argument,
    and the element itself as second argument. *)
+(*@
+  equivalent "for i = 0 to length - 1 do f i (get a i) done"
+  iterator (fun (i, x) -> f i x) (zip (interval (length a) a.contents)) ?? *)
 
 val map : ('a -> 'b) -> 'a array -> 'b array
 (** [Array.map f a] applies function [f] to all the elements of [a],
    and builds an array with the results returned by [f]:
    [[| f a.(0); f a.(1); ...; f a.(Array.length a - 1) |]]. *)
+(*@ b = map f a
+    pure f ensures b.contents = Sequence.map f a.contents
+    equivalent "Array.init (length a) (fun i -> f (get a i))"
+*)
 
 val mapi : (int -> 'a -> 'b) -> 'a array -> 'b array
 (** Same as {!Array.map}, but the
@@ -242,6 +264,8 @@ val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b array -> 'a
 (** [Array.fold_left f x a] computes
    [f (... (f (f x a.(0)) a.(1)) ...) a.(n-1)],
    where [n] is the length of the array [a]. *)
+(*@ fold_left f acc a
+   iterator f acc a.contents *)
 
 val fold_right : ('b -> 'a -> 'a) -> 'b array -> 'a -> 'a
 (** [Array.fold_right f a x] computes
