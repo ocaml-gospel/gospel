@@ -10,16 +10,32 @@
 
 open Cmdliner
 
-let ocaml_file =
+type test = { pred : string -> bool; err : string }
+
+let test_file =
+  {
+    pred = (fun s -> List.mem (Filename.extension s) [ ".mli"; ".ml" ]);
+    err = "file";
+  }
+
+let test_intf =
+  {
+    pred = (fun s -> String.equal (Filename.extension s) ".mli");
+    err = "interface file";
+  }
+
+let ocaml_test test =
   let parse s =
     match Sys.file_exists s with
     | true ->
-        if Sys.is_directory s || Filename.extension s <> ".mli" then
-          `Error (Printf.sprintf "Error: `%s' is not an OCaml interface file" s)
-        else `Ok s
+        if test.pred s then `Ok s
+        else `Error (Printf.sprintf "Error: `%s' is not an OCaml %s" s test.err)
     | false -> `Error (Printf.sprintf "Error: `%s' not found" s)
   in
   (parse, Format.pp_print_string)
+
+let ocaml_intf = ocaml_test test_intf
+let ocaml_file = ocaml_test test_file
 
 let verbose =
   let doc = "Print all intermediate forms." in
@@ -29,6 +45,7 @@ let load_path =
   let doc = "Include directory in load path." in
   Arg.(value & opt_all dir [] & info [ "L"; "load-path" ] ~doc ~docv:"DIR")
 
+let intfs = Arg.(non_empty & pos_all ocaml_intf [] & info [] ~docv:"FILE")
 let files = Arg.(non_empty & pos_all ocaml_file [] & info [] ~docv:"FILE")
 
 let run_check verbose load_path file =
@@ -56,13 +73,13 @@ let run_dumpast load_path file =
 let dumpast =
   let doc = "Gospel dump ast." in
   let info = Cmd.info "dumpast" ~doc in
-  let term = Term.(const run_dumpast $ load_path $ files) in
+  let term = Term.(const run_dumpast $ load_path $ intfs) in
   Cmd.v info term
 
 let tc =
   let doc = "Gospel type-checker." in
   let info = Cmd.info "check" ~doc in
-  let term = Term.(const run_check $ verbose $ load_path $ files) in
+  let term = Term.(const run_check $ verbose $ load_path $ intfs) in
   Cmd.v info term
 
 let pps =
@@ -74,7 +91,7 @@ let pps =
 let wc =
   let doc = "Gospel line count." in
   let info = Cmd.info "cloc" ~doc in
-  let term = Term.(const Cloc.run $ files) in
+  let term = Term.(const Cloc.run $ intfs) in
   Cmd.v info term
 
 let () =

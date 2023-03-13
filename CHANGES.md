@@ -22,6 +22,7 @@
 
 ## Improved
 
+- Gospel preprocessor does not fail when the file is an implementation file
 - Rename standard library `Seq` and `'a seq` to `Sequence` and `'a sequence`.
   [\#253](https://github.com/ocaml-gospel/gospel/pull/253)
 - Allow unit result in function header
