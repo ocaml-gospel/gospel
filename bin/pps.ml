@@ -11,7 +11,8 @@
 let size = 64
 
 let run_file file =
-  if String.ends_with ~suffix:".mli" file then (
+  let l = String.length file in
+  if String.sub file (l - 4) 4 = ".mli" then (
     let ic = open_in file in
     let lexbuf = Lexing.from_channel ic in
     Lexing.set_filename lexbuf file;
