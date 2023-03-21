@@ -14,14 +14,10 @@ documentation comment and gospel specification:
   > EOF
 
 Now, we look at how the OCaml compiler understand the output of the gospel
-preprocessor. We also enable the compiler warning about unexpected docstring,
-and cleanup stderr because the name of the file in the error message will
-change at each build. Note that this cleanup relies on the number of lines of
-the interface `foo.mli`, with a longer content, it will not work as expected:
+preprocessor. We also enable the compiler warning about unexpected docstring:
 
-  $ ocamlc -pp "dune exec -- gospel pps" -dsource -w +50 foo.mli 2>&1 | tail -n 2
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
-  val f : int -> int[@@gospel {| y = f x |}]
+  $ ocamlc -pp "dune exec -- gospel pps" -dsource -w +50 foo.mli
+  val f : int -> int[@@ocaml.doc " documentation "][@@gospel {| y = f x |}]
 
 Finally, just a little clean up after ourselves.
 
