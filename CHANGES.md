@@ -52,6 +52,9 @@
 
 ## Fixed
 
+- Documentation comments between declarations and specifications are not
+  detached anymore
+  [\#266](https://github.com/ocamlc-gospel/gospel/pull/266)
 - Avoid uncaught exception when displaying a warning on a dummy
   position
   [\#262](https://github.com/ocaml-gospel/gospel/pull/262)
