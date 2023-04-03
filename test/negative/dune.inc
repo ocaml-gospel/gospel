@@ -65,6 +65,17 @@
  (action (diff %{dep:constructor_arity4.mli} %{dep:constructor_arity4.mli.output})))
 
 (rule
+ (target duplicate_declaration.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:duplicate_declaration.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:duplicate_declaration.mli} %{dep:duplicate_declaration.mli.output})))
+
+(rule
  (target empty_match.mli.output)
  (deps (source_tree .))
  (action
