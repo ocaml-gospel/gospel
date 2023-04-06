@@ -19,7 +19,6 @@ type lb_arg =
   | Lnone of vsymbol  (** x *)
   | Loptional of vsymbol  (** ?x *)
   | Lnamed of vsymbol  (** ~x *)
-  | Lghost of vsymbol  (** \[x: t\] *)
 [@@deriving show]
 
 type val_spec = {
@@ -186,7 +185,6 @@ type type_exception = {
 [@@deriving show]
 
 type rec_flag = Nonrecursive | Recursive [@@deriving show]
-type ghost = Nonghost | Ghost [@@deriving show]
 
 type with_constraint =
   | Wty of Ident.t * type_declaration

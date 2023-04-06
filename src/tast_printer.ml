@@ -89,10 +89,11 @@ let print_type_declaration fmt td =
 
 let print_lb_arg fmt = function
   | Lunit -> pp fmt "()"
+  | Lnone vs when vs.ghost = Ghost ->
+      pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
   | Lnone vs -> print_vs fmt vs
   | Loptional vs -> pp fmt "?%a" print_vs vs
   | Lnamed vs -> pp fmt "~%a" print_vs vs
-  | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
 
 let print_xposts f xposts =
   if xposts = [] then ()

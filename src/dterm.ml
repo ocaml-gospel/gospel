@@ -311,7 +311,7 @@ let pattern dp =
   let get_var pid ty =
     try Mstr.find pid.Preid.pid_str !vars
     with Not_found ->
-      let vs = create_vsymbol pid ty in
+      let vs = create_vsymbol pid ty Nonghost in
       (* TODO the variable found is of type ty *)
       vars := Mstr.add pid.pid_str vs !vars;
       vs
@@ -372,7 +372,7 @@ and term_node ~loc env prop dty dterm_node =
   | DTlet (pid, dt1, dt2) ->
       let prop = prop || dty = None in
       let t1 = term env false dt1 in
-      let vs = create_vsymbol pid (t_type t1) in
+      let vs = create_vsymbol pid (t_type t1) Nonghost in
       let env = Mstr.add pid.pid_str vs env in
       let t2 = term env prop dt2 in
       t_let vs t1 t2 loc
@@ -388,7 +388,7 @@ and term_node ~loc env prop dty dterm_node =
   | DTold dt -> t_old (term env prop dt) loc
   | DTquant (q, bl, dt) ->
       let add_var (env, vsl) (pid, dty) =
-        let vs = create_vsymbol pid (ty_of_dty dty) in
+        let vs = create_vsymbol pid (ty_of_dty dty) Nonghost in
         (Mstr.add pid.pid_str vs env, vs :: vsl)
       in
       let env, vsl = List.fold_left add_var (env, []) bl in

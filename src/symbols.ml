@@ -12,10 +12,14 @@ open Ppxlib
 open Ttypes
 module Ident = Identifier.Ident
 
-(* Variable Symbols *)
-type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
+type ghost = Nonghost | Ghost [@@deriving show]
 
-let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
+(* Variable Symbols *)
+type vsymbol = { vs_name : Ident.t; vs_ty : ty; ghost : ghost }
+[@@deriving show]
+
+let create_vsymbol pid ty ghost =
+  { vs_name = Ident.of_preid pid; vs_ty = ty; ghost }
 
 module Vs = struct
   type t = vsymbol

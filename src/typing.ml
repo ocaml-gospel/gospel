@@ -503,7 +503,7 @@ let process_type_spec kid crcm ns ty spec =
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
   let self_vs =
-    Option.map (fun x -> create_vsymbol x ty) (fst spec.ty_invariant)
+    Option.map (fun x -> create_vsymbol x ty Nonghost) (fst spec.ty_invariant)
   in
   let env =
     match self_vs with
@@ -737,26 +737,26 @@ let process_val_spec kid crcm ns id args ret vs =
         W.type_checking_error ~loc:header.sp_hd_nm.pid_loc "too few parameters"
     | Uast.Lghost (pid, pty) :: args, _ ->
         let ty = ty_of_pty ns pty in
-        let vs = create_vsymbol pid ty in
-        let env, lal = add_arg (Lghost vs) env lal in
+        let vs = create_vsymbol pid ty Ghost in
+        let env, lal = add_arg (Lnone vs) env lal in
         process_args args tyl env lal
     | Loptional pid :: args, (ty, Asttypes.Optional s) :: tyl ->
         if not (String.equal pid.pid_str s) then
           W.type_checking_error ~loc:pid.pid_loc
             "parameter do not match with val type";
         let ty = ty_app ts_option [ ty ] in
-        let vs = create_vsymbol pid ty in
+        let vs = create_vsymbol pid ty Nonghost in
         let env, lal = add_arg (Loptional vs) env lal in
         process_args args tyl env lal
     | Lnamed pid :: args, (ty, Asttypes.Labelled s) :: tyl ->
         if not (String.equal pid.pid_str s) then
           W.type_checking_error ~loc:pid.pid_loc
             "parameter do not match with val type";
-        let vs = create_vsymbol pid ty in
+        let vs = create_vsymbol pid ty Nonghost in
         let env, lal = add_arg (Lnamed vs) env lal in
         process_args args tyl env lal
     | Lnone pid :: args, (ty, Asttypes.Nolabel) :: tyl ->
-        let vs = create_vsymbol pid ty in
+        let vs = create_vsymbol pid ty Nonghost in
         let env, lal = add_arg (Lnone vs) env lal in
         process_args args tyl env lal
     | Lunit :: args, _ :: tyl -> process_args args tyl env (Lunit :: lal)
@@ -942,7 +942,7 @@ let process_function kid crcm ns f =
 
   let params =
     List.map
-      (fun (_, pid, pty) -> create_vsymbol pid (ty_of_pty ns pty))
+      (fun (_, pid, pty) -> create_vsymbol pid (ty_of_pty ns pty) Nonghost)
       f.fun_params
   in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
@@ -970,7 +970,9 @@ let process_function kid crcm ns f =
     match f_ty with
     | None -> (env, None)
     | Some ty ->
-        let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") ty in
+        let result =
+          create_vsymbol (Preid.create ~loc:f.fun_loc "result") ty Nonghost
+        in
         (Mstr.add "result" result env, Some result)
   in
 

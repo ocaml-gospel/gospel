@@ -6,11 +6,11 @@ module W = Warnings
 
 let vs_of_lb_arg = function
   | Lunit -> invalid_arg "vs_of_lb_arg Lunit"
-  | Lnone vs | Loptional vs | Lnamed vs | Lghost vs -> vs
+  | Lnone vs | Loptional vs | Lnamed vs -> vs
 
 let ty_of_lb_arg = function
   | Lunit -> ty_unit
-  | Lnone vs | Loptional vs | Lnamed vs | Lghost vs -> vs.vs_ty
+  | Lnone vs | Loptional vs | Lnamed vs -> vs.vs_ty
 
 let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
     sp_diverge sp_pure sp_equiv sp_text sp_loc =

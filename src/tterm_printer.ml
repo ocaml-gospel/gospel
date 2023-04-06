@@ -14,8 +14,10 @@ open Ttypes
 open Utils
 open Fmt
 
-let print_vs fmt { vs_name; vs_ty } =
-  pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
+let print_vs fmt { vs_name; vs_ty; ghost } =
+  if ghost = Ghost then
+    pp fmt "@[@ghost %a:%a@]" Ident.pp vs_name print_ty vs_ty
+  else pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
 
 let print_ls_decl fmt { ls_name; ls_args; ls_value; _ } =
   let is_func = Option.is_some ls_value in
