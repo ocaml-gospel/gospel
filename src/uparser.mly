@@ -251,20 +251,20 @@ fun_arg:
 | LEFTPAR RIGHTPAR
   { Lunit }
 | lident
-  { Lnone $1 }
+  { Lnone ($1, Nonghost) }
 | TILDE lident
   { Lnamed $2 }
 | QUESTION lident
   { Loptional $2 }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
-  { Lghost (id, ty) }
+  { Lnone (id, Ghost ty) }
 ;
 
 ret_value:
 | lident
-  { Lnone $1 }
+  { Lnone ($1, Nonghost) }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
-  { Lghost (id, ty) }
+  { Lnone (id, Ghost ty) }
 ;
 
 ret_name:
@@ -476,7 +476,7 @@ typ:
     { PTarrow (Loptional id, aty, rty) }
 | typ ARROW typ
     { let l = mk_loc $loc in
-      PTarrow (Lnone (id_anonymous l), $1, $3) }
+      PTarrow (Lnone ((id_anonymous l), Nonghost), $1, $3) }
 | ty_arg STAR ty_tuple
     { PTtuple ($1 :: $3) }
 ;

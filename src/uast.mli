@@ -21,12 +21,13 @@ type pty =
   | PTtuple of pty list
   | PTarrow of labelled_arg * pty * pty
 
+and ghost = Nonghost | Ghost of pty
+
 and labelled_arg =
   | Lunit
-  | Lnone of Preid.t
+  | Lnone of Preid.t * ghost
   | Loptional of Preid.t
   | Lnamed of Preid.t
-  | Lghost of Preid.t * pty
 
 (* Patterns *)
 

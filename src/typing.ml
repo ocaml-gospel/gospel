@@ -22,7 +22,7 @@ open Symbols
 
 let pid_of_label = function
   | Lunit -> invalid_arg "pid_of_label Lunit"
-  | Lnone p | Loptional p | Lnamed p | Lghost (p, _) -> p
+  | Lnone (p, _) | Loptional p | Lnamed p -> p
 
 let string_list_of_qualid q =
   let rec fold_q acc = function
@@ -735,7 +735,7 @@ let process_val_spec kid crcm ns id args ret vs =
     | [], [] -> (env, List.rev lal)
     | [], _ ->
         W.type_checking_error ~loc:header.sp_hd_nm.pid_loc "too few parameters"
-    | Uast.Lghost (pid, pty) :: args, _ ->
+    | Uast.Lnone (pid, Ghost pty) :: args, _ ->
         let ty = ty_of_pty ns pty in
         let vs = create_vsymbol pid ty Ghost in
         let env, lal = add_arg (Lnone vs) env lal in
@@ -755,7 +755,7 @@ let process_val_spec kid crcm ns id args ret vs =
         let vs = create_vsymbol pid ty Nonghost in
         let env, lal = add_arg (Lnamed vs) env lal in
         process_args args tyl env lal
-    | Lnone pid :: args, (ty, Asttypes.Nolabel) :: tyl ->
+    | Lnone (pid, Nonghost) :: args, (ty, Asttypes.Nolabel) :: tyl ->
         let vs = create_vsymbol pid ty Nonghost in
         let env, lal = add_arg (Lnone vs) env lal in
         process_args args tyl env lal
@@ -882,7 +882,8 @@ let mk_dummy_var i (ty, arg) =
   let loc = Location.none in
   match arg with
   | _ when ty_equal ty ty_unit -> Uast.Lunit
-  | Nolabel -> Uast.Lnone (Preid.create ~loc ("__arg" ^ string_of_int i))
+  | Nolabel ->
+      Uast.Lnone (Preid.create ~loc ("__arg" ^ string_of_int i), Uast.Nonghost)
   | Labelled s -> Uast.Lnamed (Preid.create ~loc s)
   | Optional s -> Uast.Loptional (Preid.create ~loc s)
 
@@ -898,11 +899,14 @@ let process_val ~loc ?(ghost = Nonghost) kid crcm ns vd =
           | { ty_node = Tyapp (ts, _) } when is_ts_tuple ts ->
               let arity = ts_arity ts in
               List.init arity (fun i ->
-                  Uast.Lnone (Preid.create ~loc:vd.vloc (Fmt.str "result%d" i)))
+                  Uast.Lnone
+                    (Preid.create ~loc:vd.vloc (Fmt.str "result%d" i), Nonghost))
           | _ ->
               [
                 Uast.Lnone
-                  (if args = [] then id else Preid.create ~loc:vd.vloc "result");
+                  ( (if args = [] then id
+                    else Preid.create ~loc:vd.vloc "result"),
+                    Nonghost );
               ]
         in
         let args = List.mapi mk_dummy_var args in

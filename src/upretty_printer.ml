@@ -23,10 +23,10 @@ let rec qualid fmt (q : qualid) =
 let labelled_arg fmt (l : labelled_arg) =
   match l with
   | Lunit -> pp fmt "()"
-  | Lnone pid -> Preid.pp fmt pid
+  | Lnone (pid, Nonghost) -> Preid.pp fmt pid
+  | Lnone (pid, Ghost _) -> pp fmt "@[[%a : TY]@]" Preid.pp pid
   | Loptional pid -> pp fmt "@[?%a@]" Preid.pp pid
   | Lnamed pid -> pp fmt "@[~%a@]" Preid.pp pid
-  | Lghost (pid, _) -> pp fmt "@[[%a : TY]@]" Preid.pp pid
 
 let spec f fmt x = pp fmt "@[(*@@ %a@ *)@]" f x
 let term fmt _ = pp fmt "@[TERM ... @]"
