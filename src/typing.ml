@@ -1020,7 +1020,7 @@ type parse_env = {
 }
 
 let penv lpaths parsing =
-  { lpaths = lpaths @ [ Findlib.package_directory "stdlib" ]; parsing }
+  { lpaths = lpaths @ [ Findlib.package_directory "gospel.stdlib" ]; parsing }
 
 let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;
