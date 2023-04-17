@@ -2,6 +2,7 @@
   type t =
     | Ghost of Lexing.position * Lexing.position * string
     | Spec of Lexing.position * Lexing.position * string
+    | Documentation of string
     | Other of string
     | Spaces of string
 
@@ -82,8 +83,12 @@
     Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
   | Other o :: Spaces sp :: Spec (start_p, end_p, s) :: l ->
     Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
+  | Other o :: Spaces sp :: Documentation d :: Spaces sp' :: Spec (start_p, end_p, s) :: l ->
+      Fmt.str "%s%s[@@@ocaml.doc \"%s\"]%s%s%s" o sp d sp'
+        (print_gospel `TwoAt start_p end_p s) (print l)
   | (Other s | Spaces s) :: l ->
     Fmt.str "%s%s" s (print l)
+  | Documentation s :: l -> Fmt.str "(**%s*)%s" s (print l)
   | [] -> ""
 
   let collapse_spaces l =
@@ -120,6 +125,8 @@ rule scan = parse
     { push (); Lexing.new_line lexbuf; Queue.push (Spaces nl) queue; scan lexbuf }
   | "(*@"
     { push (); gospel (Lexing.lexeme_start_p lexbuf) lexbuf }
+  | "(**"
+    { push (); documentation lexbuf }
   | "(*"
       {
         Buffer.add_string buf "(*";
@@ -150,6 +157,15 @@ and gospel start_pos = parse
       Queue.push (Spec (start_pos, end_pos, s)) queue;
       scan lexbuf
     }
+
+and documentation = parse
+  | "*)" {
+      let s = Buffer.contents buf in
+      Buffer.clear buf;
+      Queue.push (Documentation s) queue;
+      scan lexbuf
+    }
+  | _ as c { Buffer.add_char buf c; documentation lexbuf }
 
 and comment = parse
   | "*)" {}
