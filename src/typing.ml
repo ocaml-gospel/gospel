@@ -795,20 +795,38 @@ let process_val_spec kid crcm ns id args ret vs =
       | Some (p, t) ->
           let dp = dpattern kid ns p in
           let ty =
-            match (p.pat_desc, xs.xs_type) with
-            | (Pvar _ | Pwild), Exn_tuple [] ->
-                W.type_checking_error ~loc "exception pattern not expected"
-            | (Pvar _ | Pwild | Ptuple _), Exn_tuple [ ty ] -> ty
-            | (Pvar _ | Pwild), Exn_tuple (_ :: _ :: _) ->
-                W.type_checking_error ~loc
-                  "Exception pattern doesn't match its type"
-            | Ptuple _, Exn_tuple tyl -> ty_app (ts_tuple (List.length tyl)) tyl
-            | Prec _, Exn_record _ ->
-                (* TODO unify types and field names *)
-                W.error ~loc (W.Unsupported "Record type in exceptions")
-            | _, _ ->
-                W.type_checking_error ~loc
-                  "Exception pattern does not match its type"
+            let rec aux p xs =
+              match (p.pat_desc, xs.xs_type) with
+              | (Pvar _ | Pwild), Exn_tuple [] ->
+                  W.type_checking_error ~loc "Exception pattern not expected"
+              | ( ( Pvar _ | Pwild | Ptuple _ | Pconst _
+                  | Pinterval (_, _)
+                  | Ptrue | Pfalse ),
+                  Exn_tuple [ ty ] ) ->
+                  ty
+              | (Pvar _ | Pwild), Exn_tuple (_ :: _ :: _) ->
+                  W.type_checking_error ~loc
+                    "Exception pattern doesn't match its type"
+              | Ptuple _, Exn_tuple tyl ->
+                  ty_app (ts_tuple (List.length tyl)) tyl
+              | Pas (p, _), _ -> aux p xs
+              | Por (p0, p1), _ ->
+                  let ty0 = aux p0 xs and ty1 = aux p1 xs in
+                  if Ttypes.ty_equal ty0 ty1 then ty0
+                  else W.type_checking_error ~loc "Type mismatch"
+              | Prec _, Exn_record _ ->
+                  (* TODO unify types and field names *)
+                  W.error ~loc (W.Unsupported "Record type in exceptions")
+              | Pcast (_, _), _ ->
+                  (* This is not handled in Dterm.pattern *)
+                  W.error ~loc (W.Unsupported "Cast in exceptions")
+              | Papp (_, _), _ ->
+                  W.error ~loc (W.Unsupported "Qualified pattern in exceptions")
+              | _, _ ->
+                  W.type_checking_error ~loc
+                    "Exception pattern does not match its type"
+            in
+            aux p xs
           in
           dpattern_unify dp (dty_of_ty ty);
           let p, vars = pattern dp in
