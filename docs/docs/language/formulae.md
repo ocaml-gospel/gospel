@@ -55,7 +55,7 @@ pattern = "_"
         | "(" pattern ")"
         | pattern ("," pattern)+
         | pattern "::" pattern
-        | pattern "as lident
+        | pattern "as" lident
         | pattern "|" pattern
         | "{" field_pattern_ (";" field_pattern)* "}"
 field_pattern = lname "=" pattern
