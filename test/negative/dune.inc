@@ -603,3 +603,14 @@
  (alias runtest)
  (action (diff %{dep:t9.mli} %{dep:t9.mli.output})))
 
+(rule
+ (target type_arity.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:type_arity.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:type_arity.mli} %{dep:type_arity.mli.output})))
+

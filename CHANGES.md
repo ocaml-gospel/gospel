@@ -52,6 +52,9 @@
 
 ## Fixed
 
+- Avoid uncaught exception when displaying a warning for builtins (using
+  `Location.none`)
+  [\#283](https://github.com/ocaml-gospel/gospel/pull/283)
 - Fixed pattern match analysis in exceptional postconditions
   [\#277](https://github/ocaml-gospel/gospel/pull/277)
 - Avoid uncaught exception when displaying a warning on a dummy
