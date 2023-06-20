@@ -52,6 +52,8 @@
 
 ## Fixed
 
+- Fixed pattern match analysis in exceptional postconditions
+  [\#277](https://github/ocaml-gospel/gospel/pull/277)
 - Avoid uncaught exception when displaying a warning on a dummy
   position
   [\#262](https://github.com/ocaml-gospel/gospel/pull/262)

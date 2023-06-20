@@ -20,6 +20,7 @@ exception E7 of { x : int }
 exception E8 of { x : (int -> float) }
 exception E9 of { x : int; y : float }
 exception E10 of { x : (int -> int -> float); y : float; z : bool }
+exception E11 of char
 
 [@@@gospel "val id : 'a -> 'a"]
 
@@ -42,7 +43,10 @@ val f : 'a -> 'a
          | E4 (i,l) -> match l with
                    | [] -> true
                    | y :: ys -> y = i
-    raises E5 f -> integer_of_int (f (int_of_integer 3)) = 4 *)
+    raises E5 f -> integer_of_int (f (int_of_integer 3)) = 4
+    raises E11 'a' -> true
+    raises E11 ('a' | 'b') -> true
+    raises E11 ('c'..'z') -> true *)
 
 (* {gospel_expected|
    [0] OK
