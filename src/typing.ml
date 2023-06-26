@@ -273,6 +273,27 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     if ls.ls_field then W.error ~loc (W.Field_application ls.ls_name.id_str);
     gen_app ~loc ls tl
   in
+  let eta_expand q args missing =
+    let var i = Preid.create ~loc:Location.none ("$x" ^ string_of_int i) in
+    let vars = List.of_seq (Seq.init missing var) in
+    let binds = List.map (fun x -> (x, None)) vars
+    and terms =
+      List.map
+        (fun x ->
+          { term_desc = Uast.Tpreid (Uast.Qpreid x); term_loc = Location.none })
+        vars
+    in
+    let term =
+      { term_desc = Uast.Tidapp (q, args @ terms); term_loc = Location.none }
+    in
+    let term_desc = Uast.Tquant (Uast.Tlambda, binds, term) in
+    dterm kid crcm ns denv { term_desc; term_loc = loc }
+  in
+  let fun_qualid_app ~loc q ls tl =
+    let missing_args = List.length ls.ls_args - List.length tl in
+    if missing_args > 0 then eta_expand q tl missing_args
+    else fun_app ~loc ls tl
+  in
   let qualid_app q tl =
     match q with
     | Qpreid ({ pid_loc = loc; pid_str = s; _ } as pid) -> (
@@ -280,8 +301,8 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         | Some dty ->
             let dtv = mk_dterm ~loc (DTvar pid) (Some dty) in
             map_apply dtv tl
-        | None -> fun_app ~loc (find_q_ls ns q) tl)
-    | _ -> fun_app ~loc (find_q_ls ns q) tl
+        | None -> fun_qualid_app ~loc q (find_q_ls ns q) tl)
+    | _ -> fun_qualid_app ~loc q (find_q_ls ns q) tl
   in
   let rec unfold_app t1 t2 tl =
     match t1.term_desc with
@@ -317,11 +338,11 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let ls = find_q_ls ns q in
       if ls.ls_field then
         W.error ~loc (W.Symbol_not_found (string_list_of_qualid q));
-      if ls.ls_args <> [] then
-        W.error ~loc (W.Partial_application ls.ls_name.id_str);
-      let _, dty = specialize_ls ls in
-      let node, dty = (DTapp (ls, []), dty) in
-      mk_dterm ~loc node dty
+      if ls.ls_args <> [] then eta_expand q [] (List.length ls.ls_args)
+      else
+        let _, dty = specialize_ls ls in
+        let node, dty = (DTapp (ls, []), dty) in
+        mk_dterm ~loc node dty
   | Uast.Tfield (t, q) ->
       let ls = find_q_fd ns q in
       if not ls.ls_field then
