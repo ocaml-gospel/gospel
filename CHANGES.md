@@ -52,6 +52,8 @@
 
 ## Fixed
 
+- Use correct location for arity mismatches in type applications
+  [\#258](https://github/ocaml-gospel/gospel/pull/258)
 - Avoid uncaught exception when displaying a warning for builtins (using
   `Location.none`)
   [\#283](https://github.com/ocaml-gospel/gospel/pull/283)

@@ -604,13 +604,35 @@
  (action (diff %{dep:t9.mli} %{dep:t9.mli.output})))
 
 (rule
- (target type_arity.mli.output)
+ (target type_arity1.mli.output)
  (deps (source_tree .))
  (action
    (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:type_arity.mli}))))
+      (run %{project_root}/test/gospel_check.exe %{dep:type_arity1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:type_arity.mli} %{dep:type_arity.mli.output})))
+ (action (diff %{dep:type_arity1.mli} %{dep:type_arity1.mli.output})))
+
+(rule
+ (target type_arity2.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:type_arity2.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:type_arity2.mli} %{dep:type_arity2.mli.output})))
+
+(rule
+ (target type_arity3.mli.output)
+ (deps (source_tree .))
+ (action
+   (with-outputs-to %{target}
+      (run %{project_root}/test/gospel_check.exe %{dep:type_arity3.mli}))))
+
+(rule
+ (alias runtest)
+ (action (diff %{dep:type_arity3.mli} %{dep:type_arity3.mli.output})))
 
