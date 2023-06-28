@@ -2,6 +2,8 @@
   type t =
     | Ghost of Lexing.position * Lexing.position * string
     | Spec of Lexing.position * Lexing.position * string
+    | Documentation of Lexing.position * Lexing.position * string
+    | Empty_documentation of Lexing.position
     | Other of string
     | Spaces of string
 
