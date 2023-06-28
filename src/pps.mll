@@ -122,6 +122,22 @@ rule scan = parse
     { push (); Lexing.new_line lexbuf; Queue.push (Spaces nl) queue; scan lexbuf }
   | "(*@"
     { push (); gospel (Lexing.lexeme_start_p lexbuf) lexbuf }
+  | "(**)" {
+    push ();
+    let end_pos = Lexing.lexeme_end_p lexbuf in
+    Queue.push (Empty_documentation end_pos) queue;
+    scan lexbuf
+    }
+  | "(**" {
+    push ();
+    let start_pos = Lexing.lexeme_start_p lexbuf in
+    comment lexbuf;
+    let s = Buffer.contents buf in
+    Buffer.clear buf;
+    let end_pos = Lexing.lexeme_end_p lexbuf in
+    Queue.push (Documentation (start_pos, end_pos, s)) queue;
+    scan lexbuf
+    }
   | "(*"
       {
         Buffer.add_string buf "(*";
