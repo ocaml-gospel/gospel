@@ -357,9 +357,10 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         let ls = find_ls ~loc:op1.pid_loc ns [ symbol ] in
         let dtyl, dty = specialize_ls ls in
         (if ls_equal ls ps_equ then
-         let max = max_dty crcm [ de1; de2 ] in
-         try dty_unify ~loc (Option.value max ~default:dty_bool) (List.hd dtyl)
-         with Exit -> ());
+           let max = max_dty crcm [ de1; de2 ] in
+           try
+             dty_unify ~loc (Option.value max ~default:dty_bool) (List.hd dtyl)
+           with Exit -> ());
         let dtl =
           app_unify_map ~loc ls (dterm_expected crcm) [ de1; de2 ] dtyl
         in

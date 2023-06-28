@@ -110,8 +110,8 @@ let insert ~loc crc m =
     Mts.add crc.crc_src_ts (Mts.add crc.crc_tar_ts crc m1) m2
   in
   (if mem m crc.crc_tar_ts crc.crc_src_ts then
-   let crc = find_crc m crc.crc_tar_ts crc.crc_src_ts in
-   W.error ~loc (W.Coercion_cycle (to_string crc)));
+     let crc = find_crc m crc.crc_tar_ts crc.crc_src_ts in
+     W.error ~loc (W.Coercion_cycle (to_string crc)));
   let m1 = try Mts.find crc.crc_src_ts m with Not_found -> Mts.empty in
   if Mts.mem crc.crc_tar_ts m1 then
     replace ~loc (Mts.find crc.crc_tar_ts m1) crc m1 m

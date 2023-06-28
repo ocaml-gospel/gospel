@@ -262,7 +262,7 @@ let rec print_signature_item f x =
   | Sig_open (od, ghost) ->
       pp f
         (if ghost = Ghost then "@[<hov2>(*@@@ open%s@ %a@ *)@]%a"
-        else "@[<hov2>open%s@ %a@]%a")
+         else "@[<hov2>open%s@ %a@]%a")
         (override od.opn_override)
         (list ~sep:full Format.pp_print_string)
         od.opn_id
