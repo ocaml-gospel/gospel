@@ -110,8 +110,25 @@
     Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
   | Other o :: Spaces sp :: Spec (start_p, end_p, s) :: l ->
     Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
+  | Other o :: Spaces sp :: (Documentation (_, _, _) as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l
+  | Other o :: Spaces sp :: ((Empty_documentation _)  as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l ->
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: (Documentation (_, _, _) as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l
+  | Other o :: (Empty_documentation _ as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l ->
+    let sp = "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: Spaces sp :: (Documentation (_, _, _) as doc) :: Spec (start_p, end_p, s) :: l
+  | Other o :: Spaces sp :: (Empty_documentation _ as doc) :: Spec (start_p, end_p, s) :: l ->
+    let sp' = "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: (Documentation (_, _, _) as doc) :: Spec (start_p, end_p, s) :: l
+  | Other o :: (Empty_documentation _  as doc) :: Spec (start_p, end_p, s) :: l ->
+    let sp, sp' = "", "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
   | (Other s | Spaces s) :: l ->
     Fmt.str "%s%s" s (print l)
+  | Documentation (_, _, s) :: l -> Fmt.str "(**%s*)%s" s (print l)
+  | Empty_documentation _ :: l -> Fmt.str "(**)%s" (print l)
   | [] -> ""
 
   let collapse_spaces l =
