@@ -55,6 +55,8 @@
 - Avoid uncaught exception when displaying a warning for builtins (using
   `Location.none`)
   [\#283](https://github.com/ocaml-gospel/gospel/pull/283)
+- Gospel preprocessor no longer detach documentation below a declaration
+  [\#281](https://github.com/ocaml-gospel/gospel/pull/281)
 - Fixed pattern match analysis in exceptional postconditions
   [\#277](https://github/ocaml-gospel/gospel/pull/277)
 - Avoid uncaught exception when displaying a warning on a dummy
