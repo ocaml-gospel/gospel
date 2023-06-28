@@ -68,6 +68,32 @@
       end_p.Lexing.pos_lnum end_p.pos_fname
       (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
 
+  let print_documentation_attribute start_p end_p s =
+    Fmt.str "[@@@ocaml.doc\n\
+# %d \"%s\"\n\
+%s {|%s|}\n\
+# %d \"%s\"\n\
+%s]"
+    start_p.Lexing.pos_lnum start_p.pos_fname
+    (String.make (start_p.pos_cnum - start_p.pos_bol) ' ') s
+    end_p.Lexing.pos_lnum end_p.pos_fname
+    (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+
+  let print_empty_documentation end_p =
+    Fmt.str "[@@@ocaml.doc\n\
+# %d \"%s\"\n\
+%s]"
+    end_p.Lexing.pos_lnum end_p.pos_fname
+    (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+
+  let print_triplet o sp doc sp' start_p end_p s =
+   let docstring = match doc with
+   | Documentation (start_p, end_p, d) -> (print_documentation_attribute start_p end_p d)
+   | Empty_documentation end_p -> print_empty_documentation end_p
+   | _ -> assert false
+   in
+   Fmt.str "%s%s%s%s%s" o sp  docstring sp' (print_gospel `TwoAt start_p end_p s)
+
   let rec print = function
   | Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l ->
     Fmt.str "%s%s"
