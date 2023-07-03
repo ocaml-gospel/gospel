@@ -1,3 +1,3 @@
-(lang dune 2.4)
+(lang dune 3.0)
 (name gospel)
 (using menhir 2.0)

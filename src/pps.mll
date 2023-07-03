@@ -2,6 +2,8 @@
   type t =
     | Ghost of Lexing.position * Lexing.position * string
     | Spec of Lexing.position * Lexing.position * string
+    | Documentation of Lexing.position * Lexing.position * string
+    | Empty_documentation of Lexing.position
     | Other of string
     | Spaces of string
 
@@ -66,6 +68,32 @@
       end_p.Lexing.pos_lnum end_p.pos_fname
       (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
 
+  let print_documentation_attribute start_p end_p s =
+    Fmt.str "[@@@ocaml.doc\n\
+# %d \"%s\"\n\
+%s {|%s|}\n\
+# %d \"%s\"\n\
+%s]"
+    start_p.Lexing.pos_lnum start_p.pos_fname
+    (String.make (start_p.pos_cnum - start_p.pos_bol) ' ') s
+    end_p.Lexing.pos_lnum end_p.pos_fname
+    (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+
+  let print_empty_documentation end_p =
+    Fmt.str "[@@@ocaml.doc\n\
+# %d \"%s\"\n\
+%s]"
+    end_p.Lexing.pos_lnum end_p.pos_fname
+    (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+
+  let print_triplet o sp doc sp' start_p end_p s =
+   let docstring = match doc with
+   | Documentation (start_p, end_p, d) -> (print_documentation_attribute start_p end_p d)
+   | Empty_documentation end_p -> print_empty_documentation end_p
+   | _ -> assert false
+   in
+   Fmt.str "%s%s%s%s%s" o sp  docstring sp' (print_gospel `TwoAt start_p end_p s)
+
   let rec print = function
   | Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l ->
     Fmt.str "%s%s"
@@ -82,8 +110,25 @@
     Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
   | Other o :: Spaces sp :: Spec (start_p, end_p, s) :: l ->
     Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
+  | Other o :: Spaces sp :: (Documentation (_, _, _) as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l
+  | Other o :: Spaces sp :: ((Empty_documentation _)  as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l ->
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: (Documentation (_, _, _) as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l
+  | Other o :: (Empty_documentation _ as doc) :: Spaces sp' :: Spec (start_p, end_p, s) :: l ->
+    let sp = "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: Spaces sp :: (Documentation (_, _, _) as doc) :: Spec (start_p, end_p, s) :: l
+  | Other o :: Spaces sp :: (Empty_documentation _ as doc) :: Spec (start_p, end_p, s) :: l ->
+    let sp' = "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
+  | Other o :: (Documentation (_, _, _) as doc) :: Spec (start_p, end_p, s) :: l
+  | Other o :: (Empty_documentation _  as doc) :: Spec (start_p, end_p, s) :: l ->
+    let sp, sp' = "", "" in
+    Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
   | (Other s | Spaces s) :: l ->
     Fmt.str "%s%s" s (print l)
+  | Documentation (_, _, s) :: l -> Fmt.str "(**%s*)%s" s (print l)
+  | Empty_documentation _ :: l -> Fmt.str "(**)%s" (print l)
   | [] -> ""
 
   let collapse_spaces l =
@@ -120,6 +165,22 @@ rule scan = parse
     { push (); Lexing.new_line lexbuf; Queue.push (Spaces nl) queue; scan lexbuf }
   | "(*@"
     { push (); gospel (Lexing.lexeme_start_p lexbuf) lexbuf }
+  | "(**)" {
+    push ();
+    let end_pos = Lexing.lexeme_end_p lexbuf in
+    Queue.push (Empty_documentation end_pos) queue;
+    scan lexbuf
+    }
+  | "(**" {
+    push ();
+    let start_pos = Lexing.lexeme_start_p lexbuf in
+    comment lexbuf;
+    let s = Buffer.contents buf in
+    Buffer.clear buf;
+    let end_pos = Lexing.lexeme_end_p lexbuf in
+    Queue.push (Documentation (start_pos, end_pos, s)) queue;
+    scan lexbuf
+    }
   | "(*"
       {
         Buffer.add_string buf "(*";
