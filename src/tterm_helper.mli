@@ -20,7 +20,7 @@ val t_prop : Tterm.term -> Tterm.term
 val t_type : term -> ty
 val t_ty_check : term -> ty option -> unit
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
-val ls_app_inst : lsymbol -> term list -> ty option -> ty Mtv.t
+val ls_app_inst : lsymbol -> term list -> ty option -> Location.t -> ty Mtv.t
 val mk_pattern : pattern_node -> ty -> pattern
 val p_wild : ty -> pattern
 val p_var : vsymbol -> pattern

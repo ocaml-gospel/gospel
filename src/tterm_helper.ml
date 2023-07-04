@@ -85,15 +85,11 @@ let ls_arg_inst ls tl =
     W.error ~loc
       (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length tl))
 
-let ls_app_inst ls tl ty =
+let ls_app_inst ls tl ty loc =
   let s = ls_arg_inst ls tl in
   match (ls.ls_value, ty) with
-  | Some _, None ->
-      (* FIXME: get a proper location here *)
-      W.error ~loc:Location.none (W.Predicate_symbol_expected ls.ls_name.id_str)
-  | None, Some _ ->
-      (* FIXME: get a proper location here *)
-      W.error ~loc:Location.none (W.Function_symbol_expected ls.ls_name.id_str)
+  | Some _, None -> W.error ~loc (W.Predicate_symbol_expected ls.ls_name.id_str)
+  | None, Some _ -> W.error ~loc (W.Function_symbol_expected ls.ls_name.id_str)
   | Some vty, Some ty -> ty_match s vty ty
   | None, None -> s
 
@@ -126,13 +122,13 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
-let t_app ls tl ty =
-  ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty
+let t_app ls tl ty loc =
+  ignore (ls_app_inst ls tl ty loc : ty Mtv.t);
+  mk_term (Tapp (ls, tl)) ty loc
 
-let t_field t ls ty =
-  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
-  mk_term (Tfield (t, ls)) ty
+let t_field t ls ty loc =
+  ignore (ls_app_inst ls [ t ] ty loc : ty Mtv.t);
+  mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
