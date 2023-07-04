@@ -256,19 +256,43 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     let dtl = app_unify_map ~loc ls (dterm_expected crcm) dtl dtyl in
     mk_dterm ~loc (DTapp (ls, dtl)) dty
   in
-  let rec gen_app ~loc ls tl =
-    let n = List.length ls.ls_args in
-    match tl with
-    | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n && ls.ls_constr
-      ->
-        gen_app ~loc ls tl
-    | _ when List.length tl < n ->
-        W.error ~loc (W.Partial_application ls.ls_name.id_str)
-    | _ ->
-        let args, extra = split_at_i (List.length ls.ls_args) tl in
-        let dtl = List.map (dterm kid crcm ns denv) args in
-        let dt = mk_app ~loc ls dtl in
-        if extra = [] then dt else map_apply dt extra
+  let gen_app ~loc ls tl =
+    let nls = List.length ls.ls_args and ntl = List.length tl in
+    let args, extra = split_at_i nls tl in
+    let dtl = List.map (dterm kid crcm ns denv) args in
+    let dtyl, dty = specialize_ls ls in
+    if ntl < nls then
+      let dtyl1, dtyl2 = split_at_i ntl dtyl in
+      let dtl = List.map2 (dterm_expected crcm) dtl dtyl1 in
+      let dty = Option.value ~default:dty_bool dty in
+      let dty =
+        List.fold_right
+          (fun t1 t2 -> Dterm.Tapp (ts_arrow, [ t1; t2 ]))
+          dtyl2 dty
+      in
+      mk_dterm ~loc (DTapp (ls, dtl)) (Some dty)
+    else
+      let dtl = List.map2 (dterm_expected crcm) dtl dtyl in
+      let dt = mk_dterm ~loc (DTapp (ls, dtl)) dty in
+      if extra = [] then dt else map_apply dt extra
+  in
+  let gen_app ~loc ls tl =
+    (* gen_app in two layers, to check that constructors are fully
+       applied (and with the usual syntax) without enforcing this on
+       functions *)
+    if ls.ls_constr then
+      let n = List.length ls.ls_args in
+      match tl with
+      | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
+          gen_app ~loc ls tl
+      | [ { term_desc = Ttuple tl; _ } ] when n > 1 ->
+          W.error ~loc (W.Bad_arity (ls.ls_name.id_str, n, List.length tl))
+      | _ when List.length tl < n ->
+          W.error ~loc (W.Partial_application ls.ls_name.id_str)
+      | _ :: _ :: _ when not (is_fs_tuple ls || ls_equal ls fs_list_cons) ->
+          W.error ~loc W.Syntax_error
+      | _ -> gen_app ~loc ls tl
+    else gen_app ~loc ls tl
   in
   let fun_app ~loc ls tl =
     if ls.ls_field then W.error ~loc (W.Field_application ls.ls_name.id_str);
@@ -318,11 +342,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let ls = find_q_ls ns q in
       if ls.ls_field then
         W.error ~loc (W.Symbol_not_found (string_list_of_qualid q));
-      if ls.ls_args <> [] then
-        W.error ~loc (W.Partial_application ls.ls_name.id_str);
-      let _, dty = specialize_ls ls in
-      let node, dty = (DTapp (ls, []), dty) in
-      mk_dterm ~loc node dty
+      gen_app ~loc ls []
   | Uast.Tfield (t, q) ->
       let ls = find_q_fd ns q in
       if not ls.ls_field then

@@ -9,5 +9,6 @@ val f : int -> int
    [125] File "constructor_arity5.mli", line 5, characters 13-14:
          5 |     requires C (n, n, n) = C (n, n)
                           ^
-         Error: The symbol `C' cannot be partially applied.
+         Error: The constructor `C' expects `2' argument(s)
+                but is applied to 3 argument(s) here.
    |gospel_expected} *)
