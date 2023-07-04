@@ -84,15 +84,15 @@ let rec ty_of_core ns cty =
   | Ptyp_var s -> { ty_node = Tyvar (tv_of_string ~loc s) }
   | Ptyp_tuple ctl ->
       let tyl = List.map (ty_of_core ns) ctl in
-      ty_app (ts_tuple (List.length tyl)) tyl
+      ty_app ~loc (ts_tuple (List.length tyl)) tyl
   | Ptyp_constr (lid, ctl) ->
       let ts = find_ts ~loc:lid.loc ns (Longident.flatten_exn lid.txt) in
       let tyl = List.map (ty_of_core ns) ctl in
-      ty_app ts tyl
+      ty_app ~loc ts tyl
   | Ptyp_arrow (_, ct1, ct2) ->
       (* TODO check what to do with the arg_label *)
       let ty1, ty2 = ((ty_of_core ns) ct1, (ty_of_core ns) ct2) in
-      ty_app ts_arrow [ ty1; ty2 ]
+      ty_app ~loc ts_arrow [ ty1; ty2 ]
   | _ -> assert false
 
 (** Typing terms *)

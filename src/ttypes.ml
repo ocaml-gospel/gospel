@@ -92,27 +92,29 @@ let ty_of_var tv = { ty_node = Tyvar tv }
 
 (** smart constructors & utils *)
 
-let ty_app ts tyl =
+let ty_app ?loc ts tyl =
   if ts_arity ts = List.length tyl then { ty_node = Tyapp (ts, tyl) }
   else
-    W.error ~loc:ts.ts_ident.id_loc
+    let loc = Option.value ~default:ts.ts_ident.id_loc loc in
+    W.error ~loc
       (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl))
 
-let rec ty_full_inst m ty =
+let rec ty_full_inst ?loc m ty =
   match ty.ty_node with
   | Tyvar tv -> Mtv.find tv m
-  | Tyapp (ts, tyl) -> ty_app ts (List.map (ty_full_inst m) tyl)
+  | Tyapp (ts, tyl) -> ty_app ?loc ts (List.map (ty_full_inst m) tyl)
 
-let ts_match_args ts tl =
+let ts_match_args ?loc ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
   with Invalid_argument _ ->
-    W.error ~loc:ts.ts_ident.id_loc
+    let loc = Option.value ~default:ts.ts_ident.id_loc loc in
+    W.error ~loc
       (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tl))
 
-let ty_app ts tyl =
+let ty_app ?loc ts tyl =
   match ts.ts_alias with
-  | None -> ty_app ts tyl
-  | Some ty -> ty_full_inst (ts_match_args ts tyl) ty
+  | None -> ty_app ?loc ts tyl
+  | Some ty -> ty_full_inst ?loc (ts_match_args ?loc ts tyl) ty
 
 let rec ts_subst_ts old_ts new_ts ({ ts_ident; ts_args; ts_alias } as ts) =
   if ts_equal old_ts ts then new_ts
