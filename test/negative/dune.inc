@@ -344,6 +344,25 @@
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
+  (with-outputs-to partial_application.mli.output
+   (run %{checker} %{dep:partial_application.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff partial_application.mli partial_application.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:partial_application.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
   (with-outputs-to t1.mli.output
    (run %{checker} %{dep:t1.mli}))))
 
