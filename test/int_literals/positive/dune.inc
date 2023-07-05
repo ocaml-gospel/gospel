@@ -1,11 +1,12 @@
 (rule
- (target ints.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:ints.mli}))))
+  (with-outputs-to ints.mli.output
+   (run %{checker} %{dep:ints.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ints.mli} %{dep:ints.mli.output})))
+ (action
+  (diff ints.mli ints.mli.output)))
 

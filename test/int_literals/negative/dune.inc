@@ -1,22 +1,24 @@
 (rule
- (target bad_constr_arg.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:bad_constr_arg.mli}))))
+  (with-outputs-to bad_constr_arg.mli.output
+   (run %{checker} %{dep:bad_constr_arg.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:bad_constr_arg.mli} %{dep:bad_constr_arg.mli.output})))
+ (action
+  (diff bad_constr_arg.mli bad_constr_arg.mli.output)))
 
 (rule
- (target invalid_literal.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invalid_literal.mli}))))
+  (with-outputs-to invalid_literal.mli.output
+   (run %{checker} %{dep:invalid_literal.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invalid_literal.mli} %{dep:invalid_literal.mli.output})))
+ (action
+  (diff invalid_literal.mli invalid_literal.mli.output)))
 

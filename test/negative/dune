@@ -7,7 +7,7 @@
  (action
   (with-stdout-to
    %{targets}
-   (run ../gen/gen.exe))))
+   (run ../gen/gen.exe t10.mli t9.mli))))
 
 (rule
  (alias runtest)

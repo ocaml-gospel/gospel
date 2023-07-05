@@ -1,638 +1,697 @@
 (rule
- (target char1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:char1.mli}))))
+  (with-outputs-to char1.mli.output
+   (run %{checker} %{dep:char1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:char1.mli} %{dep:char1.mli.output})))
+ (action
+  (diff char1.mli char1.mli.output)))
 
 (rule
- (target constants1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:constants1.mli}))))
+  (with-outputs-to constants1.mli.output
+   (run %{checker} %{dep:constants1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constants1.mli} %{dep:constants1.mli.output})))
+ (action
+  (diff constants1.mli constants1.mli.output)))
 
 (rule
- (target constructor_arity1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity1.mli}))))
+  (with-outputs-to constructor_arity1.mli.output
+   (run %{checker} %{dep:constructor_arity1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity1.mli} %{dep:constructor_arity1.mli.output})))
+ (action
+  (diff constructor_arity1.mli constructor_arity1.mli.output)))
 
 (rule
- (target constructor_arity2.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity2.mli}))))
+  (with-outputs-to constructor_arity2.mli.output
+   (run %{checker} %{dep:constructor_arity2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity2.mli} %{dep:constructor_arity2.mli.output})))
+ (action
+  (diff constructor_arity2.mli constructor_arity2.mli.output)))
 
 (rule
- (target constructor_arity3.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity3.mli}))))
+  (with-outputs-to constructor_arity3.mli.output
+   (run %{checker} %{dep:constructor_arity3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity3.mli} %{dep:constructor_arity3.mli.output})))
+ (action
+  (diff constructor_arity3.mli constructor_arity3.mli.output)))
 
 (rule
- (target constructor_arity4.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:constructor_arity4.mli}))))
+  (with-outputs-to constructor_arity4.mli.output
+   (run %{checker} %{dep:constructor_arity4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:constructor_arity4.mli} %{dep:constructor_arity4.mli.output})))
+ (action
+  (diff constructor_arity4.mli constructor_arity4.mli.output)))
 
 (rule
- (target duplicate_declaration.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:duplicate_declaration.mli}))))
+  (with-outputs-to duplicate_declaration.mli.output
+   (run %{checker} %{dep:duplicate_declaration.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:duplicate_declaration.mli} %{dep:duplicate_declaration.mli.output})))
+ (action
+  (diff duplicate_declaration.mli duplicate_declaration.mli.output)))
 
 (rule
- (target empty_match.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:empty_match.mli}))))
+  (with-outputs-to empty_match.mli.output
+   (run %{checker} %{dep:empty_match.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:empty_match.mli} %{dep:empty_match.mli.output})))
+ (action
+  (diff empty_match.mli empty_match.mli.output)))
 
 (rule
- (target exception_no_pattern.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:exception_no_pattern.mli}))))
+  (with-outputs-to exception_no_pattern.mli.output
+   (run %{checker} %{dep:exception_no_pattern.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:exception_no_pattern.mli} %{dep:exception_no_pattern.mli.output})))
+ (action
+  (diff exception_no_pattern.mli exception_no_pattern.mli.output)))
 
 (rule
- (target exn_arity.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:exn_arity.mli}))))
+  (with-outputs-to exn_arity.mli.output
+   (run %{checker} %{dep:exn_arity.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:exn_arity.mli} %{dep:exn_arity.mli.output})))
+ (action
+  (diff exn_arity.mli exn_arity.mli.output)))
 
 (rule
- (target field_application.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:field_application.mli}))))
+  (with-outputs-to field_application.mli.output
+   (run %{checker} %{dep:field_application.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:field_application.mli} %{dep:field_application.mli.output})))
+ (action
+  (diff field_application.mli field_application.mli.output)))
 
 (rule
- (target invariant1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invariant1.mli}))))
+  (with-outputs-to invariant1.mli.output
+   (run %{checker} %{dep:invariant1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant1.mli} %{dep:invariant1.mli.output})))
+ (action
+  (diff invariant1.mli invariant1.mli.output)))
 
 (rule
- (target invariant2.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invariant2.mli}))))
+  (with-outputs-to invariant2.mli.output
+   (run %{checker} %{dep:invariant2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant2.mli} %{dep:invariant2.mli.output})))
+ (action
+  (diff invariant2.mli invariant2.mli.output)))
 
 (rule
- (target invariant3.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invariant3.mli}))))
+  (with-outputs-to invariant3.mli.output
+   (run %{checker} %{dep:invariant3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant3.mli} %{dep:invariant3.mli.output})))
+ (action
+  (diff invariant3.mli invariant3.mli.output)))
 
 (rule
- (target invariant4.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invariant4.mli}))))
+  (with-outputs-to invariant4.mli.output
+   (run %{checker} %{dep:invariant4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant4.mli} %{dep:invariant4.mli.output})))
+ (action
+  (diff invariant4.mli invariant4.mli.output)))
 
 (rule
- (target invariant5.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:invariant5.mli}))))
+  (with-outputs-to invariant5.mli.output
+   (run %{checker} %{dep:invariant5.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:invariant5.mli} %{dep:invariant5.mli.output})))
+ (action
+  (diff invariant5.mli invariant5.mli.output)))
 
 (rule
- (target t1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t1.mli}))))
+  (with-outputs-to t1.mli.output
+   (run %{checker} %{dep:t1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t1.mli} %{dep:t1.mli.output})))
+ (action
+  (diff t1.mli t1.mli.output)))
 
 (rule
- (target t10.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe)
+  t9.mli)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t10.mli}))))
+  (with-outputs-to t10.mli.output
+   (run %{checker} %{dep:t10.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t10.mli} %{dep:t10.mli.output})))
+ (action
+  (diff t10.mli t10.mli.output)))
 
 (rule
- (target t11.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t11.mli}))))
+  (with-outputs-to t11.mli.output
+   (run %{checker} %{dep:t11.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t11.mli} %{dep:t11.mli.output})))
+ (action
+  (diff t11.mli t11.mli.output)))
 
 (rule
- (target t12.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t12.mli}))))
+  (with-outputs-to t12.mli.output
+   (run %{checker} %{dep:t12.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t12.mli} %{dep:t12.mli.output})))
+ (action
+  (diff t12.mli t12.mli.output)))
 
 (rule
- (target t13.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t13.mli}))))
+  (with-outputs-to t13.mli.output
+   (run %{checker} %{dep:t13.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t13.mli} %{dep:t13.mli.output})))
+ (action
+  (diff t13.mli t13.mli.output)))
 
 (rule
- (target t14.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t14.mli}))))
+  (with-outputs-to t14.mli.output
+   (run %{checker} %{dep:t14.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t14.mli} %{dep:t14.mli.output})))
+ (action
+  (diff t14.mli t14.mli.output)))
 
 (rule
- (target t15.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t15.mli}))))
+  (with-outputs-to t15.mli.output
+   (run %{checker} %{dep:t15.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t15.mli} %{dep:t15.mli.output})))
+ (action
+  (diff t15.mli t15.mli.output)))
 
 (rule
- (target t16.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t16.mli}))))
+  (with-outputs-to t16.mli.output
+   (run %{checker} %{dep:t16.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t16.mli} %{dep:t16.mli.output})))
+ (action
+  (diff t16.mli t16.mli.output)))
 
 (rule
- (target t17.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t17.mli}))))
+  (with-outputs-to t17.mli.output
+   (run %{checker} %{dep:t17.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t17.mli} %{dep:t17.mli.output})))
+ (action
+  (diff t17.mli t17.mli.output)))
 
 (rule
- (target t18.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t18.mli}))))
+  (with-outputs-to t18.mli.output
+   (run %{checker} %{dep:t18.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t18.mli} %{dep:t18.mli.output})))
+ (action
+  (diff t18.mli t18.mli.output)))
 
 (rule
- (target t19.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t19.mli}))))
+  (with-outputs-to t19.mli.output
+   (run %{checker} %{dep:t19.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t19.mli} %{dep:t19.mli.output})))
+ (action
+  (diff t19.mli t19.mli.output)))
 
 (rule
- (target t2.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t2.mli}))))
+  (with-outputs-to t2.mli.output
+   (run %{checker} %{dep:t2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t2.mli} %{dep:t2.mli.output})))
+ (action
+  (diff t2.mli t2.mli.output)))
 
 (rule
- (target t20.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t20.mli}))))
+  (with-outputs-to t20.mli.output
+   (run %{checker} %{dep:t20.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t20.mli} %{dep:t20.mli.output})))
+ (action
+  (diff t20.mli t20.mli.output)))
 
 (rule
- (target t21.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t21.mli}))))
+  (with-outputs-to t21.mli.output
+   (run %{checker} %{dep:t21.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t21.mli} %{dep:t21.mli.output})))
+ (action
+  (diff t21.mli t21.mli.output)))
 
 (rule
- (target t22.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t22.mli}))))
+  (with-outputs-to t22.mli.output
+   (run %{checker} %{dep:t22.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t22.mli} %{dep:t22.mli.output})))
+ (action
+  (diff t22.mli t22.mli.output)))
 
 (rule
- (target t23.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t23.mli}))))
+  (with-outputs-to t23.mli.output
+   (run %{checker} %{dep:t23.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t23.mli} %{dep:t23.mli.output})))
+ (action
+  (diff t23.mli t23.mli.output)))
 
 (rule
- (target t24.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t24.mli}))))
+  (with-outputs-to t24.mli.output
+   (run %{checker} %{dep:t24.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t24.mli} %{dep:t24.mli.output})))
+ (action
+  (diff t24.mli t24.mli.output)))
 
 (rule
- (target t25.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t25.mli}))))
+  (with-outputs-to t25.mli.output
+   (run %{checker} %{dep:t25.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t25.mli} %{dep:t25.mli.output})))
+ (action
+  (diff t25.mli t25.mli.output)))
 
 (rule
- (target t26.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t26.mli}))))
+  (with-outputs-to t26.mli.output
+   (run %{checker} %{dep:t26.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t26.mli} %{dep:t26.mli.output})))
+ (action
+  (diff t26.mli t26.mli.output)))
 
 (rule
- (target t27.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t27.mli}))))
+  (with-outputs-to t27.mli.output
+   (run %{checker} %{dep:t27.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t27.mli} %{dep:t27.mli.output})))
+ (action
+  (diff t27.mli t27.mli.output)))
 
 (rule
- (target t28.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t28.mli}))))
+  (with-outputs-to t28.mli.output
+   (run %{checker} %{dep:t28.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t28.mli} %{dep:t28.mli.output})))
+ (action
+  (diff t28.mli t28.mli.output)))
 
 (rule
- (target t29.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t29.mli}))))
+  (with-outputs-to t29.mli.output
+   (run %{checker} %{dep:t29.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t29.mli} %{dep:t29.mli.output})))
+ (action
+  (diff t29.mli t29.mli.output)))
 
 (rule
- (target t3.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t3.mli}))))
+  (with-outputs-to t3.mli.output
+   (run %{checker} %{dep:t3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t3.mli} %{dep:t3.mli.output})))
+ (action
+  (diff t3.mli t3.mli.output)))
 
 (rule
- (target t30.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t30.mli}))))
+  (with-outputs-to t30.mli.output
+   (run %{checker} %{dep:t30.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t30.mli} %{dep:t30.mli.output})))
+ (action
+  (diff t30.mli t30.mli.output)))
 
 (rule
- (target t31.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t31.mli}))))
+  (with-outputs-to t31.mli.output
+   (run %{checker} %{dep:t31.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t31.mli} %{dep:t31.mli.output})))
+ (action
+  (diff t31.mli t31.mli.output)))
 
 (rule
- (target t32.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t32.mli}))))
+  (with-outputs-to t32.mli.output
+   (run %{checker} %{dep:t32.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t32.mli} %{dep:t32.mli.output})))
+ (action
+  (diff t32.mli t32.mli.output)))
 
 (rule
- (target t33.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t33.mli}))))
+  (with-outputs-to t33.mli.output
+   (run %{checker} %{dep:t33.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t33.mli} %{dep:t33.mli.output})))
+ (action
+  (diff t33.mli t33.mli.output)))
 
 (rule
- (target t34.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t34.mli}))))
+  (with-outputs-to t34.mli.output
+   (run %{checker} %{dep:t34.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t34.mli} %{dep:t34.mli.output})))
+ (action
+  (diff t34.mli t34.mli.output)))
 
 (rule
- (target t35.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t35.mli}))))
+  (with-outputs-to t35.mli.output
+   (run %{checker} %{dep:t35.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t35.mli} %{dep:t35.mli.output})))
+ (action
+  (diff t35.mli t35.mli.output)))
 
 (rule
- (target t36.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t36.mli}))))
+  (with-outputs-to t36.mli.output
+   (run %{checker} %{dep:t36.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t36.mli} %{dep:t36.mli.output})))
+ (action
+  (diff t36.mli t36.mli.output)))
 
 (rule
- (target t37.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t37.mli}))))
+  (with-outputs-to t37.mli.output
+   (run %{checker} %{dep:t37.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t37.mli} %{dep:t37.mli.output})))
+ (action
+  (diff t37.mli t37.mli.output)))
 
 (rule
- (target t38.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t38.mli}))))
+  (with-outputs-to t38.mli.output
+   (run %{checker} %{dep:t38.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t38.mli} %{dep:t38.mli.output})))
+ (action
+  (diff t38.mli t38.mli.output)))
 
 (rule
- (target t39.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t39.mli}))))
+  (with-outputs-to t39.mli.output
+   (run %{checker} %{dep:t39.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t39.mli} %{dep:t39.mli.output})))
+ (action
+  (diff t39.mli t39.mli.output)))
 
 (rule
- (target t4.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t4.mli}))))
+  (with-outputs-to t4.mli.output
+   (run %{checker} %{dep:t4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t4.mli} %{dep:t4.mli.output})))
+ (action
+  (diff t4.mli t4.mli.output)))
 
 (rule
- (target t5.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t5.mli}))))
+  (with-outputs-to t5.mli.output
+   (run %{checker} %{dep:t5.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t5.mli} %{dep:t5.mli.output})))
+ (action
+  (diff t5.mli t5.mli.output)))
 
 (rule
- (target t6.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t6.mli}))))
+  (with-outputs-to t6.mli.output
+   (run %{checker} %{dep:t6.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t6.mli} %{dep:t6.mli.output})))
+ (action
+  (diff t6.mli t6.mli.output)))
 
 (rule
- (target t7.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t7.mli}))))
+  (with-outputs-to t7.mli.output
+   (run %{checker} %{dep:t7.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t7.mli} %{dep:t7.mli.output})))
+ (action
+  (diff t7.mli t7.mli.output)))
 
 (rule
- (target t8.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t8.mli}))))
+  (with-outputs-to t8.mli.output
+   (run %{checker} %{dep:t8.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t8.mli} %{dep:t8.mli.output})))
+ (action
+  (diff t8.mli t8.mli.output)))
 
 (rule
- (target t9.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:t9.mli}))))
+  (with-outputs-to t9.mli.output
+   (run %{checker} %{dep:t9.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:t9.mli} %{dep:t9.mli.output})))
+ (action
+  (diff t9.mli t9.mli.output)))
 
 (rule
- (target type_arity1.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:type_arity1.mli}))))
+  (with-outputs-to type_arity1.mli.output
+   (run %{checker} %{dep:type_arity1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:type_arity1.mli} %{dep:type_arity1.mli.output})))
+ (action
+  (diff type_arity1.mli type_arity1.mli.output)))
 
 (rule
- (target type_arity2.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:type_arity2.mli}))))
+  (with-outputs-to type_arity2.mli.output
+   (run %{checker} %{dep:type_arity2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:type_arity2.mli} %{dep:type_arity2.mli.output})))
+ (action
+  (diff type_arity2.mli type_arity2.mli.output)))
 
 (rule
- (target type_arity3.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:type_arity3.mli}))))
+  (with-outputs-to type_arity3.mli.output
+   (run %{checker} %{dep:type_arity3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:type_arity3.mli} %{dep:type_arity3.mli.output})))
+ (action
+  (diff type_arity3.mli type_arity3.mli.output)))
 

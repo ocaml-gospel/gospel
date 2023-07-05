@@ -1,132 +1,144 @@
 (rule
- (target Arrays.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:Arrays.mli}))))
+  (with-outputs-to Arrays.mli.output
+   (run %{checker} %{dep:Arrays.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Arrays.mli} %{dep:Arrays.mli.output})))
+ (action
+  (diff Arrays.mli Arrays.mli.output)))
 
 (rule
- (target CountingSort.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:CountingSort.mli}))))
+  (with-outputs-to CountingSort.mli.output
+   (run %{checker} %{dep:CountingSort.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:CountingSort.mli} %{dep:CountingSort.mli.output})))
+ (action
+  (diff CountingSort.mli CountingSort.mli.output)))
 
 (rule
- (target HashTable.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:HashTable.mli}))))
+  (with-outputs-to HashTable.mli.output
+   (run %{checker} %{dep:HashTable.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:HashTable.mli} %{dep:HashTable.mli.output})))
+ (action
+  (diff HashTable.mli HashTable.mli.output)))
 
 (rule
- (target Lists.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:Lists.mli}))))
+  (with-outputs-to Lists.mli.output
+   (run %{checker} %{dep:Lists.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Lists.mli} %{dep:Lists.mli.output})))
+ (action
+  (diff Lists.mli Lists.mli.output)))
 
 (rule
- (target Mjrty.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:Mjrty.mli}))))
+  (with-outputs-to Mjrty.mli.output
+   (run %{checker} %{dep:Mjrty.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Mjrty.mli} %{dep:Mjrty.mli.output})))
+ (action
+  (diff Mjrty.mli Mjrty.mli.output)))
 
 (rule
- (target PairingHeap.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:PairingHeap.mli}))))
+  (with-outputs-to PairingHeap.mli.output
+   (run %{checker} %{dep:PairingHeap.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PairingHeap.mli} %{dep:PairingHeap.mli.output})))
+ (action
+  (diff PairingHeap.mli PairingHeap.mli.output)))
 
 (rule
- (target PriorityQueue.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:PriorityQueue.mli}))))
+  (with-outputs-to PriorityQueue.mli.output
+   (run %{checker} %{dep:PriorityQueue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PriorityQueue.mli} %{dep:PriorityQueue.mli.output})))
+ (action
+  (diff PriorityQueue.mli PriorityQueue.mli.output)))
 
 (rule
- (target Queue.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:Queue.mli}))))
+  (with-outputs-to Queue.mli.output
+   (run %{checker} %{dep:Queue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Queue.mli} %{dep:Queue.mli.output})))
+ (action
+  (diff Queue.mli Queue.mli.output)))
 
 (rule
- (target RingBuffer.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:RingBuffer.mli}))))
+  (with-outputs-to RingBuffer.mli.output
+   (run %{checker} %{dep:RingBuffer.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:RingBuffer.mli} %{dep:RingBuffer.mli.output})))
+ (action
+  (diff RingBuffer.mli RingBuffer.mli.output)))
 
 (rule
- (target UnionFind.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:UnionFind.mli}))))
+  (with-outputs-to UnionFind.mli.output
+   (run %{checker} %{dep:UnionFind.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:UnionFind.mli} %{dep:UnionFind.mli.output})))
+ (action
+  (diff UnionFind.mli UnionFind.mli.output)))
 
 (rule
- (target Vector.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:Vector.mli}))))
+  (with-outputs-to Vector.mli.output
+   (run %{checker} %{dep:Vector.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Vector.mli} %{dep:Vector.mli.output})))
+ (action
+  (diff Vector.mli Vector.mli.output)))
 
 (rule
- (target ZipperList.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:ZipperList.mli}))))
+  (with-outputs-to ZipperList.mli.output
+   (run %{checker} %{dep:ZipperList.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ZipperList.mli} %{dep:ZipperList.mli.output})))
+ (action
+  (diff ZipperList.mli ZipperList.mli.output)))
 
