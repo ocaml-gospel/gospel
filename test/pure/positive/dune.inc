@@ -10,3 +10,10 @@
  (action
   (diff pure.mli pure.mli.output)))
 
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:pure.mli}))))
+

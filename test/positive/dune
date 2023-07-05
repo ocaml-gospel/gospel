@@ -18,7 +18,14 @@
     c.mli
     "a.mli b.mli"
     test1.mli
-    test.mli))))
+    test.mli
+    --
+    a2.mli
+    2
+    b.mli
+    2
+    c.mli
+    2))))
 
 (rule
  (alias runtest)

@@ -11,6 +11,13 @@
   (diff Arrays.mli Arrays.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Arrays.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -21,6 +28,13 @@
  (alias runtest)
  (action
   (diff CountingSort.mli CountingSort.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:CountingSort.mli}))))
 
 (rule
  (deps
@@ -35,6 +49,13 @@
   (diff HashTable.mli HashTable.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:HashTable.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -45,6 +66,13 @@
  (alias runtest)
  (action
   (diff Lists.mli Lists.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Lists.mli}))))
 
 (rule
  (deps
@@ -59,6 +87,13 @@
   (diff Mjrty.mli Mjrty.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Mjrty.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -69,6 +104,13 @@
  (alias runtest)
  (action
   (diff PairingHeap.mli PairingHeap.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:PairingHeap.mli}))))
 
 (rule
  (deps
@@ -83,6 +125,13 @@
   (diff PriorityQueue.mli PriorityQueue.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:PriorityQueue.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -93,6 +142,13 @@
  (alias runtest)
  (action
   (diff Queue.mli Queue.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Queue.mli}))))
 
 (rule
  (deps
@@ -107,6 +163,13 @@
   (diff RingBuffer.mli RingBuffer.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:RingBuffer.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -117,6 +180,13 @@
  (alias runtest)
  (action
   (diff UnionFind.mli UnionFind.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:UnionFind.mli}))))
 
 (rule
  (deps
@@ -131,6 +201,13 @@
   (diff Vector.mli Vector.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Vector.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -141,4 +218,11 @@
  (alias runtest)
  (action
   (diff ZipperList.mli ZipperList.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:ZipperList.mli}))))
 

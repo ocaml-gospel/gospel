@@ -6,15 +6,26 @@
    will generate the configuration with a.mli depending on b.mli and
    c.mli depending on both d.mli and e.mli. *)
 
-let dependencies =
+let usage () =
+  Printf.fprintf stderr "Usage: %s [FILE DEPS] ... [-- [FILE EXITS]]"
+    Sys.argv.(0);
+  exit 1
+
+let dependencies, exit_codes =
   let n = Array.length Sys.argv in
-  assert (n mod 2 = 1);
-  let n = n / 2 in
-  let tbl = Hashtbl.create n in
-  for i = 1 to n do
-    Hashtbl.add tbl Sys.argv.((i * 2) - 1) Sys.argv.(i * 2)
-  done;
-  tbl
+  let deps = Hashtbl.create n and exits = Hashtbl.create n in
+  let rec parse tbl i =
+    if i >= n then ()
+    else
+      match Sys.argv.(i) with
+      | "--" -> parse exits (i + 1)
+      | _ when i = n - 1 -> usage ()
+      | x ->
+          Hashtbl.add tbl x Sys.argv.(i + 1);
+          parse tbl (i + 2)
+  in
+  parse deps 1;
+  (deps, exits)
 
 let print_rule file =
   if Filename.extension file = ".mli" then
@@ -22,6 +33,11 @@ let print_rule file =
       match Hashtbl.find_all dependencies file with
       | [] -> ""
       | ds -> "\n  " ^ String.concat "\n  " ds
+    in
+    let exit_code_open, exit_code_close =
+      match Hashtbl.find_opt exit_codes file with
+      | None -> ("", "")
+      | Some prd -> ("(with-accepted-exit-codes " ^ prd ^ "\n    ", ")")
     in
     Printf.printf
       {|(rule
@@ -36,8 +52,15 @@ let print_rule file =
  (action
   (diff %s %s.output)))
 
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %%{project_root}
+   ; Syntax sanity check
+   %s(run ocamlc -c %%{dep:%s})%s)))
+
 |}
-      deps file file file file
+      deps file file file file exit_code_open file exit_code_close
 
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in

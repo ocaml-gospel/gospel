@@ -11,6 +11,13 @@
   (diff char1.mli char1.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:char1.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -21,6 +28,13 @@
  (alias runtest)
  (action
   (diff constants1.mli constants1.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constants1.mli}))))
 
 (rule
  (deps
@@ -35,6 +49,13 @@
   (diff constructor_arity1.mli constructor_arity1.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity1.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -45,6 +66,13 @@
  (alias runtest)
  (action
   (diff constructor_arity2.mli constructor_arity2.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity2.mli}))))
 
 (rule
  (deps
@@ -59,6 +87,13 @@
   (diff constructor_arity3.mli constructor_arity3.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity3.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -69,6 +104,13 @@
  (alias runtest)
  (action
   (diff constructor_arity4.mli constructor_arity4.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity4.mli}))))
 
 (rule
  (deps
@@ -83,6 +125,13 @@
   (diff duplicate_declaration.mli duplicate_declaration.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:duplicate_declaration.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -93,6 +142,13 @@
  (alias runtest)
  (action
   (diff empty_match.mli empty_match.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:empty_match.mli}))))
 
 (rule
  (deps
@@ -107,6 +163,13 @@
   (diff exception_no_pattern.mli exception_no_pattern.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:exception_no_pattern.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -117,6 +180,13 @@
  (alias runtest)
  (action
   (diff exn_arity.mli exn_arity.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:exn_arity.mli}))))
 
 (rule
  (deps
@@ -131,6 +201,13 @@
   (diff field_application.mli field_application.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:field_application.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -141,6 +218,13 @@
  (alias runtest)
  (action
   (diff invariant1.mli invariant1.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:invariant1.mli}))))
 
 (rule
  (deps
@@ -155,6 +239,13 @@
   (diff invariant2.mli invariant2.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:invariant2.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -165,6 +256,13 @@
  (alias runtest)
  (action
   (diff invariant3.mli invariant3.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:invariant3.mli}))))
 
 (rule
  (deps
@@ -179,6 +277,13 @@
   (diff invariant4.mli invariant4.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:invariant4.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -191,6 +296,13 @@
   (diff invariant5.mli invariant5.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:invariant5.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -201,6 +313,13 @@
  (alias runtest)
  (action
   (diff t1.mli t1.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t1.mli}))))
 
 (rule
  (deps
@@ -216,6 +335,13 @@
   (diff t10.mli t10.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t10.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -226,6 +352,13 @@
  (alias runtest)
  (action
   (diff t11.mli t11.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t11.mli}))))
 
 (rule
  (deps
@@ -240,6 +373,13 @@
   (diff t12.mli t12.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t12.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -250,6 +390,13 @@
  (alias runtest)
  (action
   (diff t13.mli t13.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t13.mli}))))
 
 (rule
  (deps
@@ -264,6 +411,13 @@
   (diff t14.mli t14.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t14.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -274,6 +428,13 @@
  (alias runtest)
  (action
   (diff t15.mli t15.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t15.mli}))))
 
 (rule
  (deps
@@ -288,6 +449,13 @@
   (diff t16.mli t16.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t16.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -298,6 +466,13 @@
  (alias runtest)
  (action
   (diff t17.mli t17.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t17.mli}))))
 
 (rule
  (deps
@@ -312,6 +487,13 @@
   (diff t18.mli t18.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t18.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -322,6 +504,13 @@
  (alias runtest)
  (action
   (diff t19.mli t19.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t19.mli}))))
 
 (rule
  (deps
@@ -336,6 +525,13 @@
   (diff t2.mli t2.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t2.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -346,6 +542,13 @@
  (alias runtest)
  (action
   (diff t20.mli t20.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t20.mli}))))
 
 (rule
  (deps
@@ -360,6 +563,13 @@
   (diff t21.mli t21.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t21.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -370,6 +580,13 @@
  (alias runtest)
  (action
   (diff t22.mli t22.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t22.mli}))))
 
 (rule
  (deps
@@ -384,6 +601,13 @@
   (diff t23.mli t23.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t23.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -394,6 +618,13 @@
  (alias runtest)
  (action
   (diff t24.mli t24.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t24.mli}))))
 
 (rule
  (deps
@@ -408,6 +639,13 @@
   (diff t25.mli t25.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t25.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -418,6 +656,13 @@
  (alias runtest)
  (action
   (diff t26.mli t26.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t26.mli}))))
 
 (rule
  (deps
@@ -432,6 +677,13 @@
   (diff t27.mli t27.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t27.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -442,6 +694,13 @@
  (alias runtest)
  (action
   (diff t28.mli t28.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t28.mli}))))
 
 (rule
  (deps
@@ -456,6 +715,13 @@
   (diff t29.mli t29.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t29.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -466,6 +732,13 @@
  (alias runtest)
  (action
   (diff t3.mli t3.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t3.mli}))))
 
 (rule
  (deps
@@ -480,6 +753,13 @@
   (diff t30.mli t30.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t30.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -490,6 +770,13 @@
  (alias runtest)
  (action
   (diff t31.mli t31.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t31.mli}))))
 
 (rule
  (deps
@@ -504,6 +791,13 @@
   (diff t32.mli t32.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t32.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -514,6 +808,13 @@
  (alias runtest)
  (action
   (diff t33.mli t33.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t33.mli}))))
 
 (rule
  (deps
@@ -528,6 +829,13 @@
   (diff t34.mli t34.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t34.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -538,6 +846,13 @@
  (alias runtest)
  (action
   (diff t35.mli t35.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t35.mli}))))
 
 (rule
  (deps
@@ -552,6 +867,13 @@
   (diff t36.mli t36.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t36.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -562,6 +884,13 @@
  (alias runtest)
  (action
   (diff t37.mli t37.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t37.mli}))))
 
 (rule
  (deps
@@ -576,6 +905,13 @@
   (diff t38.mli t38.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t38.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -586,6 +922,14 @@
  (alias runtest)
  (action
   (diff t39.mli t39.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (with-accepted-exit-codes 2
+    (run ocamlc -c %{dep:t39.mli})))))
 
 (rule
  (deps
@@ -600,6 +944,13 @@
   (diff t4.mli t4.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t4.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -610,6 +961,13 @@
  (alias runtest)
  (action
   (diff t5.mli t5.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t5.mli}))))
 
 (rule
  (deps
@@ -624,6 +982,13 @@
   (diff t6.mli t6.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t6.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -634,6 +999,13 @@
  (alias runtest)
  (action
   (diff t7.mli t7.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t7.mli}))))
 
 (rule
  (deps
@@ -648,6 +1020,13 @@
   (diff t8.mli t8.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t8.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -658,6 +1037,13 @@
  (alias runtest)
  (action
   (diff t9.mli t9.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t9.mli}))))
 
 (rule
  (deps
@@ -672,6 +1058,13 @@
   (diff type_arity1.mli type_arity1.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:type_arity1.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -684,6 +1077,14 @@
   (diff type_arity2.mli type_arity2.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (with-accepted-exit-codes 2
+    (run ocamlc -c %{dep:type_arity2.mli})))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -694,4 +1095,12 @@
  (alias runtest)
  (action
   (diff type_arity3.mli type_arity3.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (with-accepted-exit-codes 2
+    (run ocamlc -c %{dep:type_arity3.mli})))))
 

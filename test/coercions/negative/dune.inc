@@ -11,6 +11,13 @@
   (diff bad_type_id.mli bad_type_id.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:bad_type_id.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -21,6 +28,13 @@
  (alias runtest)
  (action
   (diff bad_type_multiple_args.mli bad_type_multiple_args.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:bad_type_multiple_args.mli}))))
 
 (rule
  (deps
@@ -35,6 +49,13 @@
   (diff complex_cycle.mli complex_cycle.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:complex_cycle.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -47,6 +68,13 @@
   (diff double_definition.mli double_definition.mli.output)))
 
 (rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:double_definition.mli}))))
+
+(rule
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
@@ -57,4 +85,11 @@
  (alias runtest)
  (action
   (diff simple_cycle.mli simple_cycle.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:simple_cycle.mli}))))
 
