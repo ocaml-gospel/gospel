@@ -38,7 +38,7 @@ type val_spec = {
   sp_equiv : string list;  (** Equivalent *)
   sp_text : string;
       (** String containing the original specificaion as written by the user *)
-  sp_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  sp_loc : Location.t; [@printer Utils.Fmt.pp_loc]
       (** Specification location *)
 }
 [@@deriving show]
@@ -51,7 +51,7 @@ type val_description = {
   vd_args : lb_arg list;
   vd_ret : lb_arg list;
   vd_spec : val_spec option;
-  vd_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  vd_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
@@ -61,7 +61,7 @@ type type_spec = {
   ty_invariants : vsymbol option * term list;  (** Invariants *)
   ty_text : string;
       (** String containing the original specificaion as written by the user *)
-  ty_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  ty_loc : Location.t; [@printer Utils.Fmt.pp_loc]
       (** Specification location *)
 }
 [@@deriving show]
@@ -72,7 +72,7 @@ type mutable_flag = Immutable | Mutable [@@deriving show]
 type 'a label_declaration = {
   ld_field : 'a;
   ld_mut : mutable_flag;
-  ld_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  ld_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   ld_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* l : T [@id1] [@id2] *)
 }
@@ -89,7 +89,7 @@ type constructor_decl = {
   (* constructor *)
   (* cd_ld is empty if defined through a tuple *)
   cd_ld : (Ident.t * ty) label_declaration list;
-  cd_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  cd_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   cd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* C of ... [@id1] [@id2] *)
 }
@@ -118,22 +118,22 @@ type type_declaration = {
       [@printer
         fun fmt cstrs ->
           fprintf fmt "%a"
-            (Fmt.list ~sep:Fmt.comma (fun fmt (t0, t1, _) ->
-                 fprintf fmt "(%a, %a, <Location.t>)" pp_ty t0 pp_ty t1))
+            (Fmt.list ~sep:Fmt.comma (fun fmt (t0, t1, loc) ->
+                 fprintf fmt "(%a, %a, %a)" pp_ty t0 pp_ty t1 Utils.Fmt.pp_loc loc))
             cstrs]
   td_kind : type_kind;
   td_private : private_flag;
   td_manifest : ty option;
   td_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   td_spec : type_spec option;
-  td_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  td_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
 type axiom = {
   ax_name : Ident.t;  (** Name *)
   ax_term : term;  (** Definition *)
-  ax_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  ax_loc : Location.t; [@printer Utils.Fmt.pp_loc]
       (** Location *)
   ax_text : string;
       (** String containing the original specificaion as written by the user *)
@@ -147,7 +147,7 @@ type fun_spec = {
   fun_coer : bool;  (** Coercion *)
   fun_text : string;
       (** String containing the original specificaion as written by the user *)
-  fun_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  fun_loc : Location.t; [@printer Utils.Fmt.pp_loc]
       (** Specification location *)
 }
 [@@deriving show]
@@ -160,7 +160,7 @@ type function_ = {
   fun_spec : fun_spec option;  (** Specification *)
   fun_text : string;
       (** String containing the original specificaion as written by the user *)
-  fun_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  fun_loc : Location.t; [@printer Utils.Fmt.pp_loc]
       (** Location *)
 }
 [@@deriving show]
@@ -170,7 +170,7 @@ type extension_constructor = {
   ext_xs : xsymbol;
   ext_kind : extension_constructor_kind;
       [@printer fun fmt _ -> fprintf fmt "<extension_constructor_kind>"]
-  ext_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  ext_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   ext_attributes : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* C of ... [@id1] [@id2] *)
 }
@@ -178,7 +178,7 @@ type extension_constructor = {
 
 type type_exception = {
   exn_constructor : extension_constructor;
-  exn_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  exn_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   exn_attributes : attributes;
       (* ... [@@id1] [@@id2] *)
       [@printer fun fmt _ -> fprintf fmt "<attributes>"]
@@ -206,7 +206,7 @@ type open_description = {
   opn_id : string list;
   opn_override : Asttypes.override_flag;
       [@printer fun fmt _ -> fprintf fmt "<Asttypes.override_flag>"]
-  opn_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  opn_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   opn_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
 }
 [@@deriving show]
@@ -215,7 +215,7 @@ type signature = signature_item list [@@deriving show]
 
 and signature_item = {
   sig_desc : signature_item_desc;
-  sig_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  sig_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
@@ -271,7 +271,7 @@ and module_declaration = {
   md_type : module_type;
   md_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   (* ... [@@id1] [@@id2] *)
-  md_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  md_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
@@ -280,13 +280,13 @@ and module_type_declaration = {
   mtd_type : module_type option;
   mtd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   (* ... [@@id1] [@@id2] *)
-  mtd_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  mtd_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
 and module_type = {
   mt_desc : module_type_desc;
-  mt_loc : Location.t; [@printer fun fmt _ -> fprintf fmt "<Location.t>"]
+  mt_loc : Location.t; [@printer Utils.Fmt.pp_loc]
   mt_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
       (* ... [@id1] [@id2] *)
 }

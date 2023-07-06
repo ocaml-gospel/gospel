@@ -22,6 +22,8 @@
 
 ## Improved
 
+- Add a pretty-printer for locations
+  [\#294](https://github.com/ocaml-gospel/gospel/pull/294)
 - Gospel preprocessor does not fail when the file is an implementation file
   [\#265](https://github.com/ocaml-gospel/gospel/pull/265)
 - Rename standard library `Seq` and `'a seq` to `Sequence` and `'a sequence`.
