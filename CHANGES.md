@@ -22,6 +22,9 @@
 
 ## Improved
 
+- Support partial application of functions and enforce OCaml syntax
+  for constructor application
+  [\#290](https://github.com/ocaml-gospel/gospel/pull/290)
 - Add a pretty-printer for locations
   [\#294](https://github.com/ocaml-gospel/gospel/pull/294)
 - Gospel preprocessor does not fail when the file is an implementation file
