@@ -1,297 +1,513 @@
 (rule
- (target ambiguous.mli.output)
- (deps (source_tree .))
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:ambiguous.mli}))))
+  (with-outputs-to ambiguous.mli.output
+   (run %{checker} %{dep:ambiguous.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ambiguous.mli} %{dep:ambiguous.mli.output})))
+ (action
+  (diff ambiguous.mli ambiguous.mli.output)))
 
 (rule
- (target base.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:base.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:ambiguous.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to base.mli.output
+   (run %{checker} %{dep:base.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:base.mli} %{dep:base.mli.output})))
+ (action
+  (diff base.mli base.mli.output)))
 
 (rule
- (target booleans.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:booleans.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:base.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to booleans.mli.output
+   (run %{checker} %{dep:booleans.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:booleans.mli} %{dep:booleans.mli.output})))
+ (action
+  (diff booleans.mli booleans.mli.output)))
 
 (rule
- (target char2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:char2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:booleans.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to char2.mli.output
+   (run %{checker} %{dep:char2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:char2.mli} %{dep:char2.mli.output})))
+ (action
+  (diff char2.mli char2.mli.output)))
 
 (rule
- (target etuple.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:etuple.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:char2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to etuple.mli.output
+   (run %{checker} %{dep:etuple.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:etuple.mli} %{dep:etuple.mli.output})))
+ (action
+  (diff etuple.mli etuple.mli.output)))
 
 (rule
- (target float.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:float.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:etuple.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to float.mli.output
+   (run %{checker} %{dep:float.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:float.mli} %{dep:float.mli.output})))
+ (action
+  (diff float.mli float.mli.output)))
 
 (rule
- (target guard1.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:guard1.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:float.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to guard1.mli.output
+   (run %{checker} %{dep:guard1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:guard1.mli} %{dep:guard1.mli.output})))
+ (action
+  (diff guard1.mli guard1.mli.output)))
 
 (rule
- (target guard2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:guard2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:guard1.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to guard2.mli.output
+   (run %{checker} %{dep:guard2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:guard2.mli} %{dep:guard2.mli.output})))
+ (action
+  (diff guard2.mli guard2.mli.output)))
 
 (rule
- (target guard3.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:guard3.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:guard2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to guard3.mli.output
+   (run %{checker} %{dep:guard3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:guard3.mli} %{dep:guard3.mli.output})))
+ (action
+  (diff guard3.mli guard3.mli.output)))
 
 (rule
- (target guard4.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:guard4.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:guard3.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to guard4.mli.output
+   (run %{checker} %{dep:guard4.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:guard4.mli} %{dep:guard4.mli.output})))
+ (action
+  (diff guard4.mli guard4.mli.output)))
 
 (rule
- (target guard5.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:guard5.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:guard4.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to guard5.mli.output
+   (run %{checker} %{dep:guard5.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:guard5.mli} %{dep:guard5.mli.output})))
+ (action
+  (diff guard5.mli guard5.mli.output)))
 
 (rule
- (target int.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:int.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:guard5.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to int.mli.output
+   (run %{checker} %{dep:int.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:int.mli} %{dep:int.mli.output})))
+ (action
+  (diff int.mli int.mli.output)))
 
 (rule
- (target int2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:int2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:int.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to int2.mli.output
+   (run %{checker} %{dep:int2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:int2.mli} %{dep:int2.mli.output})))
+ (action
+  (diff int2.mli int2.mli.output)))
 
 (rule
- (target int3.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:int3.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:int2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to int3.mli.output
+   (run %{checker} %{dep:int3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:int3.mli} %{dep:int3.mli.output})))
+ (action
+  (diff int3.mli int3.mli.output)))
 
 (rule
- (target interval.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:interval.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:int3.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to interval.mli.output
+   (run %{checker} %{dep:interval.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:interval.mli} %{dep:interval.mli.output})))
+ (action
+  (diff interval.mli interval.mli.output)))
 
 (rule
- (target list1.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:list1.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:interval.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to list1.mli.output
+   (run %{checker} %{dep:list1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:list1.mli} %{dep:list1.mli.output})))
+ (action
+  (diff list1.mli list1.mli.output)))
 
 (rule
- (target list2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:list2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:list1.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to list2.mli.output
+   (run %{checker} %{dep:list2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:list2.mli} %{dep:list2.mli.output})))
+ (action
+  (diff list2.mli list2.mli.output)))
 
 (rule
- (target neg2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:neg2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:list2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to neg2.mli.output
+   (run %{checker} %{dep:neg2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:neg2.mli} %{dep:neg2.mli.output})))
+ (action
+  (diff neg2.mli neg2.mli.output)))
 
 (rule
- (target neg3.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:neg3.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:neg2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to neg3.mli.output
+   (run %{checker} %{dep:neg3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:neg3.mli} %{dep:neg3.mli.output})))
+ (action
+  (diff neg3.mli neg3.mli.output)))
 
 (rule
- (target pair.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:pair.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:neg3.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to pair.mli.output
+   (run %{checker} %{dep:pair.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:pair.mli} %{dep:pair.mli.output})))
+ (action
+  (diff pair.mli pair.mli.output)))
 
 (rule
- (target record.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:record.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:pair.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to record.mli.output
+   (run %{checker} %{dep:record.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:record.mli} %{dep:record.mli.output})))
+ (action
+  (diff record.mli record.mli.output)))
 
 (rule
- (target redundant1.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:redundant1.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:record.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to redundant1.mli.output
+   (run %{checker} %{dep:redundant1.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:redundant1.mli} %{dep:redundant1.mli.output})))
+ (action
+  (diff redundant1.mli redundant1.mli.output)))
 
 (rule
- (target redundant2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:redundant2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:redundant1.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to redundant2.mli.output
+   (run %{checker} %{dep:redundant2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:redundant2.mli} %{dep:redundant2.mli.output})))
+ (action
+  (diff redundant2.mli redundant2.mli.output)))
 
 (rule
- (target redundant3.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:redundant3.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:redundant2.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to redundant3.mli.output
+   (run %{checker} %{dep:redundant3.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:redundant3.mli} %{dep:redundant3.mli.output})))
+ (action
+  (diff redundant3.mli redundant3.mli.output)))
 
 (rule
- (target str.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:str.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:redundant3.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to str.mli.output
+   (run %{checker} %{dep:str.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:str.mli} %{dep:str.mli.output})))
+ (action
+  (diff str.mli str.mli.output)))
 
 (rule
- (target tuple.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:tuple.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:str.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to tuple.mli.output
+   (run %{checker} %{dep:tuple.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:tuple.mli} %{dep:tuple.mli.output})))
+ (action
+  (diff tuple.mli tuple.mli.output)))
 
 (rule
- (target tuple2.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{target}
-      (run %{project_root}/test/gospel_check.exe %{dep:tuple2.mli}))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:tuple.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to tuple2.mli.output
+   (run %{checker} %{dep:tuple2.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:tuple2.mli} %{dep:tuple2.mli.output})))
+ (action
+  (diff tuple2.mli tuple2.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:tuple2.mli}))))
 
