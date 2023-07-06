@@ -7,6 +7,8 @@
     | Other of string
     | Spaces of string
 
+  let stdlib_file = "stdlib.mli"
+
   let queue = Queue.create ()
   let buf = Buffer.create 1024
 
@@ -180,6 +182,14 @@ rule scan = parse
     let end_pos = Lexing.lexeme_end_p lexbuf in
     Queue.push (Documentation (start_pos, end_pos, s)) queue;
     scan lexbuf
+    }
+  (* When lexing stdlib, we stop here just like ocamldep *)
+  | "(*MODULE_ALIASES*)" as s {
+    if Filename.basename (Lexing.lexeme_start_p lexbuf).pos_fname = stdlib_file
+    then flush ()
+    else (
+      Buffer.add_string buf s;
+      scan lexbuf)
     }
   | "(*"
       {
