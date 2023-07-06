@@ -116,6 +116,25 @@
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
+  (with-outputs-to constructor_arity5.mli.output
+   (run %{checker} %{dep:constructor_arity5.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff constructor_arity5.mli constructor_arity5.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity5.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
   (with-outputs-to duplicate_declaration.mli.output
    (run %{checker} %{dep:duplicate_declaration.mli}))))
 
@@ -301,6 +320,25 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:invariant5.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to partial_application.mli.output
+   (run %{checker} %{dep:partial_application.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff partial_application.mli partial_application.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:partial_application.mli}))))
 
 (rule
  (deps
