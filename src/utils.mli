@@ -50,6 +50,8 @@ module Fmt : sig
 
   val rbrace : 'a t
   (** [rbrace ppf ()] is [any "}@\]"] *)
+
+  val pp_loc : Ppxlib.Location.t Fmt.t
 end
 
 module Sstr : Set.S with type elt = string
