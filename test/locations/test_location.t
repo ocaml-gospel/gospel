@@ -117,7 +117,7 @@ First, create a test artifact:
                     ty_invariants = (None, []);
                     ty_text =
                     " mutable model contents : 'a list\n    model size : int ";
-                    ty_loc = foo.mli:5:0 });
+                    ty_loc = foo.mli:5:3 });
             td_loc = foo.mli:3:0 }
            ],
          Tast.Nonghost));
@@ -491,7 +491,7 @@ First, create a test artifact:
                    sp_pure = false; sp_equiv = [];
                    sp_text =
                    " t = create i\n    checks i >= 0\n    ensures t.contents = []\n    ensures t.size = i ";
-                   sp_loc = foo.mli:9:0 });
+                   sp_loc = foo.mli:9:3 });
            vd_loc = foo.mli:8:0 },
          Tast.Nonghost));
       sig_loc = foo.mli:8:0 };
@@ -501,7 +501,7 @@ First, create a test artifact:
            ax_term =
            { Tterm.t_node = Tterm.Ttrue; t_ty = None; t_attrs = [];
              t_loc = foo.mli:16:14 };
-           ax_loc = foo.mli:16:0; ax_text = " axiom a : true " });
+           ax_loc = foo.mli:16:3; ax_text = " axiom a : true " });
       sig_loc = foo.mli:16:0 };
     { Tast.sig_desc =
       (Tast.Sig_function
@@ -872,7 +872,7 @@ First, create a test artifact:
                    fun_variant = []; fun_coer = false;
                    fun_text =
                    " requires not (List.mem x xs)\n    ensures true ";
-                   fun_loc = foo.mli:20:0 });
+                   fun_loc = foo.mli:20:3 });
            fun_text =
            " function with_spec (x : integer) (xs : integer list) : integer list ";
            fun_loc = foo.mli:20:4 });
@@ -2597,7 +2597,7 @@ First, create a test artifact:
                    sp_equiv = [];
                    sp_text =
                    " add a t\n    modifies t.contents\n    (* comments *)\n    ensures t.contents = if is_full t.contents t.size\n                         then old t.contents\n                         else a :: (old t.contents) ";
-                   sp_loc = foo.mli:29:0 });
+                   sp_loc = foo.mli:29:3 });
            vd_loc = foo.mli:28:0 },
          Tast.Nonghost));
       sig_loc = foo.mli:28:0 }
