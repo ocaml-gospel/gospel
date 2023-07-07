@@ -55,7 +55,11 @@ let run_file config file =
     pp fmt "OK\n";
     true
   with W.Error e ->
+    let bt = Printexc.get_backtrace () in
     Fmt.epr "%a@." W.pp e;
+    (match Sys.getenv_opt "GOSPELDEBUG" with
+    | Some _ -> Printf.fprintf stderr "\nBacktrace of the error:\n%s" bt
+    | None -> ());
     false
 
 let run config files =
