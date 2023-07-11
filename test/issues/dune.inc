@@ -150,3 +150,22 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:t8.mli}))))
 
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
+  (with-outputs-to t9.mli.output
+   (run %{checker} %{dep:t9.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff t9.mli t9.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:t9.mli}))))
+
