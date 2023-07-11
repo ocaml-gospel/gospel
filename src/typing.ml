@@ -196,11 +196,16 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dp1 = dpattern kid ns p1 in
       let dp2 = dpattern kid ns p2 in
       dpattern_unify dp1 dp2.dp_dty;
-      let join _ dty1 dty2 =
-        dty_unify ~loc:dp1.dp_loc dty1 dty2;
-        Some dty1
+      let join v dty1 dty2 =
+        match (dty1, dty2) with
+        | Some dty1, Some dty2 ->
+            dty_unify ~loc:dp1.dp_loc dty1 dty2;
+            Some dty1
+        | None, Some _ -> W.error ~loc:dp1.dp_loc (W.Unbound_variable v)
+        | Some _, None -> W.error ~loc:dp2.dp_loc (W.Unbound_variable v)
+        | None, None -> None
       in
-      let vars = Mstr.union join dp1.dp_vars dp2.dp_vars in
+      let vars = Mstr.merge join dp1.dp_vars dp2.dp_vars in
       mk_dpattern ~loc (DPor (dp1, dp2)) dp1.dp_dty vars
   | Pcast (p, pty) ->
       let dp = dpattern kid ns p in
