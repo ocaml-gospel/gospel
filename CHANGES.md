@@ -57,6 +57,8 @@
 
 ## Fixed
 
+- Check that all patterns in a disjunction bind the same variables
+  [\#300](https://github/ocaml-gospel/gospel/pull/300)
 - Handle the special case of `MODULE_ALIASES` in `stdlib.mli` in the parser
   [\#306](https://github/ocaml-gospel/gospel/pull/306)
 - Take recursivity into account when typing type declarations
