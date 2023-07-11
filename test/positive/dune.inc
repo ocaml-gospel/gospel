@@ -237,6 +237,25 @@
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
+  (with-outputs-to constructor_arity.mli.output
+   (run %{checker} %{dep:constructor_arity.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff constructor_arity.mli constructor_arity.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:constructor_arity.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
   (with-outputs-to exceptions.mli.output
    (run %{checker} %{dep:exceptions.mli}))))
 
