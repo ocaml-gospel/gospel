@@ -9,7 +9,7 @@ type t = A | B of t * float
     | B (B (A, 2.3), 1.)
     | B (A, 1.)
     | B (A, 3.)
-    | B (A, x) -> () *)
+    | B (A, _) -> () *)
 
 (* {gospel_expected|
    [125] File "float.mli", line 4, characters 4-182:
@@ -21,7 +21,7 @@ type t = A | B of t * float
           9 |     | B (B (A, 2.3), 1.)
          10 |     | B (A, 1.)
          11 |     | B (A, 3.)
-         12 |     | B (A, x) -> ()...
+         12 |     | B (A, _) -> ()...
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
                   B (B (A, 3.), 0.).
