@@ -54,6 +54,8 @@
 
 ## Fixed
 
+- Use payload location for specification text
+  [\#299](https://github/ocaml-gospel/gospel/pull/299)
 - Support patterns of one-parameter constructors with a tuple argument
   [\#297](https://github/ocaml-gospel/gospel/pull/297)
 - Use correct location for arity mismatches in type applications
