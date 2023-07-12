@@ -38,8 +38,7 @@ type val_spec = {
   sp_equiv : string list;  (** Equivalent *)
   sp_text : string;
       (** String containing the original specificaion as written by the user *)
-  sp_loc : Location.t; [@printer Utils.Fmt.pp_loc]
-      (** Specification location *)
+  sp_loc : Location.t; [@printer Utils.Fmt.pp_loc]  (** Specification location *)
 }
 [@@deriving show]
 
@@ -61,8 +60,7 @@ type type_spec = {
   ty_invariants : vsymbol option * term list;  (** Invariants *)
   ty_text : string;
       (** String containing the original specificaion as written by the user *)
-  ty_loc : Location.t; [@printer Utils.Fmt.pp_loc]
-      (** Specification location *)
+  ty_loc : Location.t; [@printer Utils.Fmt.pp_loc]  (** Specification location *)
 }
 [@@deriving show]
 
@@ -119,7 +117,8 @@ type type_declaration = {
         fun fmt cstrs ->
           fprintf fmt "%a"
             (Fmt.list ~sep:Fmt.comma (fun fmt (t0, t1, loc) ->
-                 fprintf fmt "(%a, %a, %a)" pp_ty t0 pp_ty t1 Utils.Fmt.pp_loc loc))
+                 fprintf fmt "(%a, %a, %a)" pp_ty t0 pp_ty t1 Utils.Fmt.pp_loc
+                   loc))
             cstrs]
   td_kind : type_kind;
   td_private : private_flag;
@@ -133,8 +132,7 @@ type type_declaration = {
 type axiom = {
   ax_name : Ident.t;  (** Name *)
   ax_term : term;  (** Definition *)
-  ax_loc : Location.t; [@printer Utils.Fmt.pp_loc]
-      (** Location *)
+  ax_loc : Location.t; [@printer Utils.Fmt.pp_loc]  (** Location *)
   ax_text : string;
       (** String containing the original specificaion as written by the user *)
 }
@@ -160,8 +158,7 @@ type function_ = {
   fun_spec : fun_spec option;  (** Specification *)
   fun_text : string;
       (** String containing the original specificaion as written by the user *)
-  fun_loc : Location.t; [@printer Utils.Fmt.pp_loc]
-      (** Location *)
+  fun_loc : Location.t; [@printer Utils.Fmt.pp_loc]  (** Location *)
 }
 [@@deriving show]
 
