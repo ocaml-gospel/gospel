@@ -54,6 +54,8 @@
 
 ## Fixed
 
+- Support pattern with cast
+  [\#301](https://github/ocaml-gospel/gospel/pull/301)
 - Use payload location for specification text
   [\#299](https://github/ocaml-gospel/gospel/pull/299)
 - Support patterns of one-parameter constructors with a tuple argument
