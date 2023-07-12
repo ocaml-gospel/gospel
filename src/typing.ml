@@ -146,8 +146,9 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let rec mk_papp ~loc cs dpl =
     let dtyl, dty = specialize_cs ~loc cs in
     match (dpl, cs.ls_args) with
-    (* allow pattern C (x,y) with type t = C of (int * int) *)
-    | _ :: _ :: _, [ { ty_node = Tyapp (ts, _) } ] when is_ts_tuple ts ->
+    (* allow pattern C (x,y) when the constructor C expects only one
+       argument, which can be a tuple (such as ('a * 'b) option) *)
+    | _ :: _ :: _, [ _ ] ->
         let n = List.length dpl in
         let p = mk_papp ~loc (fs_tuple n) dpl in
         mk_papp ~loc cs [ p ]

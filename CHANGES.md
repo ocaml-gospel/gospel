@@ -54,6 +54,8 @@
 
 ## Fixed
 
+- Support patterns of one-parameter constructors with a tuple argument
+  [\#297](https://github/ocaml-gospel/gospel/pull/297)
 - Use correct location for arity mismatches in type applications
   [\#258](https://github/ocaml-gospel/gospel/pull/258)
 - Avoid uncaught exception when displaying a warning for builtins (using
