@@ -329,7 +329,7 @@ let pattern dp =
         p_or dp1 dp2
     | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty)
     | DPinterval (c1, c2) -> p_interval c1 c2
-    | DPcast _ -> assert false
+    | DPcast (dp, _) -> pattern_node dp
   in
   let p = pattern_node dp in
   (p, !vars)

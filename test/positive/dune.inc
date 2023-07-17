@@ -256,6 +256,25 @@
  (deps
   (:checker %{project_root}/test/gospel_check.exe))
  (action
+  (with-outputs-to dpattern_with_cast.mli.output
+   (run %{checker} %{dep:dpattern_with_cast.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff dpattern_with_cast.mli dpattern_with_cast.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:dpattern_with_cast.mli}))))
+
+(rule
+ (deps
+  (:checker %{project_root}/test/gospel_check.exe))
+ (action
   (with-outputs-to exceptions.mli.output
    (run %{checker} %{dep:exceptions.mli}))))
 
