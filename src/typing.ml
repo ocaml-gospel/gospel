@@ -516,7 +516,7 @@ let process_type_spec kid crcm ns ty spec =
     spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
-let type_type_declaration kid crcm ns tdl =
+let type_type_declaration kid crcm ns r tdl =
   let add_new tdm td =
     if Mstr.mem td.tname.txt tdm then
       W.error ~loc:td.tname.loc (W.Name_clash td.tname.txt)
@@ -543,11 +543,11 @@ let type_type_declaration kid crcm ns tdl =
         let tyl = List.map (parse_core alias tvl) ctl in
         let ts =
           match idl with
-          | [ s ] when Sstr.mem s alias ->
+          | [ s ] when r = Recursive && Sstr.mem s alias ->
               W.error ~loc (W.Cyclic_type_declaration s)
           | [ s ] when Hashtbl.mem hts s -> Hashtbl.find hts s
-          | [ s ] when Mstr.mem s tdm ->
-              visit ~alias s (Mstr.find s tdm);
+          | [ s ] when r = Recursive && Mstr.mem s tdm ->
+              visit ~alias:(Sstr.add s alias) s (Mstr.find s tdm);
               Hashtbl.find hts s
           | s -> find_ts ~loc:lid.loc ns s
         in
@@ -574,7 +574,10 @@ let type_type_declaration kid crcm ns tdl =
     in
 
     let manifest =
-      Option.map (parse_core (Sstr.add s alias) tvl) td.tmanifest
+      let alias =
+        match r with Nonrecursive -> alias | _ -> Sstr.add s alias
+      in
+      Option.map (parse_core alias tvl) td.tmanifest
     in
     let td_ts = mk_ts (Ident.create ~loc:td.tname.loc s) params manifest in
     Hashtbl.add hts s td_ts;
@@ -685,8 +688,9 @@ let type_type_declaration kid crcm ns tdl =
   tdl
 
 let process_sig_type ~loc ?(ghost = Nonghost) kid crcm ns r tdl =
-  let tdl = type_type_declaration kid crcm ns tdl in
-  let sig_desc = Sig_type (rec_flag r, tdl, ghost) in
+  let r = rec_flag r in
+  let tdl = type_type_declaration kid crcm ns r tdl in
+  let sig_desc = Sig_type (r, tdl, ghost) in
   mk_sig_item sig_desc loc
 
 (** Type val declarations *)
@@ -1121,7 +1125,8 @@ and process_modtype penv muc umty =
         match c with
         | Wtype (li, tyd) ->
             let tdl =
-              type_type_declaration muc.muc_kid muc.muc_crcm ns_init [ tyd ]
+              type_type_declaration muc.muc_kid muc.muc_crcm ns_init
+                Nonrecursive [ tyd ]
             in
             let td = match tdl with [ td ] -> td | _ -> assert false in
 
@@ -1146,7 +1151,8 @@ and process_modtype penv muc umty =
             (muc, Wty (ts.ts_ident, td) :: cl)
         | Wtypesubst (li, tyd) ->
             let tdl =
-              type_type_declaration muc.muc_kid muc.muc_crcm ns_init [ tyd ]
+              type_type_declaration muc.muc_kid muc.muc_crcm ns_init
+                Nonrecursive [ tyd ]
             in
             let td = match tdl with [ td ] -> td | _ -> assert false in
             let ty =

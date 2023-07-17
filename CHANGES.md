@@ -54,6 +54,8 @@
 
 ## Fixed
 
+- Take recursivity into account when typing type declarations
+  [\#304](https://github/ocaml-gospel/gospel/pull/304)
 - Support pattern with cast
   [\#301](https://github/ocaml-gospel/gospel/pull/301)
 - Use payload location for specification text
