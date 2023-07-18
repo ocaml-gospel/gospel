@@ -76,25 +76,40 @@ let t_ty_check t ty =
   | None, None -> ()
 
 let ls_arg_inst ls tl =
-  try
-    List.fold_left2
-      (fun tvm ty t -> ty_match tvm ty (t_type t))
-      Mtv.empty ls.ls_args tl
-  with Invalid_argument _ ->
-    let loc = (List.hd tl).t_loc in
-    W.error ~loc
-      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length tl))
+  let rec short_fold_left2 f accu l1 l2 =
+    match (l1, l2) with
+    | a1 :: l1, a2 :: l2 -> short_fold_left2 f (f accu a1 a2) l1 l2
+    | _, _ -> accu
+  in
+  short_fold_left2
+    (fun tvm ty t -> ty_match tvm ty (t_type t))
+    Mtv.empty ls.ls_args tl
 
-let ls_app_inst ls tl ty =
+let drop n xs =
+  let rec aux n xs =
+    match (n, xs) with
+    | 0, xs -> xs
+    | _, [] -> []
+    | n, _ :: xs -> aux (n - 1) xs
+  in
+  if n < 0 then invalid_arg "drop" else aux n xs
+
+let ls_app_inst ls tl ty loc =
   let s = ls_arg_inst ls tl in
   match (ls.ls_value, ty) with
-  | Some _, None ->
-      (* FIXME: get a proper location here *)
-      W.error ~loc:Location.none (W.Predicate_symbol_expected ls.ls_name.id_str)
-  | None, Some _ ->
-      (* FIXME: get a proper location here *)
-      W.error ~loc:Location.none (W.Function_symbol_expected ls.ls_name.id_str)
-  | Some vty, Some ty -> ty_match s vty ty
+  | Some _, None -> W.error ~loc (W.Predicate_symbol_expected ls.ls_name.id_str)
+  | None, Some _ -> W.error ~loc (W.Function_symbol_expected ls.ls_name.id_str)
+  | Some vty, Some ty ->
+      let vty =
+        let ntl = List.length tl in
+        if ntl >= List.length ls.ls_args then vty
+        else
+          (* build the result type in case of a partial application *)
+          List.fold_right
+            (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
+            (drop ntl ls.ls_args) vty
+      in
+      ty_match s vty ty
   | None, None -> s
 
 (** Pattern constructors *)
@@ -126,13 +141,13 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
-let t_app ls tl ty =
-  ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty
+let t_app ls tl ty loc =
+  ignore (ls_app_inst ls tl ty loc : ty Mtv.t);
+  mk_term (Tapp (ls, tl)) ty loc
 
-let t_field t ls ty =
-  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
-  mk_term (Tfield (t, ls)) ty
+let t_field t ls ty loc =
+  ignore (ls_app_inst ls [ t ] ty loc : ty Mtv.t);
+  mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
