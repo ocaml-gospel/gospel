@@ -63,7 +63,6 @@ let print_binop fmt = function
 let print_quantifier fmt = function
   | Tforall -> pp fmt "forall"
   | Texists -> pp fmt "exists"
-  | Tlambda -> pp fmt "fun"
 
 (* TODO use pretty printer from why3 *)
 let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
@@ -100,6 +99,8 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tquant (q, vsl, t) ->
         pp fmt "%a %a. %a" print_quantifier q (list ~sep:sp print_vs) vsl
           print_term t
+    | Tlambda (pl, t) ->
+        pp fmt "fun %a -> %a" (list ~sep:sp print_pattern) pl print_term t
     | Tcase (t, ptl) ->
         let print_branch fmt (p, g, t) =
           match g with

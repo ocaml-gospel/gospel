@@ -44,6 +44,9 @@ let rec t_free_vars t =
           Svs.empty pl
       in
       Svs.union t_fvs pl_fvs
+  | Tlambda (ps, t) ->
+      let t_fvs = t_free_vars t in
+      List.fold_right (fun p fvs -> Svs.diff fvs (p_vars p)) ps t_fvs
   | Tquant (_, vl, t) -> Svs.diff (t_free_vars t) (Svs.of_list vl)
   | Tbinop (_, t1, t2) -> Svs.union (t_free_vars t1) (t_free_vars t2)
   | Tnot t -> t_free_vars t
@@ -158,6 +161,7 @@ let t_case t1 ptl =
   | (_, _, t) :: _ -> mk_term (Tcase (t1, ptl)) t.t_ty
 
 let t_quant q vsl t ty = mk_term (Tquant (q, vsl, t)) ty
+let t_lambda ps t ty = mk_term (Tlambda (ps, t)) ty
 let t_binop b t1 t2 = mk_term (Tbinop (b, t1, t2)) None
 let t_not t = mk_term (Tnot t) None
 let t_old t = mk_term (Told t) t.t_ty
@@ -172,17 +176,14 @@ let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)
 
 let t_quant q vsl t ty loc =
-  match (q, vsl) with
-  | Tlambda, [] -> t
-  | _, [] -> t_prop t
-  | Tlambda, _ -> t_quant q vsl t ty loc
-  | _, _ ->
+  match vsl with
+  | [] -> t_prop t
+  | _ ->
       if ty <> None then W.error ~loc W.Formula_expected;
       t_quant q vsl (t_prop t) None loc
 
 let f_forall = t_quant Tforall
 let f_exists = t_quant Texists
-let t_lambda = t_quant Tlambda
 let f_and = f_binop Tand
 let f_and_asym = f_binop Tand_asym
 let f_or = f_binop Tor

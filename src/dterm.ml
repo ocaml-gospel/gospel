@@ -116,6 +116,7 @@ and dterm_node =
   | DTlet of Preid.t * dterm * dterm
   | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
+  | DTlambda of dpattern list * dterm
   | DTbinop of binop * dterm * dterm
   | DTnot of dterm
   | DTold of dterm
@@ -394,6 +395,22 @@ and term_node ~loc env prop dty dterm_node =
       let env, vsl = List.fold_left add_var (env, []) bl in
       let t = term env prop dt in
       t_quant q (List.rev vsl) t (Option.map ty_of_dty dty) loc
+  | DTlambda (dpl, dt) ->
+      let ty = ty_of_dty_raw dty and pl = List.map pattern dpl in
+      let env =
+        let join _ _ vs = Some vs in
+        List.fold_left (fun env (_, vs) -> Mstr.union join env vs) env pl
+      in
+      let t = term env false dt in
+      (* Are the patterns exhaustive? *)
+      List.iter
+        (fun (p, _) ->
+          let loc = p.p_loc in
+          Patmat.checks p.p_ty
+            [ (p, None, t (* [t] is really just a place holder *)) ]
+            ~loc)
+        pl;
+      t_lambda (List.map fst pl) t (Some ty) loc
   | DTcase (dt, ptl) ->
       let t = term env false dt in
       let branch (dp, guard, dt) =

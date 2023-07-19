@@ -4,8 +4,5 @@ val f : 'a option list -> bool
 *)
 
 (* {gospel_expected|
-   [125] File "fun_option.mli", line 3, characters 30-31:
-         3 |     ensures List._exists (fun (None | Some _) -> false) os
-                                           ^
-         Error: Syntax error.
+   [0] OK
    |gospel_expected} *)

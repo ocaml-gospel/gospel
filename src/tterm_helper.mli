@@ -37,6 +37,7 @@ val t_field : term -> lsymbol -> ty option -> Location.t -> term
 val t_if : term -> term -> term -> Location.t -> term
 val t_let : vsymbol -> term -> term -> Location.t -> term
 val t_case : term -> (pattern * term option * term) list -> Location.t -> term
+val t_lambda : pattern list -> term -> ty option -> Location.t -> term
 val t_binop : binop -> term -> term -> Location.t -> term
 val t_not : term -> Location.t -> term
 val t_old : term -> Location.t -> term
@@ -52,7 +53,6 @@ val f_not : term -> Location.t -> term
 val t_quant : quant -> vsymbol list -> term -> ty option -> Location.t -> term
 val f_forall : vsymbol list -> term -> ty option -> Location.t -> term
 val f_exists : vsymbol list -> term -> ty option -> Location.t -> term
-val t_lambda : vsymbol list -> term -> ty option -> Location.t -> term
 val f_and : term -> term -> Location.t -> term
 val f_and_asym : term -> term -> Location.t -> term
 val f_or : term -> term -> Location.t -> term
