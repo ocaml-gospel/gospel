@@ -57,6 +57,8 @@
 
 ## Fixed
 
+- Handle the special case of `MODULE_ALIASES` in `stdlib.mli` in the parser
+  [\#306](https://github/ocaml-gospel/gospel/pull/306)
 - Take recursivity into account when typing type declarations
   [\#304](https://github/ocaml-gospel/gospel/pull/304)
 - Support pattern with cast
