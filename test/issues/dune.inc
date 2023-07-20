@@ -3,6 +3,26 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
+  (with-outputs-to no_return.mli.output
+   (run %{checker} %{dep:no_return.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff no_return.mli no_return.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:no_return.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
   (with-outputs-to t1.mli.output
    (run %{checker} %{dep:t1.mli}))))
 

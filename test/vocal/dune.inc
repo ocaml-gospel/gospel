@@ -43,6 +43,26 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
+  (with-outputs-to FM19.mli.output
+   (run %{checker} %{dep:FM19.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff FM19.mli FM19.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:FM19.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
   (with-outputs-to HashTable.mli.output
    (run %{checker} %{dep:HashTable.mli}))))
 
