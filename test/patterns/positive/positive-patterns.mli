@@ -38,7 +38,7 @@ type t1 = A1 | A2 | B of t1
     | B (B A1)
     | B (B A2) -> 0
     | B (B (B A1))
-    | B x -> 0 *)
+    | B _ -> 0 *)
 
 type t2 = E | I of int
 
@@ -56,7 +56,7 @@ val f2 : t2 -> int
       match x with
       | N 0
       | N 1
-      | N x -> 0 *)
+      | N _ -> 0 *)
 
 type t4 = A of string | B
 
