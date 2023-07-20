@@ -98,6 +98,8 @@ let val_description ~filename v =
 let ghost_spec ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
+  Lexing.set_position lb loc.loc_start;
+  Lexing.set_filename lb filename;
   let sigs = try Parse.interface lb with _ -> W.error ~loc W.Syntax_error in
   match sigs with
   | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
