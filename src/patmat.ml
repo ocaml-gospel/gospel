@@ -45,7 +45,7 @@ let is_builtin ty =
   | Some ts -> ts_equal ts ts_option || ts_equal ts ts_list
   | None -> false
 
-let mk_wild = List.map (fun ty -> mk_pattern Pwild ty)
+let mk_wild = List.map (fun ty -> mk_pattern Pwild ty Location.none)
 
 (** This module is used to represent pattern matrices.*)
 module Pmatrix : sig
@@ -150,14 +150,16 @@ end = struct
       }
 
   let enqueue_col pmat i =
+    let loc = Location.none in
     {
       rows = pmat.rows;
       cols = pmat.cols + 1;
       mat =
         List.mapi
           (fun i' e ->
-            if i = i' then e @ [ mk_pattern (Papp (fs_bool_true, [])) ty_bool ]
-            else e @ [ mk_pattern Pwild ty_bool ])
+            if i = i' then
+              e @ [ mk_pattern (Papp (fs_bool_true, [])) ty_bool loc ]
+            else e @ [ mk_pattern Pwild ty_bool loc ])
           pmat.mat;
     }
 
@@ -171,7 +173,9 @@ end = struct
     match pmat.mat with
     | [ e ] ->
         let args, l = split [] 0 e in
-        let hd = mk_pattern (Papp (ck, args)) (Option.get ck.ls_value) in
+        let hd =
+          mk_pattern (Papp (ck, args)) (Option.get ck.ls_value) Location.none
+        in
         { rows = 1; cols = pmat.cols - ak + 1; mat = [ hd :: l ] }
     | _ -> assert false
 end
@@ -481,7 +485,7 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
                     {
                       p_node = Pconst (Pconst_char (Char.chr i));
                       p_ty = ty_char;
-                      p_loc = None;
+                      p_loc = Location.none;
                     }
                   in
                   let pm = Pmatrix.push_col pm c in
@@ -504,10 +508,10 @@ let rec ui (typ_cols : ty list) (pmat : Pmatrix.t) =
       | None -> None
       | Some pm ->
           if Sigma.is_empty sigma && not (is_builtin thd) then
-            Some (Pmatrix.push_col pm (mk_pattern Pwild thd))
+            Some (Pmatrix.push_col pm (mk_pattern Pwild thd Location.none))
           else
             let pat_node = Sigma.other_one thd sigma pmat in
-            let pat = mk_pattern pat_node thd in
+            let pat = mk_pattern pat_node thd Location.none in
             Some (Pmatrix.push_col pm pat)
 
 let ui tyl pmat = Option.get (ui tyl pmat) |> Pmatrix.fst
@@ -524,7 +528,8 @@ let check_ambiguous ~loc cases =
     (function
       | p, Some _, _ ->
           if contains_or p then
-            W.error ~loc:(Option.value p.p_loc ~default:loc) W.Ambiguous_pattern
+            let loc = if p.p_loc = Location.none then loc else p.p_loc in
+            W.error ~loc W.Ambiguous_pattern
       | _, None, _ -> ())
     cases
 

@@ -22,6 +22,8 @@
 
 ## Improved
 
+- Propagate pattern locations to report errors to the precise patterns
+  [\#308](https://github.com/ocaml-gospel/gospel/pull/308)
 - Support partial application of functions and enforce OCaml syntax
   for constructor application
   [\#290](https://github.com/ocaml-gospel/gospel/pull/290)
