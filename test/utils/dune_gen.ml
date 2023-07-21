@@ -4,7 +4,13 @@
    such that:
      dune_gen.exe a.mli b.mli c.mli "d.mli e.mli"
    will generate the configuration with a.mli depending on b.mli and
-   c.mli depending on both d.mli and e.mli. *)
+   c.mli depending on both d.mli and e.mli.
+
+   Takes also as arguments acceptable exit codes for ocamlc when
+   compiling the .mli so that
+     dune_gen.exe ... -- a.mli 2
+   will generate the configuration where running "ocamlc -c a.mli"
+   will be expected to exit with code 2. *)
 
 let usage () =
   Printf.fprintf stderr "Usage: %s [FILE DEPS] ... [-- [FILE EXITS]]"
