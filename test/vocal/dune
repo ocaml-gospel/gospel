@@ -1,15 +1,3 @@
+(include ../utils/dune.common)
+
 (include dune.inc)
-
-(rule
- (targets dune.inc.gen)
- (deps
-  (source_tree .))
- (action
-  (with-stdout-to
-   %{targets}
-   (run ../gen/gen.exe))))
-
-(rule
- (alias runtest)
- (action
-  (diff dune.inc dune.inc.gen)))

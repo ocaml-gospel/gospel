@@ -1,33 +1,3 @@
+(include ../utils/dune.common)
+
 (include dune.inc)
-
-(rule
- (targets dune.inc.gen)
- (deps
-  (source_tree .))
- (action
-  (with-stdout-to
-   %{targets}
-   (run
-    ../gen/gen.exe
-    a2.mli
-    a1.mli
-    a3.mli
-    "a1.mli a2.mli"
-    b.mli
-    a.mli
-    c.mli
-    "a.mli b.mli"
-    test1.mli
-    test.mli
-    --
-    a2.mli
-    2
-    b.mli
-    2
-    c.mli
-    2))))
-
-(rule
- (alias runtest)
- (action
-  (diff dune.inc dune.inc.gen)))
