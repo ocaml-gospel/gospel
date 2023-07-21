@@ -10,6 +10,11 @@
     %{read-lines:dune_gen.options}))))
 
 (rule
- (alias runtest)
+ (alias duneincs)
  (action
   (diff dune.inc dune.inc.gen)))
+
+(alias
+ (name runtest)
+ (deps
+  (alias duneincs)))
