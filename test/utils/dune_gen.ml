@@ -2,7 +2,7 @@
 
    Takes dependencies as arguments, to be read as a sequence of pairs,
    such that:
-     gen.exe a.mli b.mli c.mli "d.mli e.mli"
+     dune_gen.exe a.mli b.mli c.mli "d.mli e.mli"
    will generate the configuration with a.mli depending on b.mli and
    c.mli depending on both d.mli and e.mli. *)
 

@@ -6,7 +6,7 @@
   (with-stdout-to
    %{targets}
    (run
-    %{project_root}/test/gen/gen.exe
+    %{project_root}/test/utils/dune_gen.exe
     %{read-lines:dune_gen.options}))))
 
 (rule
