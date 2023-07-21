@@ -1,6 +1,6 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to FM19.mli.output
    (run %{checker} %{dep:FM19.mli}))))
@@ -19,7 +19,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to a.mli.output
    (run %{checker} %{dep:a.mli}))))
@@ -38,7 +38,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to a1.mli.output
    (run %{checker} %{dep:a1.mli}))))
@@ -57,7 +57,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe)
+  (:checker %{project_root}/test/utils/testchecker.exe)
   a1.mli)
  (action
   (with-outputs-to a2.mli.output
@@ -78,7 +78,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe)
+  (:checker %{project_root}/test/utils/testchecker.exe)
   a1.mli a2.mli)
  (action
   (with-outputs-to a3.mli.output
@@ -98,7 +98,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to abstract_functions.mli.output
    (run %{checker} %{dep:abstract_functions.mli}))))
@@ -117,7 +117,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe)
+  (:checker %{project_root}/test/utils/testchecker.exe)
   a.mli)
  (action
   (with-outputs-to b.mli.output
@@ -138,7 +138,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to basic_functions_axioms.mli.output
    (run %{checker} %{dep:basic_functions_axioms.mli}))))
@@ -157,7 +157,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to bitvector.mli.output
    (run %{checker} %{dep:bitvector.mli}))))
@@ -176,7 +176,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe)
+  (:checker %{project_root}/test/utils/testchecker.exe)
   a.mli b.mli)
  (action
   (with-outputs-to c.mli.output
@@ -197,7 +197,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to complex_vals.mli.output
    (run %{checker} %{dep:complex_vals.mli}))))
@@ -216,7 +216,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to constants.mli.output
    (run %{checker} %{dep:constants.mli}))))
@@ -235,7 +235,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to constructor_arity.mli.output
    (run %{checker} %{dep:constructor_arity.mli}))))
@@ -254,7 +254,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to dpattern_with_cast.mli.output
    (run %{checker} %{dep:dpattern_with_cast.mli}))))
@@ -273,7 +273,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to exceptions.mli.output
    (run %{checker} %{dep:exceptions.mli}))))
@@ -292,7 +292,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to fib.mli.output
    (run %{checker} %{dep:fib.mli}))))
@@ -311,7 +311,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to infix.mli.output
    (run %{checker} %{dep:infix.mli}))))
@@ -330,7 +330,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to invariants.mli.output
    (run %{checker} %{dep:invariants.mli}))))
@@ -349,7 +349,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to literals.mli.output
    (run %{checker} %{dep:literals.mli}))))
@@ -368,7 +368,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to log2.mli.output
    (run %{checker} %{dep:log2.mli}))))
@@ -387,7 +387,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to logical.mli.output
    (run %{checker} %{dep:logical.mli}))))
@@ -406,7 +406,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to module_with.mli.output
    (run %{checker} %{dep:module_with.mli}))))
@@ -425,7 +425,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to modules.mli.output
    (run %{checker} %{dep:modules.mli}))))
@@ -444,7 +444,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to more_types.mli.output
    (run %{checker} %{dep:more_types.mli}))))
@@ -463,7 +463,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to no_header.mli.output
    (run %{checker} %{dep:no_header.mli}))))
@@ -482,7 +482,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to open_existing_type.mli.output
    (run %{checker} %{dep:open_existing_type.mli}))))
@@ -501,7 +501,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to partial_application.mli.output
    (run %{checker} %{dep:partial_application.mli}))))
@@ -520,7 +520,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to pattern_matching.mli.output
    (run %{checker} %{dep:pattern_matching.mli}))))
@@ -539,7 +539,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to record_functions.mli.output
    (run %{checker} %{dep:record_functions.mli}))))
@@ -558,7 +558,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to recursive_type_invariant.mli.output
    (run %{checker} %{dep:recursive_type_invariant.mli}))))
@@ -577,7 +577,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to stdlib_exceptions.mli.output
    (run %{checker} %{dep:stdlib_exceptions.mli}))))
@@ -596,7 +596,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to test.mli.output
    (run %{checker} %{dep:test.mli}))))
@@ -615,7 +615,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe)
+  (:checker %{project_root}/test/utils/testchecker.exe)
   test.mli)
  (action
   (with-outputs-to test1.mli.output
@@ -635,7 +635,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to test2.mli.output
    (run %{checker} %{dep:test2.mli}))))
@@ -654,7 +654,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to tuple_result.mli.output
    (run %{checker} %{dep:tuple_result.mli}))))
@@ -673,7 +673,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to type_decl.mli.output
    (run %{checker} %{dep:type_decl.mli}))))
@@ -692,7 +692,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to vals.mli.output
    (run %{checker} %{dep:vals.mli}))))
@@ -711,7 +711,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to variant_patterns.mli.output
    (run %{checker} %{dep:variant_patterns.mli}))))

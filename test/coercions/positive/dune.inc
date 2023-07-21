@@ -1,6 +1,6 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to basic.mli.output
    (run %{checker} %{dep:basic.mli}))))

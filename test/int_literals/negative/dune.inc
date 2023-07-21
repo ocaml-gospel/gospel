@@ -1,6 +1,6 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to bad_constr_arg.mli.output
    (run %{checker} %{dep:bad_constr_arg.mli}))))
@@ -19,7 +19,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to invalid_literal.mli.output
    (run %{checker} %{dep:invalid_literal.mli}))))

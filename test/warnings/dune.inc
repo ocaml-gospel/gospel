@@ -1,6 +1,6 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to no_modifies_value_of_unit.mli.output
    (run %{checker} %{dep:no_modifies_value_of_unit.mli}))))
@@ -19,7 +19,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to no_modifies_while_returning_unit.mli.output
    (run %{checker} %{dep:no_modifies_while_returning_unit.mli}))))

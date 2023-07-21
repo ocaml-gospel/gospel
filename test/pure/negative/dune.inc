@@ -1,6 +1,6 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to impure1.mli.output
    (run %{checker} %{dep:impure1.mli}))))
@@ -19,7 +19,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to impure2.mli.output
    (run %{checker} %{dep:impure2.mli}))))
@@ -38,7 +38,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to impure3.mli.output
    (run %{checker} %{dep:impure3.mli}))))
@@ -57,7 +57,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to impure4.mli.output
    (run %{checker} %{dep:impure4.mli}))))
@@ -76,7 +76,7 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to not_pure.mli.output
    (run %{checker} %{dep:not_pure.mli}))))
