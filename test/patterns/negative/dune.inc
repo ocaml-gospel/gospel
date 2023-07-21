@@ -1,5 +1,6 @@
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to ambiguous.mli.output
@@ -19,6 +20,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to base.mli.output
@@ -38,6 +40,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to booleans.mli.output
@@ -57,6 +60,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to char2.mli.output
@@ -76,6 +80,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to etuple.mli.output
@@ -95,6 +100,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to float.mli.output
@@ -114,6 +120,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to guard1.mli.output
@@ -133,6 +140,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to guard2.mli.output
@@ -152,6 +160,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to guard3.mli.output
@@ -171,6 +180,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to guard4.mli.output
@@ -190,6 +200,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to guard5.mli.output
@@ -209,6 +220,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to int.mli.output
@@ -228,6 +240,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to int2.mli.output
@@ -247,6 +260,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to int3.mli.output
@@ -266,6 +280,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to interval.mli.output
@@ -285,6 +300,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to list1.mli.output
@@ -304,6 +320,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to list2.mli.output
@@ -323,6 +340,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to neg2.mli.output
@@ -342,6 +360,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to neg3.mli.output
@@ -361,6 +380,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to pair.mli.output
@@ -380,6 +400,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to record.mli.output
@@ -399,6 +420,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to redundant1.mli.output
@@ -418,6 +440,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to redundant2.mli.output
@@ -437,6 +460,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to redundant3.mli.output
@@ -456,6 +480,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to str.mli.output
@@ -475,6 +500,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to tuple.mli.output
@@ -494,6 +520,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to tuple2.mli.output

@@ -1,5 +1,6 @@
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to fun.mli.output
@@ -19,6 +20,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to fun_list.mli.output
@@ -38,6 +40,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to fun_opt.mli.output
@@ -57,6 +60,7 @@
 
 (rule
  (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to fun_opt_incomplete.mli.output

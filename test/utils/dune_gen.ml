@@ -48,6 +48,7 @@ let print_rule file =
     Printf.printf
       {|(rule
  (deps
+  %%{bin:gospel}
   (:checker %%{project_root}/test/utils/testchecker.exe)%s)
  (action
   (with-outputs-to %s.output
