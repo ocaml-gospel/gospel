@@ -68,7 +68,7 @@ and term_desc =
   | Tnot of term
   | Tif of term * term * term
   | Tquant of quant * binder list * term
-  | Tlambda of pattern list * term
+  | Tlambda of pattern list * term * pty option
   | Tattr of string * term
   | Tlet of Preid.t * term * term
   | Tcase of term * (pattern * term option * term) list

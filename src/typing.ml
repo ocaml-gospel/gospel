@@ -431,7 +431,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
             (None, Texists)
       in
       mk_dterm ~loc (DTquant (q, vl, dt)) dty
-  | Uast.Tlambda (pl, t) ->
+  | Uast.Tlambda (pl, t, pty) ->
       let arg p =
         let dty = dty_fresh () and dp = dpattern kid ns p in
         dpattern_unify dp dty;
@@ -445,6 +445,11 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
           denv args
       in
       let dt = dterm kid crcm ns denv t in
+      let dt =
+        match pty with
+        | Some pty -> dterm_expected crcm dt (dty_of_pty ns pty)
+        | _ -> dt
+      in
       let dt_dty = dty_of_dterm dt in
       let dty =
         let apply (_, dty1) dty2 = Dterm.Tapp (ts_arrow, [ dty1; dty2 ]) in
