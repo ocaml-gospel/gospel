@@ -1,0 +1,10 @@
+# Tell git to stop considering generated `dune.inc` files as source
+# files that can be diffed so that it will:
+#
+# - skip that noise in diffs, logs, etc.
+# - leave the content of those files untouched when there is a merge
+#   conflict, as conflict markers prevent `dune` from interpreting
+#   those files, for instance to run `dune runtest --auto-promote`
+#   that would fix them...
+
+dune.inc -diff
