@@ -44,10 +44,9 @@ Gospel!
 
 ### Installation
 
-Gospel is not yet available on Opam repositories. You can install it via pinning:
+Gospel is available on Opam repositories. Installing it is straightforward:
 
 ```shell
-$ opam pin add gospel.dev git@github.com:ocaml-gospel/gospel
 $ opam install gospel
 ```
 
@@ -56,7 +55,7 @@ wish to build your software on top of Gospel. You may check the installation wit
 
 ```shell
 $ gospel --version
-gospel version xxxxxx
+gospel version 0.1.0
 ```
 
 ### Usage
