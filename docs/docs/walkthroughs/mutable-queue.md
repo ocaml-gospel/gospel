@@ -25,11 +25,11 @@ elements of a queue, we attach one model to its type declaration:
 
 ```ocaml
 type 'a t
-(*@ mutable model view: 'a seq *)
+(*@ mutable model view: 'a sequence *)
 ```
 
 The model `view` represents the mathematical sequence of elements stored in
-the queue. The type `'a seq` is the type of logical sequences defined in the
+the queue. The type `'a sequence` is the type of logical sequences defined in the
 Gospel standard library and is for specifications only. The `mutable`
 keyword states that the `view` field can change over time.
 
@@ -49,7 +49,7 @@ Let us now declare and specify a `push` operation for these queues:
 val push: 'a -> 'a t -> unit
 (*@ push v q
     modifies q
-    ensures  q.view = Seq.cons v (old q.view) *)
+    ensures  q.view = Sequence.cons v (old q.view) *)
 ```
 
 - The first line of the specification is the header; it names the two arguments
@@ -62,7 +62,7 @@ val push: 'a -> 'a t -> unit
   refer to the value of an expression (here, `q.view`) in the pre-state, *i.e.*,
   before the function call.
 
-Note that the module `Seq` is part of the Gospel standard library and should not
+Note that the module `Sequence` is part of the Gospel standard library and should not
 be confused with module `Seq` from the OCaml standard library.
 
 ## Various flavors of `pop`
@@ -82,8 +82,8 @@ exception Empty
 val pop: 'a t -> 'a
 (*@ v = pop q
     modifies q
-    ensures  old q.view = q.view ++ Seq.cons v Seq.empty
-    raises   Empty -> q.view = old q.view = Seq.empty *)
+    ensures  old q.view = q.view ++ Sequence.cons v Sequence.empty
+    raises   Empty -> q.view = old q.view = Sequence.empty *)
 ```
 
 We have two post-conditions:
@@ -108,9 +108,9 @@ keyword `requires`:
 ```ocaml {3}
 val unsafe_pop: 'a t -> 'a
 (*@ v = unsafe_pop q
-    requires q.view <> Seq.empty
+    requires q.view <> Sequence.empty
     modifies q
-    ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
+    ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
 ```
 
 ### Defensive version
@@ -123,9 +123,9 @@ behavior, using `checks` instead of `requires`:
 ```ocaml {3}
 val pop: 'a t -> 'a
 (*@ v = pop q
-      checks   q.view <> Seq.empty
+      checks   q.view <> Sequence.empty
       modifies q
-      ensures  old q.view = q.view ++ (Seq.cons v Seq.empty) *)
+      ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
 ```
 
 The `checks` keyword means that function itself checks the pre-condition
@@ -142,7 +142,7 @@ declaration for an emptiness test, together with its contract:
 ```ocaml
 val is_empty: 'a t -> bool
 (*@ b = is_empty q
-      ensures b <-> q.view = Seq.empty *)
+      ensures b <-> q.view = Sequence.empty *)
 ```
 
 The post-conditions captures that the function returns `true` if and only if the
@@ -160,7 +160,7 @@ specification are as follows:
 ```ocaml
 val create: unit -> 'a t
 (*@ q = create ()
-      ensures q.view = Seq.empty *)
+      ensures q.view = Sequence.empty *)
 ```
 
 The newly created queue has no elements: its `view` model equals the `empty`
@@ -185,7 +185,7 @@ another, with the following specification:
 val transfer: 'a t -> 'a t -> unit
 (*@ transfer src dst
     modifies src, dst
-    ensures  src.view = Seq.empty
+    ensures  src.view = Sequence.empty
     ensures  dst.view = old dst.view ++ old src.view *)
 ```
 
