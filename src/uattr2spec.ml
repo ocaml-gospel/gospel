@@ -203,6 +203,11 @@ let rec signature_item_desc ~filename = function
 and signature ~filename sigs =
   List.map
     (fun { psig_desc; psig_loc } ->
+      let filename =
+        match psig_loc.loc_start.pos_fname with
+        | "" | "_none_" -> filename
+        | f -> f
+      in
       { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
     sigs
 
