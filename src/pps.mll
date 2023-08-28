@@ -198,6 +198,11 @@ rule scan = parse
         Buffer.add_string buf "*)";
         scan lexbuf
       }
+  | "#" as c {
+    Buffer.add_char buf c;
+    let pos = Lexing.lexeme_start_p lexbuf in
+    if pos.pos_cnum = pos.pos_bol then directive lexbuf else scan lexbuf
+    }
   | _ as c { Buffer.add_char buf c; scan lexbuf }
   | eof { flush () }
 
@@ -251,6 +256,27 @@ and comment = parse
       }
    | newline as nl { Buffer.add_string buf nl; Lexing.new_line lexbuf; comment lexbuf }
    | _ as c { Buffer.add_char buf c; comment lexbuf }
+
+and directive = parse
+  | ( [' ' '\t']*
+      (['0'-'9']+ as line)
+      [' ' '\t']*
+      ('"' ([^ '"' '\010' '\013']* as file) '"')
+      [^ '\010' '\013']*
+    ) as directive {
+      Buffer.add_string buf directive;
+      match int_of_string_opt line with
+      | Some line ->
+        let pos = lexbuf.lex_curr_p in
+        let pos =
+          { pos with pos_fname = file; pos_lnum = line - 1; pos_bol = pos.pos_cnum }
+        in
+        lexbuf.lex_curr_p <- pos;
+        scan lexbuf
+      | None ->
+        scan lexbuf
+    }
+  | "" { scan lexbuf }
 
 and string = parse
     '\"'
