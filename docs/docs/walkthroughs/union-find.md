@@ -57,7 +57,7 @@ mutable: so long as elements are added, for instance, it will be modified.
 ```
 
 Now, our three functions still apply to set elements, but they also apply _in the
-context of an universe_: you create a new singleton subset in the context of the
+context of a universe_: you create a new singleton subset in the context of the
 greater set, or find the representative of an element in the rest of universe
 for instance. This translates into our three functions taking a value of type `'a
 universe` as argument. Of course, `'a universe` is ghost, and you do not want to
@@ -165,7 +165,7 @@ representative in the set, so we may represent this using a `'a element -> 'a
 element` function. We can also add two invariants:
 
 - the representative of an element must live in the same universe as the
-  element itself.
+  element itself,
 - the `rep` function is idempotent: the representative of an element is its own
   representative.
 
