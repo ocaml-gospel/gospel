@@ -193,9 +193,12 @@ rule scan = parse
     }
   | "(*"
       {
+        push ();
         Buffer.add_string buf "(*";
         comment lexbuf;
         Buffer.add_string buf "*)";
+        Queue.push (Spaces (Buffer.contents buf)) queue;
+        Buffer.clear buf;
         scan lexbuf
       }
   | "#" as c {
