@@ -16,7 +16,7 @@ to get you started with formal specifications for your OCaml programs.
   interfaces, including a comprehensive explanation of the specification process and
   language features.
 - More detailed explanations of the language features are available in the
-  [Language Specification](language/locations) section.
+  [Language Reference](language/syntax) section.
 - Short questions sometimes deserve short answers. You can also check out the
   [FAQ](faq) section for common questions about Gospel's design,
   semantics, and features.

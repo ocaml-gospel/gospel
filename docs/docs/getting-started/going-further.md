@@ -14,7 +14,7 @@ visit our other resources before getting started:
 
 - If you prefer to read the manual for more in-depth information on specific
   features of the language, you may also visit the [language
-  specification](../language/locations.md) section.
+  reference](../language/syntax) section.
 
 Finally, we are always thrilled to hear your thoughts or questions regarding
 Gospel and this tutorial. Please feel free to [open a
