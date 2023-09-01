@@ -11,5 +11,6 @@ val f : int -> int
    [125] File "ambiguous.mli", line 4, characters 6-11:
          4 |     | _ | _ when x = 1 -> true
                    ^^^^^
-         Error: Ambiguous or-pattern under guard.
+         Error: Or-patterns are prohibited under guards to avoid ambiguities
+                (see OCaml compiler warning 57).
    |gospel_expected} *)
