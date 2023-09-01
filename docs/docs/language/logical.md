@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # Logical declarations
 
-## Functions and Predicates
+## Functions, predicates and axioms
 
 It is often convenient to introduce shortcuts for terms and formulas to avoid
 repetitions. *Predicates* let you write named formulae definitions in Gospel
@@ -42,7 +42,19 @@ recursive. A recursive definition requires the `rec` keyword like in OCaml:
       | h :: (y :: _ as t) -> h <= y /\ is_sorted_list t *)
 ```
 
-## Uninterpreted symbols and Axioms
+Logical functions and predicates can be left uninterpreted, ie without declaring
+their bodies, for instance:
+
+```ocaml
+(*@ predicate is_sorted (a: int array) *)
+(*@ function powm (x y m: integer) : integer *)
+```
+
+Finally, it is also possible to define *axioms*, for instance:
+
+```ocaml
+(*@ axiom unbounded_integers : forall i. exists j. j > i *)
+```
 
 ## Logical function contracts
 
