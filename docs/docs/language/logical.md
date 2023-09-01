@@ -146,8 +146,9 @@ via *variants*.
 :::danger
 
 Similarly to contracts, Gospel does not perform any verification that the
-variant indeed ensures the termination. It is up to an external tool to help you
-verify this.
+variant indeed ensures the termination, it will only checks that it is of type
+integer. It is up to an external tool to exploit the expression given as
+`variant` to check termination.
 
 :::
 
