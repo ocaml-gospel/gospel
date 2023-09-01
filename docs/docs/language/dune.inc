@@ -4,9 +4,9 @@
   (:md2mli %{project_root}/test/utils/md2mli.awk))
  (action
   (with-stdout-to
-   constants-specifications.mli
+   attributes.mli
    (chdir %{project_root}
-    (run awk -f %{md2mli} %{dep:constants-specifications.md})))))
+    (run awk -f %{md2mli} %{dep:attributes.md})))))
 
 (rule
  (alias runtest)
@@ -14,10 +14,10 @@
  (deps %{bin:gospel})
  (action
   (progn
-   (with-stdout-to constants-specifications.output
+   (with-stdout-to attributes.output
     (chdir %{project_root}
-     (run gospel check %{dep:constants-specifications.mli})))
-   (diff? %{project_root}/test/utils/check_success constants-specifications.output))))
+     (run gospel check %{dep:attributes.mli})))
+   (diff? %{project_root}/test/utils/check_success attributes.output))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -25,9 +25,9 @@
   (:md2mli %{project_root}/test/utils/md2mli.awk))
  (action
   (with-stdout-to
-   formulae.mli
+   constant-specifications.mli
    (chdir %{project_root}
-    (run awk -f %{md2mli} %{dep:formulae.md})))))
+    (run awk -f %{md2mli} %{dep:constant-specifications.md})))))
 
 (rule
  (alias runtest)
@@ -35,10 +35,31 @@
  (deps %{bin:gospel})
  (action
   (progn
-   (with-stdout-to formulae.output
+   (with-stdout-to constant-specifications.output
     (chdir %{project_root}
-     (run gospel check %{dep:formulae.mli})))
-   (diff? %{project_root}/test/utils/check_success formulae.output))))
+     (run gospel check %{dep:constant-specifications.mli})))
+   (diff? %{project_root}/test/utils/check_success constant-specifications.output))))
+
+(rule
+ (enabled_if %{bin-available:awk})
+ (deps
+  (:md2mli %{project_root}/test/utils/md2mli.awk))
+ (action
+  (with-stdout-to
+   expressions.mli
+   (chdir %{project_root}
+    (run awk -f %{md2mli} %{dep:expressions.md})))))
+
+(rule
+ (alias runtest)
+ (enabled_if %{bin-available:awk})
+ (deps %{bin:gospel})
+ (action
+  (progn
+   (with-stdout-to expressions.output
+    (chdir %{project_root}
+     (run gospel check %{dep:expressions.mli})))
+   (diff? %{project_root}/test/utils/check_success expressions.output))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -88,27 +109,6 @@
   (:md2mli %{project_root}/test/utils/md2mli.awk))
  (action
   (with-stdout-to
-   locations.mli
-   (chdir %{project_root}
-    (run awk -f %{md2mli} %{dep:locations.md})))))
-
-(rule
- (alias runtest)
- (enabled_if %{bin-available:awk})
- (deps %{bin:gospel})
- (action
-  (progn
-   (with-stdout-to locations.output
-    (chdir %{project_root}
-     (run gospel check %{dep:locations.mli})))
-   (diff? %{project_root}/test/utils/check_success locations.output))))
-
-(rule
- (enabled_if %{bin-available:awk})
- (deps
-  (:md2mli %{project_root}/test/utils/md2mli.awk))
- (action
-  (with-stdout-to
    logical.mli
    (chdir %{project_root}
     (run awk -f %{md2mli} %{dep:logical.md})))))
@@ -123,6 +123,48 @@
     (chdir %{project_root}
      (run gospel check %{dep:logical.mli})))
    (diff? %{project_root}/test/utils/check_success logical.output))))
+
+(rule
+ (enabled_if %{bin-available:awk})
+ (deps
+  (:md2mli %{project_root}/test/utils/md2mli.awk))
+ (action
+  (with-stdout-to
+   scope.mli
+   (chdir %{project_root}
+    (run awk -f %{md2mli} %{dep:scope.md})))))
+
+(rule
+ (alias runtest)
+ (enabled_if %{bin-available:awk})
+ (deps %{bin:gospel})
+ (action
+  (progn
+   (with-stdout-to scope.output
+    (chdir %{project_root}
+     (run gospel check %{dep:scope.mli})))
+   (diff? %{project_root}/test/utils/check_success scope.output))))
+
+(rule
+ (enabled_if %{bin-available:awk})
+ (deps
+  (:md2mli %{project_root}/test/utils/md2mli.awk))
+ (action
+  (with-stdout-to
+   syntax.mli
+   (chdir %{project_root}
+    (run awk -f %{md2mli} %{dep:syntax.md})))))
+
+(rule
+ (alias runtest)
+ (enabled_if %{bin-available:awk})
+ (deps %{bin:gospel})
+ (action
+  (progn
+   (with-stdout-to syntax.output
+    (chdir %{project_root}
+     (run gospel check %{dep:syntax.mli})))
+   (diff? %{project_root}/test/utils/check_success syntax.output))))
 
 (rule
  (enabled_if %{bin-available:awk})
