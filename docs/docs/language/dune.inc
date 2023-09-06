@@ -151,6 +151,27 @@
   (:md2mli %{project_root}/test/utils/md2mli.awk))
  (action
   (with-stdout-to
+   semantics.mli
+   (chdir %{project_root}
+    (run awk -f %{md2mli} %{dep:semantics.md})))))
+
+(rule
+ (alias runtest)
+ (enabled_if %{bin-available:awk})
+ (deps %{bin:gospel})
+ (action
+  (progn
+   (with-stdout-to semantics.output
+    (chdir %{project_root}
+     (run gospel check %{dep:semantics.mli})))
+   (diff? %{project_root}/test/utils/check_success semantics.output))))
+
+(rule
+ (enabled_if %{bin-available:awk})
+ (deps
+  (:md2mli %{project_root}/test/utils/md2mli.awk))
+ (action
+  (with-stdout-to
    syntax.mli
    (chdir %{project_root}
     (run awk -f %{md2mli} %{dep:syntax.md})))))
