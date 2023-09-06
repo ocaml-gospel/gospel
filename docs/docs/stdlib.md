@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # The Gospel Standard Library
 
 Gospel provides a set of useful types, functions and predicates that you can use
