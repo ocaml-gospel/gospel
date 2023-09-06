@@ -1,6 +1,7 @@
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to Arrays.mli.output
    (run %{checker} %{dep:Arrays.mli}))))
@@ -19,7 +20,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to CountingSort.mli.output
    (run %{checker} %{dep:CountingSort.mli}))))
@@ -38,7 +40,28 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to FM19.mli.output
+   (run %{checker} %{dep:FM19.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff FM19.mli FM19.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:FM19.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to HashTable.mli.output
    (run %{checker} %{dep:HashTable.mli}))))
@@ -57,7 +80,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to Lists.mli.output
    (run %{checker} %{dep:Lists.mli}))))
@@ -76,7 +100,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to Mjrty.mli.output
    (run %{checker} %{dep:Mjrty.mli}))))
@@ -95,7 +120,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to PairingHeap.mli.output
    (run %{checker} %{dep:PairingHeap.mli}))))
@@ -114,7 +140,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to PriorityQueue.mli.output
    (run %{checker} %{dep:PriorityQueue.mli}))))
@@ -133,7 +160,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to Queue.mli.output
    (run %{checker} %{dep:Queue.mli}))))
@@ -152,7 +180,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to RingBuffer.mli.output
    (run %{checker} %{dep:RingBuffer.mli}))))
@@ -171,7 +200,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to UnionFind.mli.output
    (run %{checker} %{dep:UnionFind.mli}))))
@@ -190,7 +220,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to Vector.mli.output
    (run %{checker} %{dep:Vector.mli}))))
@@ -209,7 +240,8 @@
 
 (rule
  (deps
-  (:checker %{project_root}/test/gospel_check.exe))
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
   (with-outputs-to ZipperList.mli.output
    (run %{checker} %{dep:ZipperList.mli}))))
