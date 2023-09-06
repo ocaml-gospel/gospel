@@ -10,7 +10,7 @@ end
 type nonrec t = t
 
 (* {gospel_expected|
-   [125] File "t6.mli", line 10, characters 16-17:
+   [125] File "include_module.mli", line 10, characters 16-17:
          10 | type nonrec t = t
                               ^
          Error: Symbol t not found.

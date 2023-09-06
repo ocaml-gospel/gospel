@@ -6,7 +6,7 @@ val f : int -> unit
     modifies true *)
 
 (* {gospel_expected|
-   [125] File "t4.mli", line 5, characters 20-21:
+   [125] File "return_unit_and_ghost.mli", line 5, characters 20-21:
          5 | (*@ [y : integer] = f x
                                  ^
          Error: Type checking error: too few parameters.

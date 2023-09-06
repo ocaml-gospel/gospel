@@ -8,7 +8,7 @@ val f : 'a t -> unit
 *)
 
 (* {gospel_expected|
-   [125] File "t1.mli", line 7, characters 17-34:
+   [125] File "model_shadows_field.mli", line 7, characters 17-34:
          7 |     ensures xs = { contents = [] }
                               ^^^^^^^^^^^^^^^^^
          Error: The record field `contents' does not exist.
