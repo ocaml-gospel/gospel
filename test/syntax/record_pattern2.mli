@@ -21,5 +21,6 @@ type t = { x : int }
    [125] File "record_pattern2.mli", line 15, characters 7-8:
          15 |     | {y} -> y
                      ^
-         Error: Symbol y not found.
+         Error: Symbol y not found in scope
+                (see "Symbols in scope" documentation page).
    |gospel_expected} *)
