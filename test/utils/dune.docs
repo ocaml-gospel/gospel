@@ -1,0 +1,22 @@
+; Rules to generate `dune.inc` files for testing markdown documentations
+
+(rule
+ (target dune.inc.gen)
+ (deps
+  (:generator %{project_root}/test/utils/dune_docs_gen.exe)
+  (:mds
+   (glob_files *.md)))
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{generator} %{mds}))))
+
+(rule
+ (alias duneincs)
+ (action
+  (diff dune.inc dune.inc.gen)))
+
+(alias
+ (name runtest)
+ (deps
+  (alias duneincs)))

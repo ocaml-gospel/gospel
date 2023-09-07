@@ -12,7 +12,7 @@ data-structure.
 type 'a t
 (*@ model capacity: int
     mutable model contents: 'a Set.t
-    invariant Set.cardinal contents <= capacity *)
+    with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
 The specification of this type contains three elements:
@@ -50,7 +50,7 @@ name for that model, in a fashion similar to OCaml's record fields.
 type 'a t
 (*@ model capacity: int
     mutable model contents: 'a Set.t
-    invariant Set.cardinal contents <= capacity *)
+    with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
 ## Mutable types
@@ -58,10 +58,10 @@ type 'a t
 Gospel lets you specify when a type may contain some mutable state by using the
 keyword `ephemeral` in its annotation:
 
-```ocaml {3}
+```ocaml {2}
 type t
-(*@ model capacity: int
-    ephemeral *)
+(*@ ephemeral
+    model capacity: int *)
 ```
 
 Of course, a type that has a mutable model is considered mutable, so the
@@ -77,7 +77,7 @@ properties may be added after the `invariant` keyword:
 type 'a t
 (*@ model capacity: int
     mutable model contents: 'a Set.t
-    invariant Set.cardinal contents <= capacity *)
+    with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
 Note that functions may break these invariants internally, but must restore them

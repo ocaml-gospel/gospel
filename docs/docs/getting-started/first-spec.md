@@ -61,8 +61,9 @@ in the `contents` set may not exceed `capacity`. Those are type invariants:
 type 'a t
 (*@ model capacity: int
     mutable model contents: 'a set
-    invariant capacity > 0
-    invariant Set.cardinal contents <= capacity *)
+    with t
+    invariant t.capacity > 0
+    invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
 The `Set` module is part of the [Gospel standard library](../stdlib). Although it
@@ -90,7 +91,7 @@ keyword `requires`), while the second and third ones are post-conditions (the
 keyword is `ensures`):
 
 ```ocaml
-val create: int -> t
+val create: int -> 'a t
 (*@ t = create c
     requires c > 0
     ensures t.capacity = c
@@ -107,7 +108,7 @@ depend on any internal state, and does not raise exceptions. In Gospel's
 language, this function is *pure*.
 
 ```ocaml
-val is_empty: t -> bool
+val is_empty: 'a t -> bool
 (*@ b = is_empty t
     pure
     ensures b <-> t.contents = Set.empty *)
@@ -158,6 +159,7 @@ this bit of information. If `add` raises `Full`, we can deduce that `t.contents`
 already contains `t.capacity` elements.
 
 ```ocaml
+exception Full
 val add: 'a t -> 'a -> unit
 (*@ add t x
     modifies t.contents

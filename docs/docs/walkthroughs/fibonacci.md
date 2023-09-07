@@ -40,7 +40,7 @@ Here is an implementation of such a function. When `a` and `b` are two
 consecutive Fibonacci numbers, the following function computes the `n`th number
 ahead of `a`. Hence, `fib n 0 1` is the `n`th Fibonacci number.
 
-```ocaml
+```ocaml implementationSyntax
 let rec fib n a b =
   if n < 0 then invalid_arg "n must be non-negative";
   if n = 0 then a

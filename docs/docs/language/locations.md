@@ -57,7 +57,8 @@ starting with the `@` character[^1]:
     Java and [ACSL](https://frama-c.com/html/acsl.html) for C. Hence Gospel
     also uses this convention.
 
-```ocaml
+<!-- invalidSyntax: see #320 -->
+```ocaml invalidSyntax
 val f: int -> int           (* An OCaml value declaration *)
 (*@ y = f x
     ensures x > 0 *)        (* Its Gospel specification   *)
@@ -86,7 +87,7 @@ documentation, and the attribute notation will not appear anymore.
 Note that Gospel annotations can be combined with traditional documentation
 comments, *e.g.* as follows:
 
-```ocaml
+```ocaml invalidSyntax
 val eucl_division: int -> int -> int * int
 (** this is an implementation of Euclidean division *)
 (*@ q, r = eucl_division x y

@@ -122,14 +122,14 @@ function raises `Invalid_argument` whenever `y <= 0`.
 Whenever multiple pre-conditions of the same kind coexist, they hold as a
 conjunction, which means
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     requires Q *)
 ```
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P /\ Q *)
 ```
@@ -139,14 +139,14 @@ does not matter. The `requires` clauses take precedence and must always be
 respected; otherwise the `checks` behaviour cannot be assumed. This means that
 ultimately,
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     checks Q *)
 ```
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     checks P -> Q *)
@@ -186,7 +186,7 @@ verified after the function call only if the pre-conditions were satisfied.
 The handling of multiple post-conditions is identical to pre-conditions of the
 same kind: multiple post-conditions are merged as a conjunction:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     ensures P
     ensures Q *)
@@ -194,7 +194,7 @@ same kind: multiple post-conditions are merged as a conjunction:
 
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     ensures P /\ Q *)
 ```
@@ -224,7 +224,7 @@ clause to every function contract. Of course, you can still override that
 behaviour by stating a property whenever these exceptions are raised, like any
 other exception:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Stack_overflow -> false *)
 ```
@@ -240,7 +240,7 @@ for each exception constructor listed in this clause. Similarly to OCaml's
 pattern-matching, when an exception is raised, the post-condition that is
 satisfied is the first match in the list of the cases.
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Unix_error (ENAMETOOLONG, _, _) -> P
          | Unix_error _                    -> Q *)
@@ -259,7 +259,7 @@ each other, meaning that the raised exception is matched against each `raises`'s
 case list, and each matching post-condition must hold in conjunction. For
 instance, the contract:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Error "foo" -> P | Error _ -> Q
     raises Error x -> R *)
@@ -282,9 +282,13 @@ the OCaml code the function behaves like, preceded by the `equivalent` keyword.
 This is useful when specifying functions whose behaviour can hardly be expressed
 in pure logic:
 
-```ocaml
+<!-- This code extract is invalid because functions returning unit must modify
+     something, equivalent is not enough -->
+```ocaml invalidSyntax
+type 'a t
 val iter : ('a -> unit) -> 'a t -> unit
 (*@ iter f t
+    ...
     equivalent "List.iter f (to_list t)" *)
 ```
 
@@ -314,7 +318,8 @@ The following example states that the execution of the function `run` may not
 terminate. It does not specify whether this function is always non-terminating
 or not.
 
-```ocaml
+<!-- invalidSyntax: see #317 -->
+```ocaml invalidSyntax
 val run : unit -> unit
 (*@ run ()
     diverges *)
@@ -328,6 +333,9 @@ the keyword `modifies`, followed by an identifier. In the following, the
 `contents` model of `a` can be modified by `inplace_map`.
 
 ```ocaml {3}
+type 'a t
+(*@ mutable model contents: int *)
+
 val inplace_map : ('a -> 'a) -> 'a t -> unit
 (*@ inplace_map f a
     modifies a.contents *)
@@ -359,6 +367,7 @@ function raised an exception **instead** of mutating the data, you have to
 manually specify it:
 
 ```ocaml {4}
+exception E
 val inplace_map : ('a -> 'a) -> 'a t -> unit
 (*@ inplace_map f a
     modifies a.contents
@@ -390,7 +399,7 @@ the function, and should be considered dirty â€” that is, not be used anymore â€
 the rest of the program. This is expressed with the `consumes`
 keyword:
 
-```ocaml
+```ocaml invalidSyntax
 val destructive_transfer: 'a t -> 'a t -> unit
 (*@ destructive_transfer src dst
     consumes src
