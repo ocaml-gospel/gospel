@@ -156,20 +156,20 @@ let pp_kind ppf = function
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
-let pp ppf (loc, k) =
+(** [pp_gen pp_sort pp_kind ppf loc k] display the message of the given sort
+    (warning, error, etc.) at the location obtained after fixing [loc] (it might
+    have been broken by preprocessing *)
+let pp_gen pp_sort pp_kind ppf loc k =
   let input_filename = loc.loc_start.pos_fname in
   match input_filename with
   | "" ->
       pf ppf
         "Internal error: no filename location for the following error@.%a: \
          @[%a.@]"
-        (styled_list [ `Red; `Bold ] string)
-        "Error" pp_kind k
+        pp_sort k pp_kind k
   | "_none_" ->
       (* This location is used for builtins such as [list] *)
-      pf ppf "%a: @[%a.@]"
-        (styled_list [ `Red; `Bold ] string)
-        "Error" pp_kind k
+      pf ppf "%a: @[%a.@]" pp_sort k pp_kind k
   | _ ->
       let input = Pp_loc.Input.file input_filename in
       (* because of the preprocessor (gospel pps), we may obtain locations that:
@@ -197,5 +197,7 @@ let pp ppf (loc, k) =
           ( Pp_loc.Position.of_lexing start_pos,
             Pp_loc.Position.of_lexing end_pos );
         ]
-        (styled_list [ `Red; `Bold ] string)
-        "Error" pp_kind k
+        pp_sort k pp_kind k
+
+let pp_error ppf _ = styled_list [ `Red; `Bold ] string ppf "Error"
+let pp ppf (loc, k) = pp_gen pp_error pp_kind ppf loc k
