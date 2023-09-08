@@ -8,9 +8,8 @@ val f : int -> int
    be removed *)
 
 (* {gospel_expected|
-   [125] File "ambiguous.mli", line 3, characters 12-72:
-         3 | ............match x with
+   [125] File "ambiguous.mli", line 4, characters 6-11:
          4 |     | _ | _ when x = 1 -> true
-         5 |     | _ -> false...
+                   ^^^^^
          Error: Ambiguous or-pattern under guard.
    |gospel_expected} *)

@@ -114,7 +114,7 @@ let ls_app_inst ls tl ty loc =
 
 (** Pattern constructors *)
 
-let mk_pattern p_node p_ty = { p_node; p_ty; p_loc = None }
+let mk_pattern p_node p_ty p_loc = { p_node; p_ty; p_loc }
 let p_wild ty = mk_pattern Pwild ty
 let p_var vs = mk_pattern (Pvar vs) vs.vs_ty
 let p_app ls pl ty = mk_pattern (Papp (ls, pl)) ty

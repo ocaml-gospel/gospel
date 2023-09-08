@@ -21,14 +21,14 @@ val t_type : term -> ty
 val t_ty_check : term -> ty option -> unit
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
 val ls_app_inst : lsymbol -> term list -> ty option -> Location.t -> ty Mtv.t
-val mk_pattern : pattern_node -> ty -> pattern
-val p_wild : ty -> pattern
-val p_var : vsymbol -> pattern
-val p_app : lsymbol -> pattern list -> ty -> pattern
-val p_or : pattern -> pattern -> pattern
-val p_as : pattern -> vsymbol -> pattern
-val p_interval : char -> char -> pattern
-val p_const : Parsetree.constant -> pattern
+val mk_pattern : pattern_node -> ty -> Location.t -> pattern
+val p_wild : ty -> Location.t -> pattern
+val p_var : vsymbol -> Location.t -> pattern
+val p_app : lsymbol -> pattern list -> ty -> Location.t -> pattern
+val p_or : pattern -> pattern -> Location.t -> pattern
+val p_as : pattern -> vsymbol -> Location.t -> pattern
+val p_interval : char -> char -> Location.t -> pattern
+val p_const : Parsetree.constant -> Location.t -> pattern
 val mk_term : term_node -> ty option -> Location.t -> term
 val t_var : vsymbol -> Location.t -> term
 val t_const : constant -> ty -> Location.t -> term

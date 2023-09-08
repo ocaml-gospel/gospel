@@ -317,18 +317,18 @@ let pattern dp =
       vs
   in
   let rec pattern_node dp =
-    let ty = ty_of_dty dp.dp_dty in
+    let ty = ty_of_dty dp.dp_dty and loc = dp.dp_loc in
     match dp.dp_node with
-    | DPwild -> p_wild ty
-    | DPvar pid -> p_var (get_var pid ty)
-    | DPconst c -> p_const c
-    | DPapp (ls, dpl) -> p_app ls (List.map pattern_node dpl) ty
+    | DPwild -> p_wild ty loc
+    | DPvar pid -> p_var (get_var pid ty) loc
+    | DPconst c -> p_const c loc
+    | DPapp (ls, dpl) -> p_app ls (List.map pattern_node dpl) ty loc
     | DPor (dp1, dp2) ->
         let dp1 = pattern_node dp1 in
         let dp2 = pattern_node dp2 in
-        p_or dp1 dp2
-    | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty)
-    | DPinterval (c1, c2) -> p_interval c1 c2
+        p_or dp1 dp2 loc
+    | DPas (dp, pid) -> p_as (pattern_node dp) (get_var pid ty) loc
+    | DPinterval (c1, c2) -> p_interval c1 c2 loc
     | DPcast (dp, _) -> pattern_node dp
   in
   let p = pattern_node dp in

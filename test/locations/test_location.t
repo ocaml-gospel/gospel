@@ -1006,7 +1006,7 @@ First, create a test artifact:
                                             ]
                                           ))
                                        };
-                                     p_loc =  },
+                                     p_loc = foo.mli:25:8 },
                                    { Tterm.p_node =
                                      (Tterm.Papp (
                                         { Symbols.ls_name = infix ::;
@@ -1056,7 +1056,7 @@ First, create a test artifact:
                                                   },
                                                 []))
                                              };
-                                           p_loc =  };
+                                           p_loc = foo.mli:25:13 };
                                           { Tterm.p_node =
                                             (Tterm.Papp (
                                                { Symbols.ls_name = [];
@@ -1099,7 +1099,7 @@ First, create a test artifact:
                                                    ]
                                                  ))
                                               };
-                                            p_loc =  }
+                                            p_loc = foo.mli:25:18 }
                                           ]
                                         ));
                                      p_ty =
@@ -1119,7 +1119,7 @@ First, create a test artifact:
                                             ]
                                           ))
                                        };
-                                     p_loc =  }
+                                     p_loc = foo.mli:25:13 }
                                    ));
                                 p_ty =
                                 { Ttypes.ty_node =
@@ -1136,7 +1136,7 @@ First, create a test artifact:
                                        ]
                                      ))
                                   };
-                                p_loc =  },
+                                p_loc = foo.mli:25:8 },
                               None,
                               { Tterm.t_node =
                                 (Tterm.Tapp (
@@ -1214,7 +1214,7 @@ First, create a test artifact:
                                               ts_args = []; ts_alias = None },
                                             []))
                                          };
-                                       p_loc =  };
+                                       p_loc = foo.mli:26:8 };
                                       { Tterm.p_node =
                                         (Tterm.Pas (
                                            { Tterm.p_node =
@@ -1287,7 +1287,7 @@ First, create a test artifact:
                                                           ts_alias = None },
                                                         []))
                                                      };
-                                                   p_loc =  };
+                                                   p_loc = foo.mli:26:14 };
                                                   { Tterm.p_node = Tterm.Pwild;
                                                     p_ty =
                                                     { Ttypes.ty_node =
@@ -1311,7 +1311,7 @@ First, create a test artifact:
                                                            ]
                                                          ))
                                                       };
-                                                    p_loc =  }
+                                                    p_loc = foo.mli:26:19 }
                                                   ]
                                                 ));
                                              p_ty =
@@ -1331,7 +1331,7 @@ First, create a test artifact:
                                                     ]
                                                   ))
                                                };
-                                             p_loc =  },
+                                             p_loc = foo.mli:26:14 },
                                            { Symbols.vs_name = t_2;
                                              vs_ty =
                                              { Ttypes.ty_node =
@@ -1369,7 +1369,7 @@ First, create a test artifact:
                                                ]
                                              ))
                                           };
-                                        p_loc =  }
+                                        p_loc = foo.mli:26:13 }
                                       ]
                                     ));
                                  p_ty =
@@ -1387,7 +1387,7 @@ First, create a test artifact:
                                         ]
                                       ))
                                    };
-                                 p_loc =  },
+                                 p_loc = foo.mli:26:8 },
                                None,
                                { Tterm.t_node =
                                  (Tterm.Tif (
