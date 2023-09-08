@@ -103,26 +103,6 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
-  (with-outputs-to pattern_in_lambda.mli.output
-   (run %{checker} %{dep:pattern_in_lambda.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff pattern_in_lambda.mli pattern_in_lambda.mli.output)))
-
-(rule
- (alias test-cmis)
- (action
-  (chdir %{project_root}
-   ; Syntax sanity check
-   (run ocamlc -c %{dep:pattern_in_lambda.mli}))))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe))
- (action
   (with-outputs-to return_unit_and_ghost.mli.output
    (run %{checker} %{dep:return_unit_and_ghost.mli}))))
 
