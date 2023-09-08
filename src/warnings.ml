@@ -138,7 +138,10 @@ let pp_kind ppf = function
         "This pattern-matching may not be exhaustive because of the guard.@\n\
          Here is an example of a case that may not be matched:@\n\
         \  %s" p
-  | Ambiguous_pattern -> pf ppf "Ambiguous or-pattern under guard"
+  | Ambiguous_pattern ->
+      pf ppf
+        "Or-patterns are prohibited under guards to avoid ambiguities@ (see \
+         OCaml compiler warning 57)"
   | Pattern_fully_guarded ->
       pf ppf "All clauses in this pattern-matching are guarded"
   | Pattern_redundant p ->
