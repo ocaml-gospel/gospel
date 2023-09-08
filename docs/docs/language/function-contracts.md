@@ -22,25 +22,6 @@ A function contract is composed of two parts:
    previous example features three clauses: one pre-condition introduced by
    `requires`, and two post-conditions introduced by `ensures`.
 
-:::caution
-
-   In the absence of a contract attached to a function declaration, you cannot
-   make any assumptions about its behaviour.
-
-   Post-conditions may not hold, the function may diverge, raise unlisted
-   exceptions, modify mutable states. However, **it still cannot break any type
-   invariant.**
-
-   You can still enable the default implicit properties about exceptions, mutability,
-   non-termination, etc. by creating an empty contract:
-
-   ```ocaml
-   val euclidean_division: int -> int -> int * int
-   (*@ q, r = euclidean_division x y *)
-   ```
-
-:::
-
 ```ebnf title="Function contract syntax"
 contract = header? clause*
 header = (identifier_tuple "=")? identifier parameter+
@@ -60,6 +41,19 @@ identifier_tuple = identifier ("," identifier)*
 parameter = "()" | identifier | "~" identifier | "?" identifier
 ```
 
+:::tip
+
+Even if the order of clauses is not imposed by the grammar, we suggest to use
+the following systematic order for uniformity:
+
+- `requires` preconditions,
+- `checks` preconditions,
+- `modifies` and `consumes` effects,
+- `ensures` postconditions,
+- `raises` exceptional postconditions.
+
+:::
+
 ##  Default behaviour
 
 To avoid boilerplate for usual properties, Gospel applies a default contract
@@ -74,6 +68,23 @@ following properties:
 - The function **does not have any visible side-effect on the memory**. In other
   words, if it mutates some data, this has no observable influence on the values
   in the rest of the program.
+
+:::caution
+
+   In the absence of a contract attached to a function declaration, you cannot
+   make any assumptions about its behaviour: the function may diverge, raise
+   unlisted exceptions, modify mutable states, etc. However, **it still cannot
+   break any type invariant.**
+
+   You can still enable the default implicit properties about exceptions, mutability,
+   non-termination, etc. by creating an empty contract:
+
+   ```ocaml
+   val euclidean_division: int -> int -> int * int
+   (*@ q, r = euclidean_division x y *)
+   ```
+
+:::
 
 ## Pre-conditions
 

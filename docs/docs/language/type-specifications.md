@@ -28,11 +28,9 @@ The specification of this type contains three elements:
 Type specifications can contain models, invariants, and mutability information.
 
 ```ebnf title="Type specification syntax"
-type_specification = type-specification-clause*
-type_specification_clause =
-  "ephemeral"
-  | "mutable"? "model" identifier ":" type_expression
-  | "invariant" expr
+type_specification = "ephemeral"? model-clause* invariant-clause*
+model-clause = "mutable"? "model" identifier ":" type_expression
+invariant-clause = "invariant" expr
 ```
 
 ## Models
@@ -66,6 +64,12 @@ type t
 
 Of course, a type that has a mutable model is considered mutable, so the
 `ephemeral` may be omitted whenever at least one declared model is mutable.
+
+:::tip
+
+Only use `ephemeral` when there is mutability that cannot be guessed otherwise.
+
+:::
 
 ## Invariants
 

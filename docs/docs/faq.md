@@ -1,5 +1,6 @@
 ---
 title: FAQ
+sidebar_position: 6
 ---
 
 # Frequently asked questions
@@ -120,30 +121,25 @@ argument by some of your OCaml functions:
 
 ```ocaml
 (*@ type t *)
-```
 
-```ocaml invalidSyntax
 val f : int -> int
 (*@ y = f [t : t] x
     pure
-    ... *)
+    (* ... *) *)
 ```
 
 Now, every specification that refers to `f` needs to pass the `t` argument to
 that function. You can propagate that requirement again, but you may also need
 to actually instantiate such a value and pass it directly:
 
-<!-- set as invalidSyntax because make is defined later -->
-```ocaml invalidSyntax
+```ocaml
+(*@ function make : unit -> t *)
+
 val g : int -> int
 (*@ y = g x
     ensures let t = make () in
             f t x = y *)
 ```
 
-Of course, that `make` function does not exist either, so you also need to
-declare it as a ghost value:
-
-```ocaml
-(*@ function make : unit -> t *)
-```
+Of course, `make` has to be declared (here as a ghost function) first to be able
+to use it in the specification of `g`.

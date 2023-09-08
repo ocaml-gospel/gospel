@@ -38,7 +38,7 @@ provide a specification for the signature item they are attached to.
 ## Models and invariants for `'a t`
 
 Let's start by specifying the abstract type `'a t`. As a container with fixed
-capacity, we can model it with two bits of information: a fixed integer
+capacity, we can model it with two pieces of information: a fixed integer
 capacity, and a set of `'a` values, representing its contents. Note that the
 capacity is not mutable, while the contents are. This logical model of
 the container directly translates into Gospel:
@@ -68,7 +68,7 @@ type 'a t
 
 The `Set` module is part of the [Gospel standard library](../stdlib). Although it
 tries to mimic familiar interfaces from the OCaml standard library, those two
-should not be confused: logical declarations can only appear in specifications.
+should not be confused: only logical declarations can appear in specifications!
 
 Now that we annotated our type with its models and invariants, we can attach
 specifications to the functions to show how they interact with the container.
@@ -76,7 +76,7 @@ specifications to the functions to show how they interact with the container.
 ## Your first function contract: `create`
 
 The function `create` returns a container when provided a capacity. We may want
-to specify three bits of information:
+to specify three pieces of information:
 
 - The provided capacity is positive.
 - The capacity of the returned container is indeed the one received as an
@@ -155,7 +155,7 @@ val add: 'a t -> 'a -> unit
 
 Notice, however, that this specification is incomplete. Indeed, one specificity
 of this function is that it can raise `Full`. Let us complete that contract with
-this bit of information. If `add` raises `Full`, we can deduce that `t.contents`
+this piece of information. If `add` raises `Full`, we can deduce that `t.contents`
 already contains `t.capacity` elements.
 
 ```ocaml

@@ -1,0 +1,41 @@
+name: local documentation
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+  push:
+    paths:
+      - 'docs/**'
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.14'
+
+      - name: Build documentation
+        run: |
+          mkdir -p documentation
+          cd docs/
+          if [ -e yarn.lock ]; then
+            yarn install --frozen-lockfile
+          elif [ -e package-lock.json ]; then
+            npm ci
+          else
+            npm i
+          fi
+          npm run build
+          mv build ../documentation/gospel
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: documentation
+          name: documentation

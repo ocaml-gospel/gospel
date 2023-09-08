@@ -173,7 +173,7 @@ non-fresh, mutable values is considered bad practice in OCaml.
 
 ## Merging queues
 
-Let us conclude this specification with a functions to merge two queues. Several
+Let us conclude this specification with a function to merge two queues. Several
 approaches are possible; we will showcase three of them.
 
 ### In-place transfer
@@ -200,7 +200,7 @@ One could think of a slightly different version of `transfer`,
 `destructive_transfer`, that invalidates `src` when called. In other words, the
 value of `src` should be considered dirty and must not be used anymore in the
 rest of the program. Such use-cases are frequent in system programming, for
-instance when dealing with file descriptors after `fclose` calls. Gospel
+instance when dealing with file descriptors after closing them. Gospel
 provides `consumes` clauses to capture this semantic:
 
 ```ocaml {3}
@@ -211,8 +211,8 @@ val destructive_transfer: 'a t -> 'a t -> unit
     ensures  dst.view = old dst.view ++ old src.view *)
 ```
 
-Note that we do not need to give informations on `src` in the post-state, since
-its value must not be used anymore.
+Note that we do not need to give any information on `src` in the post-state,
+since its value must not be used anymore.
 
 ### A constructive version
 
@@ -226,5 +226,5 @@ val concat: 'a t -> 'a t -> 'a t
 ```
 
 In this version, no `modifies` appears, meaning that none of the arguments are
-modified by the function, thus specifying their model in the post-state is not
+modified by the function, thus specifying their models in the post-state is not
 necessary.
