@@ -18,6 +18,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:char1.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:char1.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -38,6 +46,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:ints.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:ints.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -57,4 +73,12 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:invalid_literal.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:invalid_literal.mli})))))
 

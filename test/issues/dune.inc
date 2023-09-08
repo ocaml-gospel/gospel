@@ -18,6 +18,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:include_module.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:include_module.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -37,6 +45,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:model_field_not_found.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:model_field_not_found.mli})))))
 
 (rule
  (deps
@@ -58,6 +74,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:model_is_not_record.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:model_is_not_record.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -77,6 +101,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:model_shadows_field.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:model_shadows_field.mli})))))
 
 (rule
  (deps
@@ -98,6 +130,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:no_return.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:no_return.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -117,6 +157,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:return_unit_and_ghost.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:return_unit_and_ghost.mli})))))
 
 (rule
  (deps
@@ -138,6 +186,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:stdlib_float_array_not_found.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:stdlib_float_array_not_found.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -157,4 +213,12 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:stdlib_float_array_t_not_found.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:stdlib_float_array_t_not_found.mli})))))
 

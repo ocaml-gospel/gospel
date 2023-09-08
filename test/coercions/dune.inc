@@ -18,6 +18,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:bad_type_id.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:bad_type_id.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -37,6 +45,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:bad_type_multiple_args.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:bad_type_multiple_args.mli})))))
 
 (rule
  (deps
@@ -58,6 +74,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:basic.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:basic.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -77,6 +101,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:complex_cycle.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:complex_cycle.mli})))))
 
 (rule
  (deps
@@ -98,6 +130,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:constr_literal.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:constr_literal.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -118,6 +158,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:double_definition.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:double_definition.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -137,4 +185,12 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:simple_cycle.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:simple_cycle.mli})))))
 

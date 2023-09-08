@@ -18,6 +18,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:invariant1.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:invariant1.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -37,6 +45,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:invariant2.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:invariant2.mli})))))
 
 (rule
  (deps
@@ -58,6 +74,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:invariant3.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:invariant3.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -77,4 +101,12 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:no_modifies_while_returning_unit.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:no_modifies_while_returning_unit.mli})))))
 

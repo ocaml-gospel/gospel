@@ -18,6 +18,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:Arrays.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:Arrays.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -37,6 +45,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:CountingSort.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:CountingSort.mli})))))
 
 (rule
  (deps
@@ -58,6 +74,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:FM19.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:FM19.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -77,6 +101,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:HashTable.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:HashTable.mli})))))
 
 (rule
  (deps
@@ -98,6 +130,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:Lists.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:Lists.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -117,6 +157,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:Mjrty.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:Mjrty.mli})))))
 
 (rule
  (deps
@@ -138,6 +186,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:PairingHeap.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:PairingHeap.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -157,6 +213,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:PriorityQueue.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:PriorityQueue.mli})))))
 
 (rule
  (deps
@@ -178,6 +242,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:Queue.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:Queue.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -197,6 +269,14 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:RingBuffer.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:RingBuffer.mli})))))
 
 (rule
  (deps
@@ -218,6 +298,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:UnionFind.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:UnionFind.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -238,6 +326,14 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:Vector.mli}))))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:Vector.mli})))))
+
 (rule
  (deps
   %{bin:gospel}
@@ -257,4 +353,12 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:ZipperList.mli}))))
+
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%{dep:ZipperList.mli})))))
 

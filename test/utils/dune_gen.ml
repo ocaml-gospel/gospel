@@ -66,8 +66,16 @@ let print_rule file =
    ; Syntax sanity check
    %s(run ocamlc -c %%{dep:%s})%s)))
 
+; A good alias to use in a pre-push hook
+(rule
+ (alias pre-push)
+ (action
+  (chdir %%{project_root}
+   (ignore-stdout
+    (run git rev-parse --verify --quiet @:%%{dep:%s})))))
+
 |}
-      deps file file file file exit_code_open file exit_code_close
+      deps file file file file exit_code_open file exit_code_close file
 
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in
