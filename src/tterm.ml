@@ -44,7 +44,7 @@ and pattern_node =
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
 [@@deriving show]
 
-type quant = Tforall | Texists | Tlambda [@@deriving show]
+type quant = Tforall | Texists [@@deriving show]
 
 type term = {
   t_node : term_node;
@@ -63,6 +63,7 @@ and term_node =
   | Tlet of vsymbol * term * term
   | Tcase of term * (pattern * term option * term) list
   | Tquant of quant * vsymbol list * term
+  | Tlambda of pattern list * term
   | Tbinop of binop * term * term
   | Tnot of term
   | Told of term

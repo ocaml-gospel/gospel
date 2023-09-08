@@ -343,8 +343,8 @@ term_:
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
 | quant comma_list1(quant_vars) DOT term
     { Tquant ($1, List.concat $2, $4) }
-| FUN args = quant_vars ARROW t = term
-    { Tquant (Tlambda, args, t) }
+| FUN args = pat_arg+ ty = preceded(COLON,fun_typ)? ARROW t = term
+    { Tlambda (args, t, ty) }
 | attr term %prec prec_named
     { Tattr ($1, $2) }
 | term cast
@@ -477,6 +477,13 @@ typ:
 | typ ARROW typ
     { let l = mk_loc $loc in
       PTarrow (Lnone (id_anonymous l), $1, $3) }
+| ty_arg STAR ty_tuple
+    { PTtuple ($1 :: $3) }
+;
+
+fun_typ:
+| ty_arg
+    { $1 }
 | ty_arg STAR ty_tuple
     { PTtuple ($1 :: $3) }
 ;

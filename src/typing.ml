@@ -429,12 +429,33 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         | Uast.Texists ->
             dfmla_unify dt;
             (None, Texists)
-        | Uast.Tlambda ->
-            let dty = Option.value dt.dt_dty ~default:dty_bool in
-            let apply (_, dty1) dty2 = Dterm.Tapp (ts_arrow, [ dty1; dty2 ]) in
-            (Some (List.fold_right apply vl dty), Tlambda)
       in
       mk_dterm ~loc (DTquant (q, vl, dt)) dty
+  | Uast.Tlambda (pl, t, pty) ->
+      let arg p =
+        let dty = dty_fresh () and dp = dpattern kid ns p in
+        dpattern_unify dp dty;
+        (dp, dty)
+      in
+      let args = List.map arg pl in
+      let choose_snd _ _ vs = Some vs in
+      let denv =
+        List.fold_left
+          (fun denv (dp, _) -> Mstr.union choose_snd denv dp.dp_vars)
+          denv args
+      in
+      let dt = dterm kid crcm ns denv t in
+      let dt =
+        match pty with
+        | Some pty -> dterm_expected crcm dt (dty_of_pty ns pty)
+        | _ -> dt
+      in
+      let dt_dty = dty_of_dterm dt in
+      let dty =
+        let apply (_, dty1) dty2 = Dterm.Tapp (ts_arrow, [ dty1; dty2 ]) in
+        Some (List.fold_right apply args dt_dty)
+      in
+      mk_dterm ~loc (DTlambda (List.map fst args, dt)) dty
   | Uast.Tcase (t, ptl) ->
       let dt = dterm kid crcm ns denv t in
       let dt_dty = dty_of_dterm dt in

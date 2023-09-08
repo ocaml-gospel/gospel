@@ -22,6 +22,8 @@
 
 ## Improved
 
+- Allow patterns in arguments and return type annotation in anonymous functions
+  [\#309](https://github.com/ocaml-gospel/gospel/pull/309)
 - Propagate pattern locations to report errors to the precise patterns
   [\#308](https://github.com/ocaml-gospel/gospel/pull/308)
 - Support partial application of functions and enforce OCaml syntax
