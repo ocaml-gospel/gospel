@@ -65,6 +65,12 @@ type t
 Of course, a type that has a mutable model is considered mutable, so the
 `ephemeral` may be omitted whenever at least one declared model is mutable.
 
+:::tip
+
+Only use `ephemeral` when there is mutability that cannot be guessed otherwise.
+
+:::
+
 ## Invariants
 
 Type annotations may also contain invariants that hold at every entry and exit

@@ -41,6 +41,19 @@ identifier_tuple = identifier ("," identifier)*
 parameter = "()" | identifier | "~" identifier | "?" identifier
 ```
 
+:::tip
+
+Even if the order of clauses is not imposed by the grammar, we suggest to use
+the following systematic order for uniformity:
+
+- `requires` preconditions,
+- `checks` preconditions,
+- `modifies` and `consumes` effects,
+- `ensures` postconditions,
+- `raises` exceptional postconditions.
+
+:::
+
 ##  Default behaviour
 
 To avoid boilerplate for usual properties, Gospel applies a default contract
