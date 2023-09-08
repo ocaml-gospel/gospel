@@ -17,6 +17,8 @@ to get you started with formal specifications for your OCaml programs.
   language features.
 - More detailed explanations of the language features are available in the
   [Language Reference](language/syntax) section.
+- Some information about the Gospel Standard library are available in the
+  [corresponding section](stdlib).
 - Short questions sometimes deserve short answers. You can also check out the
   [FAQ](faq) section for common questions about Gospel's design,
   semantics, and features.
