@@ -61,6 +61,8 @@
 
 ## Fixed
 
+- Set up location in parsing ghost specifications
+  [\#310](https://github/ocaml-gospel/gospel/pull/310)
 - Check that all patterns in a disjunction bind the same variables
   [\#300](https://github/ocaml-gospel/gospel/pull/300)
 - Handle the special case of `MODULE_ALIASES` in `stdlib.mli` in the parser
