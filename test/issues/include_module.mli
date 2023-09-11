@@ -13,5 +13,6 @@ type nonrec t = t
    [125] File "include_module.mli", line 10, characters 16-17:
          10 | type nonrec t = t
                               ^
-         Error: Symbol t not found.
+         Error: Symbol t not found in scope
+                (see "Symbols in scope" documentation page).
    |gospel_expected} *)

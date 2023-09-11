@@ -109,7 +109,11 @@ let pp_kind ppf = function
   | Invalid_int_literal (s, c) ->
       pf ppf "Invalid int literal: `%s%a'" s (option char) c
   | Symbol_not_found sl ->
-      pf ppf "Symbol %a not found" (list ~sep:(const string ".") string) sl
+      pf ppf
+        "Symbol %a not found in scope@ (see \"Symbols in scope\" documentation \
+         page)"
+        (list ~sep:(const string ".") string)
+        sl
   | Bad_record_field f -> pf ppf "The record field `%s' does not exist" f
   | Public_type_invariant t -> pf ppf "Invariant on public type `%s'" t
   | Circular_open -> pf ppf "This `open' introduces a dependency cycle"

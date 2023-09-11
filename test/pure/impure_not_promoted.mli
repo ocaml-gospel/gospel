@@ -12,5 +12,6 @@ val g : int -> int
    [125] File "impure_not_promoted.mli", line 6, characters 13-14:
          6 |     requires f x > 0
                           ^
-         Error: Symbol f not found.
+         Error: Symbol f not found in scope
+                (see "Symbols in scope" documentation page).
    |gospel_expected} *)
