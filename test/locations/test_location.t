@@ -2603,6 +2603,20 @@ First, create a test artifact:
       sig_loc = foo.mli:28:0 }
     ]
 
+A smaller example, focused on locations after a directive:
+
+  $ cat > foo.mli << EOF
+  > # 5 "bar.mli"
+  > type 'a t
+  > (** documentation *)
+  > (*@ mutable model contents : 'a list
+  >     model size : int *)
+  > EOF
+  $ gospel dumpast foo.mli | grep '_loc.*:'
+                    ty_loc = bar.mli:7:3 });
+            td_loc = bar.mli:5:0 }
+      sig_loc = bar.mli:5:0 }
+
 Clean up:
 
   $ rm foo.mli
