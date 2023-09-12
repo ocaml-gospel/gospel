@@ -19,6 +19,208 @@ preprocessor. We also enable the compiler warning about unexpected docstring:
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
   val f : int -> int[@@ocaml.doc {| documentation |}][@@gospel {| y = f x |}]
 
+Another problematic interleaving is the documentation of ghost declaration with
+and without specifications:
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *)
+  > (** a ghost type *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 2, characters 0-19:
+  2 | (** a ghost type *)
+      ^^^^^^^^^^^^^^^^^^^
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@gospel {| type casper |}]
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *) (** a ghost type *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 1, characters 19-38:
+  1 |                  ] (** a ghost type *)
+                         ^^^^^^^^^^^^^^^^^^^
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@gospel {| type casper |}]
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *)
+  > (*@ model transparent : bool *)
+  > (** a ghost type *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 3, characters 0-19:
+  3 | (** a ghost type *)
+      ^^^^^^^^^^^^^^^^^^^
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@gospel {| type casper |}[@@gospel {| model transparent : bool |}]]
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *)
+  > (** a ghost type *)
+  > (*@ model transparent : bool *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 3, characters 0-3:
+  3 | [@@gospel
+      ^^^
+  Error: Syntax error
+  [2]
+
+  $ cat > foo.mli << EOF
+  > (** a ghost type *)
+  > (*@ type casper *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "/tmp/build_6eba16_dune/ocamlppa443c3", line 1, characters 0-19:
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@gospel {| type casper |}]
+
+  $ cat > foo.mli << EOF
+  > (** a ghost type *)
+  > (*@ type casper *)
+  > (*@ model transparent : bool *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "/tmp/build_6eba16_dune/ocamlppa3a62b", line 1, characters 0-19:
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@gospel {| type casper |}[@@gospel {| model transparent : bool |}]]
+
+We try to mimick OCaml behaviour regarding comments:
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *)
+  > (*
+  > (* inner comment *)
+  > *)
+  > (** a ghost type *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  [@@@gospel {| type casper |}]
+  [@@@ocaml.text {| a ghost type |}]
+
+We try to mimick OCaml behaviour regarding when a Gospel specification and/or a
+documentation should be attached to a value:
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > (* inner comment *)
+  > *)
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > (* inner comment *)
+  > 
+  > *)
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > (* inner comment *)
+  > *)
+  > 
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > "*)"
+  > *)
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > {longstring|
+  > 
+  > |longstring}
+  > *)
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > val x : int
+  > (*
+  > {longstring|
+  > 
+  > |longstring}
+  > *)
+  > 
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > (** [x]'s documentation *)
+  > (*
+  > {longstring|
+  > 
+  > |longstring}
+  > *)
+  > val x : int
+  > (*
+  > {longstring|
+  > 
+  > |longstring}
+  > *)
+  > 
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  val x : int[@@ocaml.doc " [x]'s documentation "][@@gospel
+                                                    {| ensures x = 0 |}]
+
+  $ cat > foo.mli << EOF
+  > (** Module's documentation *)
+  > 
+  > val x : int
+  > (*
+  > {longstring|
+  > 
+  > |longstring}
+  > *)
+  > (*@ ensures x = 0 *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  [@@@ocaml.text " Module's documentation "]
+  val x : int[@@gospel {| ensures x = 0 |}]
+
+Interleaving ghost-documentation-specification is not accepted if there is more
+than one newline between at least two of the consecutive elements:
+
+  $ cat > foo.mli << EOF
+  > (*@ type casper *)
+  > 
+  > (** a ghost type *)
+  > (*@ model transparent : bool *)
+  > EOF
+  $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 4, characters 0-3:
+  4 | [@@gospel
+      ^^^
+  Error: Syntax error
+  [2]
+
+
 We now test the locations.
 
 In order to test the locations, we will make an error in the gospel
