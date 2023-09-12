@@ -27,21 +27,15 @@ and without specifications:
   > (** a ghost type *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "foo.mli", line 2, characters 0-19:
-  2 | (** a ghost type *)
-      ^^^^^^^^^^^^^^^^^^^
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
   [@@@gospel {| type casper |}]
+  [@@@ocaml.text {| a ghost type |}]
 
   $ cat > foo.mli << EOF
   > (*@ type casper *) (** a ghost type *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "foo.mli", line 1, characters 19-38:
-  1 |                  ] (** a ghost type *)
-                         ^^^^^^^^^^^^^^^^^^^
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
   [@@@gospel {| type casper |}]
+  [@@@ocaml.text {| a ghost type |}]
 
   $ cat > foo.mli << EOF
   > (*@ type casper *)
@@ -49,10 +43,7 @@ and without specifications:
   > (** a ghost type *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "foo.mli", line 3, characters 0-19:
-  3 | (** a ghost type *)
-      ^^^^^^^^^^^^^^^^^^^
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@ocaml.text {| a ghost type |}]
   [@@@gospel {| type casper |}[@@gospel {| model transparent : bool |}]]
 
   $ cat > foo.mli << EOF
@@ -61,19 +52,15 @@ and without specifications:
   > (*@ model transparent : bool *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "foo.mli", line 3, characters 0-3:
-  3 | [@@gospel
-      ^^^
-  Error: Syntax error
-  [2]
+  [@@@gospel {| type casper |}[@@gospel {| model transparent : bool |}]]
+  [@@@ocaml.text {| a ghost type |}]
 
   $ cat > foo.mli << EOF
   > (** a ghost type *)
   > (*@ type casper *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "/tmp/build_6eba16_dune/ocamlppa443c3", line 1, characters 0-19:
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@ocaml.text {| a ghost type |}]
   [@@@gospel {| type casper |}]
 
   $ cat > foo.mli << EOF
@@ -82,8 +69,7 @@ and without specifications:
   > (*@ model transparent : bool *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "/tmp/build_6eba16_dune/ocamlppa3a62b", line 1, characters 0-19:
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
+  [@@@ocaml.text {| a ghost type |}]
   [@@@gospel {| type casper |}[@@gospel {| model transparent : bool |}]]
 
 We try to mimick OCaml behaviour regarding comments:
@@ -96,8 +82,11 @@ We try to mimick OCaml behaviour regarding comments:
   > (** a ghost type *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
+  File "foo.mli", line 5, characters 0-19:
+  5 | (** a ghost type *)
+      ^^^^^^^^^^^^^^^^^^^
+  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
   [@@@gospel {| type casper |}]
-  [@@@ocaml.text {| a ghost type |}]
 
 We try to mimick OCaml behaviour regarding when a Gospel specification and/or a
 documentation should be attached to a value:

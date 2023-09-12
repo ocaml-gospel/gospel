@@ -7,6 +7,19 @@
     | Other of string
     | Spaces of string
 
+  let is_small sp =
+    let is_nl = Char.equal '\n'
+    and b = ref false
+    and l = String.length sp in
+    try
+      for i = 0 to l - 1 do
+        if is_nl sp.[i]
+        then (if !b then raise Exit else b := true)
+      done;
+      true
+    with
+    | Exit -> false
+
   let stdlib_file = "stdlib.mli"
 
   let queue = Queue.create ()
@@ -70,12 +83,13 @@
       end_p.Lexing.pos_lnum end_p.pos_fname
       (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
 
-  let print_documentation_attribute start_p end_p s =
-    Fmt.str "[@@@ocaml.doc\n\
+  let print_documentation_attribute lvl start_p end_p s =
+    Fmt.str "[%s\n\
 # %d \"%s\"\n\
 %s {|%s|}\n\
 # %d \"%s\"\n\
 %s]"
+    (match lvl with `TwoAt -> "@@ocaml.doc" | `ThreeAt -> "@@@ocaml.text")
     start_p.Lexing.pos_lnum start_p.pos_fname
     (String.make (start_p.pos_cnum - start_p.pos_bol) ' ') s
     end_p.Lexing.pos_lnum end_p.pos_fname
@@ -90,13 +104,64 @@
 
   let print_triplet o sp doc sp' start_p end_p s =
    let docstring = match doc with
-   | Documentation (start_p, end_p, d) -> (print_documentation_attribute start_p end_p d)
+   | Documentation (start_p, end_p, d) -> (print_documentation_attribute `TwoAt start_p end_p d)
    | Empty_documentation end_p -> print_empty_documentation end_p
    | _ -> assert false
    in
    Fmt.str "%s%s%s%s%s" o sp  docstring sp' (print_gospel `TwoAt start_p end_p s)
 
   let rec print = function
+  (* Documentation-Ghost-Spec interleaved with Spaces *)
+  | Documentation (doc_start_p,doc_end_p,d) :: Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l ->
+      Fmt.str "%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+  | Documentation (doc_start_p,doc_end_p,d) :: Spaces sp :: Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l when is_small sp ->
+      Fmt.str "%s%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) sp
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+  | Documentation (doc_start_p,doc_end_p,d) :: Spaces sp :: Ghost (start_p, _, g) :: Spaces _ :: Spec (inner_start_p, end_p, s) :: l when is_small sp ->
+      Fmt.str "%s%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) sp
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+  | Documentation (doc_start_p,doc_end_p,d) :: Ghost (start_p, _, g) :: Spaces _ :: Spec (inner_start_p, end_p, s) :: l ->
+      Fmt.str "%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+  (* Documentation-Ghost interleaved with Spaces *)
+  | Documentation (doc_start_p,doc_end_p,d) :: Ghost (start_p, end_p, g) :: l ->
+      Fmt.str "%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+      (print_gospel `ThreeAt start_p end_p g) (print l)
+  | Documentation (doc_start_p,doc_end_p,d) :: Spaces sp :: Ghost (start_p, end_p, g) :: l when is_small sp ->
+      Fmt.str "%s%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) sp
+      (print_gospel `ThreeAt start_p end_p g) (print l)
+  (* Ghost-Spec-Documentation interleaved with Spaces *)
+  | Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) ::  Documentation (doc_start_p,doc_end_p,d) :: l ->
+      Fmt.str "%s%s%s" (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+       (print l)
+   |  Ghost (start_p, _, g) :: Spaces _ :: Spec (inner_start_p, end_p, s) :: Documentation (doc_start_p,doc_end_p,d):: l ->
+      Fmt.str "%s%s%s"
+      (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)(print l)
+  |  Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: Spaces sp :: Documentation (doc_start_p,doc_end_p,d):: l when is_small sp ->
+      Fmt.str "%s%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) sp
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+ |  Ghost (start_p, _, g) :: Spaces _ :: Spec (inner_start_p, end_p, s) :: Spaces sp :: Documentation (doc_start_p,doc_end_p,d):: l when is_small sp ->
+      Fmt.str "%s%s%s%s" (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) sp
+      (print_nested_gospel start_p inner_start_p end_p g s) (print l)
+  (* Ghost-Documentation-Spec interleaved with Spaces *)
+  | Ghost (start_p, _, g) :: Documentation (doc_start_p,doc_end_p,d) :: Spec (inner_start_p, end_p, s)    :: l ->
+      Fmt.str "%s%s%s" (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) (print l)
+   | Ghost (start_p, _, g) :: Documentation (doc_start_p,doc_end_p,d):: Spaces sp :: Spec (inner_start_p, end_p, s) :: l when is_small sp ->
+      Fmt.str "%s%s%s" (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) (print l)
+   | Ghost (start_p, _, g) :: Spaces sp ::  Documentation (doc_start_p,doc_end_p,d) ::  Spec (inner_start_p, end_p, s) :: l when is_small sp ->
+      Fmt.str "%s%s%s" (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d) (print l)
+   | Ghost (start_p, _, g) :: Spaces sp ::  Documentation (doc_start_p,doc_end_p,d) :: Spaces sp' :: Spec (inner_start_p, end_p, s) :: l when is_small sp && is_small sp' ->
+      Fmt.str "%s%s%s" (print_nested_gospel start_p inner_start_p end_p g s) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+       (print l)
+  (* Ghost-Documentation interleaved with Spaces *)
+  | Ghost (start_p, end_p, g) :: Documentation (doc_start_p,doc_end_p,d) :: l ->
+      Fmt.str "%s%s%s"
+      (print_gospel `ThreeAt start_p end_p g) (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)(print l)
+  | Ghost (start_p, end_p, g):: Spaces sp ::  Documentation (doc_start_p,doc_end_p,d) :: l when is_small sp ->
+      Fmt.str "%s%s%s%s"  (print_gospel `ThreeAt start_p end_p g) sp
+(print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
+       (print l)
   | Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l ->
     Fmt.str "%s%s"
       (print_nested_gospel start_p inner_start_p end_p g s) (print l)
