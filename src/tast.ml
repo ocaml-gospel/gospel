@@ -44,7 +44,7 @@ type val_spec = {
 
 type val_description = {
   vd_name : Ident.t;
-  vd_type : core_type; [@printer fun fmt _ -> fprintf fmt "<core_type>"]
+  vd_type : core_type; [@printer Pprintast.core_type]
   vd_prim : string list;  (** primitive declaration *)
   vd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   vd_args : lb_arg list;
