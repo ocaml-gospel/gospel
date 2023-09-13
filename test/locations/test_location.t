@@ -124,7 +124,7 @@ First, create a test artifact:
       sig_loc = foo.mli:3:0 };
     { Tast.sig_desc =
       (Tast.Sig_val (
-         { Tast.vd_name = create; vd_type = <core_type>; vd_prim = [];
+         { Tast.vd_name = create; vd_type = int -> 'a t; vd_prim = [];
            vd_attrs = <attributes>;
            vd_args =
            [(Tast.Lnone
@@ -1737,7 +1737,7 @@ First, create a test artifact:
       sig_loc = foo.mli:24:4 };
     { Tast.sig_desc =
       (Tast.Sig_val (
-         { Tast.vd_name = add; vd_type = <core_type>; vd_prim = [];
+         { Tast.vd_name = add; vd_type = 'a -> 'a t -> unit; vd_prim = [];
            vd_attrs = <attributes>;
            vd_args =
            [(Tast.Lnone
