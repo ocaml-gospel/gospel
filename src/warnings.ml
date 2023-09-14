@@ -199,5 +199,6 @@ let pp_gen pp_sort pp_kind ppf loc k =
         ]
         pp_sort k pp_kind k
 
+let pp_warning ppf _ = styled_list [ `Yellow; `Bold ] string ppf "Warning"
 let pp_error ppf _ = styled_list [ `Red; `Bold ] string ppf "Error"
 let pp ppf (loc, k) = pp_gen pp_error pp_kind ppf loc k

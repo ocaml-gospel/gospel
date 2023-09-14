@@ -527,6 +527,14 @@ let add_sig_contents muc sig_ =
       let nm = List.hd (List.rev opn_id) in
       let ns = ns_find_ns (get_top_import muc) opn_id in
       add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
+  | Sig_include _ ->
+      let warn ppf () =
+        Fmt.text ppf
+          "`include`s are currently ignored by the gospel type-checker"
+      in
+      Fmt.epr "@[%t@]@." (fun ppf ->
+          W.(pp_gen pp_warning warn ppf sig_.sig_loc ()));
+      muc
   | _ -> muc
 (* TODO *)
 
