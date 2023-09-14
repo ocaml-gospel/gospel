@@ -13,5 +13,5 @@ type t = bool * int
          6 |       | false, x -> false
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
-                  True, 1i.
+                  true, 1i.
    |gospel_expected} *)
