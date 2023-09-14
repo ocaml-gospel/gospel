@@ -61,6 +61,9 @@
 
 ## Fixed
 
+- Consider comments as spaces while preprocessing (to ensure specification can
+  be attached to a ghost function or type, for instance)
+  [\#321](https://github/ocaml-gospel/gospel/pull/321)
 - Fix source-location tracking (directives and overridden filename)
   [\#319](https://github/ocaml-gospel/gospel/pull/319)
 - Set up location in parsing ghost specifications
