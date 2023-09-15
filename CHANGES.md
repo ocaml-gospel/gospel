@@ -2,6 +2,9 @@
 
 ## Added
 
+- Introduce a generic `pp_gen` pretty-printer for error messages, so that
+  external tools can pretty-print errors in the same style
+  [\#326](https://github.com/ocaml-gospel/gospel/pull/326)
 - Add specific error message for patterns with guard on every clause.
   [\#220](https://github.com/ocaml-gospel/gospel/pull/220)
 - Added `when` guards in pattern-matching
