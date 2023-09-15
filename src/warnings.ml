@@ -42,6 +42,7 @@ type kind =
   | Pattern_fully_guarded
   | Pattern_redundant of string
   | Ambiguous_pattern
+  | Old_in_precond of string
 
 type error = location * kind
 
@@ -153,6 +154,8 @@ let pp_kind ppf = function
         "The pattern-matching is redundant.@\n\
          Here is a case that is unused:@\n\
         \  %s" p
+  | Old_in_precond precond ->
+      pf ppf "`old' operator is not allowed in `%s' clauses" precond
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 

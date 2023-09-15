@@ -507,9 +507,13 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tattr (at, t) ->
       let dt = dterm whereami kid crcm ns denv t in
       mk_dterm ~loc (DTattr (dt, [ at ])) dt.dt_dty
-  | Uast.Told t ->
-      let dt = dterm whereami kid crcm ns denv t in
-      mk_dterm ~loc (DTold dt) dt.dt_dty
+  | Uast.Told t -> (
+      match whereami with
+      | Requires -> W.(error ~loc (Old_in_precond "requires"))
+      | Checks -> W.(error ~loc (Old_in_precond "checks"))
+      | _ ->
+          let dt = dterm whereami kid crcm ns denv t in
+          mk_dterm ~loc (DTold dt) dt.dt_dty)
   | Uast.Trecord qtl ->
       let cs, pjl, fll = parse_record ~loc kid ns qtl in
       let get_term pj =
