@@ -23,5 +23,5 @@ val f : bool -> int
          8 |       | true -> true
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
-                  False.
+                  false.
    |gospel_expected} *)

@@ -658,7 +658,7 @@ First, create a test artifact:
                         t_ty = None; t_attrs = []; t_loc = foo.mli:18:59 },
                       { Tterm.t_node =
                         (Tterm.Tapp (
-                           { Symbols.ls_name = True; ls_args = [];
+                           { Symbols.ls_name = true; ls_args = [];
                              ls_value =
                              (Some { Ttypes.ty_node =
                                      (Ttypes.Tyapp (
@@ -678,7 +678,7 @@ First, create a test artifact:
                         t_attrs = []; t_loc = foo.mli:18:59 },
                       { Tterm.t_node =
                         (Tterm.Tapp (
-                           { Symbols.ls_name = False; ls_args = [];
+                           { Symbols.ls_name = false; ls_args = [];
                              ls_value =
                              (Some { Ttypes.ty_node =
                                      (Ttypes.Tyapp (
@@ -1140,7 +1140,7 @@ First, create a test artifact:
                               None,
                               { Tterm.t_node =
                                 (Tterm.Tapp (
-                                   { Symbols.ls_name = True; ls_args = [];
+                                   { Symbols.ls_name = true; ls_args = [];
                                      ls_value =
                                      (Some { Ttypes.ty_node =
                                              (Ttypes.Tyapp (
@@ -1644,7 +1644,7 @@ First, create a test artifact:
                                       t_loc = foo.mli:26:30 },
                                     { Tterm.t_node =
                                       (Tterm.Tapp (
-                                         { Symbols.ls_name = True;
+                                         { Symbols.ls_name = true;
                                            ls_args = [];
                                            ls_value =
                                            (Some { Ttypes.ty_node =
@@ -1667,7 +1667,7 @@ First, create a test artifact:
                                       t_attrs = []; t_loc = foo.mli:26:30 },
                                     { Tterm.t_node =
                                       (Tterm.Tapp (
-                                         { Symbols.ls_name = False;
+                                         { Symbols.ls_name = false;
                                            ls_args = [];
                                            ls_value =
                                            (Some { Ttypes.ty_node =
@@ -1709,7 +1709,7 @@ First, create a test artifact:
                          t_attrs = []; t_loc = foo.mli:24:49 };
                         { Tterm.t_node =
                           (Tterm.Tapp (
-                             { Symbols.ls_name = True; ls_args = [];
+                             { Symbols.ls_name = true; ls_args = [];
                                ls_value =
                                (Some { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
@@ -2172,7 +2172,7 @@ First, create a test artifact:
                                         t_attrs = []; t_loc = foo.mli:32:28 };
                                        { Tterm.t_node =
                                          (Tterm.Tapp (
-                                            { Symbols.ls_name = True;
+                                            { Symbols.ls_name = true;
                                               ls_args = [];
                                               ls_value =
                                               (Some { Ttypes.ty_node =

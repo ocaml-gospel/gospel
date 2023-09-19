@@ -84,12 +84,12 @@ let fs_unit =
 
 let fs_bool_true =
   fsymbol ~constr:true ~field:false
-    (Ident.create ~loc:Location.none "True")
+    (Ident.create ~loc:Location.none "true")
     [] ty_bool
 
 let fs_bool_false =
   fsymbol ~constr:true ~field:false
-    (Ident.create ~loc:Location.none "False")
+    (Ident.create ~loc:Location.none "false")
     [] ty_bool
 
 let fs_apply =
