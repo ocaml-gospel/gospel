@@ -78,3 +78,23 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:no_modifies_while_returning_unit.mli}))))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to old_in_precond.mli.output
+   (run %{checker} %{dep:old_in_precond.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff old_in_precond.mli old_in_precond.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:old_in_precond.mli}))))
+

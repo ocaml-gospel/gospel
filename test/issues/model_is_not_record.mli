@@ -9,6 +9,6 @@ val f : 'a t -> unit
 
 (* {gospel_expected|
    [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 112, characters 13-19: Assertion failed
+                 File "src/typing.ml", line 124, characters 13-19: Assertion failed
                  
    |gospel_expected} *)

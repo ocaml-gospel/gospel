@@ -25,6 +25,8 @@
 
 ## Improved
 
+- Forbid `old` operator in precondition clauses (`requires` and `checks`)
+  [\#335](https://github.com/ocaml-gospel/gospel/pull/335)
 - Display a warning when encountering an `include`
   [\#334](https://github.com/ocaml-gospel/gospel/pull/334)
 - Allow patterns in arguments and return type annotation in anonymous functions
