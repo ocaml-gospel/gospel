@@ -100,52 +100,18 @@
  let rec print = function
    (* Documentation-Ghost-Spec interleaved with Spaces *)
    | Documentation (doc_start_p, doc_end_p, d)
-     :: Ghost (start_p, _, g)
-     :: Spec (inner_start_p, end_p, s)
-     :: l ->
-       Fmt.str "%s%s%s"
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
-   | Documentation (doc_start_p, doc_end_p, d)
      :: Spaces sp
      :: Ghost (start_p, _, g)
+     :: Spaces sp'
      :: Spec (inner_start_p, end_p, s)
      :: l
-     when is_small sp ->
-       Fmt.str "%s%s%s%s"
+     when is_small sp && is_small sp' ->
+       Fmt.str "%s%s%s%s%s"
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          sp
          (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
-   | Documentation (doc_start_p, doc_end_p, d)
-     :: Spaces sp
-     :: Ghost (start_p, _, g)
-     :: Spaces _
-     :: Spec (inner_start_p, end_p, s)
-     :: l
-     when is_small sp ->
-       Fmt.str "%s%s%s%s"
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         sp
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
-   | Documentation (doc_start_p, doc_end_p, d)
-     :: Ghost (start_p, _, g)
-     :: Spaces _
-     :: Spec (inner_start_p, end_p, s)
-     :: l ->
-       Fmt.str "%s%s%s"
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
+         sp' (print l)
    (* Documentation-Ghost interleaved with Spaces *)
-   | Documentation (doc_start_p, doc_end_p, d) :: Ghost (start_p, end_p, g) :: l
-     ->
-       Fmt.str "%s%s%s"
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print_gospel `ThreeAt start_p end_p g)
-         (print l)
    | Documentation (doc_start_p, doc_end_p, d)
      :: Spaces sp
      :: Ghost (start_p, end_p, g)
@@ -158,74 +124,18 @@
          (print l)
    (* Ghost-Spec-Documentation interleaved with Spaces *)
    | Ghost (start_p, _, g)
-     :: Spec (inner_start_p, end_p, s)
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: l ->
-       Fmt.str "%s%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
-   | Ghost (start_p, _, g)
-     :: Spaces _
-     :: Spec (inner_start_p, end_p, s)
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: l ->
-       Fmt.str "%s%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
-   | Ghost (start_p, _, g)
-     :: Spec (inner_start_p, end_p, s)
      :: Spaces sp
+     :: Spec (inner_start_p, end_p, s)
+     :: Spaces sp'
      :: Documentation (doc_start_p, doc_end_p, d)
      :: l
-     when is_small sp ->
+     when is_small sp && is_small sp' ->
        Fmt.str "%s%s%s%s"
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         sp
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
-   | Ghost (start_p, _, g)
-     :: Spaces _
-     :: Spec (inner_start_p, end_p, s)
-     :: Spaces sp
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: l
-     when is_small sp ->
-       Fmt.str "%s%s%s%s"
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         sp
+         sp'
          (print_nested_gospel start_p inner_start_p end_p g s)
          (print l)
    (* Ghost-Documentation-Spec interleaved with Spaces *)
-   | Ghost (start_p, _, g)
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: Spec (inner_start_p, end_p, s)
-     :: l ->
-       Fmt.str "%s%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
-   | Ghost (start_p, _, g)
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: Spaces sp
-     :: Spec (inner_start_p, end_p, s)
-     :: l
-     when is_small sp ->
-       Fmt.str "%s%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
-   | Ghost (start_p, _, g)
-     :: Spaces sp
-     :: Documentation (doc_start_p, doc_end_p, d)
-     :: Spec (inner_start_p, end_p, s)
-     :: l
-     when is_small sp ->
-       Fmt.str "%s%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
    | Ghost (start_p, _, g)
      :: Spaces sp
      :: Documentation (doc_start_p, doc_end_p, d)
@@ -238,12 +148,6 @@
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          (print l)
    (* Ghost-Documentation interleaved with Spaces *)
-   | Ghost (start_p, end_p, g) :: Documentation (doc_start_p, doc_end_p, d) :: l
-     ->
-       Fmt.str "%s%s%s"
-         (print_gospel `ThreeAt start_p end_p g)
-         (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-         (print l)
    | Ghost (start_p, end_p, g)
      :: Spaces sp
      :: Documentation (doc_start_p, doc_end_p, d)
@@ -254,18 +158,13 @@
          sp
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          (print l)
-   | Ghost (start_p, _, g) :: Spec (inner_start_p, end_p, s) :: l ->
-       Fmt.str "%s%s"
-         (print_nested_gospel start_p inner_start_p end_p g s)
-         (print l)
-   | Ghost (start_p, _, g) :: Spaces _ :: Spec (inner_start_p, end_p, s) :: l ->
+   | Ghost (start_p, _, g) :: Spaces sp :: Spec (inner_start_p, end_p, s) :: l
+     when is_small sp ->
        Fmt.str "%s%s"
          (print_nested_gospel start_p inner_start_p end_p g s)
          (print l)
    | Ghost (start_p, end_p, g) :: l ->
        Fmt.str "%s%s" (print_gospel `ThreeAt start_p end_p g) (print l)
-   | Other o :: Spec (start_p, end_p, s) :: l ->
-       Fmt.str "%s%s%s" o (print_gospel `TwoAt start_p end_p s) (print l)
    | Spec (start_p, end_p, s) :: l ->
        (* FIXME: we could fail right here *)
        Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
@@ -273,45 +172,10 @@
        Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
    | Other o
      :: Spaces sp
-     :: (Documentation (_, _, _) as doc)
-     :: Spaces sp'
-     :: Spec (start_p, end_p, s)
-     :: l
-   | Other o
-     :: Spaces sp
-     :: (Empty_documentation _ as doc)
+     :: ((Documentation (_, _, _) | Empty_documentation _) as doc)
      :: Spaces sp'
      :: Spec (start_p, end_p, s)
      :: l ->
-       Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
-   | Other o
-     :: (Documentation (_, _, _) as doc)
-     :: Spaces sp'
-     :: Spec (start_p, end_p, s)
-     :: l
-   | Other o
-     :: (Empty_documentation _ as doc)
-     :: Spaces sp'
-     :: Spec (start_p, end_p, s)
-     :: l ->
-       let sp = "" in
-       Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
-   | Other o
-     :: Spaces sp
-     :: (Documentation (_, _, _) as doc)
-     :: Spec (start_p, end_p, s)
-     :: l
-   | Other o
-     :: Spaces sp
-     :: (Empty_documentation _ as doc)
-     :: Spec (start_p, end_p, s)
-     :: l ->
-       let sp' = "" in
-       Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
-   | Other o :: (Documentation (_, _, _) as doc) :: Spec (start_p, end_p, s) :: l
-   | Other o :: (Empty_documentation _ as doc) :: Spec (start_p, end_p, s) :: l
-     ->
-       let sp, sp' = ("", "") in
        Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
    | (Other s | Spaces s) :: l -> Fmt.str "%s%s" s (print l)
    | Documentation (_, _, s) :: l -> Fmt.str "(**%s*)%s" s (print l)
@@ -325,11 +189,9 @@
          Buffer.add_string b s;
          loop l'
      | elt :: l' ->
-         if Buffer.length b > 0 then (
-           let sp = Buffer.contents b in
-           Buffer.clear b;
-           Spaces sp :: elt :: loop l')
-         else elt :: loop l'
+         let sp = Buffer.contents b in
+         Buffer.clear b;
+         Spaces sp :: elt :: loop l'
      | [] -> if Buffer.length b > 0 then [ Spaces (Buffer.contents b) ] else []
    in
    loop l
