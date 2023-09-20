@@ -7,11 +7,19 @@
    | Other of string
    | Spaces of string
 
+ (** [is_small sp] computes whether a space allows for a documentation comment to
+     be attached the the preceding signature item. Note that comments are
+     considered has space. *)
  let is_small sp =
-   let is_nl = Char.equal '\n' and b = ref false and l = String.length sp in
+   let n = ref 0 and b = ref false and l = String.length sp in
    try
      for i = 0 to l - 1 do
-       if is_nl sp.[i] then if !b then raise Exit else b := true
+       if !n = 0 then
+         match sp.[i] with
+         | '\n' -> if !b then raise Exit else b := true
+         | '(' -> if Char.equal '*' sp.[i + 1] then incr n
+         | '*' -> if Char.equal ')' sp.[i + 1] then decr n
+         | _ -> ()
      done;
      true
    with Exit -> false

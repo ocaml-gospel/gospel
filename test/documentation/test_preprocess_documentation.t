@@ -82,11 +82,8 @@ We try to mimick OCaml behaviour regarding comments:
   > (** a ghost type *)
   > EOF
   $ ocamlc -pp "gospel pps" -dsource -w +50 foo.mli
-  File "foo.mli", line 5, characters 0-19:
-  5 | (** a ghost type *)
-      ^^^^^^^^^^^^^^^^^^^
-  Warning 50 [unexpected-docstring]: unattached documentation comment (ignored)
   [@@@gospel {| type casper |}]
+  [@@@ocaml.text {| a ghost type |}]
 
 We try to mimick OCaml behaviour regarding when a Gospel specification and/or a
 documentation should be attached to a value:
