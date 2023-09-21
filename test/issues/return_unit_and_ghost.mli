@@ -9,5 +9,5 @@ val f : int -> unit
    [125] File "return_unit_and_ghost.mli", line 5, characters 20-21:
          5 | (*@ [y : integer] = f x
                                  ^
-         Error: Type checking error: too few parameters.
+         Error: Type checking error: too few returned values.
    |gospel_expected} *)

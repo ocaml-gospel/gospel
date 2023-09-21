@@ -55,10 +55,10 @@ Gospel preprocessing should indicate the correct location with the `#` syntax:
 Gospel typechecking should spot an error and locate it at the fifth line of the file:
 
   $ gospel check foo.mli
-  File "foo.mli", line 5, characters 12-13:
+  File "foo.mli", line 5, characters 8-9:
   5 | (*@ y = f x z *)
-                  ^
-  Error: Type checking error: parameter do not match with val type.
+              ^
+  Error: Type checking error: too many parameters.
   [125]
 
 

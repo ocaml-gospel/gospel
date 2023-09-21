@@ -102,7 +102,7 @@ let pp_kind ppf = function
         explanation
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Unsupported s -> pf ppf "Not yet supported: %s" s
-  | Type_checking_error s -> pf ppf "Type checking error: %s" s
+  | Type_checking_error msg -> pf ppf "Type checking error: %a" text msg
   | Module_not_found m -> pf ppf "No module with name %s" m
   | Free_variables vl ->
       pf ppf "Unbound variables: %a" (list ~sep:comma string) vl

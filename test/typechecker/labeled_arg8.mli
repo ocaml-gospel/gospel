@@ -18,5 +18,5 @@ val f : x:('a -> 'b -> 'c) -> 'a -> 'b -> 'c
    [125] File "labeled_arg8.mli", line 12, characters 10-11:
          12 | (*@ r = f x y z *)
                         ^
-         Error: Type checking error: parameter do not match with val type.
+         Error: Type checking error: parameter does not match with val type.
    |gospel_expected} *)
