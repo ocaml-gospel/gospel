@@ -21,5 +21,5 @@ val f : 'a -> 'a
    [125] File "raises_float_not_integer.mli", line 17, characters 31-32:
          17 |                   | y :: ys -> y = 2
                                              ^
-         Error: This term has type `float' but a term was expected of type `integer'.
+         Error: This term has type float but a term was expected of type integer.
    |gospel_expected} *)

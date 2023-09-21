@@ -16,5 +16,5 @@
    [125] File "axiom.mli", line 11, characters 14-15:
          11 | (*@ axiom a1: 1 *)
                             ^
-         Error: This term has type `integer' but a term was expected of type `bool'.
+         Error: This term has type integer but a term was expected of type bool.
    |gospel_expected} *)

@@ -23,5 +23,5 @@ type 'a t = { x : int; y : 'a }
    [125] File "type_arity4.mli", line 11, characters 8-9:
          11 | type 'a t = { x : int; y : 'a }
                       ^
-         Error: The type `t' expects 1 argument(s) but was given 0 argument(s) here.
+         Error: The type t expects 1 argument(s) but was given 0 argument(s) here.
    |gospel_expected} *)

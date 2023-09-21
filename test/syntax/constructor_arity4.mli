@@ -11,6 +11,6 @@ val f : t -> int
    [125] File "constructor_arity4.mli", line 7, characters 8-17:
          7 |       | L ((x,y)) -> x=y
                      ^^^^^^^^^
-         Error: The constructor `L' expects `2' argument(s)
+         Error: The constructor L expects 2 argument(s)
                 but is applied to 1 argument(s) here.
    |gospel_expected} *)

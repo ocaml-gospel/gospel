@@ -25,5 +25,5 @@ type 'a t2 = C2 of 'a | C3 of bool | C4 of int * 'a
    [125] File "any_not_bool.mli", line 21, characters 18-19:
          21 |     | C4 (i,x) -> g x x i
                                 ^
-         Error: This term has type `'a' but a term was expected of type `bool'.
+         Error: This term has type 'a but a term was expected of type bool.
    |gospel_expected} *)
