@@ -18,5 +18,5 @@ type t = { x : int }
    [125] File "record_pattern1.mli", line 14, characters 4-33:
          14 | ....match x with
          15 |     | {x=y} -> x...
-         Error: This term has type `t' but a term was expected of type `int'.
+         Error: This term has type t but a term was expected of type int.
    |gospel_expected} *)

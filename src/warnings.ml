@@ -59,11 +59,11 @@ let function_ ppf (f, t1, t2) = pf ppf "%s: %s -> %s" f t1 t2
 let pp_kind ppf = function
   | Return_unit_without_modifies f ->
       pf ppf
-        "The function `%s' returns `unit'@ but its specifications does not \
-         contain any `modifies' clause"
+        "The function %s returns unit@ but its specifications does not contain \
+         any modifies clause"
         f
   | Invalid_coercion_type f ->
-      pf ppf "The function `%s' does not have a valid coercion type" f
+      pf ppf "The function %s does not have a valid coercion type" f
   | Coercion_cycle fl ->
       pf ppf "This coercion introduces a cycle:@\n  @[%a@]"
         (list ~sep:newline function_)
@@ -72,67 +72,65 @@ let pp_kind ppf = function
       pf ppf "A coercion between these types already exists:@\n  @[%a@]"
         (list ~sep:newline function_)
         fl
-  | Not_a_constructor f -> pf ppf "The symbol `%s' is not a constructor" f
+  | Not_a_constructor f -> pf ppf "The symbol %s is not a constructor" f
   | Formula_expected -> pf ppf "A formula was expected"
   | Term_expected -> pf ppf "A term was expected"
   | Duplicated_variable s ->
-      pf ppf "The variable `%s' is duplicated in this pattern" s
+      pf ppf "The variable %s is duplicated in this pattern" s
   | Unbound_variable s ->
-      pf ppf "The variable `%s' does not appear in this pattern" s
+      pf ppf "The variable %s does not appear in this pattern" s
   | Pattern_bad_type (t1, t2) ->
       pf ppf
-        "This pattern matches values of type `%s'@ but a pattern was expected \
-         which matches values of type@ `%s'"
+        "This pattern matches values of type %s@ but a pattern was expected \
+         which matches values of type@ %s"
         t1 t2
   | Bad_type (t1, t2) ->
-      pf ppf "This term has type `%s'@ but a term was expected of type@ `%s'" t1
-        t2
+      pf ppf "This term has type %s@ but a term was expected of type@ %s" t1 t2
   | Bad_arity (f, expected, got) ->
       pf ppf
-        "The constructor `%s' expects `%d' argument(s)@ but is applied to %d \
+        "The constructor %s expects %d argument(s)@ but is applied to %d \
          argument(s) here"
         f expected got
   | Name_clash s ->
-      pf ppf "A declaration for `%s' already exists in this context" s
+      pf ppf "A declaration for %s already exists in this context" s
   | Syntax_error -> pf ppf "Syntax error"
-  | Illegal_character c -> pf ppf "Illegal character `%c'" c
+  | Illegal_character c -> pf ppf "Illegal character %c" c
   | Unterminated_comment -> pf ppf "Unterminated comment"
   | Illegal_escape (s, explanation) ->
       pf ppf "Illegal backslash escape in string or character (%s)%a" s
         (option (fmt ": %s"))
         explanation
-  | Duplicated_argument arg -> pf ppf "Duplicated argument `%s'" arg
+  | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Type_checking_error s -> pf ppf "Type checking error: %s" s
-  | Module_not_found m -> pf ppf "No module with name `%s'" m
+  | Module_not_found m -> pf ppf "No module with name %s" m
   | Free_variables vl ->
       pf ppf "Unbound variables: %a" (list ~sep:comma string) vl
   | Invalid_int_literal (s, c) ->
-      pf ppf "Invalid int literal: `%s%a'" s (option char) c
+      pf ppf "Invalid int literal: %s%a" s (option char) c
   | Symbol_not_found sl ->
       pf ppf
         "Symbol %a not found in scope@ (see \"Symbols in scope\" documentation \
          page)"
         (list ~sep:(const string ".") string)
         sl
-  | Bad_record_field f -> pf ppf "The record field `%s' does not exist" f
-  | Public_type_invariant t -> pf ppf "Invariant on public type `%s'" t
-  | Circular_open -> pf ppf "This `open' introduces a dependency cycle"
-  | Field_application f -> pf ppf "The record field `%s' cannot be applied" f
+  | Bad_record_field f -> pf ppf "The record field %s does not exist" f
+  | Public_type_invariant t -> pf ppf "Invariant on public type %s" t
+  | Circular_open -> pf ppf "This open introduces a dependency cycle"
+  | Field_application f -> pf ppf "The record field %s cannot be applied" f
   | Duplicated_record_field f ->
-      pf ppf "A record field with name `%s' already exists" f
+      pf ppf "A record field with name %s already exists" f
   | Partial_application s ->
-      pf ppf "The symbol `%s' cannot be partially applied" s
-  | Unknown_record_field s -> pf ppf "The field `%s' is unknown" s
+      pf ppf "The symbol %s cannot be partially applied" s
+  | Unknown_record_field s -> pf ppf "The field %s is unknown" s
   | Bad_type_arity (t, expected, got) ->
       pf ppf
-        "The type `%s' expects %d argument(s)@ but was given %d argument(s) \
-         here"
+        "The type %s expects %d argument(s)@ but was given %d argument(s) here"
         t expected got
   | Cyclic_type_declaration t ->
-      pf ppf "The type declaration for `%s' contains a cycle" t
-  | Predicate_symbol_expected s -> pf ppf "Not a predicate symbol: `%s'" s
-  | Function_symbol_expected s -> pf ppf "Not a function symbol: `%s'" s
+      pf ppf "The type declaration for %s contains a cycle" t
+  | Predicate_symbol_expected s -> pf ppf "Not a predicate symbol: %s" s
+  | Function_symbol_expected s -> pf ppf "Not a function symbol: %s" s
   | Pattern_not_exhaustive p ->
       pf ppf
         "This pattern-matching is not exhaustive.@\n\
@@ -155,7 +153,7 @@ let pp_kind ppf = function
          Here is a case that is unused:@\n\
         \  %s" p
   | Old_in_precond precond ->
-      pf ppf "`old' operator is not allowed in `%s' clauses" precond
+      pf ppf "old operator is not allowed in %s clauses" precond
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
@@ -202,6 +200,6 @@ let pp_gen pp_sort pp_kind ppf loc k =
         ]
         pp_sort k pp_kind k
 
-let pp_warning ppf _ = styled_list [ `Yellow; `Bold ] string ppf "Warning"
+let pp_warning ppf _ = styled_list [ `Magenta; `Bold ] string ppf "Warning"
 let pp_error ppf _ = styled_list [ `Red; `Bold ] string ppf "Error"
 let pp ppf (loc, k) = pp_gen pp_error pp_kind ppf loc k

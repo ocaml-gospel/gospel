@@ -19,5 +19,5 @@
    [125] File "integer_not_bool3.mli", line 14, characters 12-13:
          14 |     ensures x
                           ^
-         Error: This term has type `integer' but a term was expected of type `bool'.
+         Error: This term has type integer but a term was expected of type bool.
    |gospel_expected} *)

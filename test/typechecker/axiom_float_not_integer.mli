@@ -17,5 +17,5 @@
    [125] File "axiom_float_not_integer.mli", line 13, characters 17-18:
          13 |     | y :: ys -> y = 2
                                ^
-         Error: This term has type `float' but a term was expected of type `integer'.
+         Error: This term has type float but a term was expected of type integer.
    |gospel_expected} *)

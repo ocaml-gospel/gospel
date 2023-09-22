@@ -20,5 +20,5 @@ type ('a, 'b) t2 = 'a t1
    [125] File "alpha_not_beta.mli", line 15, characters 4-37:
          15 | ....match x with
          16 |     | {x;y} -> {x;y}
-         Error: This term has type `'a t1' but a term was expected of type `'b t1'.
+         Error: This term has type 'a t1 but a term was expected of type 'b t1.
    |gospel_expected} *)

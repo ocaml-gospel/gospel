@@ -20,5 +20,5 @@ val f : y:int -> int -> int
    [125] File "labeled_arg4.mli", line 12, characters 13-14:
          12 | (*@ r = f ~y y*)
                            ^
-         Error: The variable `y' is duplicated in this pattern.
+         Error: The variable y is duplicated in this pattern.
    |gospel_expected} *)

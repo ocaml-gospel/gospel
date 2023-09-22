@@ -7,5 +7,5 @@ val f : char -> unit
    [125] File "char1.mli", line 3, characters 17-18:
          3 |     requires c = '\'
                               ^
-         Error: Illegal character `''.
+         Error: Illegal character '.
    |gospel_expected} *)

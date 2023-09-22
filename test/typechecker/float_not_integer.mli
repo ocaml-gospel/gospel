@@ -22,5 +22,5 @@
    [125] File "float_not_integer.mli", line 18, characters 12-13:
          18 |             a = old_a + 1
                           ^
-         Error: This term has type `float' but a term was expected of type `integer'.
+         Error: This term has type float but a term was expected of type integer.
    |gospel_expected} *)

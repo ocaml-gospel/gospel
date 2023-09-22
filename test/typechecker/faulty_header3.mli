@@ -15,5 +15,5 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
    [125] File "faulty_header3.mli", line 12, characters 24-25:
          12 | (*@ r = f ~x [z:int] ~y z *)
                                       ^
-         Error: The variable `z' is duplicated in this pattern.
+         Error: The variable z is duplicated in this pattern.
    |gospel_expected} *)

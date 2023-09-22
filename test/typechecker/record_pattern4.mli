@@ -18,5 +18,5 @@ type 'a t = { x : int; y : 'a }
    [125] File "record_pattern4.mli", line 15, characters 6-22:
          15 |     | { x = x; y = x } -> x *)
                     ^^^^^^^^^^^^^^^^
-         Error: The variable `x' is duplicated in this pattern.
+         Error: The variable x is duplicated in this pattern.
    |gospel_expected} *)
