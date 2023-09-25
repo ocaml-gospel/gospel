@@ -25,6 +25,32 @@ val f: int -> int           (* An OCaml value declaration *)
 Those comments must be located _after_ the item they specify.
 
 
+:::tip
+
+Gospel is using a preprocessor to turn those special comments into OCaml
+attributes behind the scene before feeding the result to the standard OCaml
+parser (see the [appendix page](attributes) for more information).
+
+This has the following consequence: Gospel special comments can only appear at a
+positions where OCaml accepts attributes. So given the following interface
+`misplaced.mli`:
+
+```ocaml invalidSyntax
+val f : int -> (*@ misplaced *) int
+```
+
+`gospel check misplaced.mli` will complain with the following somewhat
+surprising message:
+
+```
+1 | val f : int -> (*@ misplaced *) int
+                   ^^^
+Error: Syntax error.
+```
+
+:::
+
+
 ## Specifications and documentation comments
 
 Note that Gospel annotations can be combined with traditional documentation
