@@ -8,7 +8,9 @@ function pre-conditions and post-conditions, effects, exceptions, and much more!
 maintainer: "Jean-Christophe.Filliatre@lri.fr"
 authors: [
   "Jean-Christophe Filliâtre"
+  "Samuel Hym"
   "Cláudio Lourenço"
+  "Nicolas Obsorne"
   "Clément Pascutto"
   "Mário Pereira"
 ]
