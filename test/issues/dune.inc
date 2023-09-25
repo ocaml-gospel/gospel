@@ -3,6 +3,26 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
+  (with-outputs-to attribute_syntax.mli.output
+   (run %{checker} %{dep:attribute_syntax.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff attribute_syntax.mli attribute_syntax.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:attribute_syntax.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
   (with-outputs-to include_module.mli.output
    (run %{checker} %{dep:include_module.mli}))))
 
