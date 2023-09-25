@@ -12,8 +12,7 @@ in special comments, starting with the `@` character[^1]:
     Java and [ACSL](https://frama-c.com/html/acsl.html) for C. Hence Gospel
     also uses this convention.
 
-<!-- invalidSyntax: see #320 -->
-```ocaml invalidSyntax
+```ocaml
 val f: int -> int           (* An OCaml value declaration *)
 (*@ y = f x
     ensures x > 0 *)        (* Its Gospel specification   *)
