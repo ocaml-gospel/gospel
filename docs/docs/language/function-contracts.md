@@ -368,9 +368,9 @@ val inplace_map : ('a -> 'a) -> 'a t -> unit
 ## Pure Functions
 
 An OCaml function can be declared as `pure`, which means it
-- has no side effect
-- raises no exception
-- terminates
+- has no side effect;
+- raises no exception;
+- terminates.
 
 ```ocaml {2}
 val length : 'a t -> int
