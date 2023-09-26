@@ -2,7 +2,7 @@
 sidebar_position: 8
 ---
 
-# Symbols in scope
+# Symbols in Scope
 
 Gospel checks that only symbols that are meaningful are in scope.
 

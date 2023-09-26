@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # Logical Declarations
 
-## Functions, predicates and axioms
+## Functions, Predicates and Axioms
 
 It's often convenient to introduce shortcuts for terms and formulas to avoid
 repetitions. *Predicates* let you write named formulae definitions in Gospel
