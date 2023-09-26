@@ -7,9 +7,9 @@ sidebar_position: 1
 This section features some real-world specifications using Gospel and
 highlights particular features of the language in a concrete setting.
 
-- [Fibonacci numbers](fibonacci) <br />
+- [Fibonacci numbers](fibonacci)  
   **Highlights:** Ghost parameters
-- [Mutable queues](mutable-queue) <br />
+- [Mutable queues](mutable-queue)  
   **Highlights:** Type models, Exceptional postconditions, `requires`/`checks`, `consumes`
-- [Union-find](union-find). <br />
+- [Union-find](union-find).  
   **Highlights:** Ghost declarations
