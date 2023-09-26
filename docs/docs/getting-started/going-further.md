@@ -7,9 +7,10 @@ sidebar_position: 4
 This tutorial only covered very few features of Gospel. Please feel free to
 visit our other resources before getting started:
 
-- If you like to learn by example, the [walk-through](../walkthroughs/introduction.md) section
-  contains a gallery of more advanced use cases extracted from real-world
-  interfaces. Those should help you familiarize yourself with the formal specification process.
+- If you like to learn by example, the
+  [walk-through](../walkthroughs/introduction.md) section contains a gallery of
+  more advanced use cases extracted from real-world interfaces. Those should
+  help you familiarize yourself with the formal specification process.
 
 - If you prefer to read the manual for more in-depth information on specific
   features of the language, you may also visit the [language

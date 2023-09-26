@@ -66,8 +66,8 @@ type 'a t
     invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
-The `Set` module is part of the [Gospel standard library](../stdlib). Although it
-tries to mimic familiar interfaces from the OCaml standard library, those two
+The `Set` module is part of the [Gospel standard library](../stdlib). Although
+it tries to mimic familiar interfaces from the OCaml standard library, those two
 should not be confused. Only logical declarations can appear in specifications!
 
 Now that we annotated our type with its models and invariants, we can attach
@@ -84,8 +84,8 @@ to specify three pieces of information:
 - The container is empty.
 
 Let's write a Gospel formalisation of that contract. The contract starts with a
-header that names the arguments and the return value. We'll call the
-argument `c` and the return value `t`. Now we can mention them in the rest of the
+header that names the arguments and the return value. We'll call the argument
+`c` and the return value `t`. Now we can mention them in the rest of the
 specification. The first property is a precondition of the function (we use the
 keyword `requires`), while the second and third ones are post-conditions (the
 keyword is `ensures`):
@@ -128,12 +128,12 @@ val mem: 'a t -> 'a -> bool
 Finally, let's specify `clear` and `add`, which are functions that mutate the
 container.
 
-The function `clear` removes all elements from its argument, meaning it's empty after the
-call. Obviously, it modifies the `contents` model of its argument. After its
-execution, the container should be empty. Note that we are only allowed to
-mention `is_empty` in the specification because it's a *pure* function.
-Attempting to use a non-pure OCaml function in a specification will result in a
-Gospel error.
+The function `clear` removes all elements from its argument, meaning it's empty
+after the call. Obviously, it modifies the `contents` model of its argument.
+After its execution, the container should be empty. Note that we are only
+allowed to mention `is_empty` in the specification because it's a *pure*
+function. Attempting to use a non-pure OCaml function in a specification will
+result in a Gospel error.
 
 ```ocaml
 val clear: 'a t -> unit
@@ -153,9 +153,9 @@ val add: 'a t -> 'a -> unit
     ensures t.contents = Set.add x (old t.contents) *)
 ```
 
-However, notice that this specification is incomplete. One specificity
-of this function is that it can raise `Full`, so let's complete that contract with
-this piece of information. If `add` raises `Full`, we can deduce that `t.contents`
+However, notice that this specification is incomplete. One specificity of this
+function is that it can raise `Full`, so let's complete that contract with this
+piece of information. If `add` raises `Full`, we can deduce that `t.contents`
 already contains `t.capacity` elements.
 
 ```ocaml

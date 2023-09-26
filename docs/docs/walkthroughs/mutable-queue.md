@@ -62,8 +62,8 @@ val push: 'a -> 'a t -> unit
   refer to the value of an expression (here, `q.view`) in the prestate, *i.e.*,
   before the function call.
 
-Note that the module `Sequence` is part of the Gospel standard library and should not
-be confused with module `Seq` from the OCaml standard library.
+Note that the module `Sequence` is part of the Gospel standard library and
+should not be confused with module `Seq` from the OCaml standard library.
 
 ## Various Flavors of `pop`
 
@@ -168,8 +168,8 @@ sequence, as stated by the postcondition.
 
 It's worth mentioning that the specification implicitly assumes `q` to be
 disjoint from every previously allocated queue. This is an important design
-choice of Gospel that follows this general principle: writing functions that return
-non-fresh, mutable values is considered a bad practice in OCaml.
+choice of Gospel that follows this general principle: writing functions that
+return non-fresh, mutable values is considered a bad practice in OCaml.
 
 ## Merging Queues
 
@@ -191,8 +191,8 @@ val transfer: 'a t -> 'a t -> unit
 
 Here the contract states that both queues are modified. The queue `src` is
 emptied after the call and its elements are appended to the queue `dst`. Notice
-the use of `old` in the second postcondition. This helps us refer to the queues' state
-before they're passed to the function.
+the use of `old` in the second postcondition. This helps us refer to the queues'
+state before they're passed to the function.
 
 ### Destructive Operations
 
@@ -216,8 +216,8 @@ its value must not be used anymore.
 
 ### A Constructive Version
 
-Finally, perhaps a simpler version may consist in a `concat` function that creates a
-fresh queue with the elements of the queues passed as arguments:
+Finally, perhaps a simpler version may consist in a `concat` function that
+creates a fresh queue with the elements of the queues passed as arguments:
 
 ```ocaml
 val concat: 'a t -> 'a t -> 'a t
@@ -225,6 +225,6 @@ val concat: 'a t -> 'a t -> 'a t
     ensures new.view = q1.view ++ q2.view *)
 ```
 
-In this version, no `modifies` appears. This means that none of the arguments are
-modified by the function, so specifying their models in the poststate isn't
+In this version, no `modifies` appears. This means that none of the arguments
+are modified by the function, so specifying their models in the poststate isn't
 necessary.

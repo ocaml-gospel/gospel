@@ -73,8 +73,8 @@ Only use `ephemeral` when there is mutability that cannot be guessed otherwise.
 
 ## Invariants
 
-Type annotations may also contain invariants that hold at every function's entry and exit
-point that manipulates their values. Formulae expressing these
+Type annotations may also contain invariants that hold at every function's entry
+and exit point that manipulates their values. Formulae expressing these
 properties may be added after the `invariant` keyword:
 
 ```ocaml {4}
@@ -84,5 +84,5 @@ type 'a t
     with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
 
-Note that functions may break these invariants internally, but they must restore them
-so that they still hold at the function exit.
+Note that functions may break these invariants internally, but they must restore
+them so that they still hold at the function exit.

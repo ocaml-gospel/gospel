@@ -72,7 +72,8 @@ The contract is pretty straightforward:
   - The first precondition states that `n` must be non-negative. If `n`
     is negative, the function raises an exception, so this is a strong
     requirement.
-  - The second precondition states that `a` and `b` are consecutive Fibonacci numbers.
+  - The second precondition states that `a` and `b` are consecutive Fibonacci
+    numbers.
   - The postcondition specifies that if `a` is the `i`th Fibonacci number, and
     `b` is the `i+1`th Fibonacci number, then `r` (the result of the
     computation) is the `i+n`th Fibonacci number.
@@ -103,8 +104,8 @@ second clause). We don't need to repeat the previous condition on `i` either.
 If it holds in the prestate, then it also holds in the poststate because nothing
 here is mutable.
 
-This contract is much easier to write, and more importantly, it's much easier to read
-and to reason about. We cheated a bit though: `fib` does not take this `i`
+This contract is much easier to write, and more importantly, it's much easier to
+read and to reason about. We cheated a bit though: `fib` does not take this `i`
 argument, so modifying it for the sole purpose of specification seems quite
 intrusive.
 

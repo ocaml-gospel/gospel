@@ -37,8 +37,8 @@ However, for the sake of specification, not having this global set is a problem.
 How can we state that the subsets are disjoint? How do we refer to the set of
 elements that exist in the union-find universe? Can we even tell that the
 representative of an element (returned by `find`) is indeed part of a subset
-that was `union`ed with it at some point? It seems that we cannot do any of these
-by attaching contracts to our functions and type only.
+that was `union`ed with it at some point? It seems that we cannot do any of
+these by attaching contracts to our functions and type only.
 
 This example shows how Gospel's *ghost declarations* help describe such complex
 behaviours.
@@ -55,13 +55,13 @@ mutable. As long as elements are added, for instance, it will be modified.
 (*@ ephemeral *)
 ```
 
-Now, our three functions still apply to set elements, but they also apply _in the
-context of a universe_ since you create a new singleton subset in the context of the
-greater set, or find the representative of an element in the rest of the universe.
-This translates into our three functions taking a value of type `'a
-universe` as its argument. Of course, `'a universe` is a ghost type and you don't want to
-modify the functions' signatures anyway, so this argument is ghost, too[^1].
-We already get a sense that `make` and `union` will modify the
+Now, our three functions still apply to set elements, but they also apply _in
+the context of a universe_ since you create a new singleton subset in the
+context of the greater set, or find the representative of an element in the rest
+of the universe. This translates into our three functions taking a value of type
+`'a universe` as its argument. Of course, `'a universe` is a ghost type and you
+don't want to modify the functions' signatures anyway, so this argument is
+ghost, too[^1]. We already get a sense that `make` and `union` will modify the
 universe.
 
 [^1]: If you're not comfortable with ghost arguments, you may want to [read our
@@ -111,9 +111,9 @@ our `universe` type:
 :::tip
 
 Since at least one model is mutable, we may now omit the `ephemeral` keyword
-(although it's also valid to keep it if you prefer). For instance, you may keep it if
-you want to indicate that the type is also mutable in a way that is not visible
-in the models.
+(although it's also valid to keep it if you prefer). For instance, you may keep
+it if you want to indicate that the type is also mutable in a way that is not
+visible in the models.
 
 :::
 
@@ -131,8 +131,8 @@ val make : 'a -> 'a element
     ensures u.dom = Set.add e (old u.dom) *)
 ```
 
-The `find` function obviously needs an element of the universe, and it also returns
-an element that's part of the universe:
+The `find` function obviously needs an element of the universe, and it also
+returns an element that's part of the universe:
 
 ```ocaml {3,4}
 val find : 'a element -> 'a element
@@ -179,9 +179,9 @@ element` function. We can also add two invariants:
 
 :::caution
 
-Notice how in both cases, speaking of the element's representative only
-makes sense for elements that live in the universe. However, Gospel's logic is
-total, so `rep` is also defined outside of the universe; however, it's unspecified
+Notice how in both cases, speaking of the element's representative only makes
+sense for elements that live in the universe. However, Gospel's logic is total,
+so `rep` is also defined outside of the universe; however, it's unspecified
 there.
 
 :::
@@ -224,8 +224,8 @@ capture that the new representative of an element may change.
 First, it's left unchanged if the element is not in `x` nor `y` subset.
 
 Let's start by introducing a predicate that will help us decide if two elements
-are in the same subset (or equivalence class). This is the case if and only if they have
-the same subset representative:
+are in the same subset (or equivalence class). This is the case if and only if
+they have the same subset representative:
 
 ```ocaml
 (*@ predicate equiv (u: 'a universe) (x y: 'a element) =

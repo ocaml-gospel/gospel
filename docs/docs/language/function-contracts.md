@@ -432,8 +432,8 @@ val log2: int -> int
 ```
 
 In this contract, the ghost parameter `i` is used in both the preconditions and
-postconditions. By introducing it as a ghost value, we avoid using quantifiers to
-state the existence of `i`.
+postconditions. By introducing it as a ghost value, we avoid using quantifiers
+to state the existence of `i`.
 
 :::note
 
