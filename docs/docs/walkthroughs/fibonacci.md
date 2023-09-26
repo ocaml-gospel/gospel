@@ -103,8 +103,8 @@ second clause). We don't need to repeat the previous condition on `i` either.
 If it holds in the prestate, then it also holds in the poststate because nothing
 here is mutable.
 
-This contract is much easier to write, and more importantly, it's much more rational
-and easier to read. We cheated a bit though: `fib` does not take this `i`
+This contract is much easier to write, and more importantly, it's much easier to read
+and to reason about. We cheated a bit though: `fib` does not take this `i`
 argument, so modifying it for the sole purpose of specification seems quite
 intrusive.
 

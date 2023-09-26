@@ -18,4 +18,4 @@ val argv : string array
 (*@ ensures Array.length argv >= 1 *)
 ```
 
-These clauses hold at the end the surrounding module evaluation.
+These clauses hold at the end of the surrounding module evaluation.

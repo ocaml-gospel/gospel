@@ -20,7 +20,7 @@ verified using Why3gospel.
 ## Modeling the Queue Datastructure
 
 Let's start by defining the type of queues. The `'a t` type represents a
-polymorphic queue, storing elements of type `'a`. To enable reasoning for the
+polymorphic queue, storing elements of type `'a`. To enable reasoning about the
 elements of a queue, we attach one model to its type declaration:
 
 ```ocaml
@@ -167,7 +167,7 @@ The newly created queue has no elements. Its `view` model equals the `empty`
 sequence, as stated by the postcondition.
 
 It's worth mentioning that the specification implicitly assumes `q` to be
-disjointed from every previously allocated queue. This is an important design
+disjoint from every previously allocated queue. This is an important design
 choice of Gospel that follows this general principle: writing functions that return
 non-fresh, mutable values is considered a bad practice in OCaml.
 
@@ -179,7 +179,7 @@ approaches are possible, so we'll showcase three of them.
 ### In-Place Transfer
 
 Start with a concatenation that transfers all elements from one queue to
-another using the following specification:
+another:
 
 ```ocaml
 val transfer: 'a t -> 'a t -> unit
@@ -198,7 +198,7 @@ before they're passed to the function.
 
 One could think of a slightly different version of `transfer`:
 `destructive_transfer`, which invalidates `src` when called. In other words, the
-value of `src` should be considered taboo, so it must not be used in the
+value of `src` should be considered *dirty*, so it must not be used in the
 rest of the program. Such use cases are frequent in system programming, like
 when dealing with file descriptors after closing them. Gospel
 provides `consumes` clauses to capture this semantic:
@@ -216,7 +216,7 @@ its value must not be used anymore.
 
 ### A Constructive Version
 
-Finally, perhaps a simpler version may consist in a `concat` function to create a
+Finally, perhaps a simpler version may consist in a `concat` function that creates a
 fresh queue with the elements of the queues passed as arguments:
 
 ```ocaml

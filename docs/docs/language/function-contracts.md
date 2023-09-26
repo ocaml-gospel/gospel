@@ -17,8 +17,8 @@ val euclidean_division: int -> int -> int * int
 
 A function contract is composed of two parts:
  - The first line is the **header** of the contract; it names the function
-   arguments and result and must appear at the beginning of the contract.
- - The next lines contain as many specification `clauses` as needed. The
+   arguments and results and must appear at the beginning of the contract.
+ - The next lines contain as many specification clauses as needed. The
    previous example features three clauses: one precondition introduced by
    `requires` and two postconditions introduced by `ensures`.
 
@@ -242,13 +242,13 @@ other exception:
 :::
 
 Exceptional clauses are expressed using a `raises` keyword, followed by a list
-of cases associating each exception with its formula and a syntax similar to
+of cases associating each exception with its formula. Those clauses use a syntax similar to
 pattern-matching.
 
 Gospel expects each `raises` clause to perform an exhaustive pattern-matching
 for each exception constructor listed in this clause. Similar to OCaml's
 pattern-matching, when an exception is raised, the postcondition that's
-satisfied is the first match in the cases' lists.
+satisfied is the first match in the list of cases.
 
 ```ocaml invalidSyntax
 (*@ ...

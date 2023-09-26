@@ -34,7 +34,7 @@ our *universe*). Instead, the programmer has access to individual elements of
 the set, so they may merge them or access a representative of its partition.
 
 However, for the sake of specification, not having this global set is a problem.
-How can we state that the subsets are disjointed? How do we refer to the set of
+How can we state that the subsets are disjoint? How do we refer to the set of
 elements that exist in the union-find universe? Can we even tell that the
 representative of an element (returned by `find`) is indeed part of a subset
 that was `union`ed with it at some point? It seems that we cannot do any of these
@@ -56,7 +56,7 @@ mutable. As long as elements are added, for instance, it will be modified.
 ```
 
 Now, our three functions still apply to set elements, but they also apply _in the
-context of an universe_ since you create a new singleton subset in the context of the
+context of a universe_ since you create a new singleton subset in the context of the
 greater set, or find the representative of an element in the rest of the universe.
 This translates into our three functions taking a value of type `'a
 universe` as its argument. Of course, `'a universe` is a ghost type and you don't want to
@@ -95,7 +95,7 @@ it, but that's pretty much it. Let's be more precise than that.
 ## Elements: Gotta Catch 'em All
 
 The first interesting property to capture is that the subsets
-are indeed disjointed. For instance, `make` shouldn't create an element that's
+are indeed disjoint. For instance, `make` shouldn't create an element that's
 already in the universe, otherwise you'd have two different subsets
 containing the same element.
 
@@ -224,7 +224,7 @@ capture that the new representative of an element may change.
 First, it's left unchanged if the element is not in `x` nor `y` subset.
 
 Let's start by introducing a predicate that will help us decide if two elements
-are in the same subset (or equivalence class). This is the case if they have
+are in the same subset (or equivalence class). This is the case if and only if they have
 the same subset representative:
 
 ```ocaml

@@ -48,7 +48,7 @@ Why3gospel is a [Why3](https://why3.lri.fr) plugin that lets you verify that a
 program proof refines the Gospel specifications before extracting it to OCaml.
 
 It interfaces the Why3 framework with the Gospel specifications to ensure that
-the former refines the latter and guarantees that OCaml programs extracted from
+the former refines the latter and to guarantee that OCaml programs extracted from
 proved WhyML comply with their Gospel specification.
 
 For more information, please visit the project page [on
