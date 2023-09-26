@@ -31,13 +31,12 @@ Github](https://github.com/ocaml-gospel/cameleer).
 
 ## Ortac
 
-Ortac is a runtime verification tool for OCaml programs.
+Ortac is a testing tool for OCaml programs.
 
-It reads the Gospel annotations in the interfaces and generates code that
-automatically checks them at runtime. It is implementation-agnostic and quite
-flexible. You may use it to trigger exceptions when violations occur, monitor
-your program execution by logging unexpected events, or generate testing suites
-and fuzzers.
+It reads the Gospel specifications in the interfaces and generates code to test
+that they hold at runtime. It comes with a couple of plugins that provide
+different ways to run those tests. You may use it to generate testing suites and
+fuzzers or monitor your program execution.
 
 For more information, please visit the project page [on
 Github](https://github.com/ocaml-gospel/ortac).
