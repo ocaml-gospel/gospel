@@ -103,7 +103,7 @@ val create: int -> 'a t
 Now on to `is_empty` and `mem`.
 
 `is_empty t` is true if and only if `t` is empty; this is a post-condition. This
-function also (hopefully) has no side-effect: it doesn't modify `t`, 
+function also (hopefully) has no side-effect: it doesn't modify `t`,
 depend on any internal state, or raise exceptions. In Gospel's
 language, this function is *pure*.
 
@@ -131,7 +131,7 @@ container.
 The function `clear` removes all elements from its argument, meaning it's empty after the
 call. Obviously, it modifies the `contents` model of its argument. After its
 execution, the container should be empty. Note that we are only allowed to
-mention `is_empty` in the specification because it's a *pure* function. 
+mention `is_empty` in the specification because it's a *pure* function.
 Attempting to use a non-pure OCaml function in a specification will result in a
 Gospel error.
 

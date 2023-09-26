@@ -37,7 +37,7 @@ However, for the sake of specification, not having this global set is a problem.
 How can we state that the subsets are disjointed? How do we refer to the set of
 elements that exist in the union-find universe? Can we even tell that the
 representative of an element (returned by `find`) is indeed part of a subset
-that was `union`ed with it at some point? It seems that we cannot do any of these 
+that was `union`ed with it at some point? It seems that we cannot do any of these
 by attaching contracts to our functions and type only.
 
 This example shows how Gospel's *ghost declarations* help describe such complex
@@ -110,7 +110,7 @@ our `universe` type:
 
 :::tip
 
-Since at least one model is mutable, we may now omit the `ephemeral` keyword 
+Since at least one model is mutable, we may now omit the `ephemeral` keyword
 (although it's also valid to keep it if you prefer). For instance, you may keep it if
 you want to indicate that the type is also mutable in a way that is not visible
 in the models.
@@ -266,7 +266,7 @@ val union : 'a element -> 'a element -> unit
 ```
 
 We could go further and add more functions, like an equality function
-over `element`s or a `get` function to extract an element's value, 
+over elements or a `get` function to extract an element's value,
 but we'll keep it there for this tutorial. Hopefully, this gives you a
 better overview of the purpose of ghost types in Gospel specifications and how
 they can help you refer to meta-elements not present or not exposed in the code.

@@ -223,7 +223,7 @@ part of its expected behaviour, this exception must be listed along with the
 associated postconditions.
 :::info
 
-Some exceptions are implicitly allowed and do not have to be listed because 
+Some exceptions are implicitly allowed and do not have to be listed because
 they could be unexpectedly triggered, depending on the specifics of the machine
 the code is executed on.
 

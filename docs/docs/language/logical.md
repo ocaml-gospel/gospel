@@ -95,8 +95,8 @@ that Fibonacci numbers are non-negative:
 
 :::info
 
-Note that as opposed to OCaml function contracts, logical function contracts don't 
-have a header. Consequently, Gospel automatically introduces a variable called `result` 
+Note that as opposed to OCaml function contracts, logical function contracts don't
+have a header. Consequently, Gospel automatically introduces a variable called `result`
 in the context to refer to the value returned by the
 function in a postcondition.
 

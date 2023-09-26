@@ -191,7 +191,7 @@ val transfer: 'a t -> 'a t -> unit
 
 Here the contract states that both queues are modified. The queue `src` is
 emptied after the call and its elements are appended to the queue `dst`. Notice
-the use of `old` in the second postcondition. This helps us refer to the queues' state 
+the use of `old` in the second postcondition. This helps us refer to the queues' state
 before they're passed to the function.
 
 ### Destructive Operations

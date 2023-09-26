@@ -33,7 +33,7 @@ uninterpreted logical function along with an axiom defining it.
 (*@ axiom a:
          fibonacci 0 = 0
       /\ fibonacci 1 = 1
-      /\ forall n. n >= 2 -> fibonacci n = fibonacci (n-1) + fibonacci (n-2) *) 
+      /\ forall n. n >= 2 -> fibonacci n = fibonacci (n-1) + fibonacci (n-2) *)
 ```
 
 Below is an implementation of such a function. When `a` and `b` are two
@@ -76,7 +76,7 @@ The contract is pretty straightforward:
   - The postcondition specifies that if `a` is the `i`th Fibonacci number, and
     `b` is the `i+1`th Fibonacci number, then `r` (the result of the
     computation) is the `i+n`th Fibonacci number.
-    
+
 Although this specification isn't complicated, it's
 quite verbose and repetitive. The term `i >= 0 /\ a = fibonacci i /\ b =
 fibonacci (i+1)` is repeated, and it actually refers to the same value of `i`
@@ -99,7 +99,7 @@ val fib : i:int -> int -> int -> int -> int
 
 We don't need to quantify over `i` anymore, since it's provided to the
 function, but we still need to state the preconditions that apply to it (see the
-second clause). We don't need to repeat the previous condition on `i` either. 
+second clause). We don't need to repeat the previous condition on `i` either.
 If it holds in the prestate, then it also holds in the poststate because nothing
 here is mutable.
 
@@ -111,7 +111,7 @@ intrusive.
 To overcome this issue, Gospel provides *ghost parameters*. It lets you
 introduce logical arguments (or return values) that don't exist initially, so
 you can use them in the specifications and hopefully make them easier to
-understand. 
+understand.
 
 Thus, we can rewrite our last attempt by using this feature and benefit from
 `i` being an argument without actually modifying the OCaml interface or
