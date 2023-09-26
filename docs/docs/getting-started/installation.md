@@ -7,7 +7,7 @@ sidebar_position: 1
 Please make sure that you already have a decently recent version of OCaml and
 Opam installed. Gospel requires the following versions:
 
-- OCaml 4.09.0 or newer
+- OCaml 4.11 or newer
 - Opam 2.0 or newer
 
 Please visit [ocaml.org](https://ocaml.org/learn/tutorials/up_and_running.html)
