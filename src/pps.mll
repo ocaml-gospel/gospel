@@ -1,28 +1,21 @@
 {
+ (** Kinds of space:
+     - [Large] is one that would detach a documentation from a value in the OCaml
+       compiler, i.e. one with at least one blank line (a newline followed by
+       zero, one or more blanks and then a newline)
+     - [Nl] is some space which is not large but ends with a newline
+     - [Comment] is some space which is not large but ends with a comment
+     - [Blk] is some space which is not large but ends with blanks without a
+       newline just before *)
+ type space_kind = Nl | Blk | Comment | Large
+
  type t =
    | Ghost of Lexing.position * Lexing.position * string
    | Spec of Lexing.position * Lexing.position * string
    | Documentation of Lexing.position * Lexing.position * string
    | Empty_documentation of Lexing.position
    | Other of string
-   | Spaces of string
-
- (** [is_small sp] computes whether a space allows for a documentation comment to
-     be attached the the preceding signature item. Note that comments are
-     considered has space. *)
- let is_small sp =
-   let n = ref 0 and b = ref false and l = String.length sp in
-   try
-     for i = 0 to l - 1 do
-       if !n = 0 then
-         match sp.[i] with
-         | '\n' -> if !b then raise Exit else b := true
-         | '(' -> if Char.equal '*' sp.[i + 1] then incr n
-         | '*' -> if Char.equal ')' sp.[i + 1] then decr n
-         | _ -> ()
-     done;
-     true
-   with Exit -> false
+   | Spaces of space_kind * string
 
  let stdlib_file = "stdlib.mli"
  let queue = Queue.create ()
@@ -103,12 +96,12 @@
  let rec print = function
    (* Documentation-Ghost-Spec interleaved with Spaces *)
    | Documentation (doc_start_p, doc_end_p, d)
-     :: Spaces sp
+     :: Spaces (k, sp)
      :: Ghost (start_p, _, g)
-     :: Spaces sp'
+     :: Spaces (k', sp')
      :: Spec (inner_start_p, end_p, s)
      :: l
-     when is_small sp && is_small sp' ->
+     when k <> Large && k' <> Large ->
        Fmt.str "%s%s%s%s%s"
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          sp
@@ -116,10 +109,10 @@
          sp' (print l)
    (* Documentation-Ghost interleaved with Spaces *)
    | Documentation (doc_start_p, doc_end_p, d)
-     :: Spaces sp
+     :: Spaces (k, sp)
      :: Ghost (start_p, end_p, g)
      :: l
-     when is_small sp ->
+     when k <> Large ->
        Fmt.str "%s%s%s%s"
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          sp
@@ -127,12 +120,12 @@
          (print l)
    (* Ghost-Spec-Documentation interleaved with Spaces *)
    | Ghost (start_p, _, g)
-     :: Spaces sp
+     :: Spaces (k, _)
      :: Spec (inner_start_p, end_p, s)
-     :: Spaces sp'
+     :: Spaces (k', sp')
      :: Documentation (doc_start_p, doc_end_p, d)
      :: l
-     when is_small sp && is_small sp' ->
+     when k <> Large && k' <> Large ->
        Fmt.str "%s%s%s%s"
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          sp'
@@ -140,29 +133,32 @@
          (print l)
    (* Ghost-Documentation-Spec interleaved with Spaces *)
    | Ghost (start_p, _, g)
-     :: Spaces sp
+     :: Spaces (k, _)
      :: Documentation (doc_start_p, doc_end_p, d)
-     :: Spaces sp'
+     :: Spaces (k', _)
      :: Spec (inner_start_p, end_p, s)
      :: l
-     when is_small sp && is_small sp' ->
+     when k <> Large && k' <> Large ->
        Fmt.str "%s%s%s"
          (print_nested_gospel start_p inner_start_p end_p g s)
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          (print l)
    (* Ghost-Documentation interleaved with Spaces *)
    | Ghost (start_p, end_p, g)
-     :: Spaces sp
+     :: Spaces (k, sp)
      :: Documentation (doc_start_p, doc_end_p, d)
      :: l
-     when is_small sp ->
+     when k <> Large ->
        Fmt.str "%s%s%s%s"
          (print_gospel `ThreeAt start_p end_p g)
          sp
          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
          (print l)
-   | Ghost (start_p, _, g) :: Spaces sp :: Spec (inner_start_p, end_p, s) :: l
-     when is_small sp ->
+   | Ghost (start_p, _, g)
+     :: Spaces (k, _)
+     :: Spec (inner_start_p, end_p, s)
+     :: l
+     when k <> Large ->
        Fmt.str "%s%s"
          (print_nested_gospel start_p inner_start_p end_p g s)
          (print l)
@@ -171,31 +167,46 @@
    | Spec (start_p, end_p, s) :: l ->
        (* FIXME: we could fail right here *)
        Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
-   | Other o :: Spaces sp :: Spec (start_p, end_p, s) :: l ->
+   | Other o :: Spaces (_, sp) :: Spec (start_p, end_p, s) :: l ->
        Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
    | Other o
-     :: Spaces sp
+     :: Spaces (_, sp)
      :: ((Documentation (_, _, _) | Empty_documentation _) as doc)
-     :: Spaces sp'
+     :: Spaces (_, sp')
      :: Spec (start_p, end_p, s)
      :: l ->
        Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
-   | (Other s | Spaces s) :: l -> Fmt.str "%s%s" s (print l)
+   | (Other s | Spaces (_, s)) :: l -> Fmt.str "%s%s" s (print l)
    | Documentation (_, _, s) :: l -> Fmt.str "(**%s*)%s" s (print l)
    | Empty_documentation _ :: l -> Fmt.str "(**)%s" (print l)
    | [] -> ""
 
+ (** Collapse spaces and hence computes the space kind *)
  let collapse_spaces l =
-   let b = Buffer.create 1024 in
+   let b = Buffer.create 1024 and curk = ref Blk in
+   let update_curk k =
+     curk :=
+       match (!curk, k) with
+       | Large, _ | _, Large -> Large
+       | Blk, x | Comment, x -> x
+       | Nl, Nl -> Large
+       | Nl, Blk -> Nl
+       | Nl, Comment -> Comment
+   in
    let rec loop = function
-     | Spaces s :: l' ->
+     | Spaces (k, s) :: l' ->
          Buffer.add_string b s;
+         update_curk k;
          loop l'
      | elt :: l' ->
          let sp = Buffer.contents b in
          Buffer.clear b;
-         Spaces sp :: elt :: loop l'
-     | [] -> if Buffer.length b > 0 then [ Spaces (Buffer.contents b) ] else []
+         let k = !curk in
+         curk := Blk;
+         Spaces (k, sp) :: elt :: loop l'
+     | [] ->
+         if Buffer.length b > 0 then [ Spaces (!curk, Buffer.contents b) ]
+         else []
    in
    loop l
 
@@ -212,9 +223,9 @@ let lowercase = [ 'a'-'z' '_' ]
 
 rule scan = parse
   | blank+ as s
-    { push (); Queue.push (Spaces s) queue; scan lexbuf }
+    { push (); Queue.push (Spaces (Blk,s)) queue; scan lexbuf }
   | newline as nl
-    { push (); Lexing.new_line lexbuf; Queue.push (Spaces nl) queue; scan lexbuf }
+    { push (); Lexing.new_line lexbuf; Queue.push (Spaces (Nl,nl)) queue; scan lexbuf }
   | "(*@"
     { push (); gospel (Lexing.lexeme_start_p lexbuf) lexbuf }
   | "(**)" {
@@ -247,7 +258,7 @@ rule scan = parse
         Buffer.add_string buf "(*";
         comment lexbuf;
         Buffer.add_string buf "*)";
-        Queue.push (Spaces (Buffer.contents buf)) queue;
+        Queue.push (Spaces (Comment, Buffer.contents buf)) queue;
         Buffer.clear buf;
         scan lexbuf
       }
