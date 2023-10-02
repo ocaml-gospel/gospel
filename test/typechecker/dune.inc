@@ -704,6 +704,26 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
  (action
+  (with-outputs-to returned_tuple.mli.output
+   (run %{checker} %{dep:returned_tuple.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff returned_tuple.mli returned_tuple.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:returned_tuple.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
   (with-outputs-to t1_not_t2.mli.output
    (run %{checker} %{dep:t1_not_t2.mli}))))
 

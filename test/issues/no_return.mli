@@ -20,5 +20,5 @@ val f : x:('a -> 'b -> 'c) -> y:'a -> 'b -> 'c
    [125] File "no_return.mli", line 12, characters 25-26:
          12 | (*@ [b:integer],[a:'a] = f ~x [w:int] ~y [p:integer] z *)
                                        ^
-         Error: Type checking error: too few parameters.
+         Error: Type checking error: too few returned values.
    |gospel_expected} *)
