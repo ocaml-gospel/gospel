@@ -36,11 +36,18 @@
       Queue.push (Other (Buffer.contents buf)) queue;
       Buffer.clear buf)
 
-  let print_directive ?(first = false) pos =
+  let print_directive where pos =
     let open Lexing in
-    Fmt.str "%s# %d \"%s\"\n"
-      (if first then "" else "\n")
-      pos.pos_lnum pos.pos_fname
+    match where with
+    | `Open ->
+        Fmt.str "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
+          (* Align with the first character *)
+          (String.make (pos.pos_cnum - pos.pos_bol) ' ')
+    | `Close ->
+        Fmt.str "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
+          (* Align with the last character *)
+          (String.make (pos.pos_cnum - pos.pos_bol - 1) ' ')
+    | `Beginning -> Fmt.str "# %d \"%s\"\n" pos.pos_lnum pos.pos_fname
 
   (* ...(*@ foo *)...
 
@@ -53,12 +60,9 @@
                  ]...
   *)
   let print_gospel (lvl : [ `TwoAt | `ThreeAt ]) start_p end_p s =
-    Fmt.str "[%sgospel%s%s {|%s|}%s%s]"
+    Fmt.str "[%sgospel%s {|%s|}%s]"
       (match lvl with `TwoAt -> "@@" | `ThreeAt -> "@@@")
-      (print_directive start_p)
-      (String.make (start_p.pos_cnum - start_p.pos_bol) ' ')
-      s (print_directive end_p)
-      (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+      (print_directive `Open start_p) s (print_directive `Close end_p)
   (* ...(*@ foo *)
      (*@ bar *)...
 
@@ -74,26 +78,20 @@
   *)
 
   let print_nested_gospel start_p inner_start_p end_p outer_s inner_s =
-    Fmt.str "[@@@@@@gospel%s%s {|%s|}[@@@@gospel%s%s {|%s|}]%s%s]"
-      (print_directive start_p)
-      (String.make (start_p.pos_cnum - start_p.pos_bol) ' ')
+    Fmt.str "[@@@@@@gospel%s {|%s|}[@@@@gospel%s {|%s|}]%s]"
+      (print_directive `Open start_p)
       outer_s
-      (print_directive inner_start_p)
-      (String.make (inner_start_p.pos_cnum - inner_start_p.pos_bol) ' ')
-      inner_s (print_directive end_p)
-      (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+      (print_directive `Open inner_start_p)
+      inner_s (print_directive `Close end_p)
 
   let print_documentation_attribute lvl start_p end_p s =
-    Fmt.str "[%s%s%s {|%s|}%s%s]"
+    Fmt.str "[%s%s {|%s|}%s]"
       (match lvl with `TwoAt -> "@@ocaml.doc" | `ThreeAt -> "@@@ocaml.text")
-      (print_directive start_p)
-      (String.make (start_p.pos_cnum - start_p.pos_bol) ' ')
-      s (print_directive end_p)
-      (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+      (print_directive `Open start_p)
+      s (print_directive `Close end_p)
 
   let print_empty_documentation end_p =
-    Fmt.str "[@@@ocaml.doc%s%s]" (print_directive end_p)
-      (String.make (end_p.pos_cnum - end_p.pos_bol - 1 (*]*)) ' ')
+    Fmt.str "[@@@ocaml.doc%s]" (print_directive `Close end_p)
 
   let print_triplet o sp doc sp' start_p end_p s =
     let docstring =
@@ -419,5 +417,5 @@ and quoted_string delim = parse
   let run lb =
     clear ();
     let init_pos = lb.Lexing.lex_curr_p in
-    print_directive ~first:true init_pos ^ scan lb
+    print_directive `Beginning init_pos ^ scan lb
 }
