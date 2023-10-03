@@ -223,6 +223,7 @@ specifications after an multi-line informal documentation block:
 Gospel preprocessing should indicate the correct location with the `#` syntax:
 
   $ gospel pps foo.mli
+  # 1 "foo.mli"
   val f : int -> int
   [@@ocaml.doc
   # 2 "foo.mli"
@@ -273,6 +274,7 @@ Another corner case is the empty documentation attribute:
   > (*@ y = f x z *)
   > EOF
   $ gospel pps foo.mli
+  # 1 "foo.mli"
   val f : int -> int
   [@@ocaml.doc
   # 2 "foo.mli"
@@ -292,6 +294,7 @@ And some other corner cases with different spacing:
   > val f : int -> int(*@ y = f x z *)
   > EOF
   $ gospel pps foo.mli
+  # 1 "foo.mli"
   val f : int -> int[@@gospel
   # 1 "foo.mli"
                      {| y = f x z |}
@@ -306,6 +309,7 @@ And some other corner cases with different spacing:
   > (*@ y = f x *)
   > EOF
   $ gospel pps foo.mli
+  # 1 "foo.mli"
   val f : int -> int[@@ocaml.doc
   # 1 "foo.mli"
                      {| documentation |}
@@ -324,6 +328,7 @@ And some other corner cases with different spacing:
   > val f : int -> int(** documentation *)(*@ y = f x *)
   > EOF
   $ gospel pps foo.mli
+  # 1 "foo.mli"
   val f : int -> int[@@ocaml.doc
   # 1 "foo.mli"
                      {| documentation |}

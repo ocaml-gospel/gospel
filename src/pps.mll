@@ -36,9 +36,11 @@
       Queue.push (Other (Buffer.contents buf)) queue;
       Buffer.clear buf)
 
-  let print_directive pos =
+  let print_directive ?(first = false) pos =
     let open Lexing in
-    Fmt.str "\n# %d \"%s\"\n" pos.pos_lnum pos.pos_fname
+    Fmt.str "%s# %d \"%s\"\n"
+      (if first then "" else "\n")
+      pos.pos_lnum pos.pos_fname
 
   (* ...(*@ foo *)...
 
@@ -416,5 +418,6 @@ and quoted_string delim = parse
 {
   let run lb =
     clear ();
-    scan lb
+    let init_pos = lb.Lexing.lex_curr_p in
+    print_directive ~first:true init_pos ^ scan lb
 }
