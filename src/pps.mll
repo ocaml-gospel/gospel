@@ -313,9 +313,9 @@ and comment = parse
       }
    | "\""
       {
-        Buffer.add_char buf '\"';
+        Buffer.add_char buf '"';
         string lexbuf;
-        Buffer.add_char buf '\"';
+        Buffer.add_char buf '"';
         comment lexbuf
       }
    | newline as nl { Buffer.add_string buf nl; Lexing.new_line lexbuf; comment lexbuf }
@@ -343,7 +343,7 @@ and directive = parse
   | "" { scan lexbuf }
 
 and string = parse
-    '\"'
+    '"'
       { }
   | newline as nl
       {
