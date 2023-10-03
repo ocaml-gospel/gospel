@@ -1,8 +1,17 @@
+(* Coding-style convention to be able to reindent this file easily:
+   - the curly braces that surround OCaml code blocks are written on separate
+     lines,
+   - OCaml rule code starts with a '{' at the end of a line and preceded by a space
+     and ends with 4 spaces and a '}' on a line by themselves,
+   - raw OCaml code starts with a '{' and ends with a '}' all by themselves on
+     their lines (no indentation, etc.)
+*)
+
 {
   (** Kinds of space:
-      - [Large] is one that would detach a documentation from a value in the OCaml
-        compiler, i.e. one with at least one blank line (a newline followed by
-        zero, one or more blanks and then a newline)
+      - [Large] is one that would detach a documentation from a value in the
+        OCaml compiler, i.e. one with at least one blank line (a newline
+        followed by zero, one or more blanks and then a newline)
       - [Nl] is some space which is not large but ends with a newline
       - [Comment] is some space which is not large but ends with a comment
       - [Blk] is some space which is not large but ends with blanks without a
@@ -91,7 +100,8 @@
       | Empty_documentation end_p -> print_empty_documentation end_p
       | _ -> assert false
     in
-    Fmt.str "%s%s%s%s%s" o sp docstring sp' (print_gospel `TwoAt start_p end_p s)
+    Fmt.str "%s%s%s%s%s" o sp docstring sp'
+      (print_gospel `TwoAt start_p end_p s)
 
   let rec print = function
     (* Documentation-Ghost-Spec interleaved with Spaces *)
@@ -222,57 +232,78 @@ let newline = ('\n' | "\r\n")
 let lowercase = [ 'a'-'z' '_' ]
 
 rule scan = parse
-  | blank+ as s
-    { push (); Queue.push (Spaces (Blk,s)) queue; scan lexbuf }
-  | newline as nl
-    { push (); Lexing.new_line lexbuf; Queue.push (Spaces (Nl,nl)) queue; scan lexbuf }
-  | "(*@"
-    { push (); gospel (Lexing.lexeme_start_p lexbuf) lexbuf }
+  | blank+ as s {
+      push ();
+      Queue.push (Spaces (Blk, s)) queue;
+      scan lexbuf
+    }
+  | newline as nl {
+      push ();
+      Lexing.new_line lexbuf;
+      Queue.push (Spaces (Nl, nl)) queue;
+      scan lexbuf
+    }
+  | "(*@" {
+      push ();
+      gospel (Lexing.lexeme_start_p lexbuf) lexbuf
+    }
   | "(**)" {
-    push ();
-    let end_pos = Lexing.lexeme_end_p lexbuf in
-    Queue.push (Empty_documentation end_pos) queue;
-    scan lexbuf
+      push ();
+      let end_pos = Lexing.lexeme_end_p lexbuf in
+      Queue.push (Empty_documentation end_pos) queue;
+      scan lexbuf
     }
   | "(**" {
-    push ();
-    let start_pos = Lexing.lexeme_start_p lexbuf in
-    comment lexbuf;
-    let s = Buffer.contents buf in
-    Buffer.clear buf;
-    let end_pos = Lexing.lexeme_end_p lexbuf in
-    Queue.push (Documentation (start_pos, end_pos, s)) queue;
-    scan lexbuf
+      push ();
+      let start_pos = Lexing.lexeme_start_p lexbuf in
+      comment lexbuf;
+      let s = Buffer.contents buf in
+      Buffer.clear buf;
+      let end_pos = Lexing.lexeme_end_p lexbuf in
+      Queue.push (Documentation (start_pos, end_pos, s)) queue;
+      scan lexbuf
     }
   (* When lexing stdlib, we stop here just like ocamldep *)
   | "(*MODULE_ALIASES*)" as s {
-    if Filename.basename (Lexing.lexeme_start_p lexbuf).pos_fname = stdlib_file
-    then flush ()
-    else (
-      Buffer.add_string buf s;
-      scan lexbuf)
+      if
+        Filename.basename (Lexing.lexeme_start_p lexbuf).pos_fname = stdlib_file
+      then flush ()
+      else (
+        Buffer.add_string buf s;
+        scan lexbuf)
     }
-  | "(*"
-      {
-        push ();
-        Buffer.add_string buf "(*";
-        comment lexbuf;
-        Buffer.add_string buf "*)";
-        Queue.push (Spaces (Comment, Buffer.contents buf)) queue;
-        Buffer.clear buf;
-        scan lexbuf
-      }
+  | "(*" {
+      push ();
+      Buffer.add_string buf "(*";
+      comment lexbuf;
+      Buffer.add_string buf "*)";
+      Queue.push (Spaces (Comment, Buffer.contents buf)) queue;
+      Buffer.clear buf;
+      scan lexbuf
+    }
   | "#" as c {
-    Buffer.add_char buf c;
-    let pos = Lexing.lexeme_start_p lexbuf in
-    if pos.pos_cnum = pos.pos_bol then directive lexbuf else scan lexbuf
+      Buffer.add_char buf c;
+      let pos = Lexing.lexeme_start_p lexbuf in
+      if pos.pos_cnum = pos.pos_bol then directive lexbuf else scan lexbuf
     }
-  | _ as c { Buffer.add_char buf c; scan lexbuf }
-  | eof { flush () }
+  | _ as c {
+      Buffer.add_char buf c;
+      scan lexbuf
+    }
+  | eof {
+      flush ()
+    }
 
 and gospel start_pos = parse
-  | blank+ as s   { Buffer.add_string buf s; gospel start_pos lexbuf }
-  | newline as nl { Buffer.add_string buf nl; Lexing.new_line lexbuf; gospel start_pos lexbuf }
+  | blank+ as s {
+      Buffer.add_string buf s;
+      gospel start_pos lexbuf
+    }
+  | newline as nl {
+      Buffer.add_string buf nl;
+      Lexing.new_line lexbuf;
+      gospel start_pos lexbuf
+    }
   | ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k {
       Buffer.add_string buf k;
       comment lexbuf;
@@ -293,33 +324,37 @@ and gospel start_pos = parse
 
 and comment = parse
   | "*)" {}
-  | "(*"
-      {
-        Buffer.add_string buf "(*";
-        comment lexbuf;
-        Buffer.add_string buf "*)";
-        comment lexbuf
-      }
-  | "{" (lowercase* as delim) "|"
-      {
-        Buffer.add_char buf '{';
-        Buffer.add_string buf delim;
-        Buffer.add_char buf '|';
-        quoted_string delim lexbuf;
-        Buffer.add_char buf '|';
-        Buffer.add_string buf delim;
-        Buffer.add_char buf '}';
-        comment lexbuf
-      }
-   | "\""
-      {
-        Buffer.add_char buf '"';
-        string lexbuf;
-        Buffer.add_char buf '"';
-        comment lexbuf
-      }
-   | newline as nl { Buffer.add_string buf nl; Lexing.new_line lexbuf; comment lexbuf }
-   | _ as c { Buffer.add_char buf c; comment lexbuf }
+  | "(*" {
+      Buffer.add_string buf "(*";
+      comment lexbuf;
+      Buffer.add_string buf "*)";
+      comment lexbuf
+    }
+  | "{" (lowercase* as delim) "|" {
+      Buffer.add_char buf '{';
+      Buffer.add_string buf delim;
+      Buffer.add_char buf '|';
+      quoted_string delim lexbuf;
+      Buffer.add_char buf '|';
+      Buffer.add_string buf delim;
+      Buffer.add_char buf '}';
+      comment lexbuf
+    }
+  | "\"" {
+      Buffer.add_char buf '"';
+      string lexbuf;
+      Buffer.add_char buf '"';
+      comment lexbuf
+    }
+  | newline as nl {
+      Buffer.add_string buf nl;
+      Lexing.new_line lexbuf;
+      comment lexbuf
+    }
+  | _ as c {
+      Buffer.add_char buf c;
+      comment lexbuf
+    }
 
 and directive = parse
   | ( [' ' '\t']*
@@ -331,39 +366,52 @@ and directive = parse
       Buffer.add_string buf directive;
       match int_of_string_opt line with
       | Some line ->
-        let pos = lexbuf.lex_curr_p in
-        let pos =
-          { pos with pos_fname = file; pos_lnum = line - 1; pos_bol = pos.pos_cnum }
-        in
-        lexbuf.lex_curr_p <- pos;
-        scan lexbuf
-      | None ->
-        scan lexbuf
+          let pos = lexbuf.lex_curr_p in
+          let pos =
+            {
+              pos with
+              pos_fname = file;
+              pos_lnum = line - 1;
+              pos_bol = pos.pos_cnum;
+            }
+          in
+          lexbuf.lex_curr_p <- pos;
+          scan lexbuf
+      | None -> scan lexbuf
     }
-  | "" { scan lexbuf }
+  | "" {
+      scan lexbuf
+    }
 
 and string = parse
-    '"'
-      { }
-  | newline as nl
-      {
-        Lexing.new_line lexbuf;
-        Buffer.add_string buf nl;
-        string lexbuf
-      }
-   | _ as c { Buffer.add_char buf c; string lexbuf }
+  | '"' {}
+  | newline as nl {
+      Lexing.new_line lexbuf;
+      Buffer.add_string buf nl;
+      string lexbuf
+    }
+  | _ as c {
+      Buffer.add_char buf c;
+      string lexbuf
+    }
 
 and quoted_string delim = parse
-  | ("|" (lowercase* as edelim) "}" as s)
-      { if delim = edelim then ()
-        else (Buffer.add_string buf s; quoted_string delim lexbuf) }
-  | newline as nl
-      {
-        Lexing.new_line lexbuf;
-        Buffer.add_string buf nl;
-        quoted_string delim lexbuf
-      }
-   | _ as c { Buffer.add_char buf c; quoted_string delim lexbuf }
+  | ("|" (lowercase* as edelim) "}" as s) {
+      if delim = edelim then ()
+      else (
+        Buffer.add_string buf s;
+        quoted_string delim lexbuf)
+    }
+  | newline as nl {
+      Lexing.new_line lexbuf;
+      Buffer.add_string buf nl;
+      quoted_string delim lexbuf
+    }
+  | _ as c {
+      Buffer.add_char buf c;
+      quoted_string delim lexbuf
+    }
+
 {
   let run lb =
     clear ();
