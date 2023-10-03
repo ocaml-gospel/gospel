@@ -249,8 +249,23 @@ Gospel typechecking should spot an error and locate it at the fifth line of the 
   Error: Type checking error: too many parameters.
   [125]
 
+Another example about error reporting and location:
 
-Another corner case is the empty documentation attibute:
+  $ cat > foo.mli << EOF
+  > (*@ function f (x : integer) : integer *)
+  > (** A ghost function
+  > 
+  > with some documentation *)
+  > (*@ ensures x *)
+  > EOF
+  $ gospel check foo.mli
+  File "foo.mli", line 5, characters 12-13:
+  5 | (*@ ensures x *)
+                  ^
+  Error: This term has type integer but a term was expected of type bool.
+  [125]
+
+Another corner case is the empty documentation attribute:
 
   $ cat > foo.mli << EOF
   > val f : int -> int
