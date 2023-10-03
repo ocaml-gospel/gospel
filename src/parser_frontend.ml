@@ -33,7 +33,7 @@ let with_loadpath load_path file =
   else raise Not_found
 
 let parse_ocaml_lb lb =
-  let lb_pps = Pps.run lb |> Lexing.from_string in
+  let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
   try Parse.interface lb_pps
   with _ ->

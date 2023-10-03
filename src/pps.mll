@@ -36,18 +36,18 @@
       Queue.push (Other (Buffer.contents buf)) queue;
       Buffer.clear buf)
 
-  let print_directive where pos =
+  let print_directive where pos ppf =
     let open Lexing in
     match where with
     | `Open ->
-        Fmt.str "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
+        Fmt.pf ppf "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
           (* Align with the first character *)
           (String.make (pos.pos_cnum - pos.pos_bol) ' ')
     | `Close ->
-        Fmt.str "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
+        Fmt.pf ppf "\n# %d \"%s\"\n%s" pos.pos_lnum pos.pos_fname
           (* Align with the last character *)
           (String.make (pos.pos_cnum - pos.pos_bol - 1) ' ')
-    | `Beginning -> Fmt.str "# %d \"%s\"\n" pos.pos_lnum pos.pos_fname
+    | `Beginning -> Fmt.pf ppf "# %d \"%s\"\n" pos.pos_lnum pos.pos_fname
 
   (* ...(*@ foo *)...
 
@@ -59,10 +59,12 @@
      # linenb
                  ]...
   *)
-  let print_gospel (lvl : [ `TwoAt | `ThreeAt ]) start_p end_p s =
-    Fmt.str "[%sgospel%s {|%s|}%s]"
+  let print_gospel (lvl : [ `TwoAt | `ThreeAt ]) start_p end_p s ppf =
+    Fmt.pf ppf "[%sgospel%t {|%s|}%t]"
       (match lvl with `TwoAt -> "@@" | `ThreeAt -> "@@@")
-      (print_directive `Open start_p) s (print_directive `Close end_p)
+      (print_directive `Open start_p)
+      s
+      (print_directive `Close end_p)
   (* ...(*@ foo *)
      (*@ bar *)...
 
@@ -77,23 +79,25 @@
               ]...
   *)
 
-  let print_nested_gospel start_p inner_start_p end_p outer_s inner_s =
-    Fmt.str "[@@@@@@gospel%s {|%s|}[@@@@gospel%s {|%s|}]%s]"
+  let print_nested_gospel start_p inner_start_p end_p outer_s inner_s ppf =
+    Fmt.pf ppf "[@@@@@@gospel%t {|%s|}[@@@@gospel%t {|%s|}]%t]"
       (print_directive `Open start_p)
       outer_s
       (print_directive `Open inner_start_p)
-      inner_s (print_directive `Close end_p)
+      inner_s
+      (print_directive `Close end_p)
 
-  let print_documentation_attribute lvl start_p end_p s =
-    Fmt.str "[%s%s {|%s|}%s]"
+  let print_documentation_attribute lvl start_p end_p s ppf =
+    Fmt.pf ppf "[%s%t {|%s|}%t]"
       (match lvl with `TwoAt -> "@@ocaml.doc" | `ThreeAt -> "@@@ocaml.text")
       (print_directive `Open start_p)
-      s (print_directive `Close end_p)
+      s
+      (print_directive `Close end_p)
 
-  let print_empty_documentation end_p =
-    Fmt.str "[@@@ocaml.doc%s]" (print_directive `Close end_p)
+  let print_empty_documentation end_p ppf =
+    Fmt.pf ppf "[@@@ocaml.doc%t]" (print_directive `Close end_p)
 
-  let print_triplet o sp doc sp' start_p end_p s =
+  let print_triplet o sp doc sp' start_p end_p s ppf =
     let docstring =
       match doc with
       | Documentation (start_p, end_p, d) ->
@@ -101,10 +105,10 @@
       | Empty_documentation end_p -> print_empty_documentation end_p
       | _ -> assert false
     in
-    Fmt.str "%s%s%s%s%s" o sp docstring sp'
+    Fmt.pf ppf "%s%s%t%s%t" o sp docstring sp'
       (print_gospel `TwoAt start_p end_p s)
 
-  let rec print = function
+  let rec print ppf = function
     (* Documentation-Ghost-Spec interleaved with Spaces *)
     | Documentation (doc_start_p, doc_end_p, d)
       :: Spaces (k, sp)
@@ -113,22 +117,23 @@
       :: Spec (inner_start_p, end_p, s)
       :: l
       when k <> Large && k' <> Large ->
-        Fmt.str "%s%s%s%s%s"
+        Fmt.pf ppf "%t%s%t%s"
           (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
           sp
           (print_nested_gospel start_p inner_start_p end_p g s)
-          sp' (print l)
+          sp';
+        print ppf l
     (* Documentation-Ghost interleaved with Spaces *)
     | Documentation (doc_start_p, doc_end_p, d)
       :: Spaces (k, sp)
       :: Ghost (start_p, end_p, g)
       :: l
       when k <> Large ->
-        Fmt.str "%s%s%s%s"
+        Fmt.pf ppf "%t%s%t"
           (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
           sp
-          (print_gospel `ThreeAt start_p end_p g)
-          (print l)
+          (print_gospel `ThreeAt start_p end_p g);
+        print ppf l
     (* Ghost-Spec-Documentation interleaved with Spaces *)
     | Ghost (start_p, _, g)
       :: Spaces (k, _)
@@ -137,11 +142,11 @@
       :: Documentation (doc_start_p, doc_end_p, d)
       :: l
       when k <> Large && k' <> Large ->
-        Fmt.str "%s%s%s%s"
+        Fmt.pf ppf "%t%s%t"
           (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
           sp'
-          (print_nested_gospel start_p inner_start_p end_p g s)
-          (print l)
+          (print_nested_gospel start_p inner_start_p end_p g s);
+        print ppf l
     (* Ghost-Documentation-Spec interleaved with Spaces *)
     | Ghost (start_p, _, g)
       :: Spaces (k, _)
@@ -150,47 +155,56 @@
       :: Spec (inner_start_p, end_p, s)
       :: l
       when k <> Large && k' <> Large ->
-        Fmt.str "%s%s%s"
+        Fmt.pf ppf "%t%t"
           (print_nested_gospel start_p inner_start_p end_p g s)
-          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-          (print l)
+          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d);
+        print ppf l
     (* Ghost-Documentation interleaved with Spaces *)
     | Ghost (start_p, end_p, g)
       :: Spaces (k, sp)
       :: Documentation (doc_start_p, doc_end_p, d)
       :: l
       when k <> Large ->
-        Fmt.str "%s%s%s%s"
+        Fmt.pf ppf "%t%s%t"
           (print_gospel `ThreeAt start_p end_p g)
           sp
-          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d)
-          (print l)
+          (print_documentation_attribute `ThreeAt doc_start_p doc_end_p d);
+        print ppf l
     | Ghost (start_p, _, g)
       :: Spaces (k, _)
       :: Spec (inner_start_p, end_p, s)
       :: l
       when k <> Large ->
-        Fmt.str "%s%s"
-          (print_nested_gospel start_p inner_start_p end_p g s)
-          (print l)
+        print_nested_gospel start_p inner_start_p end_p g s ppf;
+        print ppf l
     | Ghost (start_p, end_p, g) :: l ->
-        Fmt.str "%s%s" (print_gospel `ThreeAt start_p end_p g) (print l)
+        print_gospel `ThreeAt start_p end_p g ppf;
+        print ppf l
     | Spec (start_p, end_p, s) :: l ->
         (* FIXME: we could fail right here *)
-        Fmt.str "%s%s" (print_gospel `TwoAt start_p end_p s) (print l)
+        print_gospel `TwoAt start_p end_p s ppf;
+        print ppf l
     | Other o :: Spaces (_, sp) :: Spec (start_p, end_p, s) :: l ->
-        Fmt.str "%s%s%s%s" o sp (print_gospel `TwoAt start_p end_p s) (print l)
+        Fmt.pf ppf "%s%s%t" o sp (print_gospel `TwoAt start_p end_p s);
+        print ppf l
     | Other o
       :: Spaces (_, sp)
       :: ((Documentation (_, _, _) | Empty_documentation _) as doc)
       :: Spaces (_, sp')
       :: Spec (start_p, end_p, s)
       :: l ->
-        Fmt.str "%s%s" (print_triplet o sp doc sp' start_p end_p s) (print l)
-    | (Other s | Spaces (_, s)) :: l -> Fmt.str "%s%s" s (print l)
-    | Documentation (_, _, s) :: l -> Fmt.str "(**%s*)%s" s (print l)
-    | Empty_documentation _ :: l -> Fmt.str "(**)%s" (print l)
-    | [] -> ""
+        print_triplet o sp doc sp' start_p end_p s ppf;
+        print ppf l
+    | (Other s | Spaces (_, s)) :: l ->
+        Fmt.pf ppf "%s" s;
+        print ppf l
+    | Documentation (_, _, s) :: l ->
+        Fmt.pf ppf "(**%s*)" s;
+        print ppf l
+    | Empty_documentation _ :: l ->
+        Fmt.pf ppf "(**)";
+        print ppf l
+    | [] -> ()
 
   (** Collapse spaces and hence computes the space kind *)
   let collapse_spaces l =
@@ -221,10 +235,10 @@
     in
     loop l
 
-  let flush () =
+  let flush ppf =
     push ();
     let l = Queue.fold (fun acc t -> t :: acc) [] queue in
-    print (collapse_spaces (List.rev l))
+    print ppf (collapse_spaces (List.rev l))
 }
 
 let space = [ ' ' '\t' '\r' '\n' ]
@@ -232,27 +246,27 @@ let blank = [ ' ' '\t' ]
 let newline = ('\n' | "\r\n")
 let lowercase = [ 'a'-'z' '_' ]
 
-rule scan = parse
+rule scan ppf = parse
   | blank+ as s {
       push ();
       Queue.push (Spaces (Blk, s)) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | newline as nl {
       push ();
       Lexing.new_line lexbuf;
       Queue.push (Spaces (Nl, nl)) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | "(*@" {
       push ();
-      gospel (Lexing.lexeme_start_p lexbuf) lexbuf
+      gospel ppf (Lexing.lexeme_start_p lexbuf) lexbuf
     }
   | "(**)" {
       push ();
       let end_pos = Lexing.lexeme_end_p lexbuf in
       Queue.push (Empty_documentation end_pos) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | "(**" {
       push ();
@@ -262,16 +276,16 @@ rule scan = parse
       Buffer.clear buf;
       let end_pos = Lexing.lexeme_end_p lexbuf in
       Queue.push (Documentation (start_pos, end_pos, s)) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
   (* When lexing stdlib, we stop here just like ocamldep *)
   | "(*MODULE_ALIASES*)" as s {
       if
         Filename.basename (Lexing.lexeme_start_p lexbuf).pos_fname = stdlib_file
-      then flush ()
+      then flush ppf
       else (
         Buffer.add_string buf s;
-        scan lexbuf)
+        scan ppf lexbuf)
     }
   | "(*" {
       push ();
@@ -280,30 +294,31 @@ rule scan = parse
       Buffer.add_string buf "*)";
       Queue.push (Spaces (Comment, Buffer.contents buf)) queue;
       Buffer.clear buf;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | "#" as c {
       Buffer.add_char buf c;
       let pos = Lexing.lexeme_start_p lexbuf in
-      if pos.pos_cnum = pos.pos_bol then directive lexbuf else scan lexbuf
+      if pos.pos_cnum = pos.pos_bol then directive ppf lexbuf
+      else scan ppf lexbuf
     }
   | _ as c {
       Buffer.add_char buf c;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | eof {
-      flush ()
+      flush ppf
     }
 
-and gospel start_pos = parse
+and gospel ppf start_pos = parse
   | blank+ as s {
       Buffer.add_string buf s;
-      gospel start_pos lexbuf
+      gospel ppf start_pos lexbuf
     }
   | newline as nl {
       Buffer.add_string buf nl;
       Lexing.new_line lexbuf;
-      gospel start_pos lexbuf
+      gospel ppf start_pos lexbuf
     }
   | ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k {
       Buffer.add_string buf k;
@@ -312,7 +327,7 @@ and gospel start_pos = parse
       Buffer.clear buf;
       let end_pos = Lexing.lexeme_end_p lexbuf in
       Queue.push (Ghost (start_pos, end_pos, s)) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
   | "" {
       comment lexbuf;
@@ -320,7 +335,7 @@ and gospel start_pos = parse
       Buffer.clear buf;
       let end_pos = Lexing.lexeme_end_p lexbuf in
       Queue.push (Spec (start_pos, end_pos, s)) queue;
-      scan lexbuf
+      scan ppf lexbuf
     }
 
 and comment = parse
@@ -357,7 +372,7 @@ and comment = parse
       comment lexbuf
     }
 
-and directive = parse
+and directive ppf = parse
   | ( [' ' '\t']*
       (['0'-'9']+ as line)
       [' ' '\t']*
@@ -377,11 +392,11 @@ and directive = parse
             }
           in
           lexbuf.lex_curr_p <- pos;
-          scan lexbuf
-      | None -> scan lexbuf
+          scan ppf lexbuf
+      | None -> scan ppf lexbuf
     }
   | "" {
-      scan lexbuf
+      scan ppf lexbuf
     }
 
 and string = parse
@@ -414,8 +429,8 @@ and quoted_string delim = parse
     }
 
 {
-  let run lb =
+  let run ppf lb =
     clear ();
-    let init_pos = lb.Lexing.lex_curr_p in
-    print_directive `Beginning init_pos ^ scan lb
+    print_directive `Beginning lb.Lexing.lex_curr_p ppf;
+    scan ppf lb
 }
