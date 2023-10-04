@@ -332,7 +332,8 @@ or not.
 ```ocaml invalidSyntax
 val run : unit -> unit
 (*@ run ()
-    diverges *)
+    diverges
+    (* ... *) *)
 ```
 
 ## Data Mutability
