@@ -218,22 +218,24 @@
         | Nl, Blk -> Nl
         | Nl, Comment -> Comment
     in
-    let rec loop = function
+    let rec loop acc = function
       | Spaces (k, s) :: l' ->
           Buffer.add_string b s;
           update_curk k;
-          loop l'
+          loop acc l'
       | elt :: l' ->
           let sp = Buffer.contents b in
           Buffer.clear b;
           let k = !curk in
           curk := Blk;
-          Spaces (k, sp) :: elt :: loop l'
+          loop (elt :: Spaces (k, sp) :: acc) l'
       | [] ->
-          if Buffer.length b > 0 then [ Spaces (!curk, Buffer.contents b) ]
-          else []
+          List.rev
+            (if Buffer.length b > 0 then
+               Spaces (!curk, Buffer.contents b) :: acc
+             else acc)
     in
-    loop l
+    loop [] l
 
   let flush ppf =
     push ();
