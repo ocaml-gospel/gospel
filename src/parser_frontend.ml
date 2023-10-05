@@ -44,7 +44,7 @@ let parse_ocaml_lb lb =
 let parse_ocaml file =
   let lb =
     if String.equal file gospelstdlib_file then
-      Lexing.from_string Gospelstdlib.contents
+      Lexing.from_string Gospellib.contents
     else open_in file |> Lexing.from_channel
   in
   Location.init lb file;

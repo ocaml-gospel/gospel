@@ -1,0 +1,19 @@
+; Rules to allow `dune build @doc` to generate the documentation for the
+; Gospelstdlib
+
+(rule
+ (deps
+  (:gospel %{bin:gospel})
+  (:src ../../src/stdlib/gospelstdlib.mli))
+ (action
+  (with-stdout-to
+   gospelstdlib.mli
+   (run %{gospel} pps %{src}))))
+
+(library
+ (name gospelstdlib)
+ (public_name gospel.stdlib)
+ (modules_without_implementation gospelstdlib)
+ (modules gospelstdlib)
+ (preprocess
+  (pps gospel.ppx)))

@@ -1,6 +1,6 @@
 (**************************************************************************)
 (*                                                                        *)
-(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*  Gospel -- A Specification Language for OCaml                          *)
 (*                                                                        *)
 (*  Copyright (c) 2018- The VOCaL Project                                 *)
 (*                                                                        *)
@@ -8,29 +8,32 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(* This file contains the GOSPEL standard library.
-   It is automatically opened.
+(** This file contains the Gospel standard library. *)
 
-   The following are built-in in GOSPEL:
+(** The following are not defined in the Gospelstdlib but are built-in in
+    Gospel:
 
-   type unit
-   type string
-   type char
-   type float
-   type bool
-   type integer
-   type int
+    - [type unit]
+    - [type string]
+    - [type char]
+    - [type float]
+    - [type bool]
+    - [type integer]
+    - [type int]
 
-   type 'a option
-   function None: 'a option
-   function Some (x: 'a) : 'a option
+    - [type 'a option]
+    - [function None: 'a option]
+    - [function Some (x: 'a) : 'a option]
 
-   type 'a list
-   function ([]): 'a list
-   function (::) (x: 'a) (l: 'a list) : 'a list
+    - [type 'a list]
+    - [function ([]): 'a list]
+    - [function (::) (x: 'a) (l: 'a list) : 'a list]
 
-   predicate (=) (x y: 'a)
-*)
+    - [predicate (=) (x y: 'a)] *)
+
+(** The rest of this module is the actual content of the Gospel module
+    [Gospelstdlib]. This module is automatically opened in Gospel
+    specifications. *)
 
 (*@ type 'a sequence *)
 (** The type for finite sequences. *)
@@ -131,7 +134,7 @@
 
 module Sequence : sig
   (*@ type 'a t = 'a sequence *)
-  (** An alias for {!'a sequence} *)
+  (** An alias for {!sequence} *)
 
   (*@ function length (s: 'a t): integer *)
   (** [length s] is the length of the sequence [s]. *)
@@ -454,7 +457,7 @@ end
 (** {1 Sets} *)
 
 (*@ function ({}) : 'a set *)
-(** [\{\}] is the empty set. *)
+(** [{}] is the empty set. *)
 
 module Set : sig
   (*@ type 'a t = 'a set *)
@@ -541,8 +544,8 @@ end
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
 
 module Map : sig
-  (* the type ('a, 'b) map is defined internally in GOSPEL and can be
-     written as 'a -> 'b *)
+  (** Maps from keys of type ['a] to values of type ['b] are represented by
+      Gospel functions of type ['a -> 'b]. *)
 end
 
 module Order : sig
