@@ -1,0 +1,5 @@
+(library
+ (name ppx_odoc_of_gospel)
+ (public_name gospel.ppx)
+ (kind ppx_rewriter)
+ (libraries ppxlib fmt))

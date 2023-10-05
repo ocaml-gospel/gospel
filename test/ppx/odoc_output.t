@@ -1,0 +1,101 @@
+In this file, we are testing output from Odoc after the ppx rewriting.
+
+First, we compile the file, running the source preprocessor and the ppx:
+
+  $ ocamlc -bin-annot -pp "gospel pps" -ppx "./pp.exe -as-ppx" odoc_of_gospel.mli
+
+Then run Odoc
+
+  $ odoc compile odoc_of_gospel.cmti
+
+We test the html and the latex outputs
+
+  $ odoc html-generate odoc_of_gospel.odoc -o tmp
+  $ odoc latex-generate odoc_of_gospel.odoc -o tmp
+
+As the output is not stable through odoc versions, we just check that the files
+are generated:
+
+  $ find tmp
+  tmp
+  tmp/Odoc_of_gospel.tex
+  tmp/Odoc_of_gospel
+  tmp/Odoc_of_gospel/index.html
+
+This is not the case for the man output, here we can test the output.
+Though, to be sure the diff is meaningful, let's set terminal's number of
+columns:
+
+  $ export COLUMNS=80
+  $ odoc man-generate odoc_of_gospel.odoc -o tmp
+  $ man tmp/Odoc_of_gospel.3o
+  
+  Odoc_of_gospel(3)                OCaml Library               Odoc_of_gospel(3)
+  
+  Name
+         Odoc_of_gospel
+  
+  Synopsis
+    Module Odoc_of_gospel
+  
+         Module informal documentation
+  
+  Documentation
+         An axiom declaration
+  
+         Gospel declaration:
+             axiom a : true
+  
+         A logical function declaration without definition
+  
+         Gospel declaration:
+             function f : integer -> integer
+  
+         A logical function definition
+  
+         Gospel declaration:
+             function g (i : integer) : integer = i + 1
+  
+         A logical function declaration with assertions
+  
+         Gospel declaration:
+             function h (i : integer) : integer = i - 1
+             requires i > 0
+             ensures result >= 0
+  
+         A logical predicate definition
+  
+         Gospel declaration:
+             predicate p (i : integer) = i = 42
+  
+         A ghost type declaration
+  
+         Gospel declaration:
+             type casper
+  
+         type 'a t
+           A program type declaration with specifications
+  
+           Gospel specification:
+             model m : 'a sequence
+             invariant true
+  
+         val prog_fun : int -> int
+           A program function with specifications
+  
+           Gospel specification:
+             y = prog_fun x
+             requires true
+             ensures true
+  
+         val multiple_gospel_attribute : int -> int
+           Gospel specification:
+             y = multiple_gospel_attribute x
+  
+           Gospel specification:
+             requires true
+  
+           Gospel specification:
+             ensures true
+  
+  Odoc                                                         Odoc_of_gospel(3)

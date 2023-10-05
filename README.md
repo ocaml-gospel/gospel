@@ -79,6 +79,20 @@ $ gospel check max_array.mli
 OK
 ```
 
+Gospel also provides a ppx rewriter to allow odoc to display the contents of
+gospel specifications and declarations as documentation. This ppx rewriter
+works under the assumption that the source preprocessor has been run first. The
+dune stanza reads as follows:
+
+```dune
+(library
+ (name lib_name)
+ (preprocess
+  (pps gospel.ppx -- -pp "gospel pps")))
+```
+
+Be aware that it is the user's responsability to run the gospel type-checker when needed.
+
 ### Tools using Gospel
 
 > You are using Gospel as a frontend? [Let us
