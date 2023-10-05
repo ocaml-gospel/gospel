@@ -18,3 +18,22 @@
  (deps stdlib/gospelstdlib.mli)
  (action
   (run stdlib/file_to_string.exe %{deps} %{targets})))
+
+(rule
+ (alias fmt)
+ (enabled_if %{bin-available:ex})
+ (action
+  (progn
+   (run
+    ex
+    -u
+    NONE
+    -n
+    %{dep:pps.mll}
+    -c
+    "g/^{/+,/^}$/-!ocamlformat --impl -m 78 - | sed 's/^./  &/'"
+    -c
+    "g/ {$/+,/^    }$/-!ocamlformat --impl -m 74 - | sed 's/^./      &/'"
+    -c
+    "wq! pps.formatted.mll")
+   (diff? pps.mll pps.formatted.mll))))

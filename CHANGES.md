@@ -68,6 +68,8 @@
 
 ## Fixed
 
+- Fix the performance issues in the preprocessor
+  [\353](https://github/ocaml-gospel/gospel/pull/353)
 - Gospel preprocessor support documentation for ghost declaration
   [\#331](https://github/ocaml-gospel/gospel/pull/331)
 - Consider comments as spaces while preprocessing (to ensure specification can
