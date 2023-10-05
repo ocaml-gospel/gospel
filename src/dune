@@ -14,7 +14,7 @@
  (modules_without_implementation uast))
 
 (rule
- (targets gospelstdlib.ml)
+ (targets gospellib.ml)
  (deps stdlib/gospelstdlib.mli)
  (action
   (run stdlib/file_to_string.exe %{deps} %{targets})))
