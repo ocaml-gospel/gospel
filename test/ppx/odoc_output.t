@@ -16,10 +16,9 @@ We test the html and the latex outputs
 As the output is not stable through odoc versions, we just check that the files
 are generated:
 
-  $ find tmp
-  tmp
+  $ find tmp -name \*.tex
   tmp/Odoc_of_gospel.tex
-  tmp/Odoc_of_gospel
+  $ find tmp -name \*.html
   tmp/Odoc_of_gospel/index.html
 
 This is not the case for the man output, here we can test the output.
