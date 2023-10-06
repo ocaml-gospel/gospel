@@ -27,74 +27,50 @@ columns:
 
   $ export COLUMNS=80
   $ odoc man-generate odoc_of_gospel.odoc -o tmp
-  $ man tmp/Odoc_of_gospel.3o
+  $ grep -v '^\.' tmp/Odoc_of_gospel.3o
   
-  Odoc_of_gospel(3)                OCaml Library               Odoc_of_gospel(3)
+  Odoc_of_gospel
+  \fBModule Odoc_of_gospel\fR
+  Module informal documentation
+  An axiom declaration
+  Gospel declaration:
+      axiom a : true 
+  A logical function declaration without definition
+  Gospel declaration:
+      function f : integer -> integer 
+  A logical function definition
+  Gospel declaration:
+      function g (i : integer) : integer = i + 1 
+  A logical function declaration with assertions
+  Gospel declaration:
+      function h (i : integer) : integer = i - 1 
+      requires i > 0
+      ensures result >= 0 
+  A logical predicate definition
+  Gospel declaration:
+      predicate p (i : integer) = i = 42 
+  A ghost type declaration
+  Gospel declaration:
+      type casper 
+  \f[CB]type\fR 'a t
+  A program type declaration with specifications
+  Gospel specification:
+      model m : 'a sequence
+      invariant true 
   
-  Name
-         Odoc_of_gospel
+  \f[CB]val\fR prog_fun : int \f[CB]\->\fR int
+  A program function with specifications
+  Gospel specification:
+      y = prog_fun x
+      requires true
+      ensures true 
   
-  Synopsis
-    Module Odoc_of_gospel
+  \f[CB]val\fR multiple_gospel_attribute : int \f[CB]\->\fR int
+  Gospel specification:
+      y = multiple_gospel_attribute x 
+  Gospel specification:
+      requires true 
+  Gospel specification:
+      ensures true 
   
-         Module informal documentation
   
-  Documentation
-         An axiom declaration
-  
-         Gospel declaration:
-             axiom a : true
-  
-         A logical function declaration without definition
-  
-         Gospel declaration:
-             function f : integer -> integer
-  
-         A logical function definition
-  
-         Gospel declaration:
-             function g (i : integer) : integer = i + 1
-  
-         A logical function declaration with assertions
-  
-         Gospel declaration:
-             function h (i : integer) : integer = i - 1
-             requires i > 0
-             ensures result >= 0
-  
-         A logical predicate definition
-  
-         Gospel declaration:
-             predicate p (i : integer) = i = 42
-  
-         A ghost type declaration
-  
-         Gospel declaration:
-             type casper
-  
-         type 'a t
-           A program type declaration with specifications
-  
-           Gospel specification:
-             model m : 'a sequence
-             invariant true
-  
-         val prog_fun : int -> int
-           A program function with specifications
-  
-           Gospel specification:
-             y = prog_fun x
-             requires true
-             ensures true
-  
-         val multiple_gospel_attribute : int -> int
-           Gospel specification:
-             y = multiple_gospel_attribute x
-  
-           Gospel specification:
-             requires true
-  
-           Gospel specification:
-             ensures true
-  
-  Odoc                                                         Odoc_of_gospel(3)
