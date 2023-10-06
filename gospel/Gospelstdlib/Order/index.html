@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Order (gospel.Gospelstdlib.Order)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">gospel</a> &#x00BB; <a href="../index.html">Gospelstdlib</a> &#x00BB; Order</nav><header class="odoc-preamble"><h1>Module <code><span>Gospelstdlib.Order</span></code></h1><pre class="language-gospel"><code>Gospel declaration:
+    predicate is_pre_order (cmp: 'a -&gt; 'a -&gt; int) =
+      (forall x. cmp x x = 0) /\
+      (forall x y. cmp x y &lt;= 0 &lt;-&gt; cmp y x &gt;= 0) /\
+      (forall x y z.
+         (cmp x y &lt;= 0 -&gt; cmp y z &lt;= 0 -&gt; cmp x z &lt;= 0) /\
+         (cmp x y &lt;= 0 -&gt; cmp y z &lt;  0 -&gt; cmp x z &lt;  0) /\
+         (cmp x y &lt;  0 -&gt; cmp y z &lt;= 0 -&gt; cmp x z &lt;  0) /\
+         (cmp x y &lt;  0 -&gt; cmp y z &lt;  0 -&gt; cmp x z &lt;  0)) </code></pre></header><div class="odoc-content"></div></body></html>
