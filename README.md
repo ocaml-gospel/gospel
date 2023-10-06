@@ -121,8 +121,8 @@ See the [LICENSE](LICENSE) file for more information.
 
 Gospel was initially developed by Cláudio Lourenço (LRI postdoctorate).
 
-It is now maintained by Clément Pascutto, Mário Pereira, and Jean-Christophe
-Filliâtre.
+It is currently maintained by Jean-Christophe Filliâtre, Samuel Hym, Nicolas
+Osborne, Clément Pascutto, and Mário Pereira.
 
 The full list of contributors is available
 [here](https://github.com/ocaml-gospel/gospel/graphs/contributors).
