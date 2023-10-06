@@ -13,6 +13,6 @@ Please keep in mind that it only contains logical symbols though, and should not
 be confused with those provided by the OCaml standard library (which you are not
 allowed to use in specifications!).
 
-
-The interface for the Gospel standard library is available [in the Gospel
-repository](https://github.com/ocaml-gospel/gospel/blob/main/src/stdlib/gospelstdlib.mli).
+The interface for the Gospel standard library can be seen
+[here](pathname:///gospel/gospel/Gospelstdlib/index.html) or directly in the
+[repository](https://github.com/ocaml-gospel/gospel/blob/main/src/stdlib/gospelstdlib.mli).

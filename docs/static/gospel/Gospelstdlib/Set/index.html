@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Set (gospel.Gospelstdlib.Set)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">gospel</a> &#x00BB; <a href="../index.html">Gospelstdlib</a> &#x00BB; Set</nav><header class="odoc-preamble"><h1>Module <code><span>Gospelstdlib.Set</span></code></h1><pre class="language-gospel"><code>Gospel declaration:
+    type 'a t = 'a set </code></pre></header><div class="odoc-content"><p>An alias for <code>'a set</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function compare (s s': 'a t) : integer </code></pre><p>A comparison function over sets.</p><pre class="language-gospel"><code>Gospel declaration:
+    function empty : 'a t </code></pre><p><code>empty</code> is <code>∅</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate is_empty (s: 'a t) </code></pre><p><code>is_empty s</code> is <code>s = ∅</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate mem (x: 'a) (s: 'a t) </code></pre><p><code>mem x s</code> is <code>x ∈ s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function add (x: 'a) (s: 'a t) : 'a t </code></pre><p><code>add x s</code> is <code>s ∪ {x}</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function singleton (x: 'a) : 'a t </code></pre><p><code>singleton x</code> is <code>{x}</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function remove (x: 'a) (s: 'a t) : 'a t </code></pre><p><code>remove x s</code> is <code>s ∖ {x}</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function union (s s': 'a t) : 'a t </code></pre><p><code>union s s'</code> is <code>s ∪ s'</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function inter (s s': 'a t) : 'a t </code></pre><p><code>inter s s'</code> is <code>s ∩ s'</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate disjoint (s s': 'a t) </code></pre><p><code>disjoint s s'</code> is <code>s ∩ s' = ∅</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function diff (s s': 'a t) : 'a t </code></pre><p><code>diff s s'</code> is <code>s ∖ s'</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate subset (s s': 'a t) </code></pre><p><code>subset s s'</code> is <code>s ⊂ s'</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function cardinal (s: 'a t) : integer </code></pre><p><code>cardinal s</code> is the number of elements in <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function choose (s: 'a t) : integer </code></pre><p><code>choose s</code> is an arbitrary element of <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function choose_opt: 'a t -&gt; 'a option </code></pre><p><code>choose_opt s</code> is an arbitrary element of <code>s</code> or <code>None</code> if <code>s</code> is empty.</p><pre class="language-gospel"><code>Gospel declaration:
+    function map (f: 'a -&gt; 'b) (s: 'a t) : 'b t </code></pre><p><code>map f s</code> is a fresh set which elements are <code>f x1 ... f xN</code>, where <code>x1 ... xN</code> are the elements of <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function fold (f: 'a -&gt; 'b -&gt; 'b) (s: 'a t) (a: 'b) : 'b </code></pre><p><code>fold f s a</code> is <code>(f xN ... (f x2 (f x1 a))...)</code>, where <code>x1 ... xN</code> are the elements of <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate for_all (f: 'a -&gt; bool) (s: 'a t) </code></pre><p><code>for_all f s</code> holds iff <code>f x</code> is <code>true</code> for all elements in <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate _exists (f: 'a -&gt; bool) (s: 'a t) </code></pre><p><code>_exists f s</code> holds iff <code>f x</code> is <code>true</code> for at least one element in <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function filter (f: 'a -&gt; bool) (s: 'a t) : 'a t </code></pre><p><code>filter f s</code> is the set of all elements in <code>s</code> that satisfy <code>f</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function filter_map (f: 'a -&gt; 'a option) (s: 'a t) : 'a t </code></pre><p><code>filter_map f s</code> is the set of all <code>v</code> such that <code>f x = Some v</code> for some element <code>x</code> of <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function partition (f: 'a -&gt; bool) (s: 'a t) : ('a t * 'a t) </code></pre><p><code>partition f s</code> is the pair of sets <code>(s1, s2)</code>, where <code>s1</code> is the set of all the elements of <code>s</code> that satisfy the predicate <code>f</code>, and <code>s2</code> is the set of all the elements of <code>s</code> that do not satisfy <code>f</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function to_list (s: 'a t) : 'a list </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function of_list (l: 'a list) : 'a t </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function to_seq (s: 'a t) : 'a Sequence.t </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function of_seq (s: 'a Sequence.t) : 'a t </code></pre></div></body></html>

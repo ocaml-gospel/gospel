@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Bag (gospel.Gospelstdlib.Bag)</title><link rel="stylesheet" href="../../../_odoc-theme/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">gospel</a> &#x00BB; <a href="../index.html">Gospelstdlib</a> &#x00BB; Bag</nav><header class="odoc-preamble"><h1>Module <code><span>Gospelstdlib.Bag</span></code></h1><pre class="language-gospel"><code>Gospel declaration:
+    type 'a t = 'a bag </code></pre></header><div class="odoc-content"><p>An alias for <code>'a bag</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function occurrences (x: 'a) (b: 'a t): integer </code></pre><p><code>occurrences x b</code> is the number of occurrences of <code>x</code> in <code>s</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function empty : 'a t </code></pre><p><code>empty</code> is the empty bag.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate is_empty (b: 'a t) </code></pre><p><code>is_empty b</code> is <code>b = empty</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate mem (x: 'a) (b: 'a t) </code></pre><p><code>mem x b</code> holds iff <code>b</code> contains <code>x</code> at least once.</p><pre class="language-gospel"><code>Gospel declaration:
+    function add (x: 'a) (b: 'a t) : 'a t </code></pre><p><code>add x b</code> is <code>b</code> when an occurence of <code>x</code> was added.</p><pre class="language-gospel"><code>Gospel declaration:
+    function singleton (x: 'a) : 'a t </code></pre><p><code>singleton x</code> is a bag containing one occurence of <code>x</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function remove (x: 'a) (b: 'a t) : 'a t </code></pre><p><code>remove x b</code> is <code>b</code> where an occurence of <code>x</code> was removed.</p><pre class="language-gospel"><code>Gospel declaration:
+    function union (b b': 'a t) : 'a t </code></pre><p><code>union b b'</code> is a bag <code>br</code> where for all element <code>x</code>, <code>occurences x br = max
+      (occurences x b) (occurences x b')</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function sum (b b': 'a t) : 'a t </code></pre><p><code>sum b b'</code> is a bag <code>br</code> where for all element <code>x</code>, <code>occurences x br =
+      (occurences x b) + (occurences x b')</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function inter (b b': 'a t) : 'a t </code></pre><p><code>inter b b'</code> is a bag <code>br</code> where for all element <code>x</code>, <code>occurences x br =
+      min (occurences x b) (occurences x b')</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate disjoint (b b': 'a t) </code></pre><p><code>disjoint b b'</code> holds iff <code>b</code> and <code>b'</code> have no element in common.</p><pre class="language-gospel"><code>Gospel declaration:
+    function diff (b b': 'a t) : 'a t </code></pre><p><code>diff b b'</code> is a bag <code>br</code> where for all element <code>x</code>, <code>occurences x br =
+      max 0 (occurences x b - occurences x b')</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate subset (b b': 'a t) </code></pre><p><code>subset b b'</code> holds iff for all element <code>x</code>, <code>occurences x b &lt;= occurences x b'</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function choose (b: 'a t) : 'a </code></pre><p><code>choose b</code> is an arbitrary element of <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function choose_opt (b: 'a t) : 'a option </code></pre><p><code>choose_opt b</code> is an arbitrary element of <code>b</code> or <code>None</code> if <code>b</code> is empty.</p><pre class="language-gospel"><code>Gospel declaration:
+    function map (f: 'a -&gt; 'b) (b: 'a t) : 'b t </code></pre><p><code>map f b</code> is a fresh bag which elements are <code>f x1 ... f xN</code>, where <code>x1 ... xN</code> are the elements of <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function fold (f: 'a -&gt; 'b -&gt; 'b) (b: 'a t) (a: 'b) : 'b </code></pre><p><code>fold f b a</code> is <code>(f xN ... (f x2 (f x1 a))...)</code>, where <code>x1 ... xN</code> are the elements of <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate for_all (f: 'a -&gt; bool) (b: 'a t) </code></pre><p><code>for_all f b</code> holds iff <code>f x</code> is <code>true</code> for all elements in <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    predicate _exists (f: 'a -&gt; bool) (b: 'a t) </code></pre><p><code>for_all f b</code> holds iff <code>f x</code> is <code>true</code> for at least one element in <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function filter (f: 'a -&gt; bool) (b: 'a t) : 'a t </code></pre><p><code>filter f b</code> is the bag of all elements in <code>b</code> that satisfy <code>f</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function filter_map (f: 'a -&gt; 'a option) (b: 'a t) : 'a t </code></pre><p><code>filter_map f b</code> is the bag of all <code>v</code> such that <code>f x = Some v</code> for some element <code>x</code> of <code>b</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function partition (f: 'a -&gt; bool) (b: 'a t) : ('a t * 'a t) </code></pre><p><code>partition f b</code> is the pair of bags <code>(b1, b2)</code>, where <code>b1</code> is the bag of all the elements of <code>b</code> that satisfy <code>f</code>, and <code>b2</code> is the bag of all the elements of <code>b</code> that do not satisfy <code>f</code>.</p><pre class="language-gospel"><code>Gospel declaration:
+    function cardinal (b: 'a t) : integer </code></pre><p><code>cardinal b</code> is the total number of elements in <code>b</code>, all occurrences being counted.</p><pre class="language-gospel"><code>Gospel declaration:
+    function to_list (b: 'a t) : 'a list </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function of_list (l: 'a list) : 'a t </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function to_seq (b: 'a t) : 'a Sequence.t </code></pre><pre class="language-gospel"><code>Gospel declaration:
+    function of_seq (s: 'a Sequence.t) : 'a t </code></pre></div></body></html>
