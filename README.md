@@ -104,9 +104,10 @@ guarantees to your programs:
 - **[Cameleer](https://github.com/ocaml-gospel/cameleer).** A tool that extends
   Gospel to implementation files to provide semi-automated deductive
   verification of OCaml programs.
-- **[Ortac](https://github.com/ocaml-gospel/ortac).** A runtime assertion
-  checking tool based that generates verifying code for your test suites or
-  programs monitors.
+- **[Ortac](https://github.com/ocaml-gospel/ortac).** A testing tool for OCaml
+  programs that converts the Gospel specifications into code to test that they
+  hold at runtime. You may use it to generate testing suites and fuzzers or
+  monitor your program execution.
 - **[Why3gospel](https://github.com/ocaml-gospel/why3gospel).** A Why3 plugin that
   lets you verify that a program proof refines the Gospel specifications before
   extracting it to OCaml.
