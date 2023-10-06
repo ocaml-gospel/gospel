@@ -51,11 +51,11 @@ $ opam install gospel
 ```
 
 This will install the `gospel` tool binary, as well as the developer library if you
-wish to build your software on top of Gospel. You may check the installation with.
+wish to build your software on top of Gospel. You may check the installation with:
 
 ```shell
 $ gospel --version
-gospel version 0.1.0
+gospel version 0.2.0
 ```
 
 ### Usage
