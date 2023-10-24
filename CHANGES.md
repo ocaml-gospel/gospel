@@ -1,3 +1,11 @@
+# 0.3
+
+## Added
+
+- Created a gallery of Gospel examples that might serve as a working ground
+  to experiment with Gospel syntax and future extensions of the language.
+  [#361] (https://github.com/ocaml-gospel/gospel/pull/361)
+
 # 0.2
 
 ## Added
