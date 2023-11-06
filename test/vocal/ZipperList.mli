@@ -92,7 +92,3 @@ val focused : 'a t -> 'a option
     ensures match r with
             | None   -> z.idx = Sequence.length z.seq
             | Some x -> z.idx < Sequence.length z.seq /\ x = z.seq[z.idx] *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

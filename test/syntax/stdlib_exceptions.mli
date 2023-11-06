@@ -9,7 +9,3 @@ val find : ('a -> bool) -> 'a list -> 'a
 val invalid_arg : string -> 'a
 (*@ raises  Invalid_argument _ -> true
     ensures false *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

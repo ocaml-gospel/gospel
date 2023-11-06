@@ -115,7 +115,3 @@ module Make (K : HashedType) : sig
   (*@ b = mem h k
     ensures b <-> h.view k <> [] *)
 end
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

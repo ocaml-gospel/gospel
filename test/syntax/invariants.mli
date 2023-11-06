@@ -6,7 +6,3 @@ type t2 = private A | B
 
 type t3 = private int * int
 (*@ invariant 1 > 0 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

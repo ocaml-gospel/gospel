@@ -12,7 +12,3 @@ type u = private { tag : int; next : u }
 val f : u -> u
 (*@ y = f x
     requires x.tag = 0 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

@@ -330,7 +330,3 @@ val unsafe_resize: 'a t -> int -> unit
 val unsafe_get : 'a t -> int -> 'a
 val unsafe_set : 'a t -> int -> 'a -> unit
 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

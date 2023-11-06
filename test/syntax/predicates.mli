@@ -19,7 +19,3 @@ val merge : int array -> int array -> int array
 (*@ requires n >= 0
     variant n
     ensures result >= 0 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

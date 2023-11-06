@@ -26,7 +26,3 @@ type t2 = B of int * int
 
 (*@ function f (x: t2) : unit =
     match x with B _ -> () *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

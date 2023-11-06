@@ -47,7 +47,3 @@ val f : 'a -> 'a
     raises E11 'a' -> true
     raises E11 ('a' | 'b') -> true
     raises E11 ('c'..'z') -> true *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

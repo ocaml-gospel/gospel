@@ -7,7 +7,3 @@ val fib : int -> int -> int -> int
     requires a = fibonacci i
     requires b = fibonacci (i+1)
     ensures r = fibonacci (i+n) *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

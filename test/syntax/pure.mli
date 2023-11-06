@@ -3,7 +3,3 @@ val f : int -> int * int
 
 val f : int -> int * int * int
 (*@ pure *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)
