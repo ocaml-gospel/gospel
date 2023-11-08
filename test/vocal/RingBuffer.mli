@@ -62,7 +62,3 @@ val copy : 'a buffer -> 'a buffer
       ensures b.capacity = r.capacity
       ensures forall i. 0 <= i < length r.sequence ->
         b.sequence[i] = r.sequence[i] *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

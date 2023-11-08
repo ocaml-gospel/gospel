@@ -6,6 +6,11 @@
   to experiment with Gospel syntax and future extensions of the language.
   [#361] (https://github.com/ocaml-gospel/gospel/pull/361)
 
+## Internals
+
+- Remove the `gospel_expected` prologue at the end of successful tests
+  [\#363](https://github.com/ocaml-gospel/gospel/pull/363)
+
 # 0.2
 
 ## Added

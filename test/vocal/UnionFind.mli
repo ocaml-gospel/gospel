@@ -121,7 +121,3 @@ val union : 'a elem -> 'a elem -> unit
       uf1.img x = if mem x (old uf1.dom) then old (uf1.img x)
                                          else old (uf2.img x)
 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

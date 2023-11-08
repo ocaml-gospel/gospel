@@ -61,7 +61,3 @@
 (*@ function h14 (x: 'a): test *)
 
 (*@ function h15 (x: test): integer *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

@@ -24,7 +24,3 @@ val map : ('a -> 'b) -> 'a list -> 'b list
       ensures forall i. 0 <= i < List.length l ->
                 List.nth r i = f (List.nth l i)
       equivalent "List.rev (List.map f (List.rev l))" *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

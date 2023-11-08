@@ -23,7 +23,3 @@ val f : int -> t -> bool
     (* raises E _ -> false *)
     raises F _ -> true
     raises F (_, _) -> true *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

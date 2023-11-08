@@ -54,7 +54,3 @@ val f : int ref -> unit
 val f : int ref -> unit
 (*@ f x
     modifies x *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

@@ -16,7 +16,3 @@ type int
  * module A : TA with type 'a t := 'a t1 *)
 
 (* @ function t1 (x:'a t1) : float = A.f x *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

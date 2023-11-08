@@ -43,7 +43,3 @@ and 'b t22 = C of 'b
 type t23 = u
 and u = C of v
 and v = t23
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

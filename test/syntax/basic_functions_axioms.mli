@@ -125,7 +125,3 @@ type 'a t6 = { xx : 'a; yy : int }
   | {y = B; x} -> {yy=int_of_integer 10; xx = b.y }
   | {x; y} -> {xx=y;yy=x}
 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)

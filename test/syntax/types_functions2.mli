@@ -30,7 +30,3 @@ type ('a, 'b) t7 = 'a t6
   match x with
   | {x;y} -> {x;y}
 *)
-
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)
