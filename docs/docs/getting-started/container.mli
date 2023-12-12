@@ -2,8 +2,9 @@ type 'a t
 (** The type for containers. *)
 (*@ model capacity: int
     mutable model contents: 'a set
-    invariant capacity > 0
-    invariant Set.cardinal contents <= capacity *)
+    with t
+    invariant t.capacity > 0
+    invariant Set.cardinal t.contents <= t.capacity *)
 
 exception Full
 
