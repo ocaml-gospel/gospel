@@ -28,8 +28,9 @@ The specification of this type contains three elements:
 Type specifications can contain models, invariants, and mutability information.
 
 ```ebnf title="Type specification syntax"
-type_specification = "ephemeral"? model-clause* invariant-clause*
+type_specification = "ephemeral"? model-clause* invariant-block?
 model-clause = "mutable"? "model" identifier ":" type_expression
+invariant-block = "with" identifier invariant-clause+
 invariant-clause = "invariant" expr
 ```
 
@@ -75,7 +76,8 @@ Only use `ephemeral` when there is mutability that cannot be guessed otherwise.
 
 Type annotations may also contain invariants that hold at every function's entry
 and exit point that manipulates their values. Formulae expressing these
-properties may be added after the `invariant` keyword:
+properties may be added after the `invariant` keyword. The `with` keyword introduces
+a name for a value of the type being specified:
 
 ```ocaml {4}
 type 'a t
