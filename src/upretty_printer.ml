@@ -11,6 +11,7 @@
 open Ppxlib
 open Uast
 open Opprintast
+module Option = Stdlib.Option
 open Utils.Fmt
 
 let const_hole s fmt _ = pp fmt "%s" s
@@ -43,9 +44,9 @@ let type_spec f ts =
     pp f "@[<v>%a%a%a@]" ephemeral ts.ty_ephemeral (list_keyword "model ...")
       ts.ty_field
       (list_keyword "invariant ...")
-      (snd ts.ty_invariant)
+      Option.(value ~default:[] (map snd ts.ty_invariant))
   in
-  if ts.ty_ephemeral || ts.ty_field != [] || snd ts.ty_invariant != [] then
+  if ts.ty_ephemeral || ts.ty_field != [] || Option.is_some ts.ty_invariant then
     pp f "@[%a@]" (spec print_tspec) ts
   else ()
 

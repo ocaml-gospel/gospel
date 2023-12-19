@@ -6,6 +6,11 @@
   to experiment with Gospel syntax and future extensions of the language.
   [#361] (https://github.com/ocaml-gospel/gospel/pull/361)
 
+## Improved
+
+- Make the `with` necessary when declaring type invariants
+  [\#372](https://github.com/ocaml-gospel/gospel/pull/372)
+
 ## Internals
 
 - Remove the `gospel_expected` prologue at the end of successful tests

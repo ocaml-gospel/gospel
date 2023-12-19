@@ -566,7 +566,7 @@ let process_type_spec kid crcm ns ty spec =
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
   let self_vs =
-    Option.map (fun x -> create_vsymbol x ty) (fst spec.ty_invariant)
+    Option.map (fun (x, _) -> create_vsymbol x ty) spec.ty_invariant
   in
   let env =
     match self_vs with
@@ -574,7 +574,9 @@ let process_type_spec kid crcm ns ty spec =
     | None -> Mstr.empty
   in
   let invariants =
-    List.map (fmla Invariant kid crcm ns env) (snd spec.ty_invariant)
+    match spec.ty_invariant with
+    | None -> []
+    | Some (_, xs) -> List.map (fmla Invariant kid crcm ns env) xs
   in
   type_spec spec.ty_ephemeral fields (self_vs, invariants) spec.ty_text
     spec.ty_loc
@@ -718,7 +720,7 @@ let type_type_declaration kid crcm ns r tdl =
     (* invariants are only allowed on abstract/private types *)
     (match ((td.tkind, td.tmanifest), td.tspec) with
     | ( ((Ptype_variant _ | Ptype_record _), _ | _, Some _),
-        Some { ty_invariant = _, _ :: _; _ } )
+        Some { ty_invariant = Some _; _ } )
       when td.tprivate = Public ->
         W.error ~loc:td.tloc (W.Public_type_invariant td_ts.ts_ident.id_str)
     | _, _ -> ());
