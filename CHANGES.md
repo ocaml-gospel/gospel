@@ -9,7 +9,8 @@
 ## Improved
 
 - Make the `with` necessary when declaring type invariants
-  [\#372](https://github.com/ocaml-gospel/gospel/pull/372)
+  [\#372](https://github.com/ocaml-gospel/gospel/pull/372) and
+  [\#374](https://github.com/ocaml-gospel/gospel/pull/374)
 
 ## Internals
 

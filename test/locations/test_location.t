@@ -114,7 +114,7 @@ First, create a test artifact:
                          ls_constr = false; ls_field = true },
                        false)
                       ];
-                    ty_invariants = (None, []);
+                    ty_invariants = None;
                     ty_text =
                     " mutable model contents : 'a list\n    model size : int ";
                     ty_loc = foo.mli:5:3 });
