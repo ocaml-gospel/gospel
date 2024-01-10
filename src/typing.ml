@@ -565,21 +565,14 @@ let process_type_spec kid crcm ns ty spec =
   in
   let ns, fields = List.fold_left field (ns, []) spec.ty_field in
   let fields = List.rev fields in
-  let self_vs =
-    Option.map (fun (x, _) -> create_vsymbol x ty) spec.ty_invariant
+  let aux = function
+    | vs, xs ->
+        let self_vs = create_vsymbol vs ty in
+        let env = Mstr.singleton self_vs.vs_name.id_str self_vs in
+        (self_vs, List.map (fmla Invariant kid crcm ns env) xs)
   in
-  let env =
-    match self_vs with
-    | Some vs -> Mstr.singleton vs.vs_name.id_str vs
-    | None -> Mstr.empty
-  in
-  let invariants =
-    match spec.ty_invariant with
-    | None -> []
-    | Some (_, xs) -> List.map (fmla Invariant kid crcm ns env) xs
-  in
-  type_spec spec.ty_ephemeral fields (self_vs, invariants) spec.ty_text
-    spec.ty_loc
+  let invariants = Option.map aux spec.ty_invariant in
+  type_spec spec.ty_ephemeral fields invariants spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
 let type_type_declaration kid crcm ns r tdl =
