@@ -56,6 +56,7 @@ columns:
   A program type declaration with specifications
   Gospel specification:
       model m : 'a sequence
+      with x
       invariant true 
   
   \f[CB]val\fR prog_fun : int \f[CB]\->\fR int

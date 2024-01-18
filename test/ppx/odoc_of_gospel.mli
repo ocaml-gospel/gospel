@@ -29,6 +29,7 @@
 type 'a t
 (** A program type declaration with specifications *)
 (*@ model m : 'a sequence
+    with x
     invariant true *)
 
 val prog_fun : int -> int
