@@ -27,7 +27,7 @@ let type_check load_path name sigs =
     path2module name |> Utils.Sstr.singleton |> Typing.penv load_path
   in
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
-  wrap_up_muc md
+  md
 
 let run_file config file =
   try
@@ -46,13 +46,15 @@ let run_file config file =
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." Upretty_printer.s_signature sigs);
 
-    let file = type_check config.load_path file sigs in
+    let md = type_check config.load_path file sigs in
+    let file = wrap_up_muc md in
     if config.verbose then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[********* Typed GOSPEL ********@]@.";
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." print_file file);
     pp fmt "OK\n";
+    write_gospel_file md;
     true
   with W.Error e ->
     let bt = Printexc.get_backtrace () in

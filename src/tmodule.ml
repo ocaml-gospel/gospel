@@ -606,3 +606,18 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp
     fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
+
+let write_gospel_file md =
+  let filename =
+    Filename.chop_extension (Fmt.str "%a" Ident.pp md.muc_nm) ^ ".gospel"
+  in
+  let oc = open_out filename in
+  Marshal.to_channel oc md [];
+  close_out oc
+
+let read_gospel_file filename =
+  assert (Filename.extension filename = ".gospel");
+  let ic = open_in filename in
+  let md : module_uc = Marshal.from_channel ic in
+  close_in ic;
+  md
