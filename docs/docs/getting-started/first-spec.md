@@ -185,5 +185,4 @@ type-checker:
 
 ```shell
 $ gospel check ./container.mli
-OK
 ```

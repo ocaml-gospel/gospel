@@ -76,7 +76,6 @@ well-formed, well-typed, and remain in sync with the interface they annotate!
 
 ```shell
 $ gospel check max_array.mli
-OK
 ```
 
 Gospel also provides a ppx rewriter to allow odoc to display the contents of

@@ -53,7 +53,6 @@ let run_file config file =
       pp fmt "@[********* Typed GOSPEL ********@]@.";
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." print_file file);
-    pp fmt "OK\n";
     write_gospel_file md;
     true
   with W.Error e ->
