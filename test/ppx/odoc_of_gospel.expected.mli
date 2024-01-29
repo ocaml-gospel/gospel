@@ -28,8 +28,9 @@
 [@@@ocaml.text "{@gospel[\nGospel declaration:\n    type casper ]}"]
 type 'a t[@@ocaml.doc {| A program type declaration with specifications |}]
 [@@gospel {| model m : 'a sequence
+    with x
     invariant true |}][@@ocaml.doc
-                                                           "{@gospel[\nGospel specification:\n    model m : 'a sequence\n    invariant true ]}"]
+                                                                    "{@gospel[\nGospel specification:\n    model m : 'a sequence\n    with x\n    invariant true ]}"]
 val prog_fun : int -> int[@@ocaml.doc
                            {| A program function with specifications |}]
 [@@gospel {| y = prog_fun x
