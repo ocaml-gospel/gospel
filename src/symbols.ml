@@ -39,7 +39,7 @@ type lsymbol = {
 [@@deriving show]
 
 (* CHECK *)
-let ls_equal : lsymbol -> lsymbol -> bool = ( == )
+let ls_equal l r = Ident.equal l.ls_name r.ls_name
 
 module LS = struct
   type t = lsymbol

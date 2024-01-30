@@ -14,6 +14,8 @@
 
 ## Internals
 
+- Use unique identifiers rather than physical equality for `Symbols.ls_equal`
+  [\#380](https://github.com/ocaml-gospel/gospel/pull/380)
 - Remove the `gospel_expected` prologue at the end of successful tests
   [\#363](https://github.com/ocaml-gospel/gospel/pull/363)
 
