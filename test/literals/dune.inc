@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets char1.gospel)
  (action
   (with-outputs-to char1.mli.output
    (run %{checker} %{dep:char1.mli}))))
@@ -22,6 +23,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets ints.gospel)
  (action
   (with-outputs-to ints.mli.output
    (run %{checker} %{dep:ints.mli}))))
@@ -42,6 +44,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invalid_literal.gospel)
  (action
   (with-outputs-to invalid_literal.mli.output
    (run %{checker} %{dep:invalid_literal.mli}))))

@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets attribute_syntax.gospel)
  (action
   (with-outputs-to attribute_syntax.mli.output
    (run %{checker} %{dep:attribute_syntax.mli}))))
@@ -22,6 +23,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets include_module.gospel)
  (action
   (with-outputs-to include_module.mli.output
    (run %{checker} %{dep:include_module.mli}))))
@@ -42,6 +44,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets model_field_not_found.gospel)
  (action
   (with-outputs-to model_field_not_found.mli.output
    (run %{checker} %{dep:model_field_not_found.mli}))))
@@ -62,6 +65,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets model_is_not_record.gospel)
  (action
   (with-outputs-to model_is_not_record.mli.output
    (run %{checker} %{dep:model_is_not_record.mli}))))
@@ -82,6 +86,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets model_shadows_field.gospel)
  (action
   (with-outputs-to model_shadows_field.mli.output
    (run %{checker} %{dep:model_shadows_field.mli}))))
@@ -102,6 +107,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets no_return.gospel)
  (action
   (with-outputs-to no_return.mli.output
    (run %{checker} %{dep:no_return.mli}))))
@@ -122,6 +128,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets return_unit_and_ghost.gospel)
  (action
   (with-outputs-to return_unit_and_ghost.mli.output
    (run %{checker} %{dep:return_unit_and_ghost.mli}))))
@@ -142,6 +149,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets stdlib_float_array_not_found.gospel)
  (action
   (with-outputs-to stdlib_float_array_not_found.mli.output
    (run %{checker} %{dep:stdlib_float_array_not_found.mli}))))
@@ -162,6 +170,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets stdlib_float_array_t_not_found.gospel)
  (action
   (with-outputs-to stdlib_float_array_t_not_found.mli.output
    (run %{checker} %{dep:stdlib_float_array_t_not_found.mli}))))

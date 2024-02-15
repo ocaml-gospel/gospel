@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets impure_not_promoted.gospel)
  (action
   (with-outputs-to impure_not_promoted.mli.output
    (run %{checker} %{dep:impure_not_promoted.mli}))))
@@ -22,6 +23,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure_no_diverges.gospel)
  (action
   (with-outputs-to pure_no_diverges.mli.output
    (run %{checker} %{dep:pure_no_diverges.mli}))))
@@ -42,6 +44,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure_no_exceptions1.gospel)
  (action
   (with-outputs-to pure_no_exceptions1.mli.output
    (run %{checker} %{dep:pure_no_exceptions1.mli}))))
@@ -62,6 +65,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure_no_exceptions2.gospel)
  (action
   (with-outputs-to pure_no_exceptions2.mli.output
    (run %{checker} %{dep:pure_no_exceptions2.mli}))))
@@ -82,6 +86,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure_no_modifies.gospel)
  (action
   (with-outputs-to pure_no_modifies.mli.output
    (run %{checker} %{dep:pure_no_modifies.mli}))))
@@ -102,6 +107,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure_promoted.gospel)
  (action
   (with-outputs-to pure_promoted.mli.output
    (run %{checker} %{dep:pure_promoted.mli}))))

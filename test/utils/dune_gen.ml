@@ -35,6 +35,7 @@ let dependencies, exit_codes =
 
 let print_rule file =
   if Filename.extension file = ".mli" then
+    let gospel_file = Filename.remove_extension file ^ ".gospel" in
     let deps =
       match Hashtbl.find_all dependencies file with
       | [] -> ""
@@ -50,6 +51,7 @@ let print_rule file =
  (deps
   %%{bin:gospel}
   (:checker %%{project_root}/test/utils/testchecker.exe)%s)
+ (targets %s)
  (action
   (with-outputs-to %s.output
    (run %%{checker} %%{dep:%s}))))
@@ -67,7 +69,7 @@ let print_rule file =
    %s(run ocamlc -c %%{dep:%s})%s)))
 
 |}
-      deps file file file file exit_code_open file exit_code_close
+      deps gospel_file file file file file exit_code_open file exit_code_close
 
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in

@@ -20,9 +20,11 @@ let test_file file =
   let command = str "gospel check %s > %s 2> %s" file Filename.null stderr in
   let status = Sys.command command in
   pr "%a@\n" print file;
-  if status <> 0 then
+  if status <> 0 then (
     pr "(* @[{gospel_expected|@\n[%d] @[%a@]@\n|gospel_expected}@] *)@\n" status
-      print stderr
+      print stderr;
+    let oc = open_out (Filename.remove_extension file ^ ".gospel") in
+    close_out oc)
 
 let () =
   let file = Sys.argv.(1) in
