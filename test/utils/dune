@@ -10,6 +10,3 @@
  (name testchecker)
  (modules testchecker)
  (libraries fmt))
-
-(rule
- (write-file check_success ""))
