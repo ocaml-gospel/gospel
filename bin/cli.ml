@@ -10,32 +10,21 @@
 
 open Cmdliner
 
-type test = { pred : string -> bool; err : string }
+let file s = List.mem (Filename.extension s) [ ".mli"; ".ml" ]
+let intf s = List.mem (Filename.extension s) [ ".mli"; ".gospel" ]
 
-let test_file =
-  {
-    pred = (fun s -> List.mem (Filename.extension s) [ ".mli"; ".ml" ]);
-    err = "file";
-  }
-
-let test_intf =
-  {
-    pred = (fun s -> String.equal (Filename.extension s) ".mli");
-    err = "interface file";
-  }
-
-let ocaml_test test =
+let test test =
   let parse s =
     match Sys.file_exists s with
     | true ->
-        if test.pred s then `Ok s
-        else `Error (Printf.sprintf "Error: `%s' is not an OCaml %s" s test.err)
+        if test s then `Ok s
+        else `Error (Printf.sprintf "don't know what to do with %s" s)
     | false -> `Error (Printf.sprintf "Error: `%s' not found" s)
   in
   (parse, Format.pp_print_string)
 
-let ocaml_intf = ocaml_test test_intf
-let ocaml_file = ocaml_test test_file
+let test_intf = test intf
+let test_file = test file
 
 let verbose =
   let doc = "Print all intermediate forms." in
@@ -45,8 +34,13 @@ let load_path =
   let doc = "Include directory in load path." in
   Arg.(value & opt_all dir [] & info [ "L"; "load-path" ] ~doc ~docv:"DIR")
 
-let intfs = Arg.(non_empty & pos_all ocaml_intf [] & info [] ~docv:"FILE")
-let files = Arg.(non_empty & pos_all ocaml_file [] & info [] ~docv:"FILE")
+let intfs =
+  let doc = "File to be processed, expect a .mli or a .gospel file" in
+  Arg.(non_empty & pos_all test_intf [] & info [] ~doc ~docv:"FILE")
+
+let files =
+  let doc = "File to be processed, expect a .mli or a .ml file" in
+  Arg.(non_empty & pos_all test_file [] & info [] ~doc ~docv:"FILE")
 
 let run_check verbose load_path file =
   let load_path =
