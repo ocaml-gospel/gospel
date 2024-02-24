@@ -15,20 +15,20 @@ open Utils
 open Fmt
 
 let print_vs fmt { vs_name; vs_ty } =
-  pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
+  pp fmt "@[%a:%a@]" Ident.pp_simpl vs_name print_ty vs_ty
 
 let print_ls_decl fmt { ls_name; ls_args; ls_value; _ } =
   let is_func = Option.is_some ls_value in
   let print_unnamed_arg fmt ty = pp fmt "(_:%a)" print_ty ty in
   pp fmt "%s %a %a%s%a"
     (if is_func then "function" else "predicate")
-    Ident.pp ls_name
+    Ident.pp_simpl ls_name
     (list ~sep:sp print_unnamed_arg)
     ls_args
     (if is_func then " : " else "")
     (option print_ty) ls_value
 
-let print_ls_nm fmt { ls_name; _ } = pp fmt "%a" Ident.pp ls_name
+let print_ls_nm fmt { ls_name; _ } = pp fmt "%a" Ident.pp_simpl ls_name
 let protect_on x s = if x then "(" ^^ s ^^ ")" else s
 
 let rec print_pat_node pri fmt p =
@@ -85,10 +85,10 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
         in
         pp fmt "(%a %s %a)%a" print_term x1 op_nm print_term x2 print_ty t_ty
     | Tapp (ls, tl) ->
-        pp fmt "(%a %a)%a" Ident.pp ls.ls_name
+        pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
           (list ~first:sp ~sep:sp print_term)
           tl print_ty t_ty
-    | Tfield (t, ls) -> pp fmt "(%a).%a" print_term t Ident.pp ls.ls_name
+    | Tfield (t, ls) -> pp fmt "(%a).%a" print_term t Ident.pp_simpl ls.ls_name
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1, t2, t3) ->
         pp fmt "if %a then %a else %a" print_term t1 print_term t2 print_term t3

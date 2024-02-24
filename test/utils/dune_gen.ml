@@ -46,6 +46,7 @@ let print_rule file =
       | None -> ("", "")
       | Some prd -> ("(with-accepted-exit-codes " ^ prd ^ "\n    ", ")")
     in
+
     Printf.printf
       {|(rule
  (deps

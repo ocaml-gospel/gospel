@@ -28,6 +28,7 @@ module Ident = struct
   type t = {
     id_str : string;
     id_attrs : string list;
+    id_path : string list;
     id_loc : Location.t;
     id_tag : int;
   }
@@ -40,7 +41,7 @@ module Ident = struct
       Hashtbl.replace current s x;
       x
     in
-    let str_of_id id =
+    let str_of_id path id =
       try Hashtbl.find output id.id_tag
       with Not_found ->
         let x = current id.id_str in
@@ -48,18 +49,29 @@ module Ident = struct
           if x = 0 then id.id_str else id.id_str ^ "_" ^ string_of_int x
         in
         Hashtbl.replace output id.id_tag str;
-        str
+        if path then List.fold_right (fun e acc -> e ^ "." ^ acc) id.id_path str
+        else str
     in
-    fun ppf t -> Format.fprintf ppf "%s%a" (str_of_id t) pp_attrs t.id_attrs
+    fun path ppf t ->
+      Format.fprintf ppf "%s%a" (str_of_id path t) pp_attrs t.id_attrs
+
+  let pp_simpl = pp false
+  let pp = pp true
 
   let create =
     let tag = ref 0 in
-    fun ?(attrs = []) ~loc str ->
+    fun ?(attrs = []) ?(path = []) ~loc str ->
       incr tag;
-      { id_str = str; id_attrs = attrs; id_loc = loc; id_tag = !tag }
+      {
+        id_str = str;
+        id_attrs = attrs;
+        id_path = path;
+        id_loc = loc;
+        id_tag = !tag;
+      }
 
-  let of_preid (pid : Preid.t) =
-    create pid.pid_str ~attrs:pid.pid_attrs ~loc:pid.pid_loc
+  let of_preid ?(path = []) (pid : Preid.t) =
+    create pid.pid_str ~path ~attrs:pid.pid_attrs ~loc:pid.pid_loc
 
   let set_loc t loc = { t with id_loc = loc }
   let add_attr t attr = { t with id_attrs = attr :: t.id_attrs }
