@@ -22,9 +22,59 @@ interfaces with formal contracts that describe type invariants, mutability,
 function pre-conditions and post-conditions, effects, exceptions, and [much
 more](https://ocaml-gospel.github.io/gospel/)!
 
-<div align="center">
-<img src="screenshot.png" title="Gospel specification">
-</div>
+```ocaml
+type 'a t
+(*@ model capacity : integer
+    mutable model contents : 'a sequence
+    with s
+    invariant s.capacity > 0
+    invariant Sequence.length s.contents <= s.capacity *)
+
+exception Full
+exception Empty
+
+val create : int -> 'a t
+(*@ s = create n
+    requires n > 0
+    ensures s.capacity = n
+    ensures s.contents = Sequence.empty *)
+
+val is_empty : 'a t -> bool
+(*@ b = is_empty s
+    pure
+    ensures b <-> s.contents = Sequence.empty *)
+
+val clear : 'a t -> unit
+(*@ clear s
+    modifies s.contents
+    ensures s.contents = Sequence.empty *)
+
+val push : 'a -> 'a t -> unit
+(*@ push a s
+    modifies s.contents
+    ensures s.contents = Sequence.cons a (old s.contents)
+    raises Full -> Sequence.length (old s.contents) = s.capacity
+                /\ s.contents = old s.contents *)
+
+val pop : 'a t -> 'a
+(*@ a = pop s
+    modifies s.contents
+    ensures a = Sequence.hd (old s.contents)
+    ensures s.contents = Sequence.tl (old s.contents)
+    raises Empty -> old s.contents = Sequence.empty = s.contents *)
+
+val pop_opt : 'a t -> 'a option
+(*@ o = pop_opt s
+    modifies s.contents
+    ensures match o with
+                | None -> old s.contents = Sequence.empty = s.contents
+                | Some a -> old s.contents = Sequence.cons a s.contents *)
+
+val top : 'a t -> 'a
+(*@ a = top s
+    ensures a = Sequence.hd s.contents
+    raises Empty -> s.contents = Sequence.empty *)
+```
 
 We designed Gospel to provide a tool-agnostic frontend for bringing formal
 methods into the OCaml ecosystem, meaning that we make no assumptions on the
