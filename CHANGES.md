@@ -18,6 +18,8 @@
 
 - Fix premature parsing of specification keywords in the preprocessor.
   [\#394](https://github.com/ocaml-gospel/gospel/pull/394)
+- Fix `ls_name` of `unit` logical symbol to be `()`
+  [\#387](https://github.com/ocaml-gospel/gospel/pull/387)
 - Fix the `is_ts_tuple` function so that it doesn't take `unit` to be a tuple
   [\#386](https://github.com/ocaml-gospel/gospel/pull/386)
 - Use unique identifiers rather than physical equality for `Symbols.ls_equal`
