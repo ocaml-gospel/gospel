@@ -79,7 +79,7 @@ let ps_equ =
 
 let fs_unit =
   fsymbol ~constr:true ~field:false
-    (Ident.create ~loc:Location.none "unit")
+    (Ident.create ~loc:Location.none "()")
     [] ty_unit
 
 let fs_bool_true =

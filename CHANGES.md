@@ -14,6 +14,8 @@
 
 ## Internals
 
+- Fix `ls_name` of `unit` logical symbol` to be `()`
+  [\#387](https://github.com/ocaml-gospel/gospel/pull/387)
 - Use unique identifiers rather than physical equality for `Symbols.ls_equal`
   [\#380](https://github.com/ocaml-gospel/gospel/pull/380)
 - Remove the `gospel_expected` prologue at the end of successful tests
