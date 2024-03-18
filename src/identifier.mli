@@ -50,7 +50,8 @@ module Ident : sig
   val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int
-
+  val iter : (t -> unit) -> unit
+  
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for identifiers. *)
 

@@ -13,7 +13,7 @@ open Tmodule
 open Parser_frontend
 module W = Gospel.Warnings
 
-type config = { verbose : bool; load_path : string list }
+type config = { verbose : bool; paths : bool; load_path : string list }
 
 let fmt = Format.std_formatter
 let pp = Format.fprintf
@@ -22,8 +22,8 @@ let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
 let type_check load_path name sigs =
-  let md = init_muc name in
   let mod_name = path2module name in 
+  let md = init_muc mod_name in
   let penv =
     Utils.Sstr.singleton mod_name |> Typing.penv load_path
   in
@@ -53,7 +53,8 @@ let run_file config file =
       pp fmt "@[********* Typed GOSPEL ********@]@.";
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." print_file file);
-    pp fmt "OK\n";
+    let () =
+      if config.paths then print_ids fmt else pp fmt "OK\n" in 
     true
   with W.Error e ->
     let bt = Printexc.get_backtrace () in

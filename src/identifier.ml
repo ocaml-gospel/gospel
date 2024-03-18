@@ -33,6 +33,10 @@ module Ident = struct
     id_tag : int;
   }
 
+  let id_stack = Queue.create ()
+  (* only to be used for testing *)
+  let iter f = Queue.iter f id_stack
+  
   let pp =
     let current = Hashtbl.create 0 in
     let output = Hashtbl.create 0 in
@@ -56,15 +60,21 @@ module Ident = struct
   let create =
     let tag = ref 0 in
     fun ?(attrs = []) ?(path=[]) ~loc str ->
-    if path <> [] then (List.iter (fun x -> print_string x; print_char '.') path; print_endline str);
       incr tag;
-      { id_str = str;
-        id_attrs = attrs;
-        id_path = path;
-        id_loc = loc;
-        id_tag = !tag;
-      }
-
+      let id =
+        { id_str = str;
+          id_attrs = attrs;
+          id_path = path;
+          id_loc = loc;
+          id_tag = !tag;
+        } in
+      let () =
+        if path <> [] && 
+          not (List.exists (fun suffix ->
+              String.ends_with ~suffix (List.hd path)) ["Stdlib"; "CamlinternalFormatBasics"; "Gospelstdlib"] )
+        then Queue.push id id_stack else () in
+      id
+  
   let of_preid ?(path=[]) (pid : Preid.t) =
     create pid.pid_str ~path ~attrs:pid.pid_attrs ~loc:pid.pid_loc
 

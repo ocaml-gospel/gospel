@@ -1309,7 +1309,7 @@ and process_mod path penv loc m muc =
   let muc, mty = process_modtype (path@[nm]) penv muc m.mdtype in
   let decl =
     {
-      md_name = Ident.create ~loc:m.mdname.loc nm;
+      md_name = Ident.create ~loc:m.mdname.loc ~path nm;
       md_type = mty;
       md_attrs = m.mdattributes;
       md_loc = m.mdloc;
@@ -1326,7 +1326,7 @@ and process_modtype_decl path penv loc decl muc =
   in
   let decl =
     {
-      mtd_name = Ident.create ~loc:decl.mtdname.loc nm;
+      mtd_name = Ident.create ~path ~loc:decl.mtdname.loc nm;
       mtd_type = mty;
       mtd_attrs = decl.mtdattributes;
       mtd_loc = decl.mtdloc;
