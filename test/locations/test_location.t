@@ -124,7 +124,7 @@ First, create a test artifact:
       sig_loc = foo.mli:3:0 };
     { Tast.sig_desc =
       (Tast.Sig_val (
-         { Tast.vd_name = create; vd_type = int -> 'a t; vd_prim = [];
+         { Tast.vd_name = Foo.create; vd_type = int -> 'a t; vd_prim = [];
            vd_attrs = <attributes>;
            vd_args =
            [(Tast.Lnone
@@ -185,7 +185,7 @@ First, create a test artifact:
                    sp_checks =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = infix >=;
+                         { Symbols.ls_name = Gospelstdlib.infix >=;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -204,7 +204,7 @@ First, create a test artifact:
                            },
                          [{ Tterm.t_node =
                             (Tterm.Tapp (
-                               { Symbols.ls_name = integer_of_int;
+                               { Symbols.ls_name = Gospelstdlib.integer_of_int;
                                  ls_args =
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -497,7 +497,7 @@ First, create a test artifact:
       sig_loc = foo.mli:8:0 };
     { Tast.sig_desc =
       (Tast.Sig_axiom
-         { Tast.ax_name = a_3;
+         { Tast.ax_name = Foo.a_3;
            ax_term =
            { Tterm.t_node = Tterm.Ttrue; t_ty = None; t_attrs = [];
              t_loc = foo.mli:16:14 };
@@ -506,7 +506,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = is_full;
+           { Symbols.ls_name = Foo.is_full;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -568,7 +568,7 @@ First, create a test artifact:
                              ls_field = false },
                            [{ Tterm.t_node =
                               (Tterm.Tapp (
-                                 { Symbols.ls_name = length;
+                                 { Symbols.ls_name = Gospelstdlib.List.length;
                                    ls_args =
                                    [{ Ttypes.ty_node =
                                       (Ttypes.Tyapp (
@@ -713,7 +713,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = with_spec;
+           { Symbols.ls_name = Foo.with_spec;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -784,7 +784,7 @@ First, create a test artifact:
                       (Tterm.Tnot
                          { Tterm.t_node =
                            (Tterm.Tapp (
-                              { Symbols.ls_name = mem;
+                              { Symbols.ls_name = Gospelstdlib.List.mem;
                                 ls_args =
                                 [{ Ttypes.ty_node =
                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) };
@@ -880,7 +880,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = is_sorted_list;
+           { Symbols.ls_name = Foo.is_sorted_list;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -1395,7 +1395,8 @@ First, create a test artifact:
                                       (Tterm.Tbinop (Tterm.Tand,
                                          { Tterm.t_node =
                                            (Tterm.Tapp (
-                                              { Symbols.ls_name = infix <=;
+                                              { Symbols.ls_name =
+                                                Gospelstdlib.infix <=;
                                                 ls_args =
                                                 [{ Ttypes.ty_node =
                                                    (Ttypes.Tyapp (
@@ -1737,7 +1738,7 @@ First, create a test artifact:
       sig_loc = foo.mli:24:4 };
     { Tast.sig_desc =
       (Tast.Sig_val (
-         { Tast.vd_name = add; vd_type = 'a -> 'a t -> unit; vd_prim = [];
+         { Tast.vd_name = Foo.add; vd_type = 'a -> 'a t -> unit; vd_prim = [];
            vd_attrs = <attributes>;
            vd_args =
            [(Tast.Lnone

@@ -30,7 +30,6 @@ module N : sig
   
 end
 
-
 (* {gospel_expected|
    Path_test
    Path_test

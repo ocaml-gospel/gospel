@@ -13,7 +13,8 @@ open Ttypes
 module Ident = Identifier.Ident
 
 (* Variable Symbols *)
-type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
+type vsymbol = { vs_name : Ident.t;
+                 vs_ty : ty } [@@deriving show]
 
 let create_vsymbol ?(path=[]) pid ty = { vs_name = Ident.of_preid ~path pid; vs_ty = ty }
 

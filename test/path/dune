@@ -1,3 +1,2 @@
-(include ../utils/dune.common)
-
-(include dune.inc)
+(cram
+ (deps %{bin:gospel}))

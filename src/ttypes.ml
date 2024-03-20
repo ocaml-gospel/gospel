@@ -310,9 +310,9 @@ let xs_subst_ty old_ts new_ts new_ty xs =
 open Fmt
 
 let print_tv fmt tv =
-  pp fmt (if tv.tv_name.id_str = "_" then "%a" else "'%a") Ident.pp tv.tv_name
+  pp fmt (if tv.tv_name.id_str = "_" then "%a" else "'%a") Ident.pp_simpl tv.tv_name
 
-let print_ts_name fmt ts = pp fmt "@[%a@]" Ident.pp (ts_ident ts)
+let print_ts_name fmt ts = pp fmt "@[%a@]" Ident.pp_simpl (ts_ident ts)
 
 let rec print_ty fmt { ty_node } = print_ty_node fmt ty_node
 and print_arrow_ty fmt = list ~sep:arrow print_ty fmt
@@ -330,7 +330,7 @@ and print_ty_node fmt = function
 let print_ts fmt ts =
   pp fmt "@[%a %a%a@]"
     (list ~sep:comma ~first:lparens ~last:rparens print_tv)
-    ts.ts_args Ident.pp (ts_ident ts)
+    ts.ts_args Ident.pp_simpl (ts_ident ts)
     (fun fmt alias ->
       match alias with None -> () | Some ty -> pp fmt " [=%a]" print_ty ty)
     ts.ts_alias
@@ -338,7 +338,7 @@ let print_ts fmt ts =
 let print_exn_type f = function
   | Exn_tuple tyl -> list ~sep:star print_ty f tyl
   | Exn_record args ->
-      let print_arg f (id, ty) = pp f "%a:%a" Ident.pp id print_ty ty in
+      let print_arg f (id, ty) = pp f "%a:%a" Ident.pp_simpl id print_ty ty in
       list ~sep:semi ~first:rbrace ~last:lbrace print_arg f args
 
-let print_xs f x = pp f "%a" Ident.pp x.xs_ident
+let print_xs f x = pp f "%a" Ident.pp_simpl x.xs_ident

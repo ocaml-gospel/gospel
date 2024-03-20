@@ -8,6 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type config = { verbose : bool; paths : bool; load_path : string list }
+type config = { verbose : bool; load_path : string list }
 
 val run : config -> string list -> bool
