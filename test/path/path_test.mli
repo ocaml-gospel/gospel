@@ -30,21 +30,3 @@ module N : sig
   
 end
 
-(* {gospel_expected|
-   Path_test
-   Path_test
-   Path_test
-   Path_test
-   Path_test
-   Path_test.M
-   Path_test.M
-   Path_test.M
-   Path_test.M
-   Path_test.M.Nested
-   Path_test.M.Nested
-   Path_test.M
-   Path_test
-   Path_test.N
-   Path_test.N
-   Path_test
-   |gospel_expected} *)
