@@ -46,7 +46,6 @@ let get_inner_spec attr =
   | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
   | _ -> assert false
 
-
 let parse_gospel ~filename parse attr =
   let spec, spec_loc = get_spec_content attr in
   let lb = Lexing.from_string spec in

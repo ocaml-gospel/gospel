@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-version = 0.21.0
-=======
 version = 0.26.1
->>>>>>> main
 parse-docstrings = true
 break-infix = fit-or-vertical
 module-item-spacing = compact
