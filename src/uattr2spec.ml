@@ -8,8 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
-open Utils
 open Uast
 
 let is_spec attr = attr.attr_name.txt = "gospel"
@@ -28,49 +28,43 @@ let get_spec_content attr =
         {
           pstr_desc =
             Pstr_eval
-              ({ pexp_desc = Pexp_constant (Pconst_string (spec, _, _)) }, _);
+              ( {
+                  pexp_desc = Pexp_constant (Pconst_string (spec, spec_loc, _));
+                  _;
+                },
+                _ );
+          _;
         };
       ] ->
-      (spec, attr.attr_loc)
+      (spec, spec_loc)
   | _ -> assert false
+
+let get_spec_loc attr = snd (get_spec_content attr)
 
 let get_inner_spec attr =
   match attr.attr_payload with
-  | PStr [ { pstr_desc = Pstr_eval (_, attrs) } ] -> get_spec_attr attrs
+  | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
   | _ -> assert false
 
-exception Syntax_error of Location.t
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Syntax_error loc ->
-        Fmt.kstr (fun str -> Some (make ~loc ~sub:[] str)) "syntax error"
-    | _ -> None)
-
-(* XXX: Use Lexing.set_position when moving to OCaml 4.11 *)
-let set_position (lexbuf : Lexing.lexbuf) (position : Lexing.position) =
-  lexbuf.lex_curr_p <- { position with pos_fname = lexbuf.lex_curr_p.pos_fname };
-  lexbuf.lex_abs_pos <- position.pos_cnum
-
-(* XXX: Use Lexing.set_filename when moving to OCaml 4.11 *)
-let set_filename (lexbuf : Lexing.lexbuf) (fname : string) =
-  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = fname }
 
 let parse_gospel ~filename parse attr =
-  let spec, loc = get_spec_content attr in
+  let spec, spec_loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  set_position lb attr.attr_loc.loc_start;
-  set_filename lb filename;
-  lb.lex_abs_pos <- loc.loc_start.pos_cnum;
+  Lexing.set_position lb spec_loc.loc_start;
+  Lexing.set_filename lb filename;
   try (spec, parse Ulexer.token lb)
-  with Uparser.Error -> raise (Syntax_error loc)
+  with Uparser.Error ->
+    let loc =
+      { loc_start = lb.lex_start_p; loc_end = lb.lex_curr_p; loc_ghost = false }
+    in
+    W.error ~loc W.Syntax_error
 
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
   let parse attr =
     let ty_text, spec = parse_gospel ~filename Uparser.type_spec attr in
-    { spec with ty_text; ty_loc = attr.attr_loc }
+    let ty_loc = get_spec_loc attr in
+    { spec with ty_text; ty_loc }
   in
   let spec = Option.map parse spec_attr in
   {
@@ -89,7 +83,8 @@ let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
   let parse attr =
     let sp_text, spec = parse_gospel ~filename Uparser.val_spec attr in
-    { spec with sp_text; sp_loc = attr.attr_loc }
+    let sp_loc = get_spec_loc attr in
+    { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
   {
@@ -104,7 +99,9 @@ let val_description ~filename v =
 let ghost_spec ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
-  let sigs = try Parse.interface lb with _ -> raise (Syntax_error loc) in
+  Lexing.set_position lb loc.loc_start;
+  Lexing.set_filename lb filename;
+  let sigs = try Parse.interface lb with _ -> W.error ~loc W.Syntax_error in
   match sigs with
   | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
       let type_ = type_declaration ~filename t in
@@ -114,9 +111,11 @@ let ghost_spec ~filename attr =
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.type_spec)
           |> Option.map (fun (ty_text, spec) ->
-                 { spec with ty_text; ty_loc = attr.attr_loc })
+                 let ty_loc = get_spec_loc attr in
+                 { spec with ty_text; ty_loc })
         in
-        Sig_ghost_type (r, [ { type_ with tspec; tloc = attr.attr_loc } ])
+        let tloc = get_spec_loc attr in
+        Sig_ghost_type (r, [ { type_ with tspec; tloc } ])
       else Sig_ghost_type (r, [ type_ ])
   | [ { psig_desc = Psig_value vd; _ } ] ->
       let val_ = val_description ~filename vd in
@@ -126,12 +125,15 @@ let ghost_spec ~filename attr =
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.val_spec)
           |> Option.map (fun (sp_text, spec) ->
-                 { spec with sp_text; sp_loc = attr.attr_loc })
+                 let sp_loc = get_spec_loc attr in
+                 { spec with sp_text; sp_loc })
         in
-        Sig_ghost_val { val_ with vspec; vloc = attr.attr_loc }
+        let vloc = get_spec_loc attr in
+        Sig_ghost_val { val_ with vspec; vloc }
       else Sig_ghost_val val_
   | [ { psig_desc = Psig_open od; _ } ] ->
-      Sig_ghost_open { od with popen_loc = attr.attr_loc }
+      let popen_loc = get_spec_loc attr in
+      Sig_ghost_open { od with popen_loc }
   | _ -> assert false
 
 let floating_spec ~filename a =
@@ -144,26 +146,28 @@ let floating_spec ~filename a =
         |> fst
         |> Option.map (parse_gospel ~filename Uparser.func_spec)
         |> Option.map (fun (fun_text, (spec : fun_spec)) ->
-               { spec with fun_text; fun_loc = a.attr_loc })
+               let fun_loc = get_spec_loc a in
+               { spec with fun_text; fun_loc })
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
-  with Syntax_error _ -> (
+  with W.Error (_, W.Syntax_error) -> (
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
       Sig_axiom { axiom with ax_text; ax_loc = a.attr_loc }
-    with Syntax_error _ -> (
+    with W.Error (_, W.Syntax_error) -> (
       try
         let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
         Sig_inductive { ind_decl with in_text; in_loc = a.attr_loc }
-      with Syntax_error _ -> ghost_spec ~filename a))
+      with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a))
 
 let ghost_spec_str ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
   Location.init lb loc.loc_start.pos_fname;
   let impls =
-    try Parse.implementation lb with _ -> raise (Syntax_error loc)
+    try Parse.implementation lb
+    with _ -> raise (W.Error (loc, W.Syntax_error))
   in
   match impls with
   | [ { pstr_desc = Pstr_type (r, [ t ]); _ } ] ->
@@ -203,13 +207,13 @@ let floating_spec_str ~filename a =
       in
       Str_function { fun_ with fun_spec }
     else Str_function fun_
-  with Syntax_error _ -> (
+  with W.Error (_, W.Syntax_error) -> (
     try Str_prop (snd (parse_gospel ~filename Uparser.prop a))
-    with Syntax_error _ -> (
+    with W.Error (_, W.Syntax_error) -> (
       try
         let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
         Str_inductive { ind_decl with in_text; in_loc = a.attr_loc }
-      with Syntax_error _ -> ghost_spec_str ~filename a))
+      with W.Error (_, W.Syntax_error) -> ghost_spec_str ~filename a))
 
 let with_constraint c =
   let no_spec_type_decl t =
@@ -257,6 +261,11 @@ let rec signature_item_desc ~filename = function
 and signature ~filename sigs =
   List.map
     (fun { psig_desc; psig_loc } ->
+      let filename =
+        match psig_loc.loc_start.pos_fname with
+        | "" | "_none_" -> filename
+        | f -> f
+      in
       { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
     sigs
 

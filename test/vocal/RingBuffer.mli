@@ -8,12 +8,13 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ open Seq *)
+(*@ open Sequence *)
 
 type 'a buffer
-(*@ mutable model sequence: 'a seq
+(*@ mutable model sequence: 'a sequence
             model capacity: integer
-    invariant length sequence <= capacity <= Sys.max_array_length *)
+    with self
+    invariant length self.sequence <= self.capacity <= Sys.max_array_length *)
 
 val create : int -> 'a -> 'a buffer
 (*@ b = create n dummy

@@ -1,22 +1,41 @@
-(* This file contains the GOSPEL standard library.
-   It is automatically opened.
-   The following are built-in in GOSPEL:
-   type unit
-   type string
-   type char
-   type float
-   type bool
-   type integer
-   type 'a option
-   function None: 'a option
-   function Some (x: 'a) : 'a option
-   type 'a list
-   function ([]): 'a list
-   function (::) (x: 'a) (l: 'a list) : 'a list
-   predicate (=) (x y: 'a)
-*)
+(**************************************************************************)
+(*                                                                        *)
+(*  Gospel -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
 
-(*@ type 'a seq *)
+(** This file contains the Gospel standard library. *)
+
+(** The following are not defined in the Gospelstdlib but are built-in in
+    Gospel:
+
+    - [type unit]
+    - [type string]
+    - [type char]
+    - [type float]
+    - [type bool]
+    - [type integer]
+    - [type int]
+
+    - [type 'a option]
+    - [function None: 'a option]
+    - [function Some (x: 'a) : 'a option]
+
+    - [type 'a list]
+    - [function ([]): 'a list]
+    - [function (::) (x: 'a) (l: 'a list) : 'a list]
+
+    - [predicate (=) (x y: 'a)] *)
+
+(** The rest of this module is the actual content of the Gospel module
+    [Gospelstdlib]. This module is automatically opened in Gospel
+    specifications. *)
+
+(*@ type 'a sequence *)
 (** The type for finite sequences. *)
 
 (*@ type 'a bag *)
@@ -24,9 +43,6 @@
 
 (*@ type 'a ref *)
 (** The type for references. *)
-
-(*@ type 'a array *)
-(** The type for arrays. *)
 
 (*@ type 'a set *)
 (** The type for finite unordered sets. *)
@@ -85,8 +101,6 @@
     variables of type [int]. The Gospel typechecker will automatically apply
     [integer_of_int] whenever necessary. *)
 
-type int
-
 (*@ function integer_of_int (x: int) : integer *)
 (*@ coercion *)
 
@@ -108,19 +122,19 @@ type int
 
 (** {1 Sequences} *)
 
-(*@ function (++) (s s': 'a seq) : 'a seq *)
+(*@ function (++) (s s': 'a sequence) : 'a sequence *)
 (** [s ++ s'] is the sequence [s] followed by the sequence [s']. *)
 
-(*@ function ([_]) (s: 'a seq) (i: integer): 'a *)
-(** [s\[i\]] is the [i]th element of the sequence [s]. *)
+(*@ function ([_]) (s: 'a sequence) (i: integer): 'a *)
+(** [s[i]] is the [i]th element of the sequence [s]. *)
 
-(*@ function ([_.._]) (s: 'a seq) (i1: integer) (i2: integer): 'a seq *)
-(*@ function ([_..]) (s: 'a seq) (i: integer): 'a seq *)
-(*@ function ([.._]) (s: 'a seq) (i: integer): 'a seq *)
+(*@ function ([_.._]) (s: 'a sequence) (i1: integer) (i2: integer): 'a sequence *)
+(*@ function ([_..]) (s: 'a sequence) (i: integer): 'a sequence *)
+(*@ function ([.._]) (s: 'a sequence) (i: integer): 'a sequence *)
 
-module Seq : sig
-  (*@ type 'a t = 'a seq *)
-  (** An alias for {!'a seq} *)
+module Sequence : sig
+  (*@ type 'a t = 'a sequence *)
+  (** An alias for {!sequence} *)
 
   (*@ function length (s: 'a t): integer *)
   (** [length s] is the length of the sequence [s]. *)
@@ -131,13 +145,13 @@ module Seq : sig
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton] is an alias for {!return}. *)
 
-  (*@ function init (n: integer) (f: integer -> 'a) : 'a seq *)
+  (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
 
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
   (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
 
-  (*@ function snoc (s: 'a seq) (x: 'a): 'a seq *)
+  (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
   (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
 
   (*@ function hd (s: 'a t) : 'a *)
@@ -151,7 +165,7 @@ module Seq : sig
   (*@ function append (s s': 'a t) : 'a t *)
   (** [append s s'] is [s ++ s']. *)
 
-  (*@ predicate mem (s: 'a seq) (x: 'a) *)
+  (*@ predicate mem (s: 'a t) (x: 'a) *)
   (** [mem s x] holds iff [x] is in [s]. *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
@@ -167,27 +181,27 @@ module Seq : sig
       transformed by [f]. An element [x] is dropped whenever [f x] is [None]. *)
 
   (*@ function get (s: 'a t) (i: integer) : 'a *)
-  (** [get s i] is [s\[i\]]. *)
+  (** [get s i] is [s[i]]. *)
 
   (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
   (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
 
-  (*@ function rev (s: 'a seq) : 'a seq *)
+  (*@ function rev (s: 'a t) : 'a t *)
   (** [rev s] is the sequence containing the same elements as [s], in reverse
       order. *)
 
-  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b seq) : 'a *)
-  (** [fold_left f acc s] is [f (... (f (f acc s\[0\]) s\[1\]) ...) s\[n-1\]],
-      where [n] is the length of [s]. *)
+  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b sequence) : 'a *)
+  (** [fold_left f acc s] is [f (... (f (f acc s[0]) s[1]) ...) s[n-1]], where
+      [n] is the length of [s]. *)
 
-  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a seq) (acc: 'b) : 'b *)
-  (** [fold_right f s acc] is [f s\[1\] (f s\[2\] (... (f s\[n\] acc) ...))]
-      where [n] is the length of [s]. *)
+  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a t) (acc: 'b) : 'b *)
+  (** [fold_right f s acc] is [f s[1] (f s[2] (... (f s[n] acc) ...))] where [n]
+      is the length of [s]. *)
 end
 
 (** Lists
 
-    The type ['a list] and the constructors [\[\]] and [(::)] are built-in. *)
+    The type ['a list] and the constructors [[]] and [(::)] are built-in. *)
 
 module List : sig
   (*@ type 'a t = 'a list *)
@@ -227,13 +241,12 @@ module List : sig
       first argument, and the element itself as second argument. *)
 
   (*@ function fold_left (f: 'a -> 'b -> 'a) (init: 'a) (l: 'b t) : 'a *)
-  (** [fold_left f init t] is [f (... (f (f init a\[0\]) a\[1\]) ...) a\[n-1\]],
-      where [n] is the length of [t]. *)
+  (** [fold_left f init t] is [f (... (f (f init a[0]) a[1]) ...) a[n-1]], where
+      [n] is the length of [t]. *)
 
   (*@ function fold_right (f: 'b -> 'a -> 'a) (l: 'b t) (init: 'a) : 'a *)
-  (** [fold_right f t init] is
-      [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
-      length of [t]. *)
+  (** [fold_right f t init] is [f a[0] (f a[1] ( ... (f a[n-1] init) ...))],
+      where [n] is the length of [t]. *)
 
   (*@ function map2 (f: 'a -> 'b -> 'c) (l: 'a t) (l': 'b t) : 'c t *)
   (** [map2 f l l'] applies function [f] to all the elements of [l] and [l'],
@@ -254,10 +267,10 @@ module List : sig
   (*@ predicate mem (x: 'a) (l: 'a t) *)
   (** [mem x l] holds iff [x] is equal to an element of [l] *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
 
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Arrays} *)
@@ -299,13 +312,12 @@ module Array : sig
       first argument, and the element itself as second argument. *)
 
   (*@ function fold_left (f: 'a -> 'b -> 'a) (init: 'a) (a: 'b t) : 'a *)
-  (** [fold_left f init a] is [f (... (f (f init a\[0\]) a\[1\]) ...) a\[n-1\]],
-      where [n] is the length of [a]. *)
+  (** [fold_left f init a] is [f (... (f (f init a[0]) a[1]) ...) a[n-1]], where
+      [n] is the length of [a]. *)
 
   (*@ function fold_right (f: 'b -> 'a -> 'a) (a: 'b t) (init: 'a) : 'a *)
-  (** [fold_right f a init] is
-      [f a\[0\] (f a\[1\] ( ... (f a\[n-1\] init) ...))], where [n] is the
-      length of [a]. *)
+  (** [fold_right f a init] is [f a[0] (f a[1] ( ... (f a[n-1] init) ...))],
+      where [n] is the length of [a]. *)
 
   (*@ function map2 (f: 'a -> 'b -> 'c) (a: 'a t) (b: 'b t) : 'c t *)
   (** [map2 f a b] applies function [f] to all the elements of [a] and [b], and
@@ -329,9 +341,9 @@ module Array : sig
   (*@ function to_list (a: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (a: 'a t) : 'a Seq.t *)
+  (*@ function to_seq (a: 'a t) : 'a Sequence.t *)
   (*@ coercion *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 
   (*@ function to_bag (a: 'a t) : 'a bag *)
 
@@ -438,14 +450,14 @@ module Bag : sig
   (*@ function to_list (b: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (b: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (b: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (** {1 Sets} *)
 
 (*@ function ({}) : 'a set *)
-(** [\{\}] is the empty set. *)
+(** [{}] is the empty set. *)
 
 module Set : sig
   (*@ type 'a t = 'a set *)
@@ -498,8 +510,7 @@ module Set : sig
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
-      [x1 ...
-      xN] are the elements of [s]. *)
+      [x1 ... xN] are the elements of [s]. *)
 
   (*@ function fold (f: 'a -> 'b -> 'b) (s: 'a t) (a: 'b) : 'b *)
   (** [fold f s a] is [(f xN ... (f x2 (f x1 a))...)], where [x1 ... xN] are the
@@ -526,15 +537,15 @@ module Set : sig
   (*@ function to_list (s: 'a t) : 'a list *)
   (*@ function of_list (l: 'a list) : 'a t *)
 
-  (*@ function to_seq (s: 'a t) : 'a Seq.t *)
-  (*@ function of_seq (s: 'a Seq.t) : 'a t *)
+  (*@ function to_seq (s: 'a t) : 'a Sequence.t *)
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
 
 module Map : sig
-  (* the type ('a, 'b) map is defined internally in GOSPEL and can be
-     written as 'a -> 'b *)
+  (** Maps from keys of type ['a] to values of type ['b] are represented by
+      Gospel functions of type ['a -> 'b]. *)
 end
 
 module Order : sig

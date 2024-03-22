@@ -34,12 +34,6 @@
   let array_get l =
     Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
 
-(*
-    sp_hd_ret = [];
-    sp_hd_nm = mk_pid "" (Lexing.dummy_pos, Lexing.dummy_pos);
-    sp_hd_args = [];
-*)
-
   let empty_vspec = {
     sp_header = None;
     sp_pre = [];
@@ -65,14 +59,6 @@
     fun_loc = Location.none;
   }
 
-  let empty_tspec = {
-    ty_ephemeral = false;
-    ty_field = [];
-    ty_invariant = [];
-    ty_text = "";
-    ty_loc = Location.none;
-  }
-
   let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
 
   let qualid_preid = function Qpreid p | Qdot (_, p) -> p
@@ -86,7 +72,7 @@
 %token <string> BACKQUOTE_LIDENT
 %token <string> ATTRIBUTE
 
-%token <string> INTEGER
+%token <string * char option> INTEGER
 %token <string> FLOAT
 %token <char> CHAR
 %token <string> STRING
@@ -119,15 +105,18 @@
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
+%token WHEN
+
 
 (* priorities *)
 
 %nonassoc IN
 %nonassoc DOT ELSE
 %nonassoc prec_named
-%right COLON
+%right COLON AS
 
 %right ARROW LRARROW
+%nonassoc WHEN
 %nonassoc RIGHTSQ
 %right OR BARBAR
 %right AND AMPAMP
@@ -225,18 +214,27 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| EOF { empty_tspec }
-| nonempty_type_spec EOF { $1 }
+| e=ts_ephemeral m=list(type_spec_model) i=ts_invariants EOF
+  { { ty_ephemeral = e || List.exists (fun f -> f.f_mutable) m;
+      ty_field = m;
+      ty_invariant = i;
+      ty_text = "";
+      ty_loc = Location.none;
+  } }
+;
 
-nonempty_type_spec:
-| EPHEMERAL ts=type_spec
-  { { ts with ty_ephemeral = true } }
-| field=type_spec_model ts=type_spec
-  { { ts with
-      ty_field = field :: ts.ty_field;
-      ty_ephemeral = ts.ty_ephemeral || field.f_mutable } }
-| INVARIANT inv=term ts=type_spec
-  { { ts with ty_invariant = inv :: ts.ty_invariant } }
+ts_ephemeral:
+| EPHEMERAL { true }
+|           { false }
+;
+
+ts_invariants:
+| WITH id=lident l=nonempty_list(ts_invariant) { Some (id, l) }
+|                                              { None }
+;
+
+ts_invariant:
+| INVARIANT inv=term { inv }
 ;
 
 type_spec_model:
@@ -248,6 +246,9 @@ type_spec_model:
 val_spec_header:
 | ret=ret_name nm=lident_rich args=fun_arg*
   { { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
+| ret=ret_name arg1=fun_arg nm=op_symbol arg2=fun_arg
+  { let sp_hd_nm = Preid.create ~loc:(mk_loc $loc(nm)) nm in
+    { sp_hd_nm; sp_hd_ret = ret; sp_hd_args = [ arg1; arg2 ] } }
 | nm=lident_rich args=fun_arg*
   { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
 ;
@@ -319,7 +320,7 @@ ret_value:
 ;
 
 ret_name:
-| LEFTPAR comma_list(ret_value) RIGHTPAR EQUAL
+| LEFTPAR separated_list(COMMA, ret_value) RIGHTPAR EQUAL
   { $2 }
 | comma_list(ret_value) EQUAL { $1 } ;
 
@@ -328,6 +329,8 @@ raises:
   { q, Some (mk_pat (Ptuple []) $loc(q), t) }
 | q=uqualid p=pat_arg ARROW t=term
   { q, Some (p, t) }
+| q=uqualid p=pat_arg
+  { q, Some (p, mk_term Ttrue $loc(p)) }
 | q=uqualid
   { q, None}
 ;
@@ -378,12 +381,12 @@ term_:
     { let cast ty = { $4 with term_desc = Tcast ($4, ty) } in
       let pat, def = match $2.pat_desc with
         | Ptuple [] -> { $2 with pat_desc = Pwild }, cast (PTtuple [])
-        | Pcast ({pat_desc = (Pvar _|Pwild)} as p, ty) -> p, cast ty
+        | Pcast ({pat_desc = (Pvar _|Pwild); _} as p, ty) -> p, cast ty
         | _ -> $2, $4 in
       match pat.pat_desc with
       | Pvar id -> Tlet (id, def, $6)
       | Pwild -> Tlet (id_anonymous pat.pat_loc, def, $6)
-      | _ -> Tcase (def, [pat, $6]) }
+      | _ -> Tcase (def, [pat, None, $6]) }
 | LET attrs(lident_op_id) EQUAL term IN term
     { Tlet ($2, $4, $6) }
 | MATCH term WITH match_cases(term)
@@ -392,8 +395,8 @@ term_:
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
 | quant comma_list1(quant_vars) DOT term
     { Tquant ($1, List.concat $2, $4) }
-| FUN args = quant_vars ARROW t = term
-    { Tquant (Tlambda, args, t) }
+| FUN args = pat_arg+ ty = preceded(COLON,fun_typ)? ARROW t = term
+    { Tlambda (args, t, ty) }
 | attr term %prec prec_named
     { Tattr ($1, $2) }
 | term cast
@@ -413,7 +416,13 @@ term_rec_field(X):
 ;
 
 match_cases(X):
-| cl = bar_list1(separated_pair(pattern, ARROW, X)) { cl }
+| cl = bar_list1(separated_pair(guarded_pattern, ARROW, X))
+    { List.map (fun ((a,g),c) -> a,g,c) cl }
+;
+
+guarded_pattern:
+| pattern { $1, None }
+| pattern WHEN term { $1, Some $3 }
 ;
 
 quant_vars:
@@ -497,8 +506,8 @@ quant:
 ;
 
 constant:
-| INTEGER { Parsetree.Pconst_integer ($1, None) }
-| FLOAT { Parsetree.Pconst_float ($1, None) }
+| INTEGER { let i, m = $1 in Pconst_integer (i, m) }
+| FLOAT { Pconst_float ($1, None) }
 | STRING { Pconst_string ($1, mk_loc $loc, None) }
 | CHAR { Pconst_char $1 }
 ;
@@ -520,6 +529,13 @@ typ:
 | typ ARROW typ
     { let l = mk_loc $loc in
       PTarrow (Lnone (id_anonymous l), $1, $3) }
+| ty_arg STAR ty_tuple
+    { PTtuple ($1 :: $3) }
+;
+
+fun_typ:
+| ty_arg
+    { $1 }
 | ty_arg STAR ty_tuple
     { PTtuple ($1 :: $3) }
 ;
@@ -558,6 +574,7 @@ mk_pat(X): X { mk_pat $1 $loc }
 
 pattern: mk_pat(pattern_) { $1 };
 pat_arg: mk_pat(pat_arg_) { $1 }
+pat_arg_no_lpar: mk_pat(pat_arg_no_lpar_) { $1 }
 ;
 
 pattern_:
@@ -572,28 +589,35 @@ pat_conj_:
 
 pat_uni_:
 | pat_arg_                              { $1 }
-| pat_arg COLONCOLON pat_arg
+| pat_arg COLONCOLON mk_pat(pat_uni_)
     { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
-| uqualid pat_arg+                      { Papp ($1,$2) }
+| uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
+| uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
 | mk_pat(pat_uni_) AS attrs(lident)
                                         { Pas ($1,$3) }
 | mk_pat(pat_uni_) cast                 { Pcast ($1, $2) }
 ;
 
 pat_arg_:
-| pat_arg_shared_                       { $1 }
-| attrs(lident)                         { Pvar $1 }
+| LEFTPAR RIGHTPAR                      { Ptuple [] }
+| LEFTPAR pattern_ RIGHTPAR             { $2 }
+| pat_arg_no_lpar_                      { $1 }
 ;
 
-pat_arg_shared_:
+pat_arg_no_lpar_:
+| attrs(lident)                         { Pvar $1 }
 | UNDERSCORE                            { Pwild }
 | uqualid                               { Papp ($1,[]) }
-| LEFTPAR RIGHTPAR                      { Ptuple [] }
+| constant                              { Pconst $1 }
+| CHAR DOTDOT CHAR                      { Pinterval ($1,$3) }
+| TRUE                                  { Ptrue }
+| FALSE                                 { Pfalse }
 | LEFTSQRIGHTSQ
   { Papp (Qpreid (mk_pid "[]"  $loc), []) }
-| LEFTPAR pattern_ RIGHTPAR             { $2 }
 | LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
 ;
+
+
 
 field_pattern(X):
 | fl = semicolon_list1(pattern_rec_field(X)) { fl }

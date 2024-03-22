@@ -1,156 +1,260 @@
 (rule
- (targets Arrays.mli.output)
- (deps (source_tree .))
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Arrays.mli}")))))
+  (with-outputs-to Arrays.mli.output
+   (run %{checker} %{dep:Arrays.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Arrays.mli.expected} %{dep:Arrays.mli.output})))
+ (action
+  (diff Arrays.mli Arrays.mli.output)))
 
 (rule
- (targets CountingSort.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:CountingSort.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Arrays.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to CountingSort.mli.output
+   (run %{checker} %{dep:CountingSort.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:CountingSort.mli.expected} %{dep:CountingSort.mli.output})))
+ (action
+  (diff CountingSort.mli CountingSort.mli.output)))
 
 (rule
- (targets HashTable.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:HashTable.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:CountingSort.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to FM19.mli.output
+   (run %{checker} %{dep:FM19.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:HashTable.mli.expected} %{dep:HashTable.mli.output})))
+ (action
+  (diff FM19.mli FM19.mli.output)))
 
 (rule
- (targets Lists.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Lists.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:FM19.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to HashTable.mli.output
+   (run %{checker} %{dep:HashTable.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Lists.mli.expected} %{dep:Lists.mli.output})))
+ (action
+  (diff HashTable.mli HashTable.mli.output)))
 
 (rule
- (targets Mjrty.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Mjrty.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:HashTable.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to Lists.mli.output
+   (run %{checker} %{dep:Lists.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Mjrty.mli.expected} %{dep:Mjrty.mli.output})))
+ (action
+  (diff Lists.mli Lists.mli.output)))
 
 (rule
- (targets PairingHeap.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:PairingHeap.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Lists.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to Mjrty.mli.output
+   (run %{checker} %{dep:Mjrty.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PairingHeap.mli.expected} %{dep:PairingHeap.mli.output})))
+ (action
+  (diff Mjrty.mli Mjrty.mli.output)))
 
 (rule
- (targets PriorityQueue.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:PriorityQueue.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Mjrty.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to PairingHeap.mli.output
+   (run %{checker} %{dep:PairingHeap.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:PriorityQueue.mli.expected} %{dep:PriorityQueue.mli.output})))
+ (action
+  (diff PairingHeap.mli PairingHeap.mli.output)))
 
 (rule
- (targets Queue.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Queue.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:PairingHeap.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to PriorityQueue.mli.output
+   (run %{checker} %{dep:PriorityQueue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Queue.mli.expected} %{dep:Queue.mli.output})))
+ (action
+  (diff PriorityQueue.mli PriorityQueue.mli.output)))
 
 (rule
- (targets RingBuffer.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:RingBuffer.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:PriorityQueue.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to Queue.mli.output
+   (run %{checker} %{dep:Queue.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:RingBuffer.mli.expected} %{dep:RingBuffer.mli.output})))
+ (action
+  (diff Queue.mli Queue.mli.output)))
 
 (rule
- (targets UnionFind.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:UnionFind.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Queue.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to RingBuffer.mli.output
+   (run %{checker} %{dep:RingBuffer.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:UnionFind.mli.expected} %{dep:UnionFind.mli.output})))
+ (action
+  (diff RingBuffer.mli RingBuffer.mli.output)))
 
 (rule
- (targets Vector.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:Vector.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:RingBuffer.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to UnionFind.mli.output
+   (run %{checker} %{dep:UnionFind.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:Vector.mli.expected} %{dep:Vector.mli.output})))
+ (action
+  (diff UnionFind.mli UnionFind.mli.output)))
 
 (rule
- (targets ZipperList.mli.output)
- (deps (source_tree .))
+ (alias test-cmis)
  (action
-   (with-outputs-to %{targets}
-      (with-accepted-exit-codes
-       (or :standard 125)
-       (system "%{bin:gospel} check --verbose %{dep:ZipperList.mli}")))))
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:UnionFind.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to Vector.mli.output
+   (run %{checker} %{dep:Vector.mli}))))
 
 (rule
  (alias runtest)
- (action (diff %{dep:ZipperList.mli.expected} %{dep:ZipperList.mli.output})))
+ (action
+  (diff Vector.mli Vector.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Vector.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (action
+  (with-outputs-to ZipperList.mli.output
+   (run %{checker} %{dep:ZipperList.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff ZipperList.mli ZipperList.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:ZipperList.mli}))))
 

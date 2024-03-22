@@ -1,11 +1,8 @@
-open Utils
 open Tast
 open Ttypes
-open Tterm_printer
 open Symbols
 open Tterm_helper
-
-exception DuplicatedArg of vsymbol
+module W = Warnings
 
 let vs_of_lb_arg = function
   | Lunit -> invalid_arg "vs_of_lb_arg Lunit"
@@ -45,7 +42,8 @@ let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
     | Lunit -> args
     | a ->
         let vs = vs_of_lb_arg a in
-        check ~loc (not (Svs.mem vs args)) (DuplicatedArg vs);
+        if Svs.mem vs args then
+          W.error ~loc (W.Duplicated_argument vs.vs_name.id_str);
         Svs.add vs args
   in
   let (_ : Svs.t) = List.fold_left add Svs.empty args in
@@ -125,7 +123,7 @@ let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
 let mk_function ?result ls r params def spec loc =
   (* check 1 *)
   let add_v s vs ty =
-    check ~loc (not (Svs.mem vs s)) (DuplicatedArg vs);
+    if Svs.mem vs s then W.error ~loc (W.Duplicated_argument vs.vs_name.id_str);
     ty_equal_check vs.vs_ty ty;
     Svs.add vs s
   in
@@ -169,15 +167,4 @@ let type_exception ctr loc attrs =
   { exn_constructor = ctr; exn_loc = loc; exn_attributes = attrs }
 
 let sig_item sig_desc sig_loc = { sig_desc; sig_loc }
-
-(** register exceptions *)
 let mk_sig_item desc loc = sig_item desc loc
-
-let () =
-  let open Ppxlib.Location.Error in
-  register_error_of_exn (function
-    | DuplicatedArg vs ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:vs.vs_name.id_loc ~sub:[] str))
-          "Duplicated argument %a" print_vs vs
-    | _ -> None)

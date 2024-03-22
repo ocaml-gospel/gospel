@@ -24,6 +24,7 @@ module Vs = struct
 end
 
 module Svs = Set.Make (Vs)
+module Mvs = Map.Make (Vs)
 
 (* Function and predicate symbols *)
 
@@ -38,7 +39,7 @@ type lsymbol = {
 [@@deriving show]
 
 (* CHECK *)
-let ls_equal : lsymbol -> lsymbol -> bool = ( == )
+let ls_equal l r = Ident.equal l.ls_name r.ls_name
 
 module LS = struct
   type t = lsymbol
@@ -83,12 +84,12 @@ let fs_unit =
 
 let fs_bool_true =
   fsymbol ~constr:true ~field:false
-    (Ident.create ~loc:Location.none "True")
+    (Ident.create ~loc:Location.none "true")
     [] ty_bool
 
 let fs_bool_false =
   fsymbol ~constr:true ~field:false
-    (Ident.create ~loc:Location.none "False")
+    (Ident.create ~loc:Location.none "false")
     [] ty_bool
 
 let fs_apply =
@@ -97,6 +98,26 @@ let fs_apply =
   fsymbol ~field:false
     (Ident.create ~loc:Location.none "apply")
     [ ty_a_to_b; ty_a ] ty_b
+
+let tvo = ts_option.ts_args |> function [ v ] -> v.tv_name | _ -> assert false
+let tvl = ts_list.ts_args |> function [ v ] -> v.tv_name | _ -> assert false
+let tv_option = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvo } }
+let tv_list = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvl } }
+
+let fs_option_none =
+  fsymbol ~constr:true ~field:false Identifier.none [] (ty_option tv_option)
+
+let fs_option_some =
+  fsymbol ~constr:true ~field:false Identifier.some [ tv_option ]
+    (ty_option tv_option)
+
+let fs_list_nil =
+  fsymbol ~constr:true ~field:false Identifier.nil [] (ty_list tv_list)
+
+let fs_list_cons =
+  fsymbol ~constr:true ~field:false Identifier.cons
+    [ tv_list; ty_list tv_list ]
+    (ty_list tv_list)
 
 (* CHECK do we need two hash tables? *)
 let fs_tuple_ids = Hashtbl.create 17
@@ -107,11 +128,12 @@ let fs_tuple =
     try Hashtbl.find ls_tuples n
     with Not_found ->
       let id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
-      let tyl = List.init n (fun _ -> fresh_ty_var "a") in
+      let ts = ts_tuple n in
+      let tyl = List.map ty_of_var ts.ts_args in
       let ty = ty_app (ts_tuple n) tyl in
       let ls = fsymbol ~constr:true ~field:false id tyl ty in
       Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls;
       ls
 
-let is_fs_tuple fs = fs.ls_constr = true && Hashtbl.mem fs_tuple_ids fs.ls_name
+let is_fs_tuple fs = fs.ls_constr && Hashtbl.mem fs_tuple_ids fs.ls_name

@@ -12,11 +12,13 @@ to get you started with formal specifications for your OCaml programs.
 - If you are entirely new to Gospel, please head out to the [Getting
   Started](getting-started/installation) section. You'll learn how to install
   Gospel and then use it to write your first specification.
-- The [Walk-through](walkthroughs/introduction) section showcases real-world OCaml
-  interfaces, including a comprehensive explanation of the specification process and
-  language features.
+- The [Walk-through](walkthroughs/introduction) section showcases real-world
+  OCaml interfaces, including a comprehensive explanation of the specification
+  process and language features.
 - More detailed explanations of the language features are available in the
-  [Language Specification](language/locations) section.
+  [Language Reference](language/syntax) section.
+- Some information about the Gospel Standard library are available in the
+  [corresponding section](stdlib).
 - Short questions sometimes deserve short answers. You can also check out the
   [FAQ](faq) section for common questions about Gospel's design,
   semantics, and features.

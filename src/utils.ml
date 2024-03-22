@@ -8,8 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Ppxlib
-
 let rec split_at_f f = function
   | [] -> ([], [])
   | x :: xs when f x ->
@@ -42,6 +40,12 @@ module Fmt = struct
   let rbracket ppf _ = pf ppf "]@]"
   let lbrace ppf _ = pf ppf "@[<1>{"
   let rbrace ppf _ = pf ppf "}@]"
+
+  let pp_loc ppf loc =
+    let open Ppxlib.Location in
+    let s = loc.loc_start in
+    if s.pos_fname = "_none_" then pf ppf "none"
+    else pf ppf "%s:%d:%d" s.pos_fname s.pos_lnum (s.pos_cnum - s.pos_bol)
 end
 
 module Sstr = Set.Make (String)
@@ -51,28 +55,3 @@ module Hstr = Hashtbl.Make (struct
 
   let hash = Hashtbl.hash
 end)
-
-exception TypeCheckingError of string
-exception NotSupported of string
-exception Located of Location.t * exn
-
-let error ~loc e = raise (Located (loc, e))
-let check ~loc c exn = if not c then error ~loc exn
-let error_report ~loc s = error ~loc (TypeCheckingError s)
-let check_report ~loc c s = check ~loc c (TypeCheckingError s)
-let not_supported ~loc s = error ~loc (NotSupported s)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Located (loc, exn) ->
-        of_exn exn |> Option.map (fun t -> Location.Error.update_loc t loc)
-    | TypeCheckingError s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type checking error: %s" s
-    | NotSupported s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Not supported: %s" s
-    | _ -> None)

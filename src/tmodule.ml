@@ -8,14 +8,16 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
-open Utils
 open Identifier
 open Ttypes
 open Symbols
 open Tterm_printer
 open Tast
 open Tast_helper
+
+let type_declarations : type_declaration Hts.t = Hts.create 0
 
 (** Namespace *)
 
@@ -40,13 +42,11 @@ let empty_ns =
     ns_tns = Mstr.empty;
   }
 
-exception NameClash of string
-
 let add ~allow_duplicate ~equal ~loc ns s x =
   if allow_duplicate then Mstr.add s x ns
   else
     match Mstr.find s ns with
-    | t when not (equal t x) -> error ~loc (NameClash s)
+    | t when not (equal t x) -> W.error ~loc (W.Name_clash s)
     | _ | (exception Not_found) -> Mstr.add s x ns
 
 let ns_add_ts ~allow_duplicate ns s ts =
@@ -147,6 +147,23 @@ let rec ns_subst_ty old_ts new_ts ty
   }
 
 (** Primitives types and functions *)
+let mk_td ts kind =
+  {
+    Tast.td_ts = ts;
+    td_params = [];
+    td_cstrs = [];
+    td_kind = kind;
+    td_private = Tast.Public;
+    td_manifest = None;
+    td_attrs = [];
+    td_spec = None;
+    td_loc = Location.none;
+  }
+
+let mk_abstract_td ts =
+  mk_td
+    { Ttypes.ts_ident = ts.ts_ident; ts_args = []; ts_alias = None }
+    Tast.Pty_abstract
 
 let ns_with_primitives =
   (* reason for the following types to be built-in:
@@ -167,30 +184,95 @@ let ns_with_primitives =
   let primitive_tys =
     [
       ("integer", ts_integer);
-      ("string", ts_string);
+      ("int", ts_int);
       ("char", ts_char);
+      ("bytes", ts_bytes);
+      ("string", ts_string);
       ("float", ts_float);
       ("bool", ts_bool);
-      ("option", ts_option);
-      ("list", ts_list);
       ("unit", ts_unit);
+      ("exn", ts_exn);
+      ("array", ts_array);
+      ("list", ts_list);
+      ("option", ts_option);
+      ("int32", ts_int32);
+      ("int64", ts_int64);
+      ("nativeint", ts_nativeint);
+      ("format6", ts_format6);
+      ("lazy", ts_lazy);
     ]
   in
+
+  let td_list =
+    mk_td ts_list
+      (Tast.Pty_variant
+         [
+           {
+             Tast.cd_cs = fs_list_nil;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+           {
+             Tast.cd_cs = fs_list_cons;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+         ])
+  in
+
+  let td_option =
+    mk_td ts_option
+      (Tast.Pty_variant
+         [
+           {
+             Tast.cd_cs = fs_option_none;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+           {
+             Tast.cd_cs = fs_option_some;
+             cd_ld = [];
+             cd_loc = Location.none;
+             cd_attrs = [];
+           };
+         ])
+  in
+
+  let abstract_ts =
+    [
+      ts_unit;
+      ts_bool;
+      ts_int;
+      ts_integer;
+      ts_float;
+      ts_string;
+      ts_char;
+      ts_bytes;
+      ts_exn;
+      ts_int32;
+      ts_int64;
+      ts_nativeint;
+      ts_format6;
+      ts_lazy;
+    ]
+  in
+
+  List.iter
+    (fun ts -> Hts.add type_declarations ts (mk_abstract_td ts))
+    abstract_ts;
+  Hts.add type_declarations ts_option td_option;
+  Hts.add type_declarations ts_list td_list;
+
   let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in
   let primitive_ls =
     [
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       (none.id_str, fsymbol ~constr:true ~field:false none [] (ty_option tv)));
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       ( some.id_str,
-         fsymbol ~constr:true ~field:false some [ tv ] (ty_option tv) ));
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       (nil.id_str, fsymbol ~constr:true ~field:false nil [] (ty_list tv)));
-      (let tv = fresh_ty_var ~loc:Location.none "a" in
-       ( cons.id_str,
-         fsymbol ~constr:true ~field:false cons
-           [ tv; ty_app ts_list [ tv ] ]
-           (ty_list tv) ));
+      (none.id_str, fs_option_none);
+      (some.id_str, fs_option_some);
+      (nil.id_str, fs_list_nil);
+      (cons.id_str, fs_list_cons);
     ]
   in
   let ns =
@@ -394,9 +476,10 @@ let add_sig_contents muc sig_ =
     | Pty_record rd -> rd.rd_cs :: List.map (fun ld -> ld.ld_field) rd.rd_ldl
   in
   match sig_.sig_desc with
-  | Sig_val (({ vd_spec = Some sp } as v), _) when sp.sp_pure ->
-      let tyl = List.map ty_of_lb_arg sp.sp_args in
-      let ty = ty_tuple (List.map ty_of_lb_arg sp.sp_ret) in
+  | Sig_val (({ vd_args = []; _ } as v), _)
+  | Sig_val (({ vd_spec = Some { sp_pure = true; _ }; _ } as v), _) ->
+      let tyl = List.map ty_of_lb_arg v.vd_args in
+      let ty = ty_tuple (List.map ty_of_lb_arg v.vd_ret) in
       let ls = lsymbol ~field:false v.vd_name tyl (Some ty) in
       let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
       add_kid muc ls.ls_name sig_
@@ -440,10 +523,18 @@ let add_sig_contents muc sig_ =
       let xs = te.exn_constructor.ext_xs in
       let muc = add_xs ~export:true muc s xs in
       add_kid muc te.exn_constructor.ext_ident sig_
-  | Sig_open ({ opn_id }, _) ->
+  | Sig_open ({ opn_id; _ }, _) ->
       let nm = List.hd (List.rev opn_id) in
       let ns = ns_find_ns (get_top_import muc) opn_id in
       add_ns_top ~export:false (add_ns ~export:false muc nm ns) ns
+  | Sig_include _ ->
+      let warn ppf () =
+        Fmt.text ppf
+          "`include`s are currently ignored by the gospel type-checker"
+      in
+      Fmt.epr "@[%t@]@." (fun ppf ->
+          W.(pp_gen pp_warning warn ppf sig_.sig_loc ()));
+      muc
   | _ -> muc
 (* TODO *)
 
@@ -515,12 +606,3 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp
     fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | NameClash s ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "A declaration for `%s' already exists in this context" s
-    | _ -> None)

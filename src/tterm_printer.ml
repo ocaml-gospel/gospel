@@ -17,7 +17,7 @@ open Fmt
 let print_vs fmt { vs_name; vs_ty } =
   pp fmt "@[%a:%a@]" Ident.pp vs_name print_ty vs_ty
 
-let print_ls_decl fmt { ls_name; ls_args; ls_value } =
+let print_ls_decl fmt { ls_name; ls_args; ls_value; _ } =
   let is_func = Option.is_some ls_value in
   let print_unnamed_arg fmt ty = pp fmt "(_:%a)" print_ty ty in
   pp fmt "%s %a %a%s%a"
@@ -28,7 +28,7 @@ let print_ls_decl fmt { ls_name; ls_args; ls_value } =
     (if is_func then " : " else "")
     (option print_ty) ls_value
 
-let print_ls_nm fmt { ls_name } = pp fmt "%a" Ident.pp ls_name
+let print_ls_nm fmt { ls_name; _ } = pp fmt "%a" Ident.pp ls_name
 let protect_on x s = if x then "(" ^^ s ^^ ")" else s
 
 let rec print_pat_node pri fmt p =
@@ -44,12 +44,11 @@ let rec print_pat_node pri fmt p =
   | Papp (cs, pl) when is_fs_tuple cs ->
       pp fmt (protect_on (pri > 0) "%a") (list ~sep:comma (print_pat_node 1)) pl
   | Papp (cs, []) -> print_ls_nm fmt cs
+  | Papp (cs, [ pl ]) -> pp fmt "%a@ %a" print_ls_nm cs (print_pat_node 2) pl
   | Papp (cs, pl) ->
-      pp fmt
-        (protect_on (pri > 1) "%a@ %a")
-        print_ls_nm cs
-        (list ~sep:sp (print_pat_node 2))
-        pl
+      pp fmt "%a@ (%a)" print_ls_nm cs (list ~sep:comma (print_pat_node 2)) pl
+  | Pconst c -> Opprintast.constant fmt c
+  | Pinterval (c1, c2) -> pp fmt "%C..%C" c1 c2
 
 let print_pattern = print_pat_node 0
 
@@ -64,7 +63,6 @@ let print_binop fmt = function
 let print_quantifier fmt = function
   | Tforall -> pp fmt "forall"
   | Texists -> pp fmt "exists"
-  | Tlambda -> pp fmt "fun"
 
 (* TODO use pretty printer from why3 *)
 let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
@@ -101,9 +99,15 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tquant (q, vsl, t) ->
         pp fmt "%a %a. %a" print_quantifier q (list ~sep:sp print_vs) vsl
           print_term t
+    | Tlambda (pl, t) ->
+        pp fmt "fun %a -> %a" (list ~sep:sp print_pattern) pl print_term t
     | Tcase (t, ptl) ->
-        let print_branch fmt (p, t) =
-          pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t
+        let print_branch fmt (p, g, t) =
+          match g with
+          | None -> pp fmt "| @[%a@] -> @[%a@]" print_pattern p print_term t
+          | Some g ->
+              pp fmt "| @[%a@] when @[%a@] -> @[%a@]" print_pattern p print_term
+                g print_term t
         in
         pp fmt "match %a with@\n%a@\nend:%a" print_term t
           (list ~sep:newline print_branch)

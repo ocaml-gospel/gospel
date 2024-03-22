@@ -8,14 +8,14 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ function num (a: string seq) (v: string) (lo hi: integer) : integer *)
+(*@ function num (a: string sequence) (v: string) (lo hi: integer) : integer *)
 (** the number of occurrences of [v] in [a] between index [lo] included and
     index [hi] excluded *)
 
 (*@ axiom num_base:
       forall a v lo hi. hi <= lo -> num a v lo hi = 0 *)
 (*@ axiom num_ind:
-      forall a v lo hi. 0 <= lo < hi <= Seq.length a ->
+      forall a v lo hi. 0 <= lo < hi <= Sequence.length a ->
       num a v lo hi = (if a[lo] = v then 1 else 0) + num a v (lo+1) hi *)
 
 val mjrty : string array -> string

@@ -1,8 +1,0 @@
-
-*******************************
-********** Parsed file ********
-*******************************
-val f : char -> unit[@@gospel {| f c
-    requires c = '\' |}]
-File "char1.mli", line 3, characters 17-18:
-Error: illegal character '

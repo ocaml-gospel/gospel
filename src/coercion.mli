@@ -32,5 +32,3 @@ val union : t -> t -> t
 (** [union s1 s2] merges the coercions from [s2] into [s1] (as a new set of
     coercions) this is asymetric: a coercion from [s2] may hide a coercion from
     [s1] *)
-
-val print_coercions : Format.formatter -> t -> unit

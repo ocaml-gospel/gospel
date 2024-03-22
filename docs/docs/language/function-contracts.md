@@ -2,7 +2,7 @@
 sidebar_position: 6
 ---
 
-# Function contracts
+# Function Contracts
 
 A function contract is a formal Gospel specification attached to the declaration
 of an OCaml function in an interface. Here is an example:
@@ -17,29 +17,10 @@ val euclidean_division: int -> int -> int * int
 
 A function contract is composed of two parts:
  - The first line is the **header** of the contract; it names the function
-   arguments and result. It must appear at the beginning of the contract.
- - The next lines contain as many specification `clauses` as needed. The
-   previous example features three clauses: one pre-condition introduced by
-   `requires`, and two post-conditions introduced by `ensures`.
-
-:::caution
-
-   In the absence of a contract attached to a function declaration, you cannot
-   make any assumptions about its behaviour.
-
-   Post-conditions may not hold, the function may diverge, raise unlisted
-   exceptions, modify mutable states. However, **it still cannot break any type
-   invariant.**
-
-   You can still enable the default implicit properties about exceptions, mutability,
-   non-termination, etc. by creating an empty contract:
-
-   ```ocaml
-   val euclidean_division: int -> int -> int * int
-   (*@ q, r = euclidean_division x y *)
-   ```
-
-:::
+   arguments and results and must appear at the beginning of the contract.
+ - The next lines contain as many specification clauses as needed. The
+   previous example features three clauses: one precondition introduced by
+   `requires` and two postconditions introduced by `ensures`.
 
 ```ebnf title="Function contract syntax"
 contract = header? clause*
@@ -60,7 +41,20 @@ identifier_tuple = identifier ("," identifier)*
 parameter = "()" | identifier | "~" identifier | "?" identifier
 ```
 
-##  Default behaviour
+:::tip
+
+Even if the order of clauses is not imposed by the grammar, we suggest to use
+the following systematic order for uniformity:
+
+- `requires` preconditions,
+- `checks` preconditions,
+- `modifies` and `consumes` effects,
+- `ensures` postconditions,
+- `raises` exceptional postconditions.
+
+:::
+
+##  Default Behaviour
 
 To avoid boilerplate for usual properties, Gospel applies a default contract
 whenever a function has a specification attached. Of course, any
@@ -75,13 +69,30 @@ following properties:
   words, if it mutates some data, this has no observable influence on the values
   in the rest of the program.
 
-## Pre-conditions
+:::caution
 
-Pre-conditions are **properties that must hold at the function entry**. You can use
-them to describe requirements on the function's inputs, but also possibly on a
+   In the absence of a contract attached to a function declaration, you cannot
+   make any assumptions about its behaviour: the function may diverge, raise
+   unlisted exceptions, or modify mutable states. However, **it still cannot
+   break any type invariant.**
+
+   You can still enable the default implicit properties about exceptions, mutability,
+   non-termination, etc., by creating an empty contract:
+
+   ```ocaml
+   val euclidean_division: int -> int -> int * int
+   (*@ q, r = euclidean_division x y *)
+   ```
+
+:::
+
+## Preconditions
+
+Preconditions are **properties that must hold at the function entry**. You can use
+them to describe requirements on the function's inputs, but you can also possibly use them on a
 global state that exists outside of the function arguments.
 
-You can express pre-conditions using the keyword `requires` or `checks`, followed by a
+You can express preconditions using the keyword `requires` or `checks` followed by a
 formula.
 
 ### `requires`
@@ -89,10 +100,10 @@ formula.
 A `requires` clause states under which conditions a specified function has a
 well-specified behaviour.
 
-Whenever a `requires` pre-condition is violated, its behaviour becomes
+Whenever a `requires` precondition is violated, its behaviour becomes
 unspecified, and the call should be considered faulty. Even if the function
 execution terminates, any other information provided by the contract
-(post-conditions, exceptions, effects, ...) cannot be assumed.
+(postconditions, exceptions, effects, ...) cannot be assumed.
 
 For example, the following function requires `y` to be positive to behave correctly.
 
@@ -106,10 +117,10 @@ val eucl_division: int -> int -> int * int
 
 ### `checks`
 
-Pre-conditions introduced with `checks` hold at function entry. However, unlike
-`requires` clauses, the behaviour of the function is well specified in case the
-pre-state does not meet such a pre-condition: the function fails by raising an
-OCaml `Invalid_argument` exception, and does not modify any existing state. The
+Preconditions introduced with `checks` hold at function entry. However, unlike
+`requires` clauses, the behaviour of the function is well-specified in case the
+prestate doesn't meet such a precondition. The function fails by raising an
+OCaml `Invalid_argument` exception and doesn't modify any existing state. The
 call is not faulty, but the caller is now in charge of handling the exception.
 
 For example, if we change the function contract of `eucl_division`
@@ -119,34 +130,34 @@ function raises `Invalid_argument` whenever `y <= 0`.
 :::note Combining multiple pre-conditions
 
 
-Whenever multiple pre-conditions of the same kind coexist, they hold as a
+Whenever multiple preconditions of the same kind coexist, they hold as a
 conjunction, which means
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     requires Q *)
 ```
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P /\ Q *)
 ```
 
-When combining `checks` and `requires` pre-conditions, the declaration order
-does not matter. The `requires` clauses take precedence and must always be
-respected; otherwise the `checks` behaviour cannot be assumed. This means that
+When combining `checks` and `requires` preconditions, the declaration order
+doesn't matter. The `requires` clauses take precedence and must always be
+respected; otherwise, the `checks` behaviour cannot be assumed. This means that
 ultimately,
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     checks Q *)
 ```
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     requires P
     checks P -> Q *)
@@ -162,31 +173,31 @@ maintainability and is therefore encouraged.
 :::
 
 
-## Post-conditions
+## Postconditions
 
-Post-Conditions are **properties that hold at the function exit**. They are used
+Postconditions are **properties that hold at the function exit**. They are used
 to specify how the function's outputs relate to its inputs and how the call
 mutated the memory.
 
 :::caution
 
-  **When a function raises an exception, its post-conditions are not expected to
-  hold.** You must use exceptional post-conditions instead.
+  **When a function raises an exception, its postconditions are not expected to
+  hold.** You must use exceptional postconditions instead.
 
 :::
 
-Gospel introduces post-conditions using the keyword `ensures`, followed by a
+Gospel introduces postconditions using the keyword `ensures` followed by a
 formula.
 
 As discussed in the previous section, the property expressed by the formula is
-verified after the function call only if the pre-conditions were satisfied.
+verified after the function call only if the preconditions were satisfied.
 
-:::note Combining multiple post-conditions
+:::note Combining multiple postconditions
 
-The handling of multiple post-conditions is identical to pre-conditions of the
-same kind: multiple post-conditions are merged as a conjunction:
+The handling of multiple postconditions is identical to preconditions of the
+same kind. Multiple postconditions are merged as a conjunction:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     ensures P
     ensures Q *)
@@ -194,27 +205,26 @@ same kind: multiple post-conditions are merged as a conjunction:
 
 is equivalent to:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     ensures P /\ Q *)
 ```
 
 :::
 
-## Exceptional post-conditions
+## Exceptional Postconditions
 
-Exceptional post-conditions are used to specify the exceptions that can be
-raised by the function, and what post-conditions hold in those cases.
+Exceptional postconditions are used to specify the exceptions that can be
+raised by the function and what postconditions hold in those cases.
 
 By default, functions should not raise any exceptions, and doing so is a
 violation of the specification. Whenever a function can raise an exception as
-part of its expected behaviour, this exception must be listed, along with the
-associated post-conditions.
-
+part of its expected behaviour, this exception must be listed along with the
+associated postconditions.
 :::info
 
-Some exceptions are implicitly allowed and do not have to be listed, because
-they could be unexpectedly triggered depending on the specifics of the machine
+Some exceptions are implicitly allowed and do not have to be listed because
+they could be unexpectedly triggered, depending on the specifics of the machine
 the code is executed on.
 
 **The implicitly allowed exceptions are `Stack_overflow` and `Out_of_memory`.**
@@ -224,7 +234,7 @@ clause to every function contract. Of course, you can still override that
 behaviour by stating a property whenever these exceptions are raised, like any
 other exception:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Stack_overflow -> false *)
 ```
@@ -232,34 +242,34 @@ other exception:
 :::
 
 Exceptional clauses are expressed using a `raises` keyword, followed by a list
-of cases associating each exception with its formula, with a syntax similar to
+of cases associating each exception with its formula. Those clauses use a syntax similar to
 pattern-matching.
 
-Gospel expects each `raises` clause to perform an exhaustive pattern matching
-for each exception constructor listed in this clause. Similarly to OCaml's
-pattern-matching, when an exception is raised, the post-condition that is
-satisfied is the first match in the list of the cases.
+Gospel expects each `raises` clause to perform an exhaustive pattern-matching
+for each exception constructor listed in this clause. Similar to OCaml's
+pattern-matching, when an exception is raised, the postcondition that's
+satisfied is the first match in the list of cases.
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Unix_error (ENAMETOOLONG, _, _) -> P
          | Unix_error _                    -> Q *)
 ```
 
-In the previous contract (notice that it is an exhaustive pattern-matching on
+The previous contract (notice that it's an exhaustive pattern-matching on
 the `Unix_error` exception) only states that `P` holds whenever `Unix_error` is
-raised with argument `ENAMETOOLONG`, and that `Q` holds whenever the function
-raises `Unix_error` with a different argument (`P` does not necessarily hold in
-this case).
+raised with argument `ENAMETOOLONG`, and `Q` holds whenever the function
+raises `Unix_error` with a different argument. (`P` doesn't necessarily hold in
+this case.)
 
 :::note Combining multiple exceptional post-conditions
 
-When multiple exceptional post-conditions exist, they hold independently of
+When multiple exceptional postconditions exist, they hold independently of
 each other, meaning that the raised exception is matched against each `raises`'s
 case list, and each matching post-condition must hold in conjunction. For
 instance, the contract:
 
-```ocaml
+```ocaml invalidSyntax
 (*@ ...
     raises Error "foo" -> P | Error _ -> Q
     raises Error x -> R *)
@@ -273,24 +283,28 @@ implies that
 :::
 
 
-## Code equivalence
+## Code Equivalence
 
 Complementary to other specification clauses, Gospel allows you to talk about
-*code equivalence* in the function contract. It consists in a string containing
-the OCaml code the function behaves like, preceded by the `equivalent` keyword.
+*code equivalence* in the function contract. Put it in a string containing
+the OCaml code that behaves like the function, preceded by the `equivalent` keyword.
 
 This is useful when specifying functions whose behaviour can hardly be expressed
 in pure logic:
 
-```ocaml
+<!-- This code extract is invalid because functions returning unit must modify
+     something, equivalent is not enough -->
+```ocaml invalidSyntax
+type 'a t
 val iter : ('a -> unit) -> 'a t -> unit
 (*@ iter f t
+    ...
     equivalent "List.iter f (to_list t)" *)
 ```
 
 With such a specification, no logical assertion is provided, but applying `iter`
-to `f` and `t` is equivalent to applying `List.iter` to `f`, and the conversion
-of `t` to a list. This does not leak implementation details, as `iter` might in
+to `f` and `t` is equivalent to applying `List.iter` to `f` and the conversion
+of `t` to a list. This doesn't leak implementation details, as `iter` might in
 fact be implemented in a different, more efficient way. It does however make the
 specification concise and elegant.
 
@@ -298,36 +312,41 @@ specification concise and elegant.
 :::danger
 
 At the moment, the Gospel type-checker does **not** type-check the code provided
-inside the `equivalent` clauses, and will take it as-is.
+inside the `equivalent` clauses and will take it as-is.
 
 :::
 
-## Non termination
+## Non-Termination
 
 By default, OCaml functions with an attached contract implicitly terminate.
 
-If a function is allowed to not terminate (e.g. a server main loop, a function
+If a function is allowed to not terminate (e.g., a server main loop, a function
 waiting for a signal or event, etc.), one can add this information to the
 contract using the `diverges` keyword.
 
 The following example states that the execution of the function `run` may not
-terminate. It does not specify whether this function is always non-terminating
+terminate. It doesn't specify whether this function is always non-terminating
 or not.
 
-```ocaml
+<!-- invalidSyntax: see #317 -->
+```ocaml invalidSyntax
 val run : unit -> unit
 (*@ run ()
-    diverges *)
+    diverges
+    (* ... *) *)
 ```
 
-## Data mutability
+## Data Mutability
 
-In the default specification, functions do not mutate any observable data. If
+In the default specification, functions don't mutate any observable data. If
 your function mutates an argument or some global state, you may specify it using
 the keyword `modifies`, followed by an identifier. In the following, the
 `contents` model of `a` can be modified by `inplace_map`.
 
 ```ocaml {3}
+type 'a t
+(*@ mutable model contents: int *)
+
 val inplace_map : ('a -> 'a) -> 'a t -> unit
 (*@ inplace_map f a
     modifies a.contents *)
@@ -335,7 +354,6 @@ val inplace_map : ('a -> 'a) -> 'a t -> unit
 
 If the function only modifies a few models of a value, these may be explicitly
 added to the clause.
-
 
 If a specific model is not mentioned, the whole data structure and its mutable
 models are potentially mutated.
@@ -350,15 +368,16 @@ In this example, all the mutable models of `a` can be mutated by `inplace_map`.
 
 :::note
 
-When a `modifies` clause is present, it affects all the declared post-conditions
-and exceptional post-conditions, meaning that the function may mutate data even
-in the case of exceptional post-conditions.
+When a `modifies` clause is present, it affects all the declared postconditions
+and exceptional postconditions, meaning that the function may mutate data even
+in the case of exceptional postconditions.
 
-If your data was not mutated in an exceptional post-state, for instance if the
+If your data was not mutated in an exceptional poststate, for instance if the
 function raised an exception **instead** of mutating the data, you have to
 manually specify it:
 
 ```ocaml {4}
+exception E
 val inplace_map : ('a -> 'a) -> 'a t -> unit
 (*@ inplace_map f a
     modifies a.contents
@@ -367,12 +386,12 @@ val inplace_map : ('a -> 'a) -> 'a t -> unit
 
 :::
 
-## Pure functions
+## Pure Functions
 
-An OCaml function can be declared as `pure`, which means
-- it has no side effect;
-- it raises no exception;
-- it terminates.
+An OCaml function can be declared as `pure`, which means it
+- has no side effect;
+- raises no exception;
+- terminates.
 
 ```ocaml {2}
 val length : 'a t -> int
@@ -383,14 +402,14 @@ Pure functions can be used in further Gospel specifications.
 On the contrary, OCaml functions not declared as `pure` cannot be used
 in specifications.
 
-## Data consumption
+## Data Consumption
 
 Gospel provides a specific syntax to specify that some data has been consumed by
-the function, and should be considered dirty — that is, not be used anymore — in
+the function, and should be considered dirty (that is, not used anymore) in
 the rest of the program. This is expressed with the `consumes`
 keyword:
 
-```ocaml
+```ocaml invalidSyntax
 val destructive_transfer: 'a t -> 'a t -> unit
 (*@ destructive_transfer src dst
     consumes src
@@ -398,7 +417,7 @@ val destructive_transfer: 'a t -> 'a t -> unit
 ```
 
 
-## Ghost parameters
+## Ghost Parameters
 
 Functions can take or return ghost values to ease the writing of function
 contracts. Such values appear within brackets in the contract header.
@@ -413,9 +432,9 @@ val log2: int -> int
     ensures r = i *)
 ```
 
-In this contract, the ghost parameter `i` is used in both the pre- and
-post-conditions. By introducing it as a ghost value, we avoid using quantifiers to
-state the existence of `i`.
+In this contract, the ghost parameter `i` is used in both the preconditions and
+postconditions. By introducing it as a ghost value, we avoid using quantifiers
+to state the existence of `i`.
 
 :::note
 

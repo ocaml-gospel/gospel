@@ -1,0 +1,3 @@
+(include test/utils/dune.docs)
+
+(include dune.inc)

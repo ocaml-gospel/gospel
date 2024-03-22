@@ -1,1 +1,1 @@
-val run : Lexing.lexbuf -> string
+val run : Format.formatter -> Lexing.lexbuf -> unit

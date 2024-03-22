@@ -8,16 +8,10 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
 
-exception Ocaml_syntax_error of Location.t
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | Ocaml_syntax_error loc -> Some (make ~loc ~sub:[] "OCaml syntax error")
-    | _ -> None)
-
+let stdlib = "Stdlib"
 let gospelstdlib = "Gospelstdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
 
@@ -39,26 +33,27 @@ let with_loadpath load_path file =
   else raise Not_found
 
 let parse_ocaml_signature_lb lb =
-  let lb_pps = Pps.run lb |> Lexing.from_string in
+  let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
   try Parse.interface lb_pps
   with _ ->
     let loc_start, loc_end = (lb_pps.lex_start_p, lb_pps.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
-    raise (Ocaml_syntax_error loc)
+    W.error ~loc W.Syntax_error
 
 let parse_ocaml_structure_lb lb =
-  let lb_pps = Pps.run lb |> Lexing.from_string in
+  let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_curr_p.pos_fname;
   try Parse.implementation lb_pps
   with _ ->
     let loc_start, loc_end = (lb.lex_start_p, lb.lex_curr_p) in
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
-    raise (Ocaml_syntax_error loc)
+    raise (W.Error (loc, W.Syntax_error))
 
 let parse_ocaml_signature file =
   let lb =
-    if file = gospelstdlib_file then Lexing.from_string Gospelstdlib.contents
+    if String.equal file gospelstdlib_file then
+      Lexing.from_string Gospellib.contents
     else open_in file |> Lexing.from_channel
   in
   Location.init lb file;
@@ -68,26 +63,33 @@ module B = Ast_builder.Make (struct
   let loc = Location.none
 end)
 
-let default_open =
-  let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
-  let name = { txt = "gospel"; loc = Location.none } in
-  B.attribute ~name ~payload |> B.psig_attribute
-
-let _default_open_str =
-  let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
-  let name = { txt = "gospel"; loc = Location.none } in
-  B.attribute ~name ~payload |> B.pstr_attribute
-
 (** Parse the attributes as GOSPEL specification. *)
 let parse_signature_gospel ~filename signature name =
-  (if name = gospelstdlib then signature else default_open :: signature)
-  |> Uattr2spec.signature ~filename
+  let open_gospelstdlib =
+    let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
+    let name = { txt = "gospel"; loc = Location.none } in
+    B.attribute ~name ~payload |> B.psig_attribute
+  in
+  let open_stdlib =
+    let payload = PStr [ B.(pstr_eval (estring "open Stdlib")) [] ] in
+    let name = { txt = "gospel"; loc = Location.none } in
+    B.attribute ~name ~payload |> B.psig_attribute
+  in
+  let s =
+    if
+      String.equal name gospelstdlib
+      || String.equal name stdlib
+      || String.equal name "CamlinternalFormatBasics"
+    then signature
+    else open_stdlib :: open_gospelstdlib :: signature
+  in
+  Uattr2spec.signature ~filename s
 
 let parse_structure_gospel ~filename structure name =
   (if name = gospelstdlib then structure
-  else
-    (* TODO: default open of stdlib as a structure item *)
-    (* default_open_str :: *) structure)
+   else
+     (* TODO: default open of stdlib as a structure item *)
+     (* default_open_str :: *) structure)
   |> Uattr2spec.structure ~filename
 
 let path2module p =

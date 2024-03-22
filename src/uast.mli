@@ -9,8 +9,6 @@
 (**************************************************************************)
 
 open Ppxlib
-open Asttypes
-open Parsetree
 module Preid = Identifier.Preid
 
 (* Types *)
@@ -37,19 +35,23 @@ type pattern = { pat_desc : pat_desc; pat_loc : Location.t }
 and pat_desc =
   | Pwild
   | Pvar of Preid.t
+  | Ptrue
+  | Pfalse
   | Papp of qualid * pattern list
   | Prec of (qualid * pattern) list
   | Ptuple of pattern list
   | Pas of pattern * Preid.t
   | Por of pattern * pattern
   | Pcast of pattern * pty
+  | Pconst of constant
+  | Pinterval of char * char
 
 (* Logical terms and formulas *)
 
 type binder = Preid.t * pty option
 type param = Location.t * Preid.t * pty
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
-type quant = Tforall | Texists | Tlambda
+type quant = Tforall | Texists
 
 type term = { term_desc : term_desc; term_loc : Location.t }
 
@@ -66,9 +68,10 @@ and term_desc =
   | Tnot of term
   | Tif of term * term * term
   | Tquant of quant * binder list * term
+  | Tlambda of pattern list * term * pty option
   | Tattr of string * term
   | Tlet of Preid.t * term * term
-  | Tcase of term * (pattern * term) list
+  | Tcase of term * (pattern * term option * term) list
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term) list
@@ -114,7 +117,7 @@ type field = {
 type type_spec = {
   ty_ephemeral : bool;
   ty_field : field list;
-  ty_invariant : term list;
+  ty_invariant : (Preid.t * term list) option;
   ty_text : string;
   ty_loc : Location.t;
 }

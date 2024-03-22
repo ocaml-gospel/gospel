@@ -25,11 +25,6 @@ const katex = require("rehype-katex");
             remarkPlugins: [math],
             rehypePlugins: [katex],
           },
-          pages: {
-            path: "src/pages",
-            remarkPlugins: [math],
-            rehypePlugins: [katex],
-          },
           theme: {
             customCss: require.resolve("./src/css/custom.css"),
           },
@@ -65,8 +60,6 @@ const katex = require("rehype-katex");
               position: "left",
               label: "Docs",
             },
-            { to: "stdlib", label: "Standard Library", position: "left" },
-            { to: "faq", label: "FAQ", position: "left" },
             {
               href: "https://github.com/ocaml-gospel/gospel",
               className: "header-github-link",

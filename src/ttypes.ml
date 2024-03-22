@@ -8,6 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module W = Warnings
 open Ppxlib
 open Utils
 module Ident = Identifier.Ident
@@ -70,10 +71,12 @@ module Ts = struct
   type t = tysymbol
 
   let equal = ts_equal
+  let hash x = x.ts_ident.id_tag
   let compare x y = Ident.compare x.ts_ident y.ts_ident
 end
 
 module Mts = Map.Make (Ts)
+module Hts = Hashtbl.Make (Ts)
 
 let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
 let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }
@@ -87,29 +90,31 @@ let fresh_ty_var ?(loc = Location.none) s =
 
 let ty_of_var tv = { ty_node = Tyvar tv }
 
-(* let ty_app ts tl = {ty_node = Tyapp (ts,tl)} *)
-
 (** smart constructors & utils *)
 
-exception BadTypeArity of tysymbol * int
-
-let ty_app ts tyl =
+let ty_app ?loc ts tyl =
   if ts_arity ts = List.length tyl then { ty_node = Tyapp (ts, tyl) }
-  else raise (BadTypeArity (ts, List.length tyl))
+  else
+    let loc = Option.value ~default:ts.ts_ident.id_loc loc in
+    W.error ~loc
+      (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl))
 
-let rec ty_full_inst m ty =
+let rec ty_full_inst ?loc m ty =
   match ty.ty_node with
   | Tyvar tv -> Mtv.find tv m
-  | Tyapp (ts, tyl) -> ty_app ts (List.map (ty_full_inst m) tyl)
+  | Tyapp (ts, tyl) -> ty_app ?loc ts (List.map (ty_full_inst m) tyl)
 
-let ts_match_args ts tl =
+let ts_match_args ?loc ts tl =
   try List.fold_right2 Mtv.add ts.ts_args tl Mtv.empty
-  with Invalid_argument _ -> raise (BadTypeArity (ts, List.length tl))
+  with Invalid_argument _ ->
+    let loc = Option.value ~default:ts.ts_ident.id_loc loc in
+    W.error ~loc
+      (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tl))
 
-let ty_app ts tyl =
+let ty_app ?loc ts tyl =
   match ts.ts_alias with
-  | None -> ty_app ts tyl
-  | Some ty -> ty_full_inst (ts_match_args ts tyl) ty
+  | None -> ty_app ?loc ts tyl
+  | Some ty -> ty_full_inst ?loc (ts_match_args ?loc ts tyl) ty
 
 let rec ts_subst_ts old_ts new_ts ({ ts_ident; ts_args; ts_alias } as ts) =
   if ts_equal old_ts ts then new_ts
@@ -172,14 +177,17 @@ let ty_equal_check ty1 ty2 =
 
 let ts_unit = ts (Ident.create ~loc:Location.none "unit") []
 let ts_integer = ts (Ident.create ~loc:Location.none "integer") []
-let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
-let ts_float = ts (Ident.create ~loc:Location.none "float") []
+let ts_int = ts (Ident.create ~loc:Location.none "int") []
 let ts_char = ts (Ident.create ~loc:Location.none "char") []
+let ts_bytes = ts (Ident.create ~loc:Location.none "bytes") []
 let ts_string = ts (Ident.create ~loc:Location.none "string") []
+let ts_float = ts (Ident.create ~loc:Location.none "float") []
+let ts_bool = ts (Ident.create ~loc:Location.none "bool") []
+let ts_exn = ts (Ident.create ~loc:Location.none "exn") []
 
-let ts_option =
+let ts_array =
   ts
-    (Ident.create ~loc:Location.none "option")
+    (Ident.create ~loc:Location.none "array")
     [ fresh_tv ~loc:Location.none "a" ]
 
 let ts_list =
@@ -187,10 +195,36 @@ let ts_list =
     (Ident.create ~loc:Location.none "list")
     [ fresh_tv ~loc:Location.none "a" ]
 
+let ts_option =
+  ts
+    (Ident.create ~loc:Location.none "option")
+    [ fresh_tv ~loc:Location.none "a" ]
+
+let ts_int32 = ts (Ident.create ~loc:Location.none "int32") []
+let ts_int64 = ts (Ident.create ~loc:Location.none "int64") []
+let ts_nativeint = ts (Ident.create ~loc:Location.none "nativeint") []
+
+let ts_format6 =
+  ts
+    (Ident.create ~loc:Location.none "format6")
+    [
+      fresh_tv ~loc:Location.none "a";
+      fresh_tv ~loc:Location.none "b";
+      fresh_tv ~loc:Location.none "c";
+      fresh_tv ~loc:Location.none "d";
+      fresh_tv ~loc:Location.none "e";
+      fresh_tv ~loc:Location.none "f";
+    ]
+
+let ts_lazy =
+  ts
+    (Ident.create ~loc:Location.none "lazy")
+    [ fresh_tv ~loc:Location.none "a" ]
+
 let ts_tuple =
   let ts_tuples = Hashtbl.create 0 in
+  Hashtbl.add ts_tuples 0 ts_unit;
   fun n ->
-    (* if n = 0 then ts_unit else *)
     try Hashtbl.find ts_tuples n
     with Not_found ->
       let ts_id = Ident.create ~loc:Location.none ("tuple" ^ string_of_int n) in
@@ -215,6 +249,7 @@ let is_ts_tuple ts =
 let is_ts_arrow ts = Ident.equal ts_arrow.ts_ident ts.ts_ident
 let ty_unit = ty_app ts_unit []
 let ty_integer = ty_app ts_integer []
+let ty_int = ty_app ts_int []
 let ty_bool = ty_app ts_bool []
 let ty_float = ty_app ts_float []
 let ty_char = ty_app ts_char []
@@ -307,19 +342,3 @@ let print_exn_type f = function
       list ~sep:semi ~first:rbrace ~last:lbrace print_arg f args
 
 let print_xs f x = pp f "%a" Ident.pp x.xs_ident
-
-(* register exceptions *)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | TypeMismatch (ty1, ty2) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type mismatch between %a and %a" print_ty ty1 print_ty ty2
-    | BadTypeArity (ts, i) ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Type %a expects %d arguments as opposed to %d" print_ts_name ts
-          (ts_arity ts) i
-    | _ -> None)

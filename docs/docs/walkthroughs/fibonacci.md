@@ -2,9 +2,9 @@
 sidebar_position: 2
 ---
 
-# Fibonacci numbers
+# Fibonacci Numbers
 
-In this example, we will look into specifying an efficient implementation of a
+In this example, we'll look into specifying an efficient implementation of a
 function computing Fibonacci numbers. This example is adapted from the article
 _The Spirit of Ghost Code_[^1].
 
@@ -14,7 +14,7 @@ _The Spirit of Ghost Code_[^1].
     ⟨[10.1007/s10703-016-0243-x](https://dx.doi.org/10.1007/s10703-016-0243-x)⟩.
     ⟨[hal-01396864](https://hal.archives-ouvertes.fr/hal-01396864v1)⟩
 
-## The problem
+## The Problem
 
 Recall that [Fibonacci numbers](https://en.wikipedia.org/wiki/Fibonacci_number)
 are defined as follows:
@@ -25,22 +25,22 @@ F_1 = 1\\
 F_i = F_{i-1} + F_{i-2}
 $$
 
-To begin with, let us introduce this definition into the Gospel world, using an
+To begin, let's introduce this definition into the Gospel world by using an
 uninterpreted logical function along with an axiom defining it.
 
 ```ocaml
 (*@ function fibonacci (n: integer) : integer *)
-(*@ axiom A: 
+(*@ axiom a:
          fibonacci 0 = 0
       /\ fibonacci 1 = 1
-      /\ forall n. n >= 2 -> fibonacci n = fibonacci (n-1) + fibonacci (n-2) *) 
+      /\ forall n. n >= 2 -> fibonacci n = fibonacci (n-1) + fibonacci (n-2) *)
 ```
 
-Here is an implementation of such a function. When `a` and `b` are two
+Below is an implementation of such a function. When `a` and `b` are two
 consecutive Fibonacci numbers, the following function computes the `n`th number
 ahead of `a`. Hence, `fib n 0 1` is the `n`th Fibonacci number.
 
-```ocaml
+```ocaml implementationSyntax
 let rec fib n a b =
   if n < 0 then invalid_arg "n must be non-negative";
   if n = 0 then a
@@ -53,9 +53,9 @@ Its signature is simple:
 val fib : int -> int -> int -> int
 ```
 
-## A simple contract
+## A Simple Contract
 
-Let us write a first contract for this interface.
+Let's write a first contract for this interface.
 
 ```ocaml
 val fib : int -> int -> int -> int
@@ -69,22 +69,23 @@ val fib : int -> int -> int -> int
 ```
 
 The contract is pretty straightforward:
-  - The first precondition states that `n` must be non-negative. Indeed, if `n`
+  - The first precondition states that `n` must be non-negative. If `n`
     is negative, the function raises an exception, so this is a strong
     requirement.
-  - The second precondition states that `a` and `b` are consecutive Fibonacci numbers.
+  - The second precondition states that `a` and `b` are consecutive Fibonacci
+    numbers.
   - The postcondition specifies that if `a` is the `i`th Fibonacci number, and
     `b` is the `i+1`th Fibonacci number, then `r` (the result of the
     computation) is the `i+n`th Fibonacci number.
-    
-Although nothing complicated is really involved in this specification, it is
+
+Although this specification isn't complicated, it's
 quite verbose and repetitive. The term `i >= 0 /\ a = fibonacci i /\ b =
-fibonacci (i+1)` is repeated, and actually refers to the same value of `i`
+fibonacci (i+1)` is repeated, and it actually refers to the same value of `i`
 in both occurrences. We can certainly do better.
 
-## Simplifying using a ghost argument
+## Simplify by Using a Ghost Argument
 
-Let us imagine for a moment that our `fib` function takes an additional
+Let's imagine for a moment that our `fib` function takes an additional
 argument, `i`, representing the index of `a` in the Fibonacci sequence (the same
 `i` that we've been using in the specification so far). Its contract could look
 like:
@@ -97,23 +98,23 @@ val fib : i:int -> int -> int -> int -> int
     ensures r = fibonacci (i+n) *)
 ```
 
-We do not need to quantify over `i` anymore, since it is provided to the
+We don't need to quantify over `i` anymore, since it's provided to the
 function, but we still need to state the preconditions that apply to it (see the
-second clause). We do not need to repeat the previous condition on `i` either:
-if it holds in the prestate, then it also holds in the poststate, since nothing
+second clause). We don't need to repeat the previous condition on `i` either.
+If it holds in the prestate, then it also holds in the poststate because nothing
 here is mutable.
 
-This contract is much easier to write, and more importantly, much easier to read
-and reason about. We cheated a bit though: `fib` does not take this `i`
-argument, and modifying it for the sole purpose of specification seems quite
+This contract is much easier to write, and more importantly, it's much easier to
+read and to reason about. We cheated a bit though: `fib` does not take this `i`
+argument, so modifying it for the sole purpose of specification seems quite
 intrusive.
 
 To overcome this issue, Gospel provides *ghost parameters*. It lets you
-introduce logical arguments (or return values) that do not exist initially, so
+introduce logical arguments (or return values) that don't exist initially, so
 you can use them in the specifications and hopefully make them easier to
-understand. 
+understand.
 
-Thus, we can rewrite our last attempt by using this feature, and benefit from
+Thus, we can rewrite our last attempt by using this feature and benefit from
 `i` being an argument without actually modifying the OCaml interface or
 implementation.
 

@@ -1,0 +1,14 @@
+# Tell git to stop considering generated `dune.inc` files as source files that
+# can be diffed so that it will:
+#
+# - skip that noise in diffs, logs, etc.
+# - leave the content of those files untouched when there is a merge conflict,
+#   as conflict markers prevent `dune` from interpreting those files, for
+#   instance to run `dune build @duneincs --auto-promote` that would fix them...
+#
+# Also: suggest to use the `duneinc` merge driver if it is defined. It could be
+# defined by:
+#   git config merge.duneinc.driver 'dune build _build/default/%P.gen && cp _build/default/%P.gen %A'
+# which will have the effect of trying to ask dune to generate the corresponding
+# `dune.inc.gen` and using it as the merge result if it succeeds
+dune.inc -diff merge=duneinc

@@ -2,11 +2,11 @@
 sidebar_position: 7
 ---
 
-# Logical declarations
+# Logical Declarations
 
-## Functions and Predicates
+## Functions, Predicates and Axioms
 
-It is often convenient to introduce shortcuts for terms and formulas to avoid
+It's often convenient to introduce shortcuts for terms and formulas to avoid
 repetitions. *Predicates* let you write named formulae definitions in Gospel
 comments. Here is a typical example:
 
@@ -42,9 +42,21 @@ recursive. A recursive definition requires the `rec` keyword like in OCaml:
       | h :: (y :: _ as t) -> h <= y /\ is_sorted_list t *)
 ```
 
-## Uninterpreted symbols and Axioms
+Logical functions and predicates can be left uninterpreted, ie without declaring
+their bodies, for instance:
 
-## Logical function contracts
+```ocaml
+(*@ predicate is_sorted (a: int array) *)
+(*@ function powm (x y m: integer) : integer *)
+```
+
+Finally, it is also possible to define *axioms*, for instance:
+
+```ocaml
+(*@ axiom unbounded_integers : forall i. exists j. j > i *)
+```
+
+## Logical Function Contracts
 
 Similarly to OCaml functions, contracts can be added to logical declarations.
 
@@ -54,7 +66,7 @@ Similarly to OCaml functions, contracts can be added to logical declarations.
 (*@ requires n >= 0 *)
 ```
 
-Such a contract does not prevent you from calling `fibonacci` on negative
+Such a contract doesn't prevent you from calling `fibonacci` on negative
 integers. For instance, `fibonacci (-1)` is a valid Gospel term. However, we
 know nothing about its value: the definition of `fibonacci` holds only when its
 precondition is true.
@@ -71,7 +83,7 @@ follows:
         else fibonacci (n-2) + fibonacci (n-1) *)
 ```
 
-Logical symbols can also come with post-conditions. For instance, we can assert
+Logical symbols can also come with postconditions. For instance, we can assert
 that Fibonacci numbers are non-negative:
 
 ```ocaml {4}
@@ -83,31 +95,31 @@ that Fibonacci numbers are non-negative:
 
 :::info
 
-Note that as opposed to OCaml function contracts, logical function contracts do
-not have a header. Consequently, a variable called `result` is automatically
-introduced in the context by Gospel to refer to the value returned by the
-function in a post-condition.
+Note that as opposed to OCaml function contracts, logical function contracts don't
+have a header. Consequently, Gospel automatically introduces a variable called `result`
+in the context to refer to the value returned by the
+function in a postcondition.
 
 :::
 
-The post-condition of `fibonacci` is equivalent to adding an axiom along with an
+The postcondition of `fibonacci` is equivalent to adding an axiom along with an
 uninterpreted counterpart.
 
 ```ocaml
 (*@ axiom fibonacci_post : forall n. n >= 0 -> fibonacci n >= 0 *)
 ```
 
-Note that the post-condition holds only when the pre-condition holds.
+Note that the postcondition holds only when the precondition holds.
 
 :::danger
 
-Gospel does not perform any verification beyond type-checking. If you wish to
-verify that the definition indeed complies with its contract, you need to use an
+Gospel doesn't perform any verification beyond type-checking. If you wish to
+verify that the definition indeed complies with its contract, you must use an
 external tool such as [Why3Gospel](https://github.com/ocaml-gospel/why3gospel).
 
 :::
 
-## Termination arguments
+## Termination Arguments
 
 Using recursive definitions in the logical domain can introduce inconsistencies.
 For instance, consider the following recursive function:
@@ -116,11 +128,11 @@ For instance, consider the following recursive function:
 (*@ function rec f (n: integer): integer = f n + 1 *)
 ```
 
-As explained above, it is perfectly fine to mention `f 0` in a formula. Although
-we do not know its value, we know that `f 0 = f 0 + 1`, thus `0 = 1`, which is
+As explained above, it's perfectly fine to mention `f 0` in a formula. Although
+we don't know its value, we know that `f 0 = f 0 + 1`, thus `0 = 1`, which is
 obviously inconsistent.
 
-In order to prevent this, it is a good practice to provide a termination
+In order to prevent this, it's a good practice to provide a termination
 argument for each recursive definition. Gospel provides one way of doing this
 via *variants*.
 
@@ -133,9 +145,10 @@ via *variants*.
 
 :::danger
 
-Similarly to contracts, Gospel does not perform any verification that the
-variant indeed ensures the termination. It is up to an external tool to help you
-verify this.
+Similarly to contracts, Gospel doesn't perform any verification that the
+variant indeed ensures the termination, it will only checks that it's of type
+integer. It's up to an external tool to exploit the expression given as
+`variant` to check termination.
 
 :::
 

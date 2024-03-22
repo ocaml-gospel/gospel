@@ -9,10 +9,9 @@
 (*                                                                  *)
 (********************************************************************)
 
-open Ppxlib
 open Ttypes
 open Symbols
-open Utils
+module W = Warnings
 
 type coercion_kind =
   | CRCleaf of lsymbol
@@ -26,19 +25,30 @@ type coercion = {
   crc_tar_tl : ty list;
 }
 
+let ty_of ls =
+  match (ls.ls_args, ls.ls_value) with
+  | [ { ty_node = Tyapp (ty1, _) } ], Some { ty_node = Tyapp (ty2, _) } ->
+      (ty1.ts_ident.id_str, ty2.ts_ident.id_str)
+  | _ -> assert false
+
+let to_string crc =
+  let rec aux = function
+    | CRCleaf ls ->
+        let s1, s2 = ty_of ls in
+        [ (ls.ls_name.id_str, s1, s2) ]
+    | CRCcomp (k1, k2) -> aux k1 @ aux k2
+  in
+  aux crc.crc_kind
+
 type t = coercion Mts.t Mts.t
-(** invariant: transitively closed *)
+(* invariant: transitively closed *)
 
 let empty = Mts.empty
 
-exception NotACoercion of lsymbol
-exception CoercionCycle of coercion
-exception CoercionAlreadyDefined of coercion
-
 let create_crc ls =
   match (ls.ls_args, ls.ls_value) with
-  | [ { ty_node = Tyapp (ts1, tl1) } ], Some { ty_node = Tyapp (ts2, tl2) } ->
-      if ts_equal ts1 ts2 then error ~loc:ls.ls_name.id_loc (NotACoercion ls);
+  | [ { ty_node = Tyapp (ts1, tl1) } ], Some { ty_node = Tyapp (ts2, tl2) }
+    when not (ts_equal ts1 ts2) ->
       {
         crc_kind = CRCleaf ls;
         crc_src_ts = ts1;
@@ -46,11 +56,12 @@ let create_crc ls =
         crc_tar_ts = ts2;
         crc_tar_tl = tl2;
       }
-  | _ -> error ~loc:ls.ls_name.id_loc (NotACoercion ls)
+  | _ ->
+      W.error ~loc:ls.ls_name.id_loc (W.Invalid_coercion_type ls.ls_name.id_str)
 
-let mem crcmap ts1 ts2 =
+let mem t ts1 ts2 =
   try
-    let m = Mts.find ts1 crcmap in
+    let m = Mts.find ts1 t in
     Mts.mem ts2 m
   with Not_found -> false
 
@@ -61,16 +72,16 @@ let rec may_match ty1 ty2 =
       List.iter2 may_match tl1 tl2
   | _ -> ()
 
-let find_crc crcmap ts1 ts2 = Mts.find ts2 (Mts.find ts1 crcmap)
+let find_crc t ts1 ts2 = Mts.find ts1 t |> Mts.find ts2
 
-let find crcmap ty1 ty2 =
+let find t ty1 ty2 =
   match (ty1, ty2) with
   | { ty_node = Tyapp (ts1, tl1) }, { ty_node = Tyapp (ts2, tl2) } ->
       let rec ls_list_of acc = function
         | CRCleaf ls -> ls :: acc
         | CRCcomp (k1, k2) -> ls_list_of (ls_list_of acc k2) k1
       in
-      let crc = find_crc crcmap ts1 ts2 in
+      let crc = find_crc t ts1 ts2 in
       List.iter2 may_match tl1 crc.crc_src_tl;
       List.iter2 may_match tl2 crc.crc_tar_tl;
       ls_list_of [] crc.crc_kind
@@ -90,15 +101,17 @@ let replace ~loc c_old c_new _m1 m =
   try
     ck_eq c_old.crc_kind c_new.crc_kind;
     m
-  with Not_found -> error ~loc (CoercionAlreadyDefined c_old)
+  with Not_found ->
+    W.error ~loc (W.Coercion_already_defined (to_string c_old))
 
 (* add a new coercion c, without making the transitive closure *)
 let insert ~loc crc m =
   let put crc m1 m2 =
     Mts.add crc.crc_src_ts (Mts.add crc.crc_tar_ts crc m1) m2
   in
-  if mem m crc.crc_tar_ts crc.crc_src_ts then
-    error ~loc (CoercionCycle (find_crc m crc.crc_tar_ts crc.crc_src_ts));
+  (if mem m crc.crc_tar_ts crc.crc_src_ts then
+     let crc = find_crc m crc.crc_tar_ts crc.crc_src_ts in
+     W.error ~loc (W.Coercion_cycle (to_string crc)));
   let m1 = try Mts.find crc.crc_src_ts m with Not_found -> Mts.empty in
   if Mts.mem crc.crc_tar_ts m1 then
     replace ~loc (Mts.find crc.crc_tar_ts m1) crc m1 m
@@ -141,56 +154,3 @@ let union crcmap1 crcmap2 =
     | CRCcomp _ -> crcmap
   in
   Mts.fold (fun _ty1 m1 crcmap -> Mts.fold add m1 crcmap) crcmap2 crcmap1
-
-let print_kind fmt crc =
-  let ty_str_of ls =
-    match (ls.ls_args, ls.ls_value) with
-    | [ { ty_node = Tyapp (ty1, _) } ], Some { ty_node = Tyapp (ty2, _) } ->
-        (ty1.ts_ident.id_str, ty2.ts_ident.id_str)
-    | _ -> assert false
-  in
-  let rec print_kind fmt = function
-    | CRCleaf ls ->
-        let s1, s2 = ty_str_of ls in
-        Format.fprintf fmt "%s: %s -> %s" ls.ls_name.id_str s1 s2
-    | CRCcomp (k1, k2) ->
-        Format.fprintf fmt "%a@\n%a" print_kind k1 print_kind k2
-  in
-  print_kind fmt crc
-
-let already_a_coercion fmt crc =
-  Format.fprintf fmt "There is already a coercion from type %s to type %s:@\n%a"
-    crc.crc_src_ts.ts_ident.id_str crc.crc_tar_ts.ts_ident.id_str print_kind
-    crc.crc_kind
-
-let print_coercions fmt crcmap =
-  let print_mts fmt mts =
-    Mts.iter
-      (fun _ crc ->
-        print_kind fmt crc.crc_kind;
-        Format.fprintf fmt "@\n")
-      mts
-  in
-  let print_crcmap fmt crcmap =
-    Mts.iter (fun _ mts -> Format.fprintf fmt "%a" print_mts mts) crcmap
-  in
-  Format.fprintf fmt "@[%a@]" print_crcmap crcmap
-
-(* register exceptions *)
-
-let () =
-  let open Location.Error in
-  register_error_of_exn (function
-    | NotACoercion ls ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "Function %s cannot be used as a coercion" ls.ls_name.id_str
-    | CoercionCycle crc ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "This coercion introduces a cycle;@ %a" already_a_coercion crc
-    | CoercionAlreadyDefined crc ->
-        Fmt.kstr
-          (fun str -> Some (make ~loc:Location.none ~sub:[] str))
-          "%a" already_a_coercion crc
-    | _ -> None)

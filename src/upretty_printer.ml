@@ -9,9 +9,9 @@
 (**************************************************************************)
 
 open Ppxlib
-open Parsetree
 open Uast
 open Opprintast
+module Option = Stdlib.Option
 open Utils.Fmt
 
 let const_hole s fmt _ = pp fmt "%s" s
@@ -44,9 +44,9 @@ let type_spec f ts =
     pp f "@[<v>%a%a%a@]" ephemeral ts.ty_ephemeral (list_keyword "model ...")
       ts.ty_field
       (list_keyword "invariant ...")
-      ts.ty_invariant
+      Option.(value ~default:[] (map snd ts.ty_invariant))
   in
-  if ts.ty_ephemeral || ts.ty_field != [] || ts.ty_invariant != [] then
+  if ts.ty_ephemeral || ts.ty_field != [] || Option.is_some ts.ty_invariant then
     pp f "@[%a@]" (spec print_tspec) ts
   else ()
 
@@ -249,7 +249,7 @@ let rec s_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a" module_type incl.pincl_mod
         (item_attributes reset_ctxt)
         incl.pincl_attributes
-  | Sig_modtype { mtdname = s; mtdtype = md; mtdattributes = attrs } ->
+  | Sig_modtype { mtdname = s; mtdtype = md; mtdattributes = attrs; _ } ->
       pp f "@[<hov2>module@ type@ %s%a@]%a" s.txt
         (fun f md ->
           match md with
@@ -260,7 +260,7 @@ let rec s_signature_item f x =
         md
         (item_attributes reset_ctxt)
         attrs
-  | Sig_modtypesubst { mtdname = s; mtdtype = md; mtdattributes = attrs } ->
+  | Sig_modtypesubst { mtdname = s; mtdtype = md; mtdattributes = attrs; _ } ->
       let md =
         match md with None -> assert false (* ast invariant *) | Some mt -> mt
       in

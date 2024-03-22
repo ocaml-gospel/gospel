@@ -9,34 +9,10 @@
 (**************************************************************************)
 
 {
+  module W = Warnings
   open Ppxlib
   open Lexing
   open Uparser
-
-  type error =
-    | IllegalCharacter of char
-    | IllegalEscape of string * string option
-    | UnterminatedComment
-
-  exception Error of error * Location.t
-
-  let prepare_error loc = function
-    | IllegalCharacter c ->
-      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
-        "illegal character %c" c
-    | UnterminatedComment ->
-      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
-        "unterminated comment"
-    | IllegalEscape (s, explanation) ->
-      Fmt.kstr (fun str -> Some (Location.Error.make ~loc ~sub:[] str))
-        "Illegal backslash escape in string or character (%s)%t" s
-        (fun ppf -> match explanation with
-           | None -> ()
-           | Some expl -> Fmt.pf ppf ": %s" expl)
-  let () =
-    Location.Error.register_error_of_exn (function
-       | Error (err, loc) -> prepare_error loc err
-       | _ -> None)
 
   let keywords = Hashtbl.create 97
   let () =
@@ -81,6 +57,7 @@
         "model", MODEL;
         "and", ANDKW;
         (* "mod", OP3("mod"); *)
+        "when", WHEN;
       ]
 
   (* to translate escape sequences *)
@@ -109,8 +86,8 @@
     | c   -> c
 
   let illegal_escape lexbuf reason =
-    let error = IllegalEscape (Lexing.lexeme lexbuf, Some reason) in
-    raise (Error (error, Location.of_lexbuf lexbuf))
+    let loc = Location.of_lexbuf lexbuf in
+    W.error ~loc  (W.Illegal_escape (Lexing.lexeme lexbuf, Some reason))
 
   let char_for_decimal_code lexbuf i =
     let c = num_value lexbuf ~base:10 ~first:i ~last:(i+2) in
@@ -169,6 +146,7 @@ let hex_float_literal =
   ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
   ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
   (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let int_literal_modifier = 'i'
 
 let op_char_1 = ['=' '<' '>' '~']
 let op_char_2 = ['+' '-']
@@ -187,8 +165,10 @@ rule token = parse
       { newline lexbuf; token lexbuf }
   | space+
       { token lexbuf }
-  | int_literal as s
-      { INTEGER s }
+  | int_literal as lit
+      { INTEGER (lit, None) }
+  | (int_literal as lit) (int_literal_modifier as modif)
+      { INTEGER (lit, Some modif) }
   | (float_literal | hex_float_literal) as s
       { FLOAT s }
   | "\'" ([^ '\\' '\'' '\010' '\013'] as c) "\'"
@@ -283,7 +263,8 @@ rule token = parse
   | eof
       { EOF }
   | _ as c
-      { raise (Error (IllegalCharacter c, Location.of_lexbuf lexbuf)) }
+      { let loc = Location.of_lexbuf lexbuf in
+        W.error ~loc (Illegal_character c) }
 
 and comment = parse
   | "*)"
@@ -293,7 +274,8 @@ and comment = parse
   | newline
       { newline lexbuf; comment lexbuf }
   | eof
-      { raise (Error (UnterminatedComment, Location.of_lexbuf lexbuf)) }
+      { let loc = Location.of_lexbuf lexbuf in
+        W.error ~loc W.Unterminated_comment }
   | _
       { comment lexbuf }
 

@@ -1,0 +1,41 @@
+name: Build and test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install OCaml compiler
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.11
+          dune-cache: true
+
+      - name: Install dependencies
+        run: |
+          opam install . --deps-only --with-test
+
+      - name: Show configuration
+        run: |
+          opam exec -- ocamlc -config
+          opam config list
+          opam exec -- dune printenv
+          opam list
+
+      - name: Build the test suite
+        run: opam exec -- dune build
+
+      - name: Run the normal tests
+        run: opam exec -- dune runtest
+
+      - name: Run the noisy tests
+        run: opam exec -- dune build @test-cmis
+
+      - name: Install the OPAM package
+        run: |
+          opam install --with-test ./gospel.opam

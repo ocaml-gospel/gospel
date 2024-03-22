@@ -3,18 +3,37 @@
 
 (menhir
  (modules uparser)
- (flags (-v)))
+ (flags
+  (-v --explain)))
 
 (library
  (public_name gospel)
- (flags :standard -open Ocaml_shadow -w -9)
  (preprocess
   (pps ppx_deriving.show))
- (libraries ocaml-compiler-libs.shadow fmt ppxlib ppxlib.ast)
+ (libraries ocaml-compiler-libs.shadow fmt findlib ppxlib ppxlib.ast pp_loc)
  (modules_without_implementation uast))
 
 (rule
- (targets gospelstdlib.ml)
+ (targets gospellib.ml)
  (deps stdlib/gospelstdlib.mli)
  (action
   (run stdlib/file_to_string.exe %{deps} %{targets})))
+
+(rule
+ (alias fmt)
+ (enabled_if %{bin-available:ex})
+ (action
+  (progn
+   (run
+    ex
+    -u
+    NONE
+    -n
+    %{dep:pps.mll}
+    -c
+    "g/^{/+,/^}$/-!ocamlformat --impl -m 78 - | sed 's/^./  &/'"
+    -c
+    "g/ {$/+,/^    }$/-!ocamlformat --impl -m 74 - | sed 's/^./      &/'"
+    -c
+    "wq! pps.formatted.mll")
+   (diff? pps.mll pps.formatted.mll))))

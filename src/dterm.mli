@@ -23,6 +23,8 @@ and dpattern_node =
   | DPor of dpattern * dpattern
   | DPas of dpattern * Preid.t
   | DPcast of dpattern * dty
+  | DPconst of Parsetree.constant
+  | DPinterval of char * char
 
 type dbinder = Preid.t * dty
 
@@ -31,12 +33,13 @@ type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 and dterm_node =
   | DTattr of dterm * string list
   | DTvar of Preid.t
-  | DTconst of Parsetree.constant
+  | DTconst of constant
   | DTapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
-  | DTcase of dterm * (dpattern * dterm) list
+  | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
+  | DTlambda of dpattern list * dterm
   | DTbinop of binop * dterm * dterm
   | DTnot of dterm
   | DTold of dterm
@@ -50,6 +53,7 @@ val dty_char : dty
 val dty_float : dty
 val dty_string : dty
 val dty_integer : dty
+val dty_int : dty
 val dty_of_dterm : dterm -> dty
 val dty_of_ty : Ttypes.ty -> dty
 val dty_fresh : unit -> dty
@@ -79,6 +83,3 @@ val denv_add_var_quant : denv -> (Identifier.Preid.t * dty) list -> denv
 val term : vsymbol Mstr.t -> dterm -> term
 val fmla : vsymbol Mstr.t -> dterm -> term
 val pattern : dpattern -> Tterm.pattern * vsymbol Mstr.t
-
-exception DuplicatedVar of string
-exception UnboundVar of string

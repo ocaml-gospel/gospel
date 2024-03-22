@@ -1,1 +1,3 @@
 src/Opprintast.ml
+test/issues/*.mli
+test/ppx/*expected*

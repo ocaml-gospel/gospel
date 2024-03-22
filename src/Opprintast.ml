@@ -21,6 +21,8 @@
 (* Extensive Rewrite: Hongbo Zhang: University of Pennsylvania *)
 (* TODO more fine-grained precedence pretty-printing *)
 
+[@@@warning "-9"]
+
 open Ppxlib
 open Asttypes
 open Format
@@ -400,7 +402,7 @@ and core_type1 ctxt f x =
     | Ptyp_variant (l, closed, low) ->
         let first_is_inherit =
           match l with
-          | { Parsetree.prf_desc = Rinherit _ } :: _ -> true
+          | { prf_desc = Rinherit _ } :: _ -> true
           | _ -> false
         in
         let type_variant_helper f x =
@@ -495,17 +497,14 @@ and pattern_or ctxt f x =
 
 and pattern1 ctxt (f : Format.formatter) (x : pattern) : unit =
   let rec pattern_list_helper f = function
-    | {ppat_desc =
-         Ppat_construct
-           ({ txt = Lident("::") ;_},
-            Some (names, {ppat_desc = Ppat_tuple([pat1; pat2]);_}));
-       ppat_attributes = []}
-
-      ->
-        (match names with
-          | [] ->
-            pp f "%a::%a" (simple_pattern ctxt) pat1 pattern_list_helper pat2 (*RA*)
-          | {loc; _} :: _ -> Utils.not_supported ~loc "gospel: named existentials aren't supported yet")
+    | {
+        ppat_desc =
+          Ppat_construct
+            ( { txt = Lident "::"; _ },
+              Some ([], { ppat_desc = Ppat_tuple [ pat1; pat2 ]; _ }) );
+        ppat_attributes = [];
+      } ->
+        pp f "%a::%a" (simple_pattern ctxt) pat1 pattern_list_helper pat2 (*RA*)
     | p -> pattern1 ctxt f p
   in
   if x.ppat_attributes <> [] then pattern ctxt f x

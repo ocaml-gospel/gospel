@@ -4,10 +4,10 @@ open Tast
 open Symbols
 open Tterm_printer
 open Ttypes
-open Parsetree
 open Upretty_printer
 open Opprintast
 open Fmt
+module Option = Stdlib.Option
 
 let print_variant_field fmt ld =
   pp fmt "%s%a:%a"
@@ -30,7 +30,7 @@ let print_type_kind fmt = function
         | [] -> list ~sep:star print_ty fmt cs.ls_args
         | ld -> print_label_decl_list print_variant_field fmt ld
       in
-      let print_constructor fmt { cd_cs; cd_ld } =
+      let print_constructor fmt { cd_cs; cd_ld; _ } =
         pp fmt "@[%a of %a@\n@[<h 2>%a@]@]" Ident.pp cd_cs.ls_name
           (print_args cd_cs) cd_ld print_ls_decl cd_cs
       in
@@ -45,8 +45,9 @@ let print_type_kind fmt = function
         (list ~sep:newline print_ls_decl)
         (rd.rd_cs :: pjs)
 
-let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants } =
-  if (not ty_ephemeral) && ty_fields = [] && ty_invariants = [] then ()
+let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
+  if (not ty_ephemeral) && ty_fields = [] && Option.is_none ty_invariants then
+    ()
   else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
     let print_term f t = pp f "@[%a@]" print_term t in
@@ -56,12 +57,20 @@ let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants } =
         print_ls_nm ls print_ty
         (Stdlib.Option.get ls.ls_value)
     in
+    let print_invariants ppf i =
+      pf ppf "with %a@;%a" print_vs (fst i)
+        (list
+           ~first:(newline ++ const string "invariant ")
+           ~sep:(const string "@\ninvariant")
+           print_term)
+        (snd i)
+    in
     pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral
       (list ~first:newline ~sep:newline print_field)
       ty_fields
-      (list
-         ~first:(newline ++ const string "invariant ")
-         ~sep:(const string "invariant") print_term)
+      (* (option print_invariant_vs) *)
+      (* ty_invariants *)
+      (option print_invariants)
       ty_invariants
 
 let print_type_declaration fmt td =
@@ -219,15 +228,14 @@ let rec print_signature_item f x =
   match x.sig_desc with
   | Sig_type (_, td, g) ->
       pp f
-        (if g then "@[(*@@ type %a *)@]" else "@[type %a@]")
+        (if g = Ghost then "@[(*@@ type %a *)@]" else "@[type %a@]")
         (list ~sep:(newline ++ const string "and ") print_type_declaration)
         td
   | Sig_val (vd, g) ->
-      pp f (if g then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
+      pp f (if g = Ghost then "@[(*@@@ %a@ *)@]" else "@[%a@]") print_val vd
   | Sig_typext te -> type_extension reset_ctxt f te
   | Sig_exception ed -> exception_declaration reset_ctxt f ed
   | Sig_class l -> (
-      let open Parsetree in
       let class_description kwd f
           ({ pci_params = ls; pci_name = { txt; _ }; _ } as x) =
         pp f "@[<2>%s %a%a%s@;:@;%a@]%a" kwd virtual_flag x.pci_virt
@@ -260,8 +268,8 @@ let rec print_signature_item f x =
         pmd.md_attrs
   | Sig_open (od, ghost) ->
       pp f
-        (if ghost then "@[<hov2>(*@@@ open%s@ %a@ *)@]%a"
-        else "@[<hov2>open%s@ %a@]%a")
+        (if ghost = Ghost then "@[<hov2>(*@@@ open%s@ %a@ *)@]%a"
+         else "@[<hov2>open%s@ %a@]%a")
         (override od.opn_override)
         (list ~sep:full Format.pp_print_string)
         od.opn_id
@@ -271,7 +279,7 @@ let rec print_signature_item f x =
       pp f "@[<hov2>include@ %a@]%a" module_type incl.pincl_mod
         (item_attributes reset_ctxt)
         incl.pincl_attributes
-  | Sig_modtype { mtd_name = s; mtd_type = md; mtd_attrs = attrs } ->
+  | Sig_modtype { mtd_name = s; mtd_type = md; mtd_attrs = attrs; _ } ->
       pp f "@[<hov2>module@ type@ %a%a@]%a" Ident.pp s
         (fun f md ->
           match md with

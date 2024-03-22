@@ -11,8 +11,6 @@
 
 open Ppxlib
 
-exception Ocaml_syntax_error of Location.t
-
 val with_loadpath : string list -> string -> string
 (** [with_loadpath loadpath filename] finds the first directory [d] in
     [loadpath] such that [d/filename] is a valid file path, and returns it. If
@@ -23,8 +21,8 @@ val with_loadpath : string list -> string -> string
 (** `parse_ocaml file` parses the OCaml content of the `file` if it is a valid
     interface.
 
-    Raise Not_found if file does not exist. Raise Ocaml_syntax_error if there is
-    an OCaml syntax error. *)
+    Raise Not_found if file does not exist. Raise Syntax_error if there is an
+    OCaml syntax error. *)
 
 val parse_ocaml_signature : string -> Parsetree.signature
 val parse_ocaml_signature_lb : Lexing.lexbuf -> Parsetree.signature

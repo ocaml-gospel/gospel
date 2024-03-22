@@ -1,0 +1,9 @@
+open.mli
+int_not_bool1.mli
+--
+type_arity2.mli
+2
+type_arity3.mli
+2
+type_arity5.mli
+2
