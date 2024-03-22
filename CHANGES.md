@@ -24,6 +24,8 @@
   [\#380](https://github.com/ocaml-gospel/gospel/pull/380)
 - Remove the `gospel_expected` prologue at the end of successful tests
   [\#363](https://github.com/ocaml-gospel/gospel/pull/363)
+- Added paths to gospel identifiers.
+  [\#396](https://github.com/ocaml-gospel/gospel/pull/396)
 
 # 0.2
 
