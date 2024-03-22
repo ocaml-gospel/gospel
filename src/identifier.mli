@@ -41,7 +41,7 @@ module Ident : sig
   type t = private {
     id_str : string;  (** The identifier name. *)
     id_attrs : string list;  (** The attributes of the identifier. *)
-    id_path : string list;  (** The full path of the identifier *)
+    id_path : t list;  (** The full path of the identifier *)
     id_loc : Location.t;  (** The location of the identifier. *)
     id_tag : int;  (** The unique tag of the identifier. *)
   }
@@ -58,13 +58,13 @@ module Ident : sig
   (** Pretty printer for identifiers. *)
 
   val create :
-    ?attrs:string list -> ?path:string list -> loc:Location.t -> string -> t
+    ?attrs:string list -> ?path:t list -> loc:Location.t -> string -> t
   (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
       attributes [attrs] and location [loc]. A unique tag is automatically
       affected to the new identifier Default attributes are empty, and default
       location is [Location.none]. *)
 
-  val of_preid : ?path:string list -> Preid.t -> t
+  val of_preid : ?path:t list -> Preid.t -> t
   (** [of_preid pid] is a fresh identifier using the same name, attributes and
       location as [pid]. A unique tag is automatically affected to the new
       identifier *)

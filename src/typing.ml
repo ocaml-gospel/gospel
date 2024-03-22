@@ -1147,7 +1147,7 @@ let rec open_file ~loc penv muc nm =
     in
     let muc = open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in
-    let muc = List.fold_left (type_sig_item [ nm ] penv) muc sl in
+    let muc = List.fold_left (type_sig_item [ muc.muc_nm ] penv) muc sl in
     let muc = close_module_file muc in
     muc
 
@@ -1308,10 +1308,11 @@ and process_modtype path penv muc umty =
 and process_mod path penv loc m muc =
   let nm = Option.value ~default:"_" m.mdname.txt in
   let muc = open_module muc nm in
-  let muc, mty = process_modtype (path @ [ nm ]) penv muc m.mdtype in
+  let md_name = Ident.create ~loc:m.mdname.loc ~path nm in 
+  let muc, mty = process_modtype (path @ [ md_name ]) penv muc m.mdtype in
   let decl =
     {
-      md_name = Ident.create ~loc:m.mdname.loc ~path nm;
+      md_name = md_name;
       md_type = mty;
       md_attrs = m.mdattributes;
       md_loc = m.mdloc;
@@ -1384,4 +1385,4 @@ and type_sig_item path penv muc sig_item =
   muc
 
 let type_sig_item penv muc sig_item =
-  type_sig_item [ muc.muc_nm.id_str ] penv muc sig_item
+  type_sig_item [ muc.muc_nm ] penv muc sig_item

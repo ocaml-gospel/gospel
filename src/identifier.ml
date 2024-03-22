@@ -28,11 +28,10 @@ module Ident = struct
   type t = {
     id_str : string;
     id_attrs : string list;
-    id_path : string list;
+    id_path : t list;
     id_loc : Location.t;
     id_tag : int;
   }
-
   let pp =
     let current = Hashtbl.create 0 in
     let output = Hashtbl.create 0 in
@@ -49,7 +48,7 @@ module Ident = struct
           if x = 0 then id.id_str else id.id_str ^ "_" ^ string_of_int x
         in
         Hashtbl.replace output id.id_tag str;
-        if path then List.fold_right (fun e acc -> e ^ "." ^ acc) id.id_path str
+        if path then List.fold_right (fun e acc -> e.id_str ^ "." ^ acc) id.id_path str
         else str
     in
     fun path ppf t ->
