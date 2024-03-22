@@ -262,8 +262,8 @@ let rec print_signature_item f x =
         (item_attributes reset_ctxt)
         pmd.md_attrs
   | Sig_module pmd ->
-      pp f "@[<hov>module@ %a@ :@ %a@]%a" Ident.pp_simpl pmd.md_name print_module_type
-        pmd.md_type
+      pp f "@[<hov>module@ %a@ :@ %a@]%a" Ident.pp_simpl pmd.md_name
+        print_module_type pmd.md_type
         (item_attributes reset_ctxt)
         pmd.md_attrs
   | Sig_open (od, ghost) ->
@@ -347,7 +347,8 @@ and print_module_type f x =
                 (* (list print_tv ~sep:comma ~first:lparens ~last:rparens) ls
                  * Ident.pp_simpl li *)
                 print_type_declaration td
-          | Wmod (li, li2) -> pp f "module %a =@ %a" Ident.pp_simpl li Ident.pp_simpl li2
+          | Wmod (li, li2) ->
+              pp f "module %a =@ %a" Ident.pp_simpl li Ident.pp_simpl li2
           | Wtysubs (li, ({ td_params = ls; _ } as td)) ->
               let ls = List.map fst ls in
               let ts = { td.td_ts with ts_ident = li } in
@@ -378,5 +379,3 @@ and print_modyle_type1 f x =
     | Mod_typeof me -> pp f "@[<hov2>module@ type@ of@ %a@]" module_expr me
     | Mod_extension e -> extension reset_ctxt f e
     | _ -> paren true print_module_type f x
-
-  

@@ -21,9 +21,7 @@ let path2module p =
 let type_check load_path name sigs =
   let name = path2module name in
   let md = init_muc name in
-  let penv =
-    Utils.Sstr.singleton name |> Typing.penv load_path
-  in
+  let penv = Utils.Sstr.singleton name |> Typing.penv load_path in
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
   wrap_up_muc md
 

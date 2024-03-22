@@ -2,8 +2,6 @@ open Fmt
 
 let result_start = "(* {gospel_expected|"
 
-
-
 let print ppf file =
   let ch = open_in file in
   let rec aux ?(first = false) () =
@@ -19,7 +17,7 @@ let print ppf file =
 
 let test_file file =
   let stderr = str "%s_stderr" file in
-  let command = str "gospel check %s > %s 2> %s"  file Filename.null stderr in
+  let command = str "gospel check %s > %s 2> %s" file Filename.null stderr in
   let status = Sys.command command in
   pr "%a@\n" print file;
   if status <> 0 then

@@ -638,7 +638,9 @@ let type_type_declaration path kid crcm ns r tdl =
       in
       Option.map (parse_core alias tvl) td.tmanifest
     in
-    let td_ts = mk_ts (Ident.create ~path ~loc:td.tname.loc s) params manifest in
+    let td_ts =
+      mk_ts (Ident.create ~path ~loc:td.tname.loc s) params manifest
+    in
     Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
@@ -671,22 +673,22 @@ let type_type_declaration path kid crcm ns r tdl =
             let ls = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
             (ls, [], ns_add_ls ~allow_duplicate:true ns cs_id.id_str ls)
         | Pcstr_record ldl ->
-           let add ld (ldl, tyl, ns) =
-             let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
-             let ty = parse_core alias tvl ld.pld_type in
-             let mut = mutable_flag ld.pld_mutable in
-             let field = fsymbol ~constr:false ~field:true id [ ty_res ] ty in
-             let ld =
-               label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
-             in
-             ( ld :: ldl,
-               ty :: tyl,
-               ns_add_fd ~allow_duplicate:true ns id.id_str field )
-           in
-           let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
-           let cs = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
-           let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
-           (cs, ldl, ns)
+            let add ld (ldl, tyl, ns) =
+              let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
+              let ty = parse_core alias tvl ld.pld_type in
+              let mut = mutable_flag ld.pld_mutable in
+              let field = fsymbol ~constr:false ~field:true id [ ty_res ] ty in
+              let ld =
+                label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
+              in
+              ( ld :: ldl,
+                ty :: tyl,
+                ns_add_fd ~allow_duplicate:true ns id.id_str field )
+            in
+            let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
+            let cs = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
+            (cs, ldl, ns)
       in
       (constructor_decl cd_cs cd_ld cd.pcd_loc cd.pcd_attributes :: acc, ns)
     in
@@ -1145,7 +1147,7 @@ let rec open_file ~loc penv muc nm =
     in
     let muc = open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in
-    let muc = List.fold_left (type_sig_item [nm] penv) muc sl in
+    let muc = List.fold_left (type_sig_item [ nm ] penv) muc sl in
     let muc = close_module_file muc in
     muc
 
@@ -1175,12 +1177,12 @@ and process_open ~loc ?(ghost = Nonghost) penv muc od =
 and process_modtype path penv muc umty =
   match umty.mdesc with
   | Mod_signature usig ->
-     let muc = List.fold_left (type_sig_item path penv) muc usig in
-     let tsig = Mod_signature (get_top_sigs muc) in
-     let tmty =
-       { mt_desc = tsig; mt_loc = umty.mloc; mt_attrs = umty.mattributes }
-     in
-     (muc, tmty)
+      let muc = List.fold_left (type_sig_item path penv) muc usig in
+      let tsig = Mod_signature (get_top_sigs muc) in
+      let tmty =
+        { mt_desc = tsig; mt_loc = umty.mloc; mt_attrs = umty.mattributes }
+      in
+      (muc, tmty)
   | Mod_ident li ->
       (* module type MTB = *MTA*  module MA : *MTA* *)
       let nm = Longident.flatten_exn li.txt in
@@ -1206,17 +1208,17 @@ and process_modtype path penv muc umty =
       let ns = find_ns ~loc:li.loc (get_top_import muc) nm in
       (add_ns_top ~export:true muc ns, tmty)
   | Mod_with (umty2, cl) ->
-     let ns_init = get_top_import muc in
-     (* required to type type decls in constraints *)
-     let muc, tmty2 = process_modtype path penv muc umty2 in
-     let process_constraint (muc, cl) c =
-       match c with
-       | Wtype (li, tyd) ->
-          let tdl =
-            type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
-              Nonrecursive [ tyd ]
-          in
-          let td = match tdl with [ td ] -> td | _ -> assert false in
+      let ns_init = get_top_import muc in
+      (* required to type type decls in constraints *)
+      let muc, tmty2 = process_modtype path penv muc umty2 in
+      let process_constraint (muc, cl) c =
+        match c with
+        | Wtype (li, tyd) ->
+            let tdl =
+              type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
+                Nonrecursive [ tyd ]
+            in
+            let td = match tdl with [ td ] -> td | _ -> assert false in
             let q = Longident.flatten_exn li.txt in
             let ns = get_top_import muc in
             let ts = find_ts ~loc:li.loc ns q in
@@ -1233,20 +1235,20 @@ and process_modtype path penv muc umty =
             | Some ty1, Some ty2 -> ignore (ty_match Mtv.empty ty1 ty2)
             | _ -> assert false);
 
-          let muc = muc_replace_ts muc td.td_ts q in
-          let muc = muc_subst_ts muc ts td.td_ts in
-          (muc, Wty (ts.ts_ident, td) :: cl)
-       | Wtypesubst (li, tyd) ->
-          let tdl =
-            type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
-              Nonrecursive [ tyd ]
-          in
-          let td = match tdl with [ td ] -> td | _ -> assert false in
-          let ty =
-            match td.td_ts.ts_alias with
-            | None -> assert false (* should not happen *)
-            | Some ty -> ty
-          in
+            let muc = muc_replace_ts muc td.td_ts q in
+            let muc = muc_subst_ts muc ts td.td_ts in
+            (muc, Wty (ts.ts_ident, td) :: cl)
+        | Wtypesubst (li, tyd) ->
+            let tdl =
+              type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
+                Nonrecursive [ tyd ]
+            in
+            let td = match tdl with [ td ] -> td | _ -> assert false in
+            let ty =
+              match td.td_ts.ts_alias with
+              | None -> assert false (* should not happen *)
+              | Some ty -> ty
+            in
 
             let q = Longident.flatten_exn li.txt in
             let ns = get_top_import muc in
@@ -1283,30 +1285,30 @@ and process_modtype path penv muc umty =
       in
       (muc, tmty)
   | Mod_functor (mto, mt) ->
-     let nm, mty_arg, loc =
-       match mto with
-       | Unit -> W.error ~loc:umty.mloc (W.Unsupported "generative functor")
-       | Named ({ txt; loc }, mt) -> (Option.value ~default:"_" txt, mt, loc)
-     in
-     let muc = open_module muc nm in
-     let muc, tmty_arg = process_modtype path penv muc mty_arg in
-     let muc = close_module_functor muc in
-     let muc, tmty = process_modtype path penv muc mt in
-     let tmty =
-       {
-         mt_desc = Mod_functor (Ident.create ~loc nm, Some tmty_arg, tmty);
-         mt_loc = umty.mloc;
-         mt_attrs = umty.mattributes;
-       }
-     in
-     (muc, tmty)
+      let nm, mty_arg, loc =
+        match mto with
+        | Unit -> W.error ~loc:umty.mloc (W.Unsupported "generative functor")
+        | Named ({ txt; loc }, mt) -> (Option.value ~default:"_" txt, mt, loc)
+      in
+      let muc = open_module muc nm in
+      let muc, tmty_arg = process_modtype path penv muc mty_arg in
+      let muc = close_module_functor muc in
+      let muc, tmty = process_modtype path penv muc mt in
+      let tmty =
+        {
+          mt_desc = Mod_functor (Ident.create ~loc nm, Some tmty_arg, tmty);
+          mt_loc = umty.mloc;
+          mt_attrs = umty.mattributes;
+        }
+      in
+      (muc, tmty)
   | Mod_typeof _ -> W.error ~loc:umty.mloc (W.Unsupported "module type of")
   | Mod_extension _ -> W.error ~loc:umty.mloc (W.Unsupported "module extension")
 
 and process_mod path penv loc m muc =
   let nm = Option.value ~default:"_" m.mdname.txt in
   let muc = open_module muc nm in
-  let muc, mty = process_modtype (path@[nm]) penv muc m.mdtype in
+  let muc, mty = process_modtype (path @ [ nm ]) penv muc m.mdtype in
   let decl =
     {
       md_name = Ident.create ~loc:m.mdname.loc ~path nm;
@@ -1339,14 +1341,15 @@ and process_sig_item path penv muc { sdesc; sloc } =
     let kid, ns, crcm = (muc.muc_kid, get_top_import muc, muc.muc_crcm) in
     match si with
     | Uast.Sig_type (r, tdl) ->
-       (muc, process_sig_type path ~loc:sloc kid crcm ns r tdl)
+        (muc, process_sig_type path ~loc:sloc kid crcm ns r tdl)
     | Uast.Sig_val vd -> (muc, process_val path ~loc:sloc kid crcm ns vd)
     | Uast.Sig_typext te -> (muc, mk_sig_item (Sig_typext te) sloc)
     | Uast.Sig_module m -> process_mod path penv sloc m muc
     | Uast.Sig_recmodule _ -> W.error ~loc:sloc (W.Unsupported "module rec")
     | Uast.Sig_modsubst _ | Uast.Sig_modtypesubst _ | Uast.Sig_typesubst _ ->
-       W.error ~loc:sloc (W.Unsupported "type substitution")
-    | Uast.Sig_modtype mty_decl -> process_modtype_decl path penv sloc mty_decl muc
+        W.error ~loc:sloc (W.Unsupported "type substitution")
+    | Uast.Sig_modtype mty_decl ->
+        process_modtype_decl path penv sloc mty_decl muc
     | Uast.Sig_exception te -> (muc, process_exception_sig path sloc ns te)
     | Uast.Sig_open od -> process_open ~loc:sloc ~ghost:Nonghost penv muc od
     | Uast.Sig_include id -> (muc, mk_sig_item (Sig_include id) sloc)
@@ -1357,9 +1360,9 @@ and process_sig_item path penv muc { sdesc; sloc } =
     | Uast.Sig_function f -> (muc, process_function path kid crcm ns f)
     | Uast.Sig_axiom a -> (muc, process_axiom path sloc kid crcm ns a)
     | Uast.Sig_ghost_type (r, tdl) ->
-       (muc, process_sig_type path ~loc:sloc ~ghost:Ghost kid crcm ns r tdl)
+        (muc, process_sig_type path ~loc:sloc ~ghost:Ghost kid crcm ns r tdl)
     | Uast.Sig_ghost_val vd ->
-       (muc, process_val path ~loc:sloc ~ghost:Ghost kid crcm ns vd)
+        (muc, process_val path ~loc:sloc ~ghost:Ghost kid crcm ns vd)
     | Uast.Sig_ghost_open od -> process_open ~loc:sloc ~ghost:Ghost penv muc od
   in
   let rec process_and_import si muc =
@@ -1381,4 +1384,4 @@ and type_sig_item path penv muc sig_item =
   muc
 
 let type_sig_item penv muc sig_item =
-  type_sig_item [muc.muc_nm.id_str] penv muc sig_item
+  type_sig_item [ muc.muc_nm.id_str ] penv muc sig_item

@@ -310,7 +310,9 @@ let xs_subst_ty old_ts new_ts new_ty xs =
 open Fmt
 
 let print_tv fmt tv =
-  pp fmt (if tv.tv_name.id_str = "_" then "%a" else "'%a") Ident.pp_simpl tv.tv_name
+  pp fmt
+    (if tv.tv_name.id_str = "_" then "%a" else "'%a")
+    Ident.pp_simpl tv.tv_name
 
 let print_ts_name fmt ts = pp fmt "@[%a@]" Ident.pp_simpl (ts_ident ts)
 

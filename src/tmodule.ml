@@ -604,5 +604,6 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
  * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
-  pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp_simpl
-    fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
+  pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
+    Ident.pp_simpl fl_nm (print_ns fl_nm.id_str) fl_export print_signature
+    fl_sigs

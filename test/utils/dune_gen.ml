@@ -45,9 +45,8 @@ let print_rule file =
       | None -> ("", "")
       | Some prd -> ("(with-accepted-exit-codes " ^ prd ^ "\n    ", ")")
     in
-    let flag =
-      if file = "path_test.mli" then " --p" else "" in
-    
+    let flag = if file = "path_test.mli" then " --p" else "" in
+
     Printf.printf
       {|(rule
  (deps
