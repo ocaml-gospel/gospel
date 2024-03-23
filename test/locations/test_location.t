@@ -501,8 +501,8 @@ First, create a test artifact:
            ax_term =
            { Tterm.t_node = Tterm.Ttrue; t_ty = None; t_attrs = [];
              t_loc = foo.mli:16:14 };
-           ax_loc = foo.mli:16:4; ax_text = " axiom a : true " });
-      sig_loc = foo.mli:16:3 };
+           ax_loc = foo.mli:16:3; ax_text = " axiom a : true " });
+      sig_loc = foo.mli:16:0 };
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
