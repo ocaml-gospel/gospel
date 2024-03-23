@@ -154,7 +154,7 @@ let floating_spec ~filename a =
     try
       let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
       let ax_loc = get_spec_loc a in
-      Sig_axiom { axiom with ax_text; ax_loc = ax_loc }
+      Sig_axiom { axiom with ax_text; ax_loc }
     with W.Error (_, W.Syntax_error) -> (
       try
         let in_text, ind_decl = parse_gospel ~filename Uparser.ind_decl a in
