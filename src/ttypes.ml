@@ -58,6 +58,13 @@ and tysymbol = {
 }
 [@@deriving show]
 
+let rec change_ty path ty =
+  match ty.ty_node with
+  | Tyapp (ts, tl) ->
+      let ts = { ts with ts_ident = Ident.change_path ts.ts_ident path } in
+      { ty_node = Tyapp (ts, List.map (change_ty path) tl) }
+  | _ -> ty
+
 let ts_equal x y = Ident.equal x.ts_ident y.ts_ident
 
 let rec ty_equal x y =

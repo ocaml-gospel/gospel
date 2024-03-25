@@ -50,12 +50,10 @@ module Ident : sig
   val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int
-
   val pp : Format.formatter -> t -> unit
-  (** Pretty printer for identifiers with their fully qualified names *)
 
   val pp_simpl : Format.formatter -> t -> unit
-  (** Pretty printer for identifiers. *)
+  (** Pretty printer for identifiers *)
 
   val create :
     ?attrs:string list -> ?path:t list -> loc:Location.t -> string -> t
@@ -74,6 +72,8 @@ module Ident : sig
 
   val add_attr : t -> string -> t
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
+
+  val change_path : t -> t list -> t
 end
 
 (** {2 Hard-coded identifiers} *)

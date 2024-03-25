@@ -534,14 +534,14 @@ let dterm whereami kid crcm ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
   dterm whereami kid crcm ns denv t
 
-let term_with_unify whereami kid crcm ty ns env t =
+let term_with_unify path whereami kid crcm ty ns env t =
   let dt = dterm whereami kid crcm ns env t in
   dterm_unify dt (dty_of_ty ty);
-  term env dt
+  term path env dt
 
-let fmla whereami kid crcm ns env t =
+let fmla path whereami kid crcm ns env t =
   let dt = dterm whereami kid crcm ns env t in
-  let tt = fmla env dt in
+  let tt = fmla path env dt in
   { tt with t_loc = t.term_loc }
 
 let private_flag = function
@@ -556,7 +556,7 @@ let mutable_flag = function
   | Asttypes.Mutable -> Mutable
   | Asttypes.Immutable -> Immutable
 
-let process_type_spec kid crcm ns ty spec =
+let process_type_spec path kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty in
@@ -567,9 +567,9 @@ let process_type_spec kid crcm ns ty spec =
   let fields = List.rev fields in
   let aux = function
     | vs, xs ->
-        let self_vs = create_vsymbol vs ty in
+        let self_vs = create_vsymbol path vs ty in
         let env = Mstr.singleton self_vs.vs_name.id_str self_vs in
-        (self_vs, List.map (fmla Invariant kid crcm ns env) xs)
+        (self_vs, List.map (fmla path Invariant kid crcm ns env) xs)
   in
   let invariants = Option.map aux spec.ty_invariant in
   type_spec spec.ty_ephemeral fields invariants spec.ty_text spec.ty_loc
@@ -731,13 +731,14 @@ let type_type_declaration path kid crcm ns r tdl =
     in
     Hts.add type_declarations td_ts inv_td;
 
-    let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
+    let spec = Option.map (process_type_spec path kid crcm ns ty) td.tspec in
 
     if td.tcstrs != [] then
       W.error ~loc:td.tloc (W.Unsupported "type constraints");
 
     let td =
-      type_declaration td_ts params [] kind (private_flag td.tprivate) manifest
+      type_declaration td_ts params [] kind (private_flag td.tprivate)
+        (Option.map (change_ty path) manifest)
         td.tattributes spec td.tloc
     in
     Hashtbl.add htd s td
@@ -768,7 +769,7 @@ let rec val_parse_core_type ns cty =
    2 - no duplicated names in arguments and arguments in header
    match core type
 *)
-let process_val_spec kid crcm ns id args ret vs =
+let process_val_spec path kid crcm ns id args ret vs =
   let header = Option.get vs.sp_header in
   let loc = header.sp_hd_nm.pid_loc in
   let id_val = id.Ident.id_str in
@@ -818,24 +819,24 @@ let process_val_spec kid crcm ns id args ret vs =
           W.type_checking_error ~loc:header.sp_hd_nm.pid_loc msg
       | Uast.Lghost (pid, pty) :: args, _ ->
           let ty = ty_of_pty ns pty in
-          let vs = create_vsymbol pid ty in
+          let vs = create_vsymbol path pid ty in
           let env, lal = add_arg (Lghost vs) env lal in
           aux args tyl env lal
       | Loptional pid :: args, (ty, Asttypes.Optional s) :: tyl ->
           if not (String.equal pid.pid_str s) then
             W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
           let ty = ty_app ts_option [ ty ] in
-          let vs = create_vsymbol pid ty in
+          let vs = create_vsymbol path pid ty in
           let env, lal = add_arg (Loptional vs) env lal in
           aux args tyl env lal
       | Lnamed pid :: args, (ty, Asttypes.Labelled s) :: tyl ->
           if not (String.equal pid.pid_str s) then
             W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
-          let vs = create_vsymbol pid ty in
+          let vs = create_vsymbol path pid ty in
           let env, lal = add_arg (Lnamed vs) env lal in
           aux args tyl env lal
       | Lnone pid :: args, (ty, Asttypes.Nolabel) :: tyl ->
-          let vs = create_vsymbol pid ty in
+          let vs = create_vsymbol path pid ty in
           let env, lal = add_arg (Lnone vs) env lal in
           aux args tyl env lal
       | Lunit :: args, _ :: tyl -> aux args tyl env (Lunit :: lal)
@@ -852,16 +853,16 @@ let process_val_spec kid crcm ns id args ret vs =
     process_args `Parameter header.sp_hd_args args Mstr.empty []
   in
 
-  let pre = List.map (fmla Requires kid crcm ns env) vs.sp_pre in
-  let checks = List.map (fmla Checks kid crcm ns env) vs.sp_checks in
+  let pre = List.map (fmla path Requires kid crcm ns env) vs.sp_pre in
+  let checks = List.map (fmla path Checks kid crcm ns env) vs.sp_checks in
   let wr =
     List.map
-      (fun t -> dterm Modifies kid crcm ns env t |> term env)
+      (fun t -> dterm Modifies kid crcm ns env t |> term path env)
       vs.sp_writes
   in
   let cs =
     List.map
-      (fun t -> dterm Consumes kid crcm ns env t |> term env)
+      (fun t -> dterm Consumes kid crcm ns env t |> term path env)
       vs.sp_consumes
   in
 
@@ -919,10 +920,10 @@ let process_val_spec kid crcm ns id args ret vs =
             aux p xs
           in
           dpattern_unify dp (dty_of_ty ty);
-          let p, vars = pattern dp in
+          let p, vars = pattern path dp in
           let choose_snd _ _ vs = Some vs in
           let env = Mstr.union choose_snd env vars in
-          let t = fmla Raises kid crcm ns env t in
+          let t = fmla path Raises kid crcm ns env t in
           Mxs.update xs (merge_xpost (Some (p, t))) mxs
     in
     List.fold_left process Mxs.empty exn |> Mxs.bindings
@@ -940,7 +941,7 @@ let process_val_spec kid crcm ns id args ret vs =
     | _, _ ->
         process_args `Return header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
   in
-  let post = List.map (fmla Ensures kid crcm ns env) vs.sp_post in
+  let post = List.map (fmla path Ensures kid crcm ns env) vs.sp_post in
 
   if vs.sp_pure then (
     if vs.sp_diverge then
@@ -1006,7 +1007,7 @@ let process_val path ~loc ?(ghost = Nonghost) kid crcm ns vd =
             })
     | Some s -> s
   in
-  let spec = process_val_spec kid crcm ns id args ret spec in
+  let spec = process_val_spec path kid crcm ns id args ret spec in
   let so = Option.map (fun _ -> spec) vd.vspec in
   let () =
     (* check there is a modifies clause if the return type is unit, throw a warning if not *)
@@ -1029,13 +1030,14 @@ let process_val path ~loc ?(ghost = Nonghost) kid crcm ns vd =
    1 - arguments have different names *)
 let process_function path kid crcm ns f =
   let f_ty = Option.map (ty_of_pty ns) f.fun_type in
+  let f_ty = Option.map (change_ty path) f_ty in
 
   let params =
     List.map
-      (fun (_, pid, pty) -> create_vsymbol pid (ty_of_pty ns pty))
+      (fun (_, pid, pty) -> create_vsymbol path pid (ty_of_pty ns pty))
       f.fun_params
   in
-  let tyl = List.map (fun vs -> vs.vs_ty) params in
+  let tyl = List.map (fun vs -> change_ty path vs.vs_ty) params in
 
   let ls = lsymbol ~field:false (Ident.of_preid ~path f.fun_name) tyl f_ty in
   let ns =
@@ -1060,27 +1062,30 @@ let process_function path kid crcm ns f =
     match f_ty with
     | None -> (env, None)
     | Some ty ->
-        let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") ty in
+        let result =
+          create_vsymbol path (Preid.create ~loc:f.fun_loc "result") ty
+        in
         (Mstr.add "result" result env, Some result)
   in
 
   let def =
     match f_ty with
-    | None -> Option.map (fmla Function_or_predicate kid crcm ns env) f.fun_def
+    | None ->
+        Option.map (fmla path Function_or_predicate kid crcm ns env) f.fun_def
     | Some ty ->
         Option.map
-          (term_with_unify Function_or_predicate kid crcm ty ns env)
+          (term_with_unify path Function_or_predicate kid crcm ty ns env)
           f.fun_def
   in
 
   let spec =
     Option.map
       (fun (spec : Uast.fun_spec) ->
-        let req = List.map (fmla Requires kid crcm ns env) spec.fun_req in
-        let ens = List.map (fmla Ensures kid crcm ns env) spec.fun_ens in
+        let req = List.map (fmla path Requires kid crcm ns env) spec.fun_req in
+        let ens = List.map (fmla path Ensures kid crcm ns env) spec.fun_ens in
         let variant =
           List.map
-            (term_with_unify Variant kid crcm ty_integer ns env)
+            (term_with_unify path Variant kid crcm ty_integer ns env)
             spec.fun_variant
         in
         mk_fun_spec req ens variant spec.fun_coer spec.fun_text spec.fun_loc)
@@ -1093,7 +1098,7 @@ let process_function path kid crcm ns f =
 
 let process_axiom path loc kid crcm ns a =
   let id = Ident.of_preid ~path a.Uast.ax_name in
-  let t = fmla Axiom kid crcm ns Mstr.empty a.Uast.ax_term in
+  let t = fmla path Axiom kid crcm ns Mstr.empty a.Uast.ax_term in
   let ax = mk_axiom id t a.ax_loc a.ax_text in
   mk_sig_item (Sig_axiom ax) loc
 
@@ -1147,7 +1152,9 @@ let rec open_file ~loc penv muc nm =
     in
     let muc = open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in
-    let muc = List.fold_left (type_sig_item [ muc.muc_nm ] penv) muc sl in
+    let muc =
+      List.fold_left (type_sig_item [ Ident.create ~loc nm ] penv) muc sl
+    in
     let muc = close_module_file muc in
     muc
 
@@ -1308,15 +1315,10 @@ and process_modtype path penv muc umty =
 and process_mod path penv loc m muc =
   let nm = Option.value ~default:"_" m.mdname.txt in
   let muc = open_module muc nm in
-  let md_name = Ident.create ~loc:m.mdname.loc ~path nm in 
+  let md_name = Ident.create ~loc:m.mdname.loc ~path nm in
   let muc, mty = process_modtype (path @ [ md_name ]) penv muc m.mdtype in
   let decl =
-    {
-      md_name = md_name;
-      md_type = mty;
-      md_attrs = m.mdattributes;
-      md_loc = m.mdloc;
-    }
+    { md_name; md_type = mty; md_attrs = m.mdattributes; md_loc = m.mdloc }
   in
   (close_module muc, mk_sig_item (Sig_module decl) loc)
 

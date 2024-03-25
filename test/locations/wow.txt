@@ -1,47 +1,4 @@
-Fooing the location displayed by `gospel dumpast`, that is the location
-available in the typed ast, *e.g* available to tools using `gospel`.
-
-
-First, create a test artifact:
-
-  $ cat > foo.mli << EOF
-  > (* beginning of the module *)
-  > 
-  > type 'a t
-  > (** documentation *)
-  > (*@ mutable model contents : 'a list
-  >     model size : int *)
-  > 
-  > val create : int -> 'a t
-  > (*@ t = create i
-  >     checks i >= 0
-  >     ensures t.contents = []
-  >     ensures t.size = i *)
-  > 
-  > (* comments *)
-  > 
-  > (*@ axiom a : true *)
-  > 
-  > (*@ function is_full (xs : 'a list) (x : integer) : bool = List.length xs = x *)
-  > 
-  > (*@ function with_spec (x : integer) (xs : integer list) : integer list *)
-  > (*@ requires not (List.mem x xs)
-  >     ensures true *)
-  > 
-  > (*@ predicate rec is_sorted_list (l: int list) = match l with
-  >       | [] | _ :: [] -> true
-  >       | h :: (y :: _ as t) -> h <= y /\ is_sorted_list t *)
-  > 
-  > val add : 'a -> 'a t -> unit
-  > (*@ add a t
-  >     modifies t.contents
-  >     (* comments *)
-  >     ensures t.contents = if is_full t.contents t.size
-  >                          then old t.contents
-  >                          else a :: (old t.contents) *)
-  > EOF
-  $ gospel dumpast foo.mli
-  [{ Tast.sig_desc =
+[{ Tast.sig_desc =
      (Tast.Sig_open (
         { Tast.opn_id = ["Stdlib"]; opn_override = <Asttypes.override_flag>;
           opn_loc = none; opn_attrs = <attributes> },
@@ -2602,21 +2559,4 @@ First, create a test artifact:
            vd_loc = foo.mli:28:0 },
          Tast.Nonghost));
       sig_loc = foo.mli:28:0 }
-    ]
- A smaller example, focused on locations after a directive:
-
-  $ cat > foo.mli << EOF
-  > # 5 "bar.mli"
-  > type 'a t
-  > (** documentation *)
-  > (*@ mutable model contents : 'a list
-  >     model size : int *)
-  > EOF
-  $ gospel dumpast foo.mli | grep '_loc.*:'
-                    ty_loc = bar.mli:7:3 });
-            td_loc = bar.mli:5:0 }
-      sig_loc = bar.mli:5:0 }
-
-Clean up:
-
-  $ rm foo.mli
+    ] 

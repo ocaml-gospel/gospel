@@ -32,6 +32,7 @@ module Ident = struct
     id_loc : Location.t;
     id_tag : int;
   }
+
   let pp =
     let current = Hashtbl.create 0 in
     let output = Hashtbl.create 0 in
@@ -41,15 +42,19 @@ module Ident = struct
       x
     in
     let str_of_id path id =
-      try Hashtbl.find output id.id_tag
-      with Not_found ->
-        let x = current id.id_str in
-        let str =
-          if x = 0 then id.id_str else id.id_str ^ "_" ^ string_of_int x
-        in
-        Hashtbl.replace output id.id_tag str;
-        if path then List.fold_right (fun e acc -> e.id_str ^ "." ^ acc) id.id_path str
-        else str
+      let str =
+        try Hashtbl.find output id.id_tag
+        with Not_found ->
+          let x = current id.id_str in
+          let str =
+            if x = 0 then id.id_str else id.id_str ^ "_" ^ string_of_int x
+          in
+          Hashtbl.replace output id.id_tag str;
+          str
+      in
+      if path then
+        List.fold_right (fun e acc -> e.id_str ^ "." ^ acc) id.id_path str
+      else str
     in
     fun path ppf t ->
       Format.fprintf ppf "%s%a" (str_of_id path t) pp_attrs t.id_attrs
@@ -77,6 +82,15 @@ module Ident = struct
   let compare x y = Int.compare x.id_tag y.id_tag
   let equal x y = x.id_tag = y.id_tag
   let hash x = x.id_tag
+
+  let change_path id curr_path =
+    let rec aux l1 l2 =
+      match (l1, l2) with
+      | [], _ -> []
+      | _, [] -> l1
+      | x :: l1, y :: l2 -> if equal x y then aux l1 l2 else x :: l1
+    in
+    { id with id_path = aux id.id_path curr_path }
 end
 
 let prefix s = "prefix " ^ s
