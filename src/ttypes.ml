@@ -243,7 +243,10 @@ let ts_arrow =
   ts id [ ta; tb ]
 
 let is_ts_tuple ts =
-  let ts_tuple = ts_tuple (ts_arity ts) in
+  let n = ts_arity ts in
+  n > 0
+  &&
+  let ts_tuple = ts_tuple n in
   Ident.equal ts_tuple.ts_ident ts.ts_ident
 
 let is_ts_arrow ts = Ident.equal ts_arrow.ts_ident ts.ts_ident
