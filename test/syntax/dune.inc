@@ -3,6 +3,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   type_decl.mli)
+ (targets abstract_functions.gospel)
  (action
   (with-outputs-to abstract_functions.mli.output
    (run %{checker} %{dep:abstract_functions.mli}))))
@@ -23,6 +24,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets allsorts_labels.gospel)
  (action
   (with-outputs-to allsorts_labels.mli.output
    (run %{checker} %{dep:allsorts_labels.mli}))))
@@ -43,6 +45,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets basic_functions_axioms.gospel)
  (action
   (with-outputs-to basic_functions_axioms.mli.output
    (run %{checker} %{dep:basic_functions_axioms.mli}))))
@@ -63,6 +66,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets bitvector.gospel)
  (action
   (with-outputs-to bitvector.mli.output
    (run %{checker} %{dep:bitvector.mli}))))
@@ -83,6 +87,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constants.gospel)
  (action
   (with-outputs-to constants.mli.output
    (run %{checker} %{dep:constants.mli}))))
@@ -103,6 +108,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_args.gospel)
  (action
   (with-outputs-to constructor_args.mli.output
    (run %{checker} %{dep:constructor_args.mli}))))
@@ -123,6 +129,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity1.gospel)
  (action
   (with-outputs-to constructor_arity1.mli.output
    (run %{checker} %{dep:constructor_arity1.mli}))))
@@ -143,6 +150,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity2.gospel)
  (action
   (with-outputs-to constructor_arity2.mli.output
    (run %{checker} %{dep:constructor_arity2.mli}))))
@@ -163,6 +171,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity3.gospel)
  (action
   (with-outputs-to constructor_arity3.mli.output
    (run %{checker} %{dep:constructor_arity3.mli}))))
@@ -183,6 +192,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity4.gospel)
  (action
   (with-outputs-to constructor_arity4.mli.output
    (run %{checker} %{dep:constructor_arity4.mli}))))
@@ -203,6 +213,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity5.gospel)
  (action
   (with-outputs-to constructor_arity5.mli.output
    (run %{checker} %{dep:constructor_arity5.mli}))))
@@ -223,6 +234,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets empty_match.gospel)
  (action
   (with-outputs-to empty_match.mli.output
    (run %{checker} %{dep:empty_match.mli}))))
@@ -243,6 +255,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets exceptions.gospel)
  (action
   (with-outputs-to exceptions.mli.output
    (run %{checker} %{dep:exceptions.mli}))))
@@ -263,6 +276,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets expressions.gospel)
  (action
   (with-outputs-to expressions.mli.output
    (run %{checker} %{dep:expressions.mli}))))
@@ -283,6 +297,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets field_application.gospel)
  (action
   (with-outputs-to field_application.mli.output
    (run %{checker} %{dep:field_application.mli}))))
@@ -303,6 +318,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets ghost_arg1.gospel)
  (action
   (with-outputs-to ghost_arg1.mli.output
    (run %{checker} %{dep:ghost_arg1.mli}))))
@@ -323,6 +339,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets ghost_arg2.gospel)
  (action
   (with-outputs-to ghost_arg2.mli.output
    (run %{checker} %{dep:ghost_arg2.mli}))))
@@ -343,6 +360,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets guard.gospel)
  (action
   (with-outputs-to guard.mli.output
    (run %{checker} %{dep:guard.mli}))))
@@ -363,6 +381,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets infix.gospel)
  (action
   (with-outputs-to infix.mli.output
    (run %{checker} %{dep:infix.mli}))))
@@ -383,6 +402,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invalid_modifies.gospel)
  (action
   (with-outputs-to invalid_modifies.mli.output
    (run %{checker} %{dep:invalid_modifies.mli}))))
@@ -403,6 +423,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariant5.gospel)
  (action
   (with-outputs-to invariant5.mli.output
    (run %{checker} %{dep:invariant5.mli}))))
@@ -423,6 +444,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariants.gospel)
  (action
   (with-outputs-to invariants.mli.output
    (run %{checker} %{dep:invariants.mli}))))
@@ -443,6 +465,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets literals.gospel)
  (action
   (with-outputs-to literals.mli.output
    (run %{checker} %{dep:literals.mli}))))
@@ -463,6 +486,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets match_guard.gospel)
  (action
   (with-outputs-to match_guard.mli.output
    (run %{checker} %{dep:match_guard.mli}))))
@@ -483,6 +507,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets module_with.gospel)
  (action
   (with-outputs-to module_with.mli.output
    (run %{checker} %{dep:module_with.mli}))))
@@ -503,6 +528,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets modules1.gospel)
  (action
   (with-outputs-to modules1.mli.output
    (run %{checker} %{dep:modules1.mli}))))
@@ -523,6 +549,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets modules2.gospel)
  (action
   (with-outputs-to modules2.mli.output
    (run %{checker} %{dep:modules2.mli}))))
@@ -543,6 +570,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets no_specification.gospel)
  (action
   (with-outputs-to no_specification.mli.output
    (run %{checker} %{dep:no_specification.mli}))))
@@ -563,6 +591,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets open.gospel)
  (action
   (with-outputs-to open.mli.output
    (run %{checker} %{dep:open.mli}))))
@@ -584,6 +613,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   type.mli)
+ (targets open2.gospel)
  (action
   (with-outputs-to open2.mli.output
    (run %{checker} %{dep:open2.mli}))))
@@ -606,6 +636,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   types_functions.mli)
+ (targets open3.gospel)
  (action
   (with-outputs-to open3.mli.output
    (run %{checker} %{dep:open3.mli}))))
@@ -627,6 +658,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets open_gospelstdlib_module.gospel)
  (action
   (with-outputs-to open_gospelstdlib_module.mli.output
    (run %{checker} %{dep:open_gospelstdlib_module.mli}))))
@@ -648,6 +680,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   open3.mli types_functions.mli)
+ (targets open_qualified.gospel)
  (action
   (with-outputs-to open_qualified.mli.output
    (run %{checker} %{dep:open_qualified.mli}))))
@@ -669,6 +702,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets partial_application.gospel)
  (action
   (with-outputs-to partial_application.mli.output
    (run %{checker} %{dep:partial_application.mli}))))
@@ -689,6 +723,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pattern_binding.gospel)
  (action
   (with-outputs-to pattern_binding.mli.output
    (run %{checker} %{dep:pattern_binding.mli}))))
@@ -709,6 +744,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets predicates.gospel)
  (action
   (with-outputs-to predicates.mli.output
    (run %{checker} %{dep:predicates.mli}))))
@@ -729,6 +765,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pure.gospel)
  (action
   (with-outputs-to pure.mli.output
    (run %{checker} %{dep:pure.mli}))))
@@ -750,6 +787,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   type.mli open2.mli)
+ (targets qualified.gospel)
  (action
   (with-outputs-to qualified.mli.output
    (run %{checker} %{dep:qualified.mli}))))
@@ -770,6 +808,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets record_pattern1.gospel)
  (action
   (with-outputs-to record_pattern1.mli.output
    (run %{checker} %{dep:record_pattern1.mli}))))
@@ -790,6 +829,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets record_pattern2.gospel)
  (action
   (with-outputs-to record_pattern2.mli.output
    (run %{checker} %{dep:record_pattern2.mli}))))
@@ -810,6 +850,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets record_pattern3.gospel)
  (action
   (with-outputs-to record_pattern3.mli.output
    (run %{checker} %{dep:record_pattern3.mli}))))
@@ -830,6 +871,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets recursive_invariants.gospel)
  (action
   (with-outputs-to recursive_invariants.mli.output
    (run %{checker} %{dep:recursive_invariants.mli}))))
@@ -850,6 +892,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets stdlib_exceptions.gospel)
  (action
   (with-outputs-to stdlib_exceptions.mli.output
    (run %{checker} %{dep:stdlib_exceptions.mli}))))
@@ -870,6 +913,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type.gospel)
  (action
   (with-outputs-to type.mli.output
    (run %{checker} %{dep:type.mli}))))
@@ -890,6 +934,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_decl.gospel)
  (action
   (with-outputs-to type_decl.mli.output
    (run %{checker} %{dep:type_decl.mli}))))
@@ -910,6 +955,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets types.gospel)
  (action
   (with-outputs-to types.mli.output
    (run %{checker} %{dep:types.mli}))))
@@ -930,6 +976,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets types_functions.gospel)
  (action
   (with-outputs-to types_functions.mli.output
    (run %{checker} %{dep:types_functions.mli}))))
@@ -950,6 +997,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets types_functions2.gospel)
  (action
   (with-outputs-to types_functions2.mli.output
    (run %{checker} %{dep:types_functions2.mli}))))

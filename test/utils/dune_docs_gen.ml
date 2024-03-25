@@ -7,7 +7,7 @@
 
 let print_rule md =
   let base = Filename.remove_extension md in
-  let mli = base ^ ".mli" and out = base ^ ".output" in
+  let mli = base ^ ".mli" and out = base ^ ".gospel" in
   Printf.printf
     {|(rule
  (enabled_if %%{bin-available:awk})
@@ -23,15 +23,13 @@ let print_rule md =
  (alias runtest)
  (enabled_if %%{bin-available:awk})
  (deps %%{bin:gospel})
+ (target %s)
  (action
-  (progn
-   (with-stdout-to %s
-    (chdir %%{project_root}
-     (run gospel check %%{dep:%s})))
-   (diff? %%{project_root}/test/utils/check_success %s))))
+  (chdir %%{project_root}
+   (run gospel check %%{dep:%s}))))
 
 |}
-    mli md out mli out
+    mli md out mli
 
 let _ =
   for i = 1 to Array.length Sys.argv - 1 do

@@ -27,32 +27,37 @@ let type_check load_path name sigs =
     path2module name |> Utils.Sstr.singleton |> Typing.penv load_path
   in
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
-  wrap_up_muc md
+  md
 
 let run_file config file =
   try
-    let ocaml = parse_ocaml_signature file in
-    if config.verbose then (
-      pp fmt "@[@\n*******************************@]@.";
-      pp fmt "@[********** Parsed file ********@]@.";
-      pp fmt "@[*******************************@]@.";
-      pp fmt "@[%a@]@." Opprintast.signature ocaml);
+    let md =
+      if String.equal ".gospel" (Filename.extension file) then
+        read_gospel_file file
+      else
+        let ocaml = parse_ocaml_signature file in
+        if config.verbose then (
+          pp fmt "@[@\n*******************************@]@.";
+          pp fmt "@[********** Parsed file ********@]@.";
+          pp fmt "@[*******************************@]@.";
+          pp fmt "@[%a@]@." Opprintast.signature ocaml);
 
-    let module_nm = path2module file in
-    let sigs = parse_signature_gospel ~filename:file ocaml module_nm in
-    if config.verbose then (
-      pp fmt "@[@\n*******************************@]@.";
-      pp fmt "@[****** GOSPEL translation *****@]@.";
-      pp fmt "@[*******************************@]@.";
-      pp fmt "@[%a@]@." Upretty_printer.s_signature sigs);
-
-    let file = type_check config.load_path file sigs in
+        let module_nm = path2module file in
+        let sigs = parse_signature_gospel ~filename:file ocaml module_nm in
+        if config.verbose then (
+          pp fmt "@[@\n*******************************@]@.";
+          pp fmt "@[****** GOSPEL translation *****@]@.";
+          pp fmt "@[*******************************@]@.";
+          pp fmt "@[%a@]@." Upretty_printer.s_signature sigs);
+        type_check config.load_path file sigs
+    in
+    let file = wrap_up_muc md in
     if config.verbose then (
       pp fmt "@[@\n*******************************@]@.";
       pp fmt "@[********* Typed GOSPEL ********@]@.";
       pp fmt "@[*******************************@]@.";
       pp fmt "@[%a@]@." print_file file);
-    pp fmt "OK\n";
+    write_gospel_file md;
     true
   with W.Error e ->
     let bt = Printexc.get_backtrace () in

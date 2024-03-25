@@ -12,12 +12,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target fibonacci.gospel)
  (action
-  (progn
-   (with-stdout-to fibonacci.output
-    (chdir %{project_root}
-     (run gospel check %{dep:fibonacci.mli})))
-   (diff? %{project_root}/test/utils/check_success fibonacci.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:fibonacci.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -33,12 +31,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target introduction.gospel)
  (action
-  (progn
-   (with-stdout-to introduction.output
-    (chdir %{project_root}
-     (run gospel check %{dep:introduction.mli})))
-   (diff? %{project_root}/test/utils/check_success introduction.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:introduction.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -54,12 +50,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target mutable-queue.gospel)
  (action
-  (progn
-   (with-stdout-to mutable-queue.output
-    (chdir %{project_root}
-     (run gospel check %{dep:mutable-queue.mli})))
-   (diff? %{project_root}/test/utils/check_success mutable-queue.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:mutable-queue.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -75,10 +69,8 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target union-find.gospel)
  (action
-  (progn
-   (with-stdout-to union-find.output
-    (chdir %{project_root}
-     (run gospel check %{dep:union-find.mli})))
-   (diff? %{project_root}/test/utils/check_success union-find.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:union-find.mli}))))
 
