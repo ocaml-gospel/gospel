@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets alpha_not_beta.gospel)
  (action
   (with-outputs-to alpha_not_beta.mli.output
    (run %{checker} %{dep:alpha_not_beta.mli}))))
@@ -22,6 +23,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets any_not_bool.gospel)
  (action
   (with-outputs-to any_not_bool.mli.output
    (run %{checker} %{dep:any_not_bool.mli}))))
@@ -42,6 +44,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets axiom.gospel)
  (action
   (with-outputs-to axiom.mli.output
    (run %{checker} %{dep:axiom.mli}))))
@@ -62,6 +65,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets axiom_float_not_integer.gospel)
  (action
   (with-outputs-to axiom_float_not_integer.mli.output
    (run %{checker} %{dep:axiom_float_not_integer.mli}))))
@@ -82,6 +86,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets constructor_arity5.gospel)
  (action
   (with-outputs-to constructor_arity5.mli.output
    (run %{checker} %{dep:constructor_arity5.mli}))))
@@ -102,6 +107,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets duplicate_declaration.gospel)
  (action
   (with-outputs-to duplicate_declaration.mli.output
    (run %{checker} %{dep:duplicate_declaration.mli}))))
@@ -122,6 +128,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets exception_arity.gospel)
  (action
   (with-outputs-to exception_arity.mli.output
    (run %{checker} %{dep:exception_arity.mli}))))
@@ -142,6 +149,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets exception_no_pattern.gospel)
  (action
   (with-outputs-to exception_no_pattern.mli.output
    (run %{checker} %{dep:exception_no_pattern.mli}))))
@@ -162,6 +170,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets exn_arity.gospel)
  (action
   (with-outputs-to exn_arity.mli.output
    (run %{checker} %{dep:exn_arity.mli}))))
@@ -182,6 +191,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets faulty_header1.gospel)
  (action
   (with-outputs-to faulty_header1.mli.output
    (run %{checker} %{dep:faulty_header1.mli}))))
@@ -202,6 +212,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets faulty_header2.gospel)
  (action
   (with-outputs-to faulty_header2.mli.output
    (run %{checker} %{dep:faulty_header2.mli}))))
@@ -222,6 +233,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets faulty_header3.gospel)
  (action
   (with-outputs-to faulty_header3.mli.output
    (run %{checker} %{dep:faulty_header3.mli}))))
@@ -242,6 +254,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets float_not_int.gospel)
  (action
   (with-outputs-to float_not_int.mli.output
    (run %{checker} %{dep:float_not_int.mli}))))
@@ -262,6 +275,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets float_not_integer.gospel)
  (action
   (with-outputs-to float_not_integer.mli.output
    (run %{checker} %{dep:float_not_integer.mli}))))
@@ -282,6 +296,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets function_float_not_integer.gospel)
  (action
   (with-outputs-to function_float_not_integer.mli.output
    (run %{checker} %{dep:function_float_not_integer.mli}))))
@@ -302,6 +317,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets int_not_bool1.gospel)
  (action
   (with-outputs-to int_not_bool1.mli.output
    (run %{checker} %{dep:int_not_bool1.mli}))))
@@ -322,6 +338,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets int_not_bool2.gospel)
  (action
   (with-outputs-to int_not_bool2.mli.output
    (run %{checker} %{dep:int_not_bool2.mli}))))
@@ -342,6 +359,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets integer_not_bool1.gospel)
  (action
   (with-outputs-to integer_not_bool1.mli.output
    (run %{checker} %{dep:integer_not_bool1.mli}))))
@@ -362,6 +380,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets integer_not_bool2.gospel)
  (action
   (with-outputs-to integer_not_bool2.mli.output
    (run %{checker} %{dep:integer_not_bool2.mli}))))
@@ -382,6 +401,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets integer_not_bool3.gospel)
  (action
   (with-outputs-to integer_not_bool3.mli.output
    (run %{checker} %{dep:integer_not_bool3.mli}))))
@@ -402,6 +422,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets integer_not_bool4.gospel)
  (action
   (with-outputs-to integer_not_bool4.mli.output
    (run %{checker} %{dep:integer_not_bool4.mli}))))
@@ -422,6 +443,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets integer_not_int.gospel)
  (action
   (with-outputs-to integer_not_int.mli.output
    (run %{checker} %{dep:integer_not_int.mli}))))
@@ -442,6 +464,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariant4.gospel)
  (action
   (with-outputs-to invariant4.mli.output
    (run %{checker} %{dep:invariant4.mli}))))
@@ -462,6 +485,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg1.gospel)
  (action
   (with-outputs-to labeled_arg1.mli.output
    (run %{checker} %{dep:labeled_arg1.mli}))))
@@ -482,6 +506,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg2.gospel)
  (action
   (with-outputs-to labeled_arg2.mli.output
    (run %{checker} %{dep:labeled_arg2.mli}))))
@@ -502,6 +527,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg3.gospel)
  (action
   (with-outputs-to labeled_arg3.mli.output
    (run %{checker} %{dep:labeled_arg3.mli}))))
@@ -522,6 +548,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg4.gospel)
  (action
   (with-outputs-to labeled_arg4.mli.output
    (run %{checker} %{dep:labeled_arg4.mli}))))
@@ -542,6 +569,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg5.gospel)
  (action
   (with-outputs-to labeled_arg5.mli.output
    (run %{checker} %{dep:labeled_arg5.mli}))))
@@ -562,6 +590,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg6.gospel)
  (action
   (with-outputs-to labeled_arg6.mli.output
    (run %{checker} %{dep:labeled_arg6.mli}))))
@@ -582,6 +611,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg7.gospel)
  (action
   (with-outputs-to labeled_arg7.mli.output
    (run %{checker} %{dep:labeled_arg7.mli}))))
@@ -602,6 +632,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets labeled_arg8.gospel)
  (action
   (with-outputs-to labeled_arg8.mli.output
    (run %{checker} %{dep:labeled_arg8.mli}))))
@@ -623,6 +654,7 @@
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   int_not_bool1.mli)
+ (targets open.gospel)
  (action
   (with-outputs-to open.mli.output
    (run %{checker} %{dep:open.mli}))))
@@ -643,6 +675,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets partial_application.gospel)
  (action
   (with-outputs-to partial_application.mli.output
    (run %{checker} %{dep:partial_application.mli}))))
@@ -663,6 +696,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets raises_float_not_integer.gospel)
  (action
   (with-outputs-to raises_float_not_integer.mli.output
    (run %{checker} %{dep:raises_float_not_integer.mli}))))
@@ -683,6 +717,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets record_pattern4.gospel)
  (action
   (with-outputs-to record_pattern4.mli.output
    (run %{checker} %{dep:record_pattern4.mli}))))
@@ -703,6 +738,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets returned_tuple.gospel)
  (action
   (with-outputs-to returned_tuple.mli.output
    (run %{checker} %{dep:returned_tuple.mli}))))
@@ -723,6 +759,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets t1_not_t2.gospel)
  (action
   (with-outputs-to t1_not_t2.mli.output
    (run %{checker} %{dep:t1_not_t2.mli}))))
@@ -743,6 +780,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets tuple_arity1.gospel)
  (action
   (with-outputs-to tuple_arity1.mli.output
    (run %{checker} %{dep:tuple_arity1.mli}))))
@@ -763,6 +801,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets tuple_arity2.gospel)
  (action
   (with-outputs-to tuple_arity2.mli.output
    (run %{checker} %{dep:tuple_arity2.mli}))))
@@ -783,6 +822,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_arity1.gospel)
  (action
   (with-outputs-to type_arity1.mli.output
    (run %{checker} %{dep:type_arity1.mli}))))
@@ -803,6 +843,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_arity2.gospel)
  (action
   (with-outputs-to type_arity2.mli.output
    (run %{checker} %{dep:type_arity2.mli}))))
@@ -824,6 +865,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_arity3.gospel)
  (action
   (with-outputs-to type_arity3.mli.output
    (run %{checker} %{dep:type_arity3.mli}))))
@@ -845,6 +887,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_arity4.gospel)
  (action
   (with-outputs-to type_arity4.mli.output
    (run %{checker} %{dep:type_arity4.mli}))))
@@ -865,6 +908,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_arity5.gospel)
  (action
   (with-outputs-to type_arity5.mli.output
    (run %{checker} %{dep:type_arity5.mli}))))
@@ -886,6 +930,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets variant_integer.gospel)
  (action
   (with-outputs-to variant_integer.mli.output
    (run %{checker} %{dep:variant_integer.mli}))))

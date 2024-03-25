@@ -12,12 +12,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target first-spec.gospel)
  (action
-  (progn
-   (with-stdout-to first-spec.output
-    (chdir %{project_root}
-     (run gospel check %{dep:first-spec.mli})))
-   (diff? %{project_root}/test/utils/check_success first-spec.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:first-spec.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -33,12 +31,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target going-further.gospel)
  (action
-  (progn
-   (with-stdout-to going-further.output
-    (chdir %{project_root}
-     (run gospel check %{dep:going-further.mli})))
-   (diff? %{project_root}/test/utils/check_success going-further.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:going-further.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -54,12 +50,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target installation.gospel)
  (action
-  (progn
-   (with-stdout-to installation.output
-    (chdir %{project_root}
-     (run gospel check %{dep:installation.mli})))
-   (diff? %{project_root}/test/utils/check_success installation.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:installation.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -75,10 +69,8 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target tools.gospel)
  (action
-  (progn
-   (with-stdout-to tools.output
-    (chdir %{project_root}
-     (run gospel check %{dep:tools.mli})))
-   (diff? %{project_root}/test/utils/check_success tools.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:tools.mli}))))
 

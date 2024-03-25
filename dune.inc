@@ -12,12 +12,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target CHANGES.gospel)
  (action
-  (progn
-   (with-stdout-to CHANGES.output
-    (chdir %{project_root}
-     (run gospel check %{dep:CHANGES.mli})))
-   (diff? %{project_root}/test/utils/check_success CHANGES.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:CHANGES.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -33,10 +31,8 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target README.gospel)
  (action
-  (progn
-   (with-stdout-to README.output
-    (chdir %{project_root}
-     (run gospel check %{dep:README.mli})))
-   (diff? %{project_root}/test/utils/check_success README.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:README.mli}))))
 

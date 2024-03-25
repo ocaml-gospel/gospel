@@ -12,12 +12,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target faq.gospel)
  (action
-  (progn
-   (with-stdout-to faq.output
-    (chdir %{project_root}
-     (run gospel check %{dep:faq.mli})))
-   (diff? %{project_root}/test/utils/check_success faq.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:faq.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -33,12 +31,10 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target stdlib.gospel)
  (action
-  (progn
-   (with-stdout-to stdlib.output
-    (chdir %{project_root}
-     (run gospel check %{dep:stdlib.mli})))
-   (diff? %{project_root}/test/utils/check_success stdlib.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:stdlib.mli}))))
 
 (rule
  (enabled_if %{bin-available:awk})
@@ -54,10 +50,8 @@
  (alias runtest)
  (enabled_if %{bin-available:awk})
  (deps %{bin:gospel})
+ (target welcome.gospel)
  (action
-  (progn
-   (with-stdout-to welcome.output
-    (chdir %{project_root}
-     (run gospel check %{dep:welcome.mli})))
-   (diff? %{project_root}/test/utils/check_success welcome.output))))
+  (chdir %{project_root}
+   (run gospel check %{dep:welcome.mli}))))
 

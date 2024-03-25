@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariant1.gospel)
  (action
   (with-outputs-to invariant1.mli.output
    (run %{checker} %{dep:invariant1.mli}))))
@@ -22,6 +23,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariant2.gospel)
  (action
   (with-outputs-to invariant2.mli.output
    (run %{checker} %{dep:invariant2.mli}))))
@@ -42,6 +44,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets invariant3.gospel)
  (action
   (with-outputs-to invariant3.mli.output
    (run %{checker} %{dep:invariant3.mli}))))
@@ -62,6 +65,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets no_modifies_while_returning_unit.gospel)
  (action
   (with-outputs-to no_modifies_while_returning_unit.mli.output
    (run %{checker} %{dep:no_modifies_while_returning_unit.mli}))))
@@ -82,6 +86,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets old_in_precond.gospel)
  (action
   (with-outputs-to old_in_precond.mli.output
    (run %{checker} %{dep:old_in_precond.mli}))))

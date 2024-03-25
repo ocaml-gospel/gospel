@@ -8,6 +8,8 @@
 
 ## Improved
 
+- Make the type-checker save type information in a file
+  [\#376](https://github.com/ocaml-gospel/gospel/pull/376)
 - Make the `with` necessary when declaring type invariants
   [\#372](https://github.com/ocaml-gospel/gospel/pull/372) and
   [\#374](https://github.com/ocaml-gospel/gospel/pull/374)
