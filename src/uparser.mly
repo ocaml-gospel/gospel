@@ -14,9 +14,9 @@
   open Uast
 
   let mk_loc (s, e) = {
-    Location.loc_start = s;
-    Location.loc_end = e;
-    Location.loc_ghost = false;
+    Ocaml_common.Location.loc_start = s;
+    Ocaml_common.Location.loc_end = e;
+    Ocaml_common.Location.loc_ghost = false;
   }
 
   let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
@@ -42,6 +42,7 @@
     sp_xpost = [];
     sp_writes = [];
     sp_consumes= [];
+    sp_variant = [];
     sp_diverge = false;
     sp_pure = false;
     sp_equiv = [];
@@ -82,7 +83,7 @@
 
 (* keywords *)
 
-%token AXIOM
+%token AXIOM LEMMA
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC
 %token INVARIANT
@@ -92,8 +93,8 @@
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
 
 %token AS
-%token LET MATCH PREDICATE
-%token WITH
+%token LET MATCH PREDICATE INDUCTIVE
+%token WITH ANDKW
 
 (* symbols *)
 
@@ -138,6 +139,10 @@
 %start <Uast.val_spec> val_spec
 %start <Uast.type_spec> type_spec
 %start <Uast.fun_spec> func_spec
+%start <Uast.loop_spec> loop_spec
+%start <Uast.prop> prop
+%start <Uast.ind_decl> ind_decl
+%start <Uast.s_with_constraint list> with_constraint
 
 %%
 
@@ -151,6 +156,15 @@ axiom:
   { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc; ax_text = ""} }
 ;
 
+prop:
+| AXIOM id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Paxiom} }
+| LEMMA id=lident COLON t=term EOF
+  { {prop_name = id; prop_term = t;
+     prop_loc = mk_loc $loc; prop_kind = Plemma} }
+;
+
 func:
 | FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
@@ -161,6 +175,21 @@ func:
   { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
       fun_loc = mk_loc $loc; fun_text = "" } }
 ;
+
+ind_decl:
+| INDUCTIVE lident_rich params ind_defn EOF
+  { { in_loc = mk_loc $loc; in_name = $2;
+      in_def = $4; in_params = $3; in_text = "" } }
+;
+
+ind_defn:
+| (* epsilon *)             { [] }
+| EQUAL bar_list1(ind_case) { $2 }
+
+ind_case:
+| lident COLON def = term
+  { { in_case_loc = mk_loc $loc; in_case_name = $1;
+      in_case_def = def } }
 
 func_name:
 | lident_rich {$1}
@@ -245,7 +274,30 @@ val_spec_body:
     { bd with sp_xpost = xp :: bd.sp_xpost } }
 | EQUIVALENT e=STRING bd=val_spec_body
   { { bd with sp_equiv = e :: bd.sp_equiv} }
+| VARIANT t = comma_list1(term) bd=val_spec_body
+  { { bd with sp_variant = t @ bd.sp_variant } }
 ;
+
+with_constraint:
+| WITH c = separated_list(ANDKW, _with_constraint) EOF { c }
+
+_with_constraint:
+| PREDICATE id = lident_rich EQUAL qr = qualid
+  { Wpredicate (id, qr) }
+| FUNCTION id = lident_rich EQUAL qr = qualid
+  { Wfunction (id, qr) }
+
+loop_spec: _loop_spec EOF
+  { let inv, var = $1 in
+    { loop_invariant = inv; loop_variant = var } }
+
+_loop_spec:
+| (* epsilon *)
+    { [], [] }
+| INVARIANT t = term _loop_spec
+    { let inv, var = $3 in t :: inv, var }
+| VARIANT   t = comma_list1(term) _loop_spec
+    { let inv, var = $3 in inv, t @ var }
 
 fun_arg:
 | LEFTPAR RIGHTPAR

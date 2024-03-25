@@ -11,3 +11,8 @@
 val signature : filename:string -> Ppxlib.signature -> Uast.s_signature
 (** Parses the specifications contained in the attributes of the input parsetree
     and returns an annotated parsetree with Gospel specifications. *)
+
+val structure :
+  filename:string -> Ppxlib.Parsetree.structure -> Uast.s_structure
+(** Parses the specifications contained in the attributes of the input OCaml
+    structure and returns an annotated OCaml AST with Gospel specifications. *)
