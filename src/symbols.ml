@@ -15,7 +15,8 @@ module Ident = Identifier.Ident
 (* Variable Symbols *)
 type vsymbol = { vs_name : Ident.t; vs_ty : ty } [@@deriving show]
 
-let create_vsymbol pid ty = { vs_name = Ident.of_preid pid; vs_ty = ty }
+let create_vsymbol path pid ty =
+  { vs_name = Ident.of_preid pid; vs_ty = change_ty path ty }
 
 module Vs = struct
   type t = vsymbol

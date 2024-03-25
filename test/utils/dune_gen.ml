@@ -45,6 +45,8 @@ let print_rule file =
       | None -> ("", "")
       | Some prd -> ("(with-accepted-exit-codes " ^ prd ^ "\n    ", ")")
     in
+    let flag = if file = "path_test.mli" then " --p" else "" in
+
     Printf.printf
       {|(rule
  (deps
@@ -52,7 +54,7 @@ let print_rule file =
   (:checker %%{project_root}/test/utils/testchecker.exe)%s)
  (action
   (with-outputs-to %s.output
-   (run %%{checker} %%{dep:%s}))))
+   (run %%{checker} %%{dep:%s}%s))))
 
 (rule
  (alias runtest)
@@ -67,7 +69,7 @@ let print_rule file =
    %s(run ocamlc -c %%{dep:%s})%s)))
 
 |}
-      deps file file file file exit_code_open file exit_code_close
+      deps file file flag file file exit_code_open file exit_code_close
 
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in

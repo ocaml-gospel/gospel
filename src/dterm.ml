@@ -19,8 +19,18 @@ open Tterm_helper
 
 (* types *)
 
+let path = ref []
+
 type dty = Tvar of dtvar | Tapp of tysymbol * dty list | Tty of ty
 and dtvar = { dtv_id : int; mutable dtv_def : dty option }
+
+let change_ls ls path =
+  {
+    ls with
+    ls_name = Ident.change_path ls.ls_name path;
+    ls_args = List.map (change_ty path) ls.ls_args;
+    ls_value = Option.map (change_ty path) ls.ls_value;
+  }
 
 let dty_fresh =
   let i = ref 0 in
@@ -307,12 +317,12 @@ let dterm_expected crcmap dt dty = dterm_expected_op crcmap dt (Some dty)
 
 (** dterm to tterm *)
 
-let pattern dp =
+let pattern path dp =
   let vars = ref Mstr.empty in
   let get_var pid ty =
     try Mstr.find pid.Preid.pid_str !vars
     with Not_found ->
-      let vs = create_vsymbol pid ty in
+      let vs = create_vsymbol path pid ty in
       (* TODO the variable found is of type ty *)
       vars := Mstr.add pid.pid_str vs !vars;
       vs
@@ -349,84 +359,94 @@ let rec term env prop dt =
   | _ -> t
 
 and term_node ~loc env prop dty dterm_node =
-  match dterm_node with
-  | DTvar pid ->
-      let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in
-      (* TODO should I match vs.vs_ty with dty? *)
-      t_var vs loc
-  | DTconst c -> t_const c (ty_of_dty (Option.get dty)) loc
-  | DTapp (ls, []) when ls_equal ls fs_bool_true ->
-      if prop then t_true loc else t_bool_true loc
-  | DTapp (ls, []) when ls_equal ls fs_bool_false ->
-      if prop then t_false loc else t_bool_false loc
-  | DTapp (ls, [ dt1; dt2 ]) when ls_equal ls ps_equ ->
-      if dt1.dt_dty = None || dt2.dt_dty = None then
-        f_iff (term env true dt1) (term env true dt2) loc
-      else t_equ (term env false dt1) (term env false dt2) loc
-  | DTapp (ls, [ dt1 ]) when ls.ls_field ->
-      t_field (term env false dt1) ls (Option.map ty_of_dty dty) loc
-  | DTapp (ls, dtl) ->
-      t_app ls (List.map (term env false) dtl) (Option.map ty_of_dty dty) loc
-  | DTif (dt1, dt2, dt3) ->
-      let prop = prop || dty = None in
-      t_if (term env true dt1) (term env prop dt2) (term env prop dt3) loc
-  | DTlet (pid, dt1, dt2) ->
-      let prop = prop || dty = None in
-      let t1 = term env false dt1 in
-      let vs = create_vsymbol pid (t_type t1) in
-      let env = Mstr.add pid.pid_str vs env in
-      let t2 = term env prop dt2 in
-      t_let vs t1 t2 loc
-  | DTbinop (b, dt1, dt2) ->
-      let t1, t2 = (term env true dt1, term env true dt2) in
-      t_binop b t1 t2 loc
-  | DTnot dt -> t_not (term env true dt) loc
-  | DTtrue -> if prop then t_true loc else t_bool_true loc
-  | DTfalse -> if prop then t_false loc else t_bool_false loc
-  | DTattr (dt, at) ->
-      let t = term env prop dt in
-      t_attr_set at t
-  | DTold dt -> t_old (term env prop dt) loc
-  | DTquant (q, bl, dt) ->
-      let add_var (env, vsl) (pid, dty) =
-        let vs = create_vsymbol pid (ty_of_dty dty) in
-        (Mstr.add pid.pid_str vs env, vs :: vsl)
-      in
-      let env, vsl = List.fold_left add_var (env, []) bl in
-      let t = term env prop dt in
-      t_quant q (List.rev vsl) t (Option.map ty_of_dty dty) loc
-  | DTlambda (dpl, dt) ->
-      let ty = ty_of_dty_raw dty and pl = List.map pattern dpl in
-      let env =
-        let join _ _ vs = Some vs in
-        List.fold_left (fun env (_, vs) -> Mstr.union join env vs) env pl
-      in
-      let t = term env false dt in
-      (* Are the patterns exhaustive? *)
-      List.iter
-        (fun (p, _) ->
-          let loc = p.p_loc in
-          Patmat.checks p.p_ty
-            [ (p, None, t (* [t] is really just a place holder *)) ]
-            ~loc)
-        pl;
-      t_lambda (List.map fst pl) t (Some ty) loc
-  | DTcase (dt, ptl) ->
-      let t = term env false dt in
-      let branch (dp, guard, dt) =
-        let p, vars = pattern dp in
-        let join _ _ vs = Some vs in
-        let env = Mstr.union join env vars in
-        let dt = term env false dt in
-        let guard =
-          match guard with None -> None | Some g -> Some (term env true g)
+  let t =
+    match dterm_node with
+    | DTvar pid ->
+        let vs = denv_find ~loc:pid.pid_loc pid.pid_str env in
+        (* TODO should I match vs.vs_ty with dty? *)
+        t_var vs loc
+    | DTconst c -> t_const c (ty_of_dty (Option.get dty)) loc
+    | DTapp (ls, []) when ls_equal ls fs_bool_true ->
+        if prop then t_true loc else t_bool_true loc
+    | DTapp (ls, []) when ls_equal ls fs_bool_false ->
+        if prop then t_false loc else t_bool_false loc
+    | DTapp (ls, [ dt1; dt2 ]) when ls_equal ls ps_equ ->
+        if dt1.dt_dty = None || dt2.dt_dty = None then
+          f_iff (term env true dt1) (term env true dt2) loc
+        else t_equ (term env false dt1) (term env false dt2) loc
+    | DTapp (ls, [ dt1 ]) when ls.ls_field ->
+        let ls = change_ls ls !path in
+        t_field (term env false dt1) ls (Option.map ty_of_dty dty) loc
+    | DTapp (ls, dtl) ->
+        let ls = change_ls ls !path in
+        t_app ls (List.map (term env false) dtl) (Option.map ty_of_dty dty) loc
+    | DTif (dt1, dt2, dt3) ->
+        let prop = prop || dty = None in
+        t_if (term env true dt1) (term env prop dt2) (term env prop dt3) loc
+    | DTlet (pid, dt1, dt2) ->
+        let prop = prop || dty = None in
+        let t1 = term env false dt1 in
+        let vs = create_vsymbol !path pid (t_type t1) in
+        let env = Mstr.add pid.pid_str vs env in
+        let t2 = term env prop dt2 in
+        t_let vs t1 t2 loc
+    | DTbinop (b, dt1, dt2) ->
+        let t1, t2 = (term env true dt1, term env true dt2) in
+        t_binop b t1 t2 loc
+    | DTnot dt -> t_not (term env true dt) loc
+    | DTtrue -> if prop then t_true loc else t_bool_true loc
+    | DTfalse -> if prop then t_false loc else t_bool_false loc
+    | DTattr (dt, at) ->
+        let t = term env prop dt in
+        t_attr_set at t
+    | DTold dt -> t_old (term env prop dt) loc
+    | DTquant (q, bl, dt) ->
+        let add_var (env, vsl) (pid, dty) =
+          let vs = create_vsymbol !path pid (ty_of_dty dty) in
+          (Mstr.add pid.pid_str vs env, vs :: vsl)
         in
-        (p, guard, dt)
-      in
-      let pl = List.map branch ptl in
-      let ty = ty_of_dty (Option.get dt.dt_dty) in
-      Patmat.checks ty pl ~loc;
-      t_case t pl loc
+        let env, vsl = List.fold_left add_var (env, []) bl in
+        let t = term env prop dt in
+        t_quant q (List.rev vsl) t (Option.map ty_of_dty dty) loc
+    | DTlambda (dpl, dt) ->
+        let ty = ty_of_dty_raw dty and pl = List.map (pattern !path) dpl in
+        let env =
+          let join _ _ vs = Some vs in
+          List.fold_left (fun env (_, vs) -> Mstr.union join env vs) env pl
+        in
+        let t = term env false dt in
+        (* Are the patterns exhaustive? *)
+        List.iter
+          (fun (p, _) ->
+            let loc = p.p_loc in
+            Patmat.checks p.p_ty
+              [ (p, None, t (* [t] is really just a place holder *)) ]
+              ~loc)
+          pl;
+        t_lambda (List.map fst pl) t (Some ty) loc
+    | DTcase (dt, ptl) ->
+        let t = term env false dt in
+        let branch (dp, guard, dt) =
+          let p, vars = pattern !path dp in
+          let join _ _ vs = Some vs in
+          let env = Mstr.union join env vars in
+          let dt = term env false dt in
+          let guard =
+            match guard with None -> None | Some g -> Some (term env true g)
+          in
+          (p, guard, dt)
+        in
+        let pl = List.map branch ptl in
+        let ty = ty_of_dty (Option.get dt.dt_dty) in
+        Patmat.checks ty pl ~loc;
+        t_case t pl loc
+  in
+  { t with t_ty = Option.map (change_ty !path) t.t_ty }
 
-let fmla env dt = term env true dt
-let term env dt = term env false dt
+let fmla p env dt =
+  let () = path := p in
+  term env true dt
+
+let term p env dt =
+  let () = path := p in
+  term env false dt
