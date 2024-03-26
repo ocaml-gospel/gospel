@@ -41,6 +41,7 @@ First, create a test artifact:
   >   (*@ predicate x (n : integer) = n = Nested.z *)
   >   
   > end
+  > EOF
   $ gospel dumpast test.mli | grep -e "ls_name = " -e "ts_ident = "
                          { Ttypes.ts_ident = Test.M.t; ts_args = [];
                          { Symbols.ls_name = Test.M.f; ls_args = [];
