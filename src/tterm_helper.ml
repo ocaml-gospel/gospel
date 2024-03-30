@@ -64,15 +64,10 @@ let t_free_vs_in_set svs t =
 (** type checking *)
 
 let t_prop t =
-  if t.t_ty = None then t else W.error ~loc:t.t_loc W.Formula_expected
+  if ty_equal t.t_ty ty_bool then t else W.error ~loc:t.t_loc W.Formula_expected
 
-let t_type t =
-  match t.t_ty with
-  | Some ty -> ty
-  | None -> W.error ~loc:t.t_loc W.Formula_expected
-
-let t_ty_check t ty =
-  match (ty, t.t_ty) with l, r -> ty_equal_check l (Option.get r)
+let t_type t = t.t_ty
+let t_ty_check t ty = match (ty, t.t_ty) with l, r -> ty_equal_check l r
 
 let ls_arg_inst ls tl =
   let rec short_fold_left2 f accu l1 l2 =
@@ -133,16 +128,16 @@ let p_const c =
 (** Terms constructors *)
 
 let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
-let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
-let t_const c ty = mk_term (Tconst c) (Some ty)
+let t_var vs = mk_term (Tvar vs) vs.vs_ty
+let t_const c ty = mk_term (Tconst c) ty
 
 let t_app ls tl ty loc =
   ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) (Some ty) loc
+  mk_term (Tapp (ls, tl)) ty loc
 
 let t_field t ls ty loc =
   ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
-  mk_term (Tfield (t, ls)) (Some ty) loc
+  mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
@@ -154,14 +149,14 @@ let t_case t1 ptl =
 
 let t_quant q vsl t ty = mk_term (Tquant (q, vsl, t)) ty
 let t_lambda ps t ty = mk_term (Tlambda (ps, t)) ty
-let t_binop b t1 t2 = mk_term (Tbinop (b, t1, t2)) None
-let t_not t = mk_term (Tnot t) None
+let t_binop b t1 t2 = mk_term (Tbinop (b, t1, t2)) ty_bool
+let t_not t = mk_term (Tnot t) ty_bool
 let t_old t = mk_term (Told t) t.t_ty
-let t_true = mk_term Ttrue None
-let t_false = mk_term Tfalse None
+let t_true = mk_term Ttrue ty_bool
+let t_false = mk_term Tfalse ty_bool
 let t_attr_set attr t = { t with t_attrs = attr }
-let t_bool_true = mk_term (Tapp (fs_bool_true, [])) (Some ty_bool)
-let t_bool_false = mk_term (Tapp (fs_bool_false, [])) (Some ty_bool)
+let t_bool_true = mk_term (Tapp (fs_bool_true, [])) ty_bool
+let t_bool_false = mk_term (Tapp (fs_bool_false, [])) ty_bool
 let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] ty_bool
 let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
 let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
@@ -171,11 +166,9 @@ let t_quant q vsl t ty loc =
   match vsl with
   | [] -> t_prop t
   | _ ->
-      if ty <> None then W.error ~loc W.Formula_expected;
-      t_quant q vsl (t_prop t) None loc
+      if not (ty_equal ty ty_bool) then W.error ~loc W.Formula_expected;
+      t_quant q vsl (t_prop t) ty_bool loc
 
-let f_forall = t_quant Tforall
-let f_exists = t_quant Texists
 let f_and = f_binop Tand
 let f_and_asym = f_binop Tand_asym
 let f_or = f_binop Tor
