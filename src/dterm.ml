@@ -74,13 +74,13 @@ let specialize_ls ls =
     | Tyvar tv -> find_tv tv
     | Tyapp (ts, tyl) -> Tapp (ts, List.map spec tyl)
   in
-  (List.map spec ls.ls_args, Option.map spec ls.ls_value)
+  (List.map spec ls.ls_args, spec ls.ls_value)
 
 let specialize_cs ~loc cs =
   if cs.ls_constr = false then
     W.error ~loc (W.Not_a_constructor cs.ls_name.id_str);
   let dtyl, dty = specialize_ls cs in
-  (dtyl, Option.get dty)
+  (dtyl, dty)
 
 (* terms *)
 
@@ -229,7 +229,7 @@ let apply_coercion l dt =
   let apply dt ls =
     let dtyl, dty = specialize_ls ls in
     dterm_unify dt (List.hd dtyl);
-    { dt_node = DTapp (ls, [ dt ]); dt_dty = dty; dt_loc = dt.dt_loc }
+    { dt_node = DTapp (ls, [ dt ]); dt_dty = Some dty; dt_loc = dt.dt_loc }
   in
   List.fold_left apply dt l
 
@@ -364,9 +364,14 @@ and term_node ~loc env prop dty dterm_node =
         f_iff (term env true dt1) (term env true dt2) loc
       else t_equ (term env false dt1) (term env false dt2) loc
   | DTapp (ls, [ dt1 ]) when ls.ls_field ->
-      t_field (term env false dt1) ls (Option.map ty_of_dty dty) loc
+      t_field (term env false dt1) ls
+        (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
+        loc
   | DTapp (ls, dtl) ->
-      t_app ls (List.map (term env false) dtl) (Option.map ty_of_dty dty) loc
+      t_app ls
+        (List.map (term env false) dtl)
+        (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
+        loc
   | DTif (dt1, dt2, dt3) ->
       let prop = prop || dty = None in
       t_if (term env true dt1) (term env prop dt2) (term env prop dt3) loc

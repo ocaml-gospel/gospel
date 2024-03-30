@@ -239,7 +239,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let cs, pjl, fll = parse_record ~loc kid ns qpl in
       let get_pattern pj =
         try dpattern kid ns (Mls.find pj fll)
-        with Not_found -> mk_pwild loc (dty_of_ty (Option.get pj.ls_value))
+        with Not_found -> mk_pwild loc (dty_of_ty pj.ls_value)
       in
       let dpl = List.map get_pattern pjl in
       mk_papp ~loc cs dpl
@@ -282,7 +282,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let mk_app ~loc ls dtl =
     let dtyl, dty = specialize_ls ls in
     let dtl = app_unify_map ~loc ls (dterm_expected crcm) dtl dtyl in
-    mk_dterm ~loc (DTapp (ls, dtl)) dty
+    mk_dterm ~loc (DTapp (ls, dtl)) (Some dty)
   in
   let gen_app ~loc ls tl =
     let nls = List.length ls.ls_args and ntl = List.length tl in
@@ -292,7 +292,6 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     if ntl < nls then
       let dtyl1, dtyl2 = split_at_i ntl dtyl in
       let dtl = List.map2 (dterm_expected crcm) dtl dtyl1 in
-      let dty = Option.value ~default:dty_bool dty in
       let dty =
         List.fold_right
           (fun t1 t2 -> Dterm.Tapp (ts_arrow, [ t1; t2 ]))
@@ -301,7 +300,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       mk_dterm ~loc (DTapp (ls, dtl)) (Some dty)
     else
       let dtl = List.map2 (dterm_expected crcm) dtl dtyl in
-      let dt = mk_dterm ~loc (DTapp (ls, dtl)) dty in
+      let dt = mk_dterm ~loc (DTapp (ls, dtl)) (Some dty) in
       if extra = [] then dt else map_apply dt extra
   in
   let gen_app ~loc ls tl =
@@ -414,8 +413,10 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
           app_unify_map ~loc ls (dterm_expected crcm) [ de1; de2 ] dtyl
         in
         if op.pid_str = neq.id_str then
-          mk_dterm ~loc (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) dty)) None
-        else mk_dterm ~loc (DTapp (ls, dtl)) dty
+          mk_dterm ~loc
+            (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) (Some dty)))
+            None
+        else mk_dterm ~loc (DTapp (ls, dtl)) (Some dty)
       in
       let rec chain _ de1 op1 t23 =
         match t23 with
@@ -1044,7 +1045,7 @@ let process_val path ~loc ?(ghost = Nonghost) kid crcm ns vd =
 (* Currently checking:
    1 - arguments have different names *)
 let process_function path kid crcm ns f =
-  let f_ty = Option.map (ty_of_pty ns) f.fun_type in
+  let f_ty = Option.fold ~some:(ty_of_pty ns) ~none:ty_bool f.fun_type in
 
   let params =
     List.map
@@ -1073,20 +1074,14 @@ let process_function path kid crcm ns f =
       Mstr.empty params
   in
   let env, result =
-    match f_ty with
-    | None -> (env, None)
-    | Some ty ->
-        let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") ty in
-        (Mstr.add "result" result env, Some result)
+    let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") f_ty in
+    (Mstr.add "result" result env, result)
   in
 
   let def =
-    match f_ty with
-    | None -> Option.map (fmla Function_or_predicate kid crcm ns env) f.fun_def
-    | Some ty ->
-        Option.map
-          (term_with_unify Function_or_predicate kid crcm ty ns env)
-          f.fun_def
+    Option.map
+      (term_with_unify Function_or_predicate kid crcm f_ty ns env)
+      f.fun_def
   in
 
   let spec =
@@ -1103,7 +1098,7 @@ let process_function path kid crcm ns f =
       f.fun_spec
   in
   let f =
-    mk_function ?result ls f.fun_rec params def spec f.fun_loc f.fun_text
+    mk_function result ls f.fun_rec params def spec f.fun_loc f.fun_text
   in
   mk_sig_item (Sig_function f) f.fun_loc
 

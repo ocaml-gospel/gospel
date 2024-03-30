@@ -44,7 +44,7 @@ val mk_fun_spec :
   fun_spec
 
 val mk_function :
-  ?result:vsymbol ->
+  vsymbol ->
   lsymbol ->
   bool ->
   vsymbol list ->

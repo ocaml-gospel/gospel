@@ -72,11 +72,7 @@ let t_type t =
   | None -> W.error ~loc:t.t_loc W.Formula_expected
 
 let t_ty_check t ty =
-  match (ty, t.t_ty) with
-  | Some l, Some r -> ty_equal_check l r
-  | Some _, None -> W.error ~loc:t.t_loc W.Term_expected
-  | None, Some _ -> W.error ~loc:t.t_loc W.Formula_expected
-  | None, None -> ()
+  match (ty, t.t_ty) with l, r -> ty_equal_check l (Option.get r)
 
 let ls_arg_inst ls tl =
   let rec short_fold_left2 f accu l1 l2 =
@@ -97,23 +93,19 @@ let drop n xs =
   in
   if n < 0 then invalid_arg "drop" else aux n xs
 
-let ls_app_inst ls tl ty loc =
+let ls_app_inst ls tl ty =
   let s = ls_arg_inst ls tl in
-  match (ls.ls_value, ty) with
-  | Some _, None -> W.error ~loc (W.Predicate_symbol_expected ls.ls_name.id_str)
-  | None, Some _ -> W.error ~loc (W.Function_symbol_expected ls.ls_name.id_str)
-  | Some vty, Some ty ->
-      let vty =
-        let ntl = List.length tl in
-        if ntl >= List.length ls.ls_args then vty
-        else
-          (* build the result type in case of a partial application *)
-          List.fold_right
-            (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
-            (drop ntl ls.ls_args) vty
-      in
-      ty_match s vty ty
-  | None, None -> s
+  let vty = ls.ls_value in
+  let vty =
+    let ntl = List.length tl in
+    if ntl >= List.length ls.ls_args then vty
+    else
+      (* build the result type in case of a partial application *)
+      List.fold_right
+        (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
+        (drop ntl ls.ls_args) vty
+  in
+  ty_match s vty ty
 
 (** Pattern constructors *)
 
@@ -145,12 +137,12 @@ let t_var vs = mk_term (Tvar vs) (Some vs.vs_ty)
 let t_const c ty = mk_term (Tconst c) (Some ty)
 
 let t_app ls tl ty loc =
-  ignore (ls_app_inst ls tl ty loc : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty loc
+  ignore (ls_app_inst ls tl ty : ty Mtv.t);
+  mk_term (Tapp (ls, tl)) (Some ty) loc
 
 let t_field t ls ty loc =
-  ignore (ls_app_inst ls [ t ] ty loc : ty Mtv.t);
-  mk_term (Tfield (t, ls)) ty loc
+  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
+  mk_term (Tfield (t, ls)) (Some ty) loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
 let t_let vs t1 t2 = mk_term (Tlet (vs, t1, t2)) t2.t_ty
@@ -170,7 +162,7 @@ let t_false = mk_term Tfalse None
 let t_attr_set attr t = { t with t_attrs = attr }
 let t_bool_true = mk_term (Tapp (fs_bool_true, [])) (Some ty_bool)
 let t_bool_false = mk_term (Tapp (fs_bool_false, [])) (Some ty_bool)
-let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] None
+let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] ty_bool
 let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
 let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
 let f_not f = t_not (t_prop f)

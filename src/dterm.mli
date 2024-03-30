@@ -58,7 +58,7 @@ val dty_of_dterm : dterm -> dty
 val dty_of_ty : Ttypes.ty -> dty
 val dty_fresh : unit -> dty
 val max_dty : Coercion.t -> dterm list -> dty option
-val specialize_ls : lsymbol -> dty list * dty option
+val specialize_ls : lsymbol -> dty list * dty
 val specialize_cs : loc:Location.t -> lsymbol -> dty list * dty
 val dty_unify : loc:Location.t -> dty -> dty -> unit
 val dterm_unify : dterm -> dty -> unit

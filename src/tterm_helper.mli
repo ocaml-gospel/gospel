@@ -18,9 +18,9 @@ val t_free_vars : Tterm.term -> Svs.t
 val t_free_vs_in_set : Svs.t -> Tterm.term -> unit
 val t_prop : Tterm.term -> Tterm.term
 val t_type : term -> ty
-val t_ty_check : term -> ty option -> unit
+val t_ty_check : term -> ty -> unit
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
-val ls_app_inst : lsymbol -> term list -> ty option -> Location.t -> ty Mtv.t
+val ls_app_inst : lsymbol -> term list -> ty -> ty Mtv.t
 val mk_pattern : pattern_node -> ty -> Location.t -> pattern
 val p_wild : ty -> Location.t -> pattern
 val p_var : vsymbol -> Location.t -> pattern
@@ -32,8 +32,8 @@ val p_const : Parsetree.constant -> Location.t -> pattern
 val mk_term : term_node -> ty option -> Location.t -> term
 val t_var : vsymbol -> Location.t -> term
 val t_const : constant -> ty -> Location.t -> term
-val t_app : lsymbol -> term list -> ty option -> Location.t -> term
-val t_field : term -> lsymbol -> ty option -> Location.t -> term
+val t_app : lsymbol -> term list -> ty -> Location.t -> term
+val t_field : term -> lsymbol -> ty -> Location.t -> term
 val t_if : term -> term -> term -> Location.t -> term
 val t_let : vsymbol -> term -> term -> Location.t -> term
 val t_case : term -> (pattern * term option * term) list -> Location.t -> term
