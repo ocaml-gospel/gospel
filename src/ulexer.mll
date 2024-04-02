@@ -21,6 +21,7 @@
       [
         "as", AS;
         "axiom", AXIOM;
+        "lemma", LEMMA;
         "coercion", COERCION;
         "else", ELSE;
         "exists", EXISTS;
@@ -29,6 +30,7 @@
         "function", FUNCTION;
         "if", IF;
         "in", IN;
+        "inductive", INDUCTIVE;
         "invariant", INVARIANT;
         "let", LET;
         "match", MATCH;
@@ -53,6 +55,8 @@
         "pure", PURE;
         "ephemeral", EPHEMERAL;
         "model", MODEL;
+        "and", ANDKW;
+        (* "mod", OP3("mod"); *)
         "when", WHEN;
       ]
 

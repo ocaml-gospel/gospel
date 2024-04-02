@@ -32,7 +32,7 @@ let with_loadpath load_path file =
   else if Sys.file_exists file then file
   else raise Not_found
 
-let parse_ocaml_lb lb =
+let parse_ocaml_signature_lb lb =
   let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
   try Parse.interface lb_pps
@@ -41,20 +41,30 @@ let parse_ocaml_lb lb =
     let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
     W.error ~loc W.Syntax_error
 
-let parse_ocaml file =
+let parse_ocaml_structure_lb lb =
+  let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
+  Location.init lb_pps lb.lex_curr_p.pos_fname;
+  try Parse.implementation lb_pps
+  with _ ->
+    let loc_start, loc_end = (lb.lex_start_p, lb.lex_curr_p) in
+    let loc = Location.{ loc_start; loc_end; loc_ghost = false } in
+    raise (W.Error (loc, W.Syntax_error))
+
+let parse_ocaml_signature file =
   let lb =
     if String.equal file gospelstdlib_file then
       Lexing.from_string Gospellib.contents
     else open_in file |> Lexing.from_channel
   in
   Location.init lb file;
-  parse_ocaml_lb lb
+  parse_ocaml_signature_lb lb
 
 module B = Ast_builder.Make (struct
   let loc = Location.none
 end)
 
-let parse_gospel ~filename signature name =
+(** Parse the attributes as GOSPEL specification. *)
+let parse_signature_gospel ~filename signature name =
   let open_gospelstdlib =
     let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
     let name = { txt = "gospel"; loc = Location.none } in
@@ -75,10 +85,17 @@ let parse_gospel ~filename signature name =
   in
   Uattr2spec.signature ~filename s
 
+let parse_structure_gospel ~filename structure name =
+  (if name = gospelstdlib then structure
+   else
+     (* TODO: default open of stdlib as a structure item *)
+     (* default_open_str :: *) structure)
+  |> Uattr2spec.structure ~filename
+
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
-let parse_ocaml_gospel path =
+let parse_ocaml_signature_gospel path =
   let module_name = path2module path in
-  let ocaml = parse_ocaml path in
-  parse_gospel ~filename:path ocaml module_name
+  let ocaml = parse_ocaml_signature path in
+  parse_signature_gospel ~filename:path ocaml module_name

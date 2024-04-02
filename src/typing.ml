@@ -960,6 +960,7 @@ let empty_spec preid ret args =
     sp_writes = [];
     sp_consumes = [];
     sp_diverge = false;
+    sp_variant = [];
     sp_pure = false;
     sp_equiv = [];
     sp_text = "";
@@ -1141,7 +1142,7 @@ let rec open_file ~loc penv muc nm =
     let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
     let sl =
       let file = Parser_frontend.with_loadpath penv.lpaths file_nm in
-      Parser_frontend.parse_ocaml_gospel file
+      Parser_frontend.parse_ocaml_signature_gospel file
     in
     let muc = open_empty_module muc nm in
     let penv = { penv with parsing = Sstr.add nm penv.parsing } in
@@ -1268,6 +1269,8 @@ and process_modtype penv muc umty =
 
             let muc = muc_subst_ty muc ts td.td_ts ty in
             (muc, Wty (ts.ts_ident, td) :: cl)
+        | Wpredicate _ -> assert false (* TODO *)
+        | Wfunction _ -> assert false
         | Wmodule (_, _)
         | Wmodsubst (_, _)
         | Wmodtypesubst (_, _)
@@ -1361,6 +1364,8 @@ and process_sig_item penv muc { sdesc; sloc } =
         (muc, process_sig_type ~loc:sloc ~ghost:Ghost kid crcm ns r tdl)
     | Uast.Sig_ghost_val vd ->
         (muc, process_val ~loc:sloc ~ghost:Ghost kid crcm ns vd)
+    | Uast.Sig_inductive _ ->
+        assert false (* TODO --> in particular, implement positivity checking *)
     | Uast.Sig_ghost_open od -> process_open ~loc:sloc ~ghost:Ghost penv muc od
   in
   let rec process_and_import si muc =

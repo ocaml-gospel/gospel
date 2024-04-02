@@ -174,6 +174,10 @@ let function_ f x =
   in
   spec func f x
 
+let inductive f i =
+  let ind ind _ = pp ind "@[inductive ...@]" in
+  spec ind f i
+
 let axiom f x =
   let axiom f _ = pp f "@[axiom ...@]" in
   spec axiom f x
@@ -289,6 +293,7 @@ let rec s_signature_item f x =
       item_extension reset_ctxt f e;
       item_attributes reset_ctxt f a
   | Sig_function x -> function_ f x
+  | Sig_inductive ind -> inductive f ind
   | Sig_axiom x -> axiom f x
   | Sig_ghost_type (rf, l) ->
       pp f "@[%a@]" (spec s_type_declaration_rec_flag) (rf, l)
@@ -328,6 +333,9 @@ and s_module_type f x =
                 ls longident_loc li s_type_declaration td
           | Wmodsubst (li, li2) ->
               pp f "module %a :=@ %a" longident_loc li longident_loc li2
+          | Wpredicate (id, qr) ->
+              pp f "predicate %a =@ %a" Preid.pp id qualid qr
+          | Wfunction (id, qr) -> pp f "function %a =@ %a" Preid.pp id qualid qr
           | Wmodtypesubst (li, mty) ->
               pp f "module type %a :=@ %a" longident_loc li module_type mty
         in

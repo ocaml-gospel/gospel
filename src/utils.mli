@@ -56,3 +56,6 @@ end
 
 module Sstr : Set.S with type elt = string
 (** String sets. *)
+
+module Hstr : Hashtbl.S with type key = string
+(** Strings hash tables. *)
