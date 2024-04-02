@@ -932,7 +932,7 @@ let process_val_spec kid crcm ns id args ret vs =
   let env, ret =
     match (header.sp_hd_ret, ret.ty_node) with
     | [], _ -> (env, [])
-    | _, Tyapp (ts, tyl) when (not (ts_equal ts ts_unit)) && is_ts_tuple ts ->
+    | _, Tyapp (ts, tyl) when is_ts_tuple ts ->
         let tyl = List.map (fun ty -> (ty, Asttypes.Nolabel)) tyl in
         process_args `Return header.sp_hd_ret tyl env []
     | _, _ ->
