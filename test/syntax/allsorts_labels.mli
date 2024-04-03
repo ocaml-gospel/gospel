@@ -54,6 +54,3 @@ val f : int ref -> unit
 val f : int ref -> unit
 (*@ f x
     modifies x *)
-
-val function' : int -> int
-(*@ function' x *)
