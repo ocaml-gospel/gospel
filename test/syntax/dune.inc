@@ -465,6 +465,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets keyword_as_prefix.gospel)
+ (action
+  (with-outputs-to keyword_as_prefix.mli.output
+   (run %{checker} %{dep:keyword_as_prefix.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff keyword_as_prefix.mli keyword_as_prefix.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:keyword_as_prefix.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets literals.gospel)
  (action
   (with-outputs-to literals.mli.output

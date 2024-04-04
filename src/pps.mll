@@ -322,7 +322,7 @@ and gospel ppf start_pos = parse
       Lexing.new_line lexbuf;
       gospel ppf start_pos lexbuf
     }
-  | ("function" | "type" | "predicate" | "axiom" | "val" | "open" ) as k {
+  | (("function" | "type" | "predicate" | "axiom" | "val" | "open" ) blank+) as k {
       Buffer.add_string buf k;
       comment lexbuf;
       let s = Buffer.contents buf in
