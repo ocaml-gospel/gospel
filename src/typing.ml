@@ -1069,9 +1069,9 @@ let process_function path kid crcm ns f =
         Mstr.update nm (add_var nm vs) env)
       Mstr.empty params
   in
-  let result, env =
+  let env =
     let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") f_ty in
-    (result, Mstr.add "result" result env)
+    Mstr.add "result" result env
   in
 
   let def =
