@@ -354,7 +354,7 @@ and term_node ~loc env dty dterm_node =
       t_if (term env dt1) (term env dt2) (term env dt3) loc
   | DTlet (pid, dt1, dt2) ->
       let t1 = term env dt1 in
-      let vs = create_vsymbol pid (t_type t1) in
+      let vs = create_vsymbol pid t1.t_ty in
       let env = Mstr.add pid.pid_str vs env in
       let t2 = term env dt2 in
       t_let vs t1 t2 loc

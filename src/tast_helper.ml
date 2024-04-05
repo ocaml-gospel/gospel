@@ -37,15 +37,6 @@ let val_spec sp_args sp_ret sp_pre sp_checks sp_post sp_xpost sp_wr sp_cs
    1 - check what to do with writes
    2 - sp_xpost sp_reads sp_alias *)
 let mk_val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc =
-  let add args = function
-    | Lunit -> args
-    | a ->
-        let vs = vs_of_lb_arg a in
-        if Svs.mem vs args then
-          W.error ~loc (W.Duplicated_argument vs.vs_name.id_str);
-        Svs.add vs args
-  in
-  let (_ : Svs.t) = List.fold_left add Svs.empty args in
   val_spec args ret pre checks post xpost wr cs dv pure equiv txt loc
 
 let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
@@ -81,28 +72,8 @@ let mk_axiom id t l = axiom id t l
 let mk_fun_spec fun_req fun_ens fun_variant fun_coer fun_text fun_loc =
   { fun_req; fun_ens; fun_variant; fun_coer; fun_text; fun_loc }
 
-let function_ fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
+let mk_function fun_ls fun_rec fun_params fun_def fun_spec fun_loc fun_text =
   { fun_ls; fun_rec; fun_params; fun_def; fun_spec; fun_loc; fun_text }
-
-(* For
-   (*@ function rec f (x:ty1) (y:ty2):ty3 = t
-       variant v
-       requires treq
-       ensures tens
-       coercion
-   *)
-   we check the following
-   1 - no duplicate arguments (Ident.tifiers may have the same
-   string but still be different)
-   2 - types or params match the type of lsymbol
-   3 - free variables of t, treq, v come from the arguments;
-   in case of tens, if it is a function, it can also be the
-   ~result vsylbol
-   4 - type of t is ty3 (None if it is a predicate)
-   5 - elements of v are of type integer, and elements of treq and
-   tens are of type None
-*)
-let mk_function ls r params def spec loc = function_ ls r params def spec loc
 
 let extension_constructor id xs kd loc attrs =
   {

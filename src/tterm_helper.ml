@@ -15,6 +15,40 @@ open Ttypes
 open Symbols
 module Ident = Identifier.Ident
 
+(** type checking *)
+let ls_arg_inst ls tl =
+  let rec short_fold_left2 f accu l1 l2 =
+    match (l1, l2) with
+    | a1 :: l1, a2 :: l2 -> short_fold_left2 f (f accu a1 a2) l1 l2
+    | _, _ -> accu
+  in
+  short_fold_left2
+    (fun tvm ty t -> ty_match tvm ty t.t_ty)
+    Mtv.empty ls.ls_args tl
+
+let drop n xs =
+  let rec aux n xs =
+    match (n, xs) with
+    | 0, xs -> xs
+    | _, [] -> []
+    | n, _ :: xs -> aux (n - 1) xs
+  in
+  if n < 0 then invalid_arg "drop" else aux n xs
+
+let ls_app_inst ls tl ty =
+  let s = ls_arg_inst ls tl in
+  let vty = ls.ls_value in
+  let vty =
+    let ntl = List.length tl in
+    if ntl >= List.length ls.ls_args then vty
+    else
+      (* build the result type in case of a partial application *)
+      List.fold_right
+        (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
+        (drop ntl ls.ls_args) vty
+  in
+  ty_match s vty ty
+
 let rec p_vars p =
   match p.p_node with
   | Pwild | Pconst _ | Pinterval _ -> Svs.empty
@@ -53,49 +87,6 @@ let rec t_free_vars t =
   | Told t -> t_free_vars t
   | Ttrue -> Svs.empty
   | Tfalse -> Svs.empty
-
-let t_free_vs_in_set svs t =
-  let diff = Svs.diff (t_free_vars t) svs in
-  if not (Svs.is_empty diff) then
-    W.error ~loc:t.t_loc
-      (W.Free_variables
-         (Svs.elements diff |> List.map (fun vs -> vs.vs_name.id_str)))
-
-(** type checking *)
-let t_type t = t.t_ty
-
-let ls_arg_inst ls tl =
-  let rec short_fold_left2 f accu l1 l2 =
-    match (l1, l2) with
-    | a1 :: l1, a2 :: l2 -> short_fold_left2 f (f accu a1 a2) l1 l2
-    | _, _ -> accu
-  in
-  short_fold_left2
-    (fun tvm ty t -> ty_match tvm ty (t_type t))
-    Mtv.empty ls.ls_args tl
-
-let drop n xs =
-  let rec aux n xs =
-    match (n, xs) with
-    | 0, xs -> xs
-    | _, [] -> []
-    | n, _ :: xs -> aux (n - 1) xs
-  in
-  if n < 0 then invalid_arg "drop" else aux n xs
-
-let ls_app_inst ls tl ty =
-  let s = ls_arg_inst ls tl in
-  let vty = ls.ls_value in
-  let vty =
-    let ntl = List.length tl in
-    if ntl >= List.length ls.ls_args then vty
-    else
-      (* build the result type in case of a partial application *)
-      List.fold_right
-        (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
-        (drop ntl ls.ls_args) vty
-  in
-  ty_match s vty ty
 
 (** Pattern constructors *)
 

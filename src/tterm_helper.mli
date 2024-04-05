@@ -15,8 +15,6 @@ open Ttypes
 open Symbols
 
 val t_free_vars : Tterm.term -> Svs.t
-val t_free_vs_in_set : Svs.t -> Tterm.term -> unit
-val t_type : term -> ty
 val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
 val ls_app_inst : lsymbol -> term list -> ty -> ty Mtv.t
 val mk_pattern : pattern_node -> ty -> Location.t -> pattern
