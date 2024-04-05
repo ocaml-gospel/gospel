@@ -142,8 +142,8 @@ let rec unify_dty_ty dty ty =
   match (head dty, ty.ty_node) with
   | Tvar tvar, _ -> tvar.dtv_def <- Some (Tty ty)
   | Tty ty1, _ when ty_equal ty1 ty -> ()
-  | Tapp (ts1, dl), Tyapp (ts2, tl) when ts_equal ts1 ts2 -> (
-      try List.iter2 unify_dty_ty dl tl with Invalid_argument _ -> raise Exit)
+  | Tapp (ts1, dl), Tyapp (ts2, tl) when ts_equal ts1 ts2 ->
+      List.iter2 unify_dty_ty dl tl
   | _ -> raise Exit
 
 let rec unify dty1 dty2 =
@@ -151,8 +151,8 @@ let rec unify dty1 dty2 =
   | Tvar { dtv_id = id1; _ }, Tvar { dtv_id = id2; _ } when id1 = id2 -> ()
   | Tvar tvar, dty | dty, Tvar tvar ->
       if occur tvar dty then raise Exit else tvar.dtv_def <- Some dty
-  | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 -> (
-      try List.iter2 unify dtyl1 dtyl2 with Invalid_argument _ -> raise Exit)
+  | Tapp (ts1, dtyl1), Tapp (ts2, dtyl2) when ts_equal ts1 ts2 ->
+      List.iter2 unify dtyl1 dtyl2
   | Tty ty, dty | dty, Tty ty -> unify_dty_ty dty ty
   | _ -> raise Exit
 
