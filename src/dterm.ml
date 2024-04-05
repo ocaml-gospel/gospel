@@ -186,19 +186,17 @@ let dty_unify ~loc dty1 dty2 =
 let dterm_unify dt dty =
   match dt.dt_dty with
   | Some dt_dty -> dty_unify ~loc:dt.dt_loc dt_dty dty
-  | None -> (
-      try unify dty_bool dty
-      with Exit -> W.error ~loc:dt.dt_loc W.Term_expected)
+  | None -> assert false
 
 let dfmla_unify dt =
   match dt.dt_dty with
-  | None -> ()
+  | None -> assert false
   | Some dt_dty -> (
       try unify dt_dty dty_bool
       with Exit -> W.error ~loc:dt.dt_loc W.Formula_expected)
 
 let unify dt dty =
-  match dty with None -> dfmla_unify dt | Some dt_dty -> dterm_unify dt dt_dty
+  match dty with None -> assert false | Some dt_dty -> dterm_unify dt dt_dty
 
 (* environment *)
 
@@ -293,7 +291,7 @@ let dterm_expected_op crcmap dt dty =
   unify dt dty;
   dt
 
-let dfmla_expected crcmap dt = dterm_expected_op crcmap dt None
+let dfmla_expected crcmap dt = dterm_expected_op crcmap dt (Some dty_bool)
 let dterm_expected crcmap dt dty = dterm_expected_op crcmap dt (Some dty)
 
 (** dterm to tterm *)
@@ -329,20 +327,6 @@ let pattern dp =
 let rec term env dt =
   let loc = dt.dt_loc in
   term_node ~loc env dt.dt_dty dt.dt_node
-(*
-let rec term env prop dt =
-  let loc = dt.dt_loc in
-  let t = term_node ~loc env prop dt.dt_dty dt.dt_node in
-  match t.t_ty with
-  | Some _ when prop -> (
-      try t_equ t (t_bool_true loc) loc
-      with TypeMismatch (ty1, ty2) ->
-        let t1 = Fmt.str "%a" print_ty ty1 in
-        let t2 = Fmt.str "%a" print_ty ty2 in
-        W.error ~loc (W.Bad_type (t1, t2)))
-  | None when not prop -> t_if t (t_bool_true loc) (t_bool_false loc) loc
-  | _ -> t
- *)
 
 and term_node ~loc env dty dterm_node =
   match dterm_node with

@@ -63,8 +63,8 @@ let t_free_vs_in_set svs t =
 
 (** type checking *)
 
-let t_prop t =
-  if ty_equal t.t_ty ty_bool then t else W.error ~loc:t.t_loc W.Formula_expected
+(*let t_prop t =
+  if ty_equal t.t_ty ty_bool then t else W.error ~loc:t.t_loc W.Formula_expected *)
 
 let t_type t = t.t_ty
 let t_ty_check t ty = match (ty, t.t_ty) with l, r -> ty_equal_check l r
@@ -159,16 +159,8 @@ let t_bool_true = mk_term (Tapp (fs_bool_true, [])) ty_bool
 let t_bool_false = mk_term (Tapp (fs_bool_false, [])) ty_bool
 let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] ty_bool
 let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
-let f_binop op f1 f2 = t_binop op (t_prop f1) (t_prop f2)
-let f_not f = t_not (t_prop f)
-
-let t_quant q vsl t ty loc =
-  match vsl with
-  | [] -> t_prop t
-  | _ ->
-      if not (ty_equal ty ty_bool) then W.error ~loc W.Formula_expected;
-      t_quant q vsl (t_prop t) ty_bool loc
-
+let f_binop op f1 f2 = t_binop op f1 f2
+let f_not f = t_not f
 let f_and = f_binop Tand
 let f_and_asym = f_binop Tand_asym
 let f_or = f_binop Tor
