@@ -62,12 +62,7 @@ let t_free_vs_in_set svs t =
          (Svs.elements diff |> List.map (fun vs -> vs.vs_name.id_str)))
 
 (** type checking *)
-
-(*let t_prop t =
-  if ty_equal t.t_ty ty_bool then t else W.error ~loc:t.t_loc W.Formula_expected *)
-
 let t_type t = t.t_ty
-let t_ty_check t ty = match (ty, t.t_ty) with l, r -> ty_equal_check l r
 
 let ls_arg_inst ls tl =
   let rec short_fold_left2 f accu l1 l2 =

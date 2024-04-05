@@ -1069,9 +1069,9 @@ let process_function path kid crcm ns f =
         Mstr.update nm (add_var nm vs) env)
       Mstr.empty params
   in
-  let env, result =
+  let env =
     let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") f_ty in
-    (Mstr.add "result" result env, result)
+    Mstr.add "result" result env
   in
 
   let def =
@@ -1093,9 +1093,7 @@ let process_function path kid crcm ns f =
         mk_fun_spec req ens variant spec.fun_coer spec.fun_text spec.fun_loc)
       f.fun_spec
   in
-  let f =
-    mk_function result ls f.fun_rec params def spec f.fun_loc f.fun_text
-  in
+  let f = mk_function ls f.fun_rec params def spec f.fun_loc f.fun_text in
   mk_sig_item (Sig_function f) f.fun_loc
 
 let process_axiom path loc kid crcm ns a =
