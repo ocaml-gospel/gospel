@@ -410,4 +410,3 @@ and term_node ~loc env dty dterm_node =
       t_case t pl loc
 
 let term env dt = term env dt
-let fmla env dt = term env dt

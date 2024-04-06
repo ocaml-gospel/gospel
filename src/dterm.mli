@@ -81,5 +81,4 @@ val is_in_denv : denv -> string -> bool
 val denv_add_var : denv -> string -> dty -> denv
 val denv_add_var_quant : denv -> (Identifier.Preid.t * dty) list -> denv
 val term : vsymbol Mstr.t -> dterm -> term
-val fmla : vsymbol Mstr.t -> dterm -> term
 val pattern : dpattern -> Tterm.pattern * vsymbol Mstr.t
