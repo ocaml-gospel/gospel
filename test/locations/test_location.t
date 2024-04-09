@@ -1419,7 +1419,7 @@ First, create a test artifact:
                                               [{ Tterm.t_node =
                                                  (Tterm.Tapp (
                                                     { Symbols.ls_name =
-                                                      integer_of_int;
+                                                      Gospelstdlib.integer_of_int;
                                                       ls_args =
                                                       [{ Ttypes.ty_node =
                                                          (Ttypes.Tyapp (
@@ -1485,7 +1485,7 @@ First, create a test artifact:
                                                 { Tterm.t_node =
                                                   (Tterm.Tapp (
                                                      { Symbols.ls_name =
-                                                       integer_of_int;
+                                                       Gospelstdlib.integer_of_int;
                                                        ls_args =
                                                        [{ Ttypes.ty_node =
                                                           (Ttypes.Tyapp (
@@ -1560,7 +1560,7 @@ First, create a test artifact:
                                          { Tterm.t_node =
                                            (Tterm.Tapp (
                                               { Symbols.ls_name =
-                                                is_sorted_list;
+                                                Foo.is_sorted_list;
                                                 ls_args =
                                                 [{ Ttypes.ty_node =
                                                    (Ttypes.Tyapp (
@@ -1892,7 +1892,7 @@ First, create a test artifact:
                                        ls_field = false },
                                      [{ Tterm.t_node =
                                         (Tterm.Tapp (
-                                           { Symbols.ls_name = is_full;
+                                           { Symbols.ls_name = Foo.is_full;
                                              ls_args =
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyapp (
@@ -2035,7 +2035,7 @@ First, create a test artifact:
                                              { Tterm.t_node =
                                                (Tterm.Tapp (
                                                   { Symbols.ls_name =
-                                                    integer_of_int;
+                                                    Gospelstdlib.integer_of_int;
                                                     ls_args =
                                                     [{ Ttypes.ty_node =
                                                        (Ttypes.Tyapp (

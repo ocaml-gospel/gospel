@@ -48,9 +48,13 @@ module Ident = struct
         let str =
           if x = 0 then id.id_str else id.id_str ^ "_" ^ string_of_int x
         in
+        let str =
+          if path then
+            List.fold_right (fun e acc -> e ^ "." ^ acc) id.id_path str
+          else str
+        in
         Hashtbl.replace output id.id_tag str;
-        if path then List.fold_right (fun e acc -> e ^ "." ^ acc) id.id_path str
-        else str
+        str
     in
     fun path ppf t ->
       Format.fprintf ppf "%s%a" (str_of_id path t) pp_attrs t.id_attrs
