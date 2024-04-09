@@ -337,10 +337,6 @@ and term_node ~loc env dty dterm_node =
   | DTconst c -> t_const c (ty_of_dty (Option.get dty)) loc
   | DTapp (ls, []) when ls_equal ls fs_bool_true -> t_true loc
   | DTapp (ls, []) when ls_equal ls fs_bool_false -> t_false loc
-  | DTapp (ls, [ dt1; dt2 ]) when ls_equal ls ps_equ ->
-      if dt1.dt_dty = None || dt2.dt_dty = None then
-        f_iff (term env dt1) (term env dt2) loc
-      else t_equ (term env dt1) (term env dt2) loc
   | DTapp (ls, [ dt1 ]) when ls.ls_field ->
       t_field (term env dt1) ls
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
