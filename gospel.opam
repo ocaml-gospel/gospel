@@ -36,6 +36,7 @@ depends: [
   "ocaml" {>= "4.11"}
   "ocamlfind"
   "dune" {>= "3.0.0"}
+  "dune-build-info"
   "menhir" {>= "20181006"}
   "cmdliner" {>= "1.1.0"}
   "fmt" {>= "0.8.7"}
