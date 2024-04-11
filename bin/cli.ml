@@ -89,7 +89,13 @@ let wc =
   Cmd.v info term
 
 let () =
-  let doc = "Gospel command line tool." in
-  let info = Cmd.info "gospel" ~doc ~version:"gospel version %%VERSION%%" in
+  let doc = "Gospel command line tool."
+  and version =
+    Printf.sprintf "gospel version: %s"
+      (match Build_info.V1.version () with
+      | None -> "n/a"
+      | Some v -> Build_info.V1.Version.to_string v)
+  in
+  let info = Cmd.info "gospel" ~doc ~version in
   let commands = Cmd.group info [ tc; wc; pps; dumpast ] in
   Stdlib.exit (Cmd.eval commands)

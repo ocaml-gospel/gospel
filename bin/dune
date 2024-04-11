@@ -4,4 +4,4 @@
 (executable
  (name cli)
  (public_name gospel)
- (libraries cmdliner gospel))
+ (libraries cmdliner dune-build-info gospel))
