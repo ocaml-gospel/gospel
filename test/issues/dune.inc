@@ -128,6 +128,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets pattern_analysis_tuple.gospel)
+ (action
+  (with-outputs-to pattern_analysis_tuple.mli.output
+   (run %{checker} %{dep:pattern_analysis_tuple.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff pattern_analysis_tuple.mli pattern_analysis_tuple.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:pattern_analysis_tuple.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets return_unit_and_ghost.gospel)
  (action
   (with-outputs-to return_unit_and_ghost.mli.output
