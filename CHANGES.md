@@ -1,5 +1,10 @@
 # Unreleased
 
+## Added
+
+- Add support for mutualy recursive ghost types
+  [#403] (https://github.com/ocaml-gospel/gospel/pull/403)
+
 ## Improved
 
 - Display proper error message for a number of unsupported construction
