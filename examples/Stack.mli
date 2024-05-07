@@ -37,6 +37,3 @@ module type S = sig
         ensures s2.view = Sequence.empty *)
 end
 
-(* {gospel_expected|
-   [0] OK
-   |gospel_expected} *)
