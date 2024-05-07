@@ -36,4 +36,3 @@ module type S = sig
         ensures s1.view = (old s1.view ++ old s2.view)
         ensures s2.view = Sequence.empty *)
 end
-
