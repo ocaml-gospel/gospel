@@ -2,6 +2,7 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Stack.gospel)
  (action
   (with-outputs-to Stack.mli.output
    (run %{checker} %{dep:Stack.mli}))))
