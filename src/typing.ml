@@ -707,7 +707,7 @@ let type_type_declaration path kid crcm ns r tdl =
           match idl with
           | [ s ] when r = Recursive && Sstr.mem s alias ->
               W.error ~loc (W.Cyclic_type_declaration s)
-          | [ s ] when Hashtbl.mem hts s -> Hashtbl.find hts s
+          | [ s ] when r = Recursive && Hashtbl.mem hts s -> Hashtbl.find hts s
           | [ s ] when r = Recursive && Mstr.mem s tdm ->
               visit ~alias:(Sstr.add s alias) s (Mstr.find s tdm);
               Hashtbl.find hts s
