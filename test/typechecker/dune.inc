@@ -338,6 +338,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets ghost_type_and_nonrec.gospel)
+ (action
+  (with-outputs-to ghost_type_and_nonrec.mli.output
+   (run %{checker} %{dep:ghost_type_and_nonrec.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff ghost_type_and_nonrec.mli ghost_type_and_nonrec.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:ghost_type_and_nonrec.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets inlined_record_expected.gospel)
  (action
   (with-outputs-to inlined_record_expected.mli.output
@@ -753,6 +774,27 @@
   (chdir %{project_root}
    ; Syntax sanity check
    (run ocamlc -c %{dep:labeled_arg8.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets mutually_recursive_ghost_type.gospel)
+ (action
+  (with-outputs-to mutually_recursive_ghost_type.mli.output
+   (run %{checker} %{dep:mutually_recursive_ghost_type.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff mutually_recursive_ghost_type.mli mutually_recursive_ghost_type.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:mutually_recursive_ghost_type.mli}))))
 
 (rule
  (deps
