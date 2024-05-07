@@ -95,6 +95,21 @@ let val_description ~filename v =
     vloc = v.pval_loc;
   }
 
+let ghost_type ~filename attr t =
+  let type_ = type_declaration ~filename t in
+  if type_.tspec = None then
+    let tspec =
+      get_inner_spec attr
+      |> fst
+      |> Option.map (parse_gospel ~filename Uparser.type_spec)
+      |> Option.map (fun (ty_text, spec) ->
+             let ty_loc = get_spec_loc attr in
+             { spec with ty_text; ty_loc })
+    in
+    let tloc = get_spec_loc attr in
+    { type_ with tspec; tloc }
+  else type_
+
 let ghost_spec ~filename attr =
   let spec, loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
@@ -102,20 +117,8 @@ let ghost_spec ~filename attr =
   Lexing.set_filename lb filename;
   let sigs = try Parse.interface lb with _ -> W.error ~loc W.Syntax_error in
   match sigs with
-  | [ { psig_desc = Psig_type (r, [ t ]); _ } ] ->
-      let type_ = type_declaration ~filename t in
-      if type_.tspec = None then
-        let tspec =
-          get_inner_spec attr
-          |> fst
-          |> Option.map (parse_gospel ~filename Uparser.type_spec)
-          |> Option.map (fun (ty_text, spec) ->
-                 let ty_loc = get_spec_loc attr in
-                 { spec with ty_text; ty_loc })
-        in
-        let tloc = get_spec_loc attr in
-        Sig_ghost_type (r, [ { type_ with tspec; tloc } ])
-      else Sig_ghost_type (r, [ type_ ])
+  | [ { psig_desc = Psig_type (r, ts); _ } ] ->
+      Sig_ghost_type (r, List.map (ghost_type ~filename attr) ts)
   | [ { psig_desc = Psig_value vd; _ } ] ->
       let val_ = val_description ~filename vd in
       if val_.vspec = None then
