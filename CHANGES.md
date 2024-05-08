@@ -24,8 +24,6 @@
   [\#380](https://github.com/ocaml-gospel/gospel/pull/380)
 - Remove the `gospel_expected` prologue at the end of successful tests
   [\#363](https://github.com/ocaml-gospel/gospel/pull/363)
-- Added paths to gospel identifiers.
-  [\#396](https://github.com/ocaml-gospel/gospel/pull/396)
 
 # 0.2
 
@@ -174,6 +172,8 @@
   [\#155](https://github.com/ocaml-gospel/gospel/pull/155)
 - Removed the `Pty_open` type constructor
   [\#109](https://github.com/ocaml-gospel/gospel/pull/109)
+- Added paths to gospel identifiers.
+  [\#396](https://github.com/ocaml-gospel/gospel/pull/396)
 
 
 # 0.1.0 (11-03-2021)

@@ -20,4 +20,5 @@ val penv : string list -> Utils.Sstr.t -> parse_env
     for modules dependencies. *)
 
 val type_sig_item : parse_env -> module_uc -> Uast.s_signature_item -> module_uc
-(** the same as above but it drops the typed signature *)
+(** `type_sig_item penv muc s` returns a new module under construction after
+    type checking `s`. *)
