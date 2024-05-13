@@ -317,6 +317,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets functor_application.gospel)
+ (action
+  (with-outputs-to functor_application.mli.output
+   (run %{checker} %{dep:functor_application.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff functor_application.mli functor_application.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:functor_application.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets int_not_bool1.gospel)
  (action
   (with-outputs-to int_not_bool1.mli.output
