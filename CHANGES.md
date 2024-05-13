@@ -1,6 +1,9 @@
 # Unreleased
 
 - Bump AST to 5.2 for ppxlib.0.36.0
+- Display an error message when encoutering a Functor application
+  cherry picked from:
+  [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
 
 # 0.3
 
