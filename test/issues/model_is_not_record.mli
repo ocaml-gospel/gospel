@@ -6,9 +6,8 @@ val f : 'a t -> unit
     modifies xs
     ensures xs = { contents = [] }
 *)
-
 (* {gospel_expected|
    [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 129, characters 13-19: Assertion failed
+                 File "src/typing.ml", line 135, characters 13-19: Assertion failed
                  
    |gospel_expected} *)

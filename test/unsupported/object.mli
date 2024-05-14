@@ -1,6 +1,7 @@
 val x : < x : int >
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 113, characters 9-15: Assertion failed
-                 
+   [125] File "object.mli", line 1, characters 8-19:
+         1 | val x : < x : int >
+                     ^^^^^^^^^^^
+         Error: Not yet supported: object type.
    |gospel_expected} *)

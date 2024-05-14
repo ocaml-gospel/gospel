@@ -1,6 +1,7 @@
 type t = [ `A | `B ]
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 622, characters 11-17: Assertion failed
-                 
+   [125] File "polymorphic_variants.mli", line 1, characters 9-20:
+         1 | type t = [ `A | `B ]
+                      ^^^^^^^^^^^
+         Error: Not yet supported: polymorphic variant.
    |gospel_expected} *)

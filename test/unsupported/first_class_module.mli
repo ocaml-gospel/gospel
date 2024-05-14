@@ -1,7 +1,8 @@
 module type S = sig val x : int end
 val s : (module S)
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 113, characters 9-15: Assertion failed
-                 
+   [125] File "first_class_module.mli", line 2, characters 8-18:
+         2 | val s : (module S)
+                     ^^^^^^^^^^
+         Error: Not yet supported: first class module.
    |gospel_expected} *)

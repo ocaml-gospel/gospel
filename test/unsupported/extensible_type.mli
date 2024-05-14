@@ -1,6 +1,7 @@
 type t = ..
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 717, characters 22-28: Assertion failed
-                 
+   [125] File "extensible_type.mli", line 1, characters 0-11:
+         1 | type t = ..
+             ^^^^^^^^^^^
+         Error: Not yet supported: extensible type.
    |gospel_expected} *)

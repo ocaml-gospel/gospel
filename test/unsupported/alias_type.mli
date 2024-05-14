@@ -1,7 +1,8 @@
 val f : int as 'a
 
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
-                 File "src/typing.ml", line 113, characters 9-15: Assertion failed
-                 
+   [125] File "alias_type.mli", line 1, characters 8-17:
+         1 | val f : int as 'a
+                     ^^^^^^^^^
+         Error: Not yet supported: type alias.
    |gospel_expected} *)
