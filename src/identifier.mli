@@ -108,9 +108,6 @@ val cons : Ident.t
 
 (* Utils *)
 
-val prefix : string -> string
-val infix : string -> string
-val mixfix : string -> string
 val is_prefix : string -> bool
 val is_infix : string -> bool
 val is_mixfix : string -> bool

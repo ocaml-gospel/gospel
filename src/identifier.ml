@@ -94,10 +94,6 @@ module Ident = struct
   let hash x = x.id_tag
 end
 
-let prefix s = "prefix " ^ s
-let infix s = "infix " ^ s
-let mixfix s = "mixfix " ^ s
-
 let is_somefix f s =
   let sl = String.split_on_char ' ' s in
   List.length sl > 1 && List.hd sl = f
