@@ -73,19 +73,17 @@ module Ident : sig
   (** [pp fmt id] pretty prints [id] with their fully qualified name *)
 
   val create :
-<<<<<<< HEAD
-    ?attrs:string list -> ?path:string list -> loc:Location.t -> string -> t
-  (** [create ~attrs ~path ~loc id] is a new pre-identifier identified with [id]
-      with attributes [attrs], path [path] and location [loc]. A unique tag is
-      automatically affected to the new identifier Default attributes are empty,
-      and default location is [Location.none]. *)
-=======
-    ?fixity:fixity -> ?attrs:string list -> loc:Location.t -> string -> t
-  (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
-      fixity [fixity] attributes [attrs] and location [loc]. A unique tag is
-      automatically affected to the new identifier default [fixity] is [Normal],
-      default [attrs] is [[]], and default [loc] is [Location.none]. *)
->>>>>>> 8da5dde (Add fixity field to Preid.t and Ident.t)
+    ?fixity:fixity ->
+    ?attrs:string list ->
+    ?path:string list ->
+    loc:Location.t ->
+    string ->
+    t
+  (** [create ~fixity ~attrs ~path ~loc id] is a new pre-identifier identified
+      with [id], with fixity [fixity] with attributes [attrs], path [path] and
+      location [loc]. A unique tag is automatically affected to the new
+      identifier Default attributes are empty, and default location is
+      [Location.none]. *)
 
   val of_preid : ?path:string list -> Preid.t -> t
   (** [of_preid ~path pid] is a fresh identifier using the same name, attributes
