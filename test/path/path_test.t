@@ -48,7 +48,7 @@ First, create a test artifact:
   r
   arg
   r
-  infix =
+  =
   a_1
   a_1
   arg
@@ -63,13 +63,13 @@ First, create a test artifact:
   n
   Path_test.M.a_2
   n_1
-  infix =
+  =
   a_1
   a_1
   Gospelstdlib.integer_of_int
   Path_test.M.f
   n_1
-  Gospelstdlib.infix +
+  Gospelstdlib.+
   Gospelstdlib.integer_of_int
   n_1
   Path_test.M.Nested

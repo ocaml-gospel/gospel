@@ -14,5 +14,5 @@ val f : 'a list list -> int
          6 |       | (x::y::_)::_ -> false
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:
-                  infix :: (infix :: (_, []), []).
+                  :: (:: (_, []), []).
    |gospel_expected} *)

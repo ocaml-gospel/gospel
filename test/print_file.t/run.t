@@ -6,26 +6,26 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       
       (*@ open Gospelstdlib *)
       
-      (*@ axiom prefix: exists x:integer. (x:integer = (prefix - 
-      42:integer):integer):prop *)
+      (*@ axiom prefix: exists x:integer -> integer. (= 
+      x:integer -> integer (-  42:integer):integer -> integer):prop *)
       
-      (*@ axiom infix: exists x_1:integer y:integer. ((x_1:integer - y:integer):
-      integer = 0:integer):prop *)
+      (*@ axiom infix: exists x_1:integer y:integer. (= 
+      (-  x_1:integer y:integer):integer 0:integer):prop *)
       
       (*@ axiom infix_partial_application: exists x_2:integer y_1:integer. let 
-      f:integer -> integer = (infix - 
-      x_2:integer):integer -> integer in ((apply 
-      f:integer -> integer y_1:integer):integer = 0:integer):prop *)
+      f:integer -> integer = (-  x_2:integer):integer -> integer in (= 
+      (apply  f:integer -> integer y_1:integer):integer 0:integer):prop *)
       
-      (*@ axiom mixfix: exists xs:integer sequence. ((mixfix [_] 
-      xs:integer sequence 42:integer):integer = 42:integer):prop *)
+      (*@ axiom mixfix: exists xs:integer sequence. (= 
+      ([_]  xs:integer sequence 42:integer):integer 42:integer):prop *)
       
       (*@ axiom mixfix_partial_application: exists xs_1:integer sequence. let 
-      f_1:integer -> integer sequence = (mixfix [_.._] 
+      f_1:integer -> integer sequence = ([_.._] 
       xs_1:integer sequence 42:integer):integer -> integer sequence in (mem 
       (apply  f_1:integer -> integer sequence 73:integer):integer sequence
       42:integer):prop *)
   
+
   $ gospel check --verbose ../../src/stdlib/gospelstdlib.mli | awk '/Signatures/,/EOF/ { if (match($1, /\(\*@/) != 0) print }'
       (*@ type 'a sequence
       (*@ type 'a bag
@@ -33,20 +33,20 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       (*@ type 'a set
       (*@ function succ (x:integer): integer *)
       (*@ function pred (x_1:integer): integer *)
-      (*@ function prefix - (x_2:integer): integer *)
-      (*@ function infix + (x_3:integer) (y:integer): integer *)
-      (*@ function infix - (x_4:integer) (y_1:integer): integer *)
-      (*@ function infix * (x_5:integer) (y_2:integer): integer *)
-      (*@ function infix / (x_6:integer) (y_3:integer): integer *)
+      (*@ function -_1 (x_2:integer): integer *)
+      (*@ function + (x_3:integer) (y:integer): integer *)
+      (*@ function - (x_4:integer) (y_1:integer): integer *)
+      (*@ function * (x_5:integer) (y_2:integer): integer *)
+      (*@ function / (x_6:integer) (y_3:integer): integer *)
       (*@ function mod (x_7:integer) (y_4:integer): integer *)
       (*@ function pow (x_8:integer) (y_5:integer): integer *)
       (*@ function abs (x_9:integer): integer *)
       (*@ function min (x_10:integer) (y_6:integer): integer *)
       (*@ function max (x_11:integer) (y_7:integer): integer *)
-      (*@ predicate infix > (x_12:integer) (y_8:integer) *)
-      (*@ predicate infix >= (x_13:integer) (y_9:integer) *)
-      (*@ predicate infix < (x_14:integer) (y_10:integer) *)
-      (*@ predicate infix <= (x_15:integer) (y_11:integer) *)
+      (*@ predicate > (x_12:integer) (y_8:integer) *)
+      (*@ predicate >= (x_13:integer) (y_9:integer) *)
+      (*@ predicate < (x_14:integer) (y_10:integer) *)
+      (*@ predicate <= (x_15:integer) (y_11:integer) *)
       (*@ function logand (x_16:integer) (y_12:integer): integer *)
       (*@ function logor (x_17:integer) (y_13:integer): integer *)
       (*@ function logxor (x_18:integer) (y_14:integer): integer *)
@@ -59,12 +59,12 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       (*@ function min_int : integer *)
       (*@ function fst (p:'a * 'b): 'a *)
       (*@ function snd (p_1:'a * 'b): 'b *)
-      (*@ function prefix ! (r:'a ref): 'a *)
-      (*@ function infix ++ (s:'a sequence) (s':'a sequence): 'a sequence *)
-      (*@ function mixfix [_] (s_1:'a sequence) (i:integer): 'a *)
-      (*@ function mixfix [_.._] (s_2:'a sequence) (i1:integer) (i2:integer): 'a 
-      (*@ function mixfix [_..] (s_3:'a sequence) (i_1:integer): 'a sequence *)
-      (*@ function mixfix [.._] (s_4:'a sequence) (i_2:integer): 'a sequence *)
+      (*@ function ! (r:'a ref): 'a *)
+      (*@ function ++ (s:'a sequence) (s':'a sequence): 'a sequence *)
+      (*@ function [_] (s_1:'a sequence) (i:integer): 'a *)
+      (*@ function [_.._] (s_2:'a sequence) (i1:integer) (i2:integer): 'a 
+      (*@ function [_..] (s_3:'a sequence) (i_1:integer): 'a sequence *)
+      (*@ function [.._] (s_4:'a sequence) (i_2:integer): 'a sequence *)
         (*@ type 'a t_3 = 'a sequence
         (*@ function length_2 (s_5:'a sequence): integer *)
         (*@ function empty_1 : 'a sequence *)
@@ -157,7 +157,7 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
         (*@ function of_list_1 (l_17:'a list): 'a bag *)
         (*@ function to_seq_1 (b_29:'a bag): 'a sequence *)
         (*@ function of_seq_1 (s_23:'a sequence): 'a bag *)
-      (*@ function mixfix {} : 'a set *)
+      (*@ function {} : 'a set *)
         (*@ type 'a t_4 = 'a set
         (*@ function compare (s_24:'a set) (s'_2:'a set): integer *)
         (*@ function empty_2 : 'a set *)
@@ -185,7 +185,7 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
         (*@ function of_list_2 (l_18:'a list): 'a set *)
         (*@ function to_seq_3 (s_44:'a set): 'a sequence *)
         (*@ function of_seq_3 (s_45:'a sequence): 'a set *)
-      (*@ function mixfix [->] (f_40:'a -> 'b) (x_41:'a) (y_18:'b): 'a -> 'b *)
+      (*@ function [->] (f_40:'a -> 'b) (x_41:'a) (y_18:'b): 'a -> 'b *)
         (*@ predicate is_pre_order (cmp:'a -> 'a -> int) =
         (*@ function word_size : integer *)
         (*@ function int_size : integer *)
