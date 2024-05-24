@@ -79,7 +79,14 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
         assert (vs.vs_ty = Option.get t_ty) (* TODO remove this *)
     | Tapp (ls, tl) -> (
         match ls.ls_name.id_fixity with
-        | Identifier.Prefix -> ()
+        | Identifier.Prefix -> (
+            match tl with
+            (* partial application: zero argument *)
+            | [] -> pp fmt "((%a))%a" Ident.pp ls.ls_name print_ty t_ty
+            (* complete application: one or many arguments *)
+            | _ ->
+                pp fmt "((%a) %a)%a" Ident.pp ls.ls_name (list print_term) tl
+                  print_ty t_ty)
         | Identifier.Infix -> (
             match tl with
             (* partial applications: zero or one argument *)
