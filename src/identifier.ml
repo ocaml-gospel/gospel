@@ -105,9 +105,9 @@ let is_somefix f s =
 let is_prefix = is_somefix "prefix"
 let is_infix = is_somefix "infix"
 let is_mixfix = is_somefix "mixfix"
-let eq = Ident.create ~loc:Location.none (infix "=")
-let neq = Ident.create ~loc:Location.none (infix "<>")
+let eq = Ident.create ~fixity:Infix ~loc:Location.none "="
+let neq = Ident.create ~fixity:Infix ~loc:Location.none "<>"
 let none = Ident.create ~loc:Location.none "None"
 let some = Ident.create ~loc:Location.none "Some"
 let nil = Ident.create ~loc:Location.none "[]"
-let cons = Ident.create ~loc:Location.none (infix "::")
+let cons = Ident.create ~fixity:Infix ~loc:Location.none "::"
