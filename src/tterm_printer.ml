@@ -99,7 +99,28 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
                 pp fmt "(%a %a %a)%a" print_term x0 Ident.pp_simpl ls.ls_name
                   print_term x1 print_ty t_ty
             | _ -> failwith "three-arguments infix symbols shouldn't happen")
-        | Identifier.Mixfix -> ()
+        | Identifier.Mixfix -> (
+            (* Mixfix symbols are only builtin so they neither begin nor ends
+               with an underscore character. They also assume that the first
+               argument appear before the symbol. *)
+            let exploded =
+              String.split_on_char '_' (str "%a" Ident.pp ls.ls_name)
+            in
+            match Int.compare (List.length tl) (List.length exploded) with
+            (* complete application: one argument before the symbol and then
+               one for each underscore *)
+            | 0 ->
+                let xs = List.combine tl exploded in
+                let aux fmt (a, s) = pp fmt "%a%s" print_term a s in
+                pp fmt "(%a)%a" (list aux) xs print_ty t_ty
+            (* partial application *)
+            | i when i < 0 ->
+                pp fmt "((%a) %a)%a" Ident.pp ls.ls_name
+                  (list ~sep:sp print_term) tl print_ty t_ty
+            | _ ->
+                failwith
+                  "No mixfix symbols are defined with an arity greater than \
+                   the number of underscore + 1 ")
         | Identifier.Normal ->
             pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
               (list ~first:sp ~sep:sp print_term)
