@@ -10,6 +10,17 @@
 
 open Ppxlib
 
+type fixity =
+  | Prefix
+  | Infix
+  | Mixfix
+  | Normal
+      (** The type for fixity declaration:
+          - [(op_)] is prefix
+          - [(_op_)] is infix
+          - [(o_p)] is mixfix
+          - [op] is normal *)
+
 (** {1 Pre-identifiers}
 
     These are not unique identifier; they come out of the parser and are used in
@@ -17,6 +28,7 @@ open Ppxlib
 module Preid : sig
   type t = private {
     pid_str : string;  (** The identifier name. *)
+    pid_fixity : fixity;  (** The identifier fixity *)
     pid_attrs : string list;  (** The attributes of the identifier. *)
     pid_loc : Location.t;  (** The location of the identifier. *)
   }
@@ -25,10 +37,12 @@ module Preid : sig
   val pp : Format.formatter -> t -> unit
   (** Pretty printer for pre-identifiers. *)
 
-  val create : ?attrs:string list -> loc:Location.t -> string -> t
-  (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
-      attributes [attrs] and location [loc]. Default attributes are empty, and
-      default location is [Location.none]. *)
+  val create :
+    ?fixity:fixity -> ?attrs:string list -> loc:Location.t -> string -> t
+  (** [create ~fixity ~attrs ~loc id] is a new pre-identifier identified with
+      [id] with fixity [fixity] attributes [attrs] and location [loc]. Default
+      [fixity] is [Normal], default [attrs] is [[]], and default [loc] is
+      [Location.none]. *)
 
   val add_attr : t -> string -> t
   (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
@@ -40,6 +54,7 @@ end
 module Ident : sig
   type t = private {
     id_str : string;  (** The identifier name. *)
+    id_fixity : fixity;  (** The identifier fixity *)
     id_attrs : string list;  (** The attributes of the identifier. *)
     id_path : string list;  (** The full path of the identifier *)
     id_loc : Location.t;  (** The location of the identifier. *)
@@ -58,11 +73,17 @@ module Ident : sig
   (** [pp fmt id] pretty prints [id] with their fully qualified name *)
 
   val create :
-    ?attrs:string list -> ?path:string list -> loc:Location.t -> string -> t
-  (** [create ~attrs ~path ~loc id] is a new pre-identifier identified with [id]
-      with attributes [attrs], path [path] and location [loc]. A unique tag is
-      automatically affected to the new identifier Default attributes are empty,
-      and default location is [Location.none]. *)
+    ?fixity:fixity ->
+    ?attrs:string list ->
+    ?path:string list ->
+    loc:Location.t ->
+    string ->
+    t
+  (** [create ~fixity ~attrs ~path ~loc id] is a new pre-identifier identified
+      with [id] with fixity [fixity], attributes [attrs], path [path] and
+      location [loc]. A unique tag is automatically affected to the new
+      identifier default [fixity] is [Normal], default [attrs] is [[]], and
+      default [loc] is [Location.none]. *)
 
   val of_preid : ?path:string list -> Preid.t -> t
   (** [of_preid ~path pid] is a fresh identifier using the same name, attributes

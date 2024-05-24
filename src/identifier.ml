@@ -13,13 +13,20 @@ open Ppxlib
 let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr
 let pp_attrs = Format.pp_print_list pp_attr
 
+type fixity = Prefix | Infix | Mixfix | Normal
+
 module Preid = struct
-  type t = { pid_str : string; pid_attrs : string list; pid_loc : Location.t }
+  type t = {
+    pid_str : string;
+    pid_fixity : fixity;
+    pid_attrs : string list;
+    pid_loc : Location.t;
+  }
 
   let pp ppf pid = Format.fprintf ppf "%s%a" pid.pid_str pp_attrs pid.pid_attrs
 
-  let create ?(attrs = []) ~loc str =
-    { pid_str = str; pid_attrs = attrs; pid_loc = loc }
+  let create ?(fixity = Normal) ?(attrs = []) ~loc str =
+    { pid_str = str; pid_fixity = fixity; pid_attrs = attrs; pid_loc = loc }
 
   let add_attr t attr = { t with pid_attrs = attr :: t.pid_attrs }
 end
@@ -27,6 +34,7 @@ end
 module Ident = struct
   type t = {
     id_str : string;
+    id_fixity : fixity;
     id_attrs : string list;
     id_path : string list;
     id_loc : Location.t;
@@ -64,10 +72,11 @@ module Ident = struct
 
   let create =
     let tag = ref 0 in
-    fun ?(attrs = []) ?(path = []) ~loc str ->
+    fun ?(fixity = Normal) ?(attrs = []) ?(path = []) ~loc str ->
       incr tag;
       {
         id_str = str;
+        id_fixity = fixity;
         id_attrs = attrs;
         id_path = path;
         id_loc = loc;
@@ -75,7 +84,8 @@ module Ident = struct
       }
 
   let of_preid ?(path = []) (pid : Preid.t) =
-    create pid.pid_str ~path ~attrs:pid.pid_attrs ~loc:pid.pid_loc
+    create pid.pid_str ~fixity:pid.pid_fixity ~path ~attrs:pid.pid_attrs
+      ~loc:pid.pid_loc
 
   let set_loc t loc = { t with id_loc = loc }
   let add_attr t attr = { t with id_attrs = attr :: t.id_attrs }
