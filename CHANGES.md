@@ -2,6 +2,8 @@
 
 ## Improved
 
+- Fix printing of symbols with fixity
+  [#407] (https://github.com/ocaml-gospel/gospel/pull/407)
 - Display proper error message for a number of unsupported construction
   [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
 - Display an error message when encoutering a Functor application
