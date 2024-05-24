@@ -132,11 +132,12 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       
       val f1 : t -> t
       (*@ r_1:t = f1 i_5:t
-          ensures ((r_1:t).m = ):prop*)
+          ensures ((r_1:t).m = ((+) (i_5:t).m):integer):prop*)
       
       val f2 : t -> t
       (*@ r_2:t = f2 i_6:t
-          ensures let h:integer -> integer =  in ((r_2:t).m = (apply 
+          ensures let h:integer -> integer = ((+)):integer -> integer in ((
+                  r_2:t).m = (apply 
                   h:integer -> integer (i_6:t).m):integer):prop*)
       
       val f3 : t -> t -> t
