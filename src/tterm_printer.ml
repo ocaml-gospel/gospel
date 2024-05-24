@@ -77,17 +77,26 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tvar vs ->
         pp fmt "%a" print_vs vs;
         assert (vs.vs_ty = Option.get t_ty) (* TODO remove this *)
-    | Tapp (ls, [ x1; x2 ]) when Identifier.is_infix ls.ls_name.id_str ->
-        let op_nm =
-          match String.split_on_char ' ' ls.ls_name.id_str with
-          | [ x ] | [ _; x ] -> x
-          | _ -> assert false
-        in
-        pp fmt "(%a %s %a)%a" print_term x1 op_nm print_term x2 print_ty t_ty
-    | Tapp (ls, tl) ->
-        pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
-          (list ~first:sp ~sep:sp print_term)
-          tl print_ty t_ty
+    | Tapp (ls, tl) -> (
+        match ls.ls_name.id_fixity with
+        | Identifier.Prefix -> ()
+        | Identifier.Infix -> (
+            match tl with
+            (* partial applications: zero or one argument *)
+            | [] -> pp fmt "((%a))%a" Ident.pp_simpl ls.ls_name print_ty t_ty
+            | [ x ] ->
+                pp fmt "((%a) %a)%a" Ident.pp_simpl ls.ls_name print_term x
+                  print_ty t_ty
+            (* total application *)
+            | [ x0; x1 ] ->
+                pp fmt "(%a %a %a)%a" print_term x0 Ident.pp_simpl ls.ls_name
+                  print_term x1 print_ty t_ty
+            | _ -> failwith "three-arguments infix symbols shouldn't happen")
+        | Identifier.Mixfix -> ()
+        | Identifier.Normal ->
+            pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
+              (list ~first:sp ~sep:sp print_term)
+              tl print_ty t_ty)
     | Tfield (t, ls) -> pp fmt "(%a).%a" print_term t Ident.pp_simpl ls.ls_name
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1, t2, t3) ->

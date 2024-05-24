@@ -128,35 +128,34 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       
       val f0 : t -> t
       (*@ r:t = f0 i_4:t
-          ensures (=  (r:t).m (f  (i_4:t).m):integer):prop*)
+          ensures ((r:t).m = (f  (i_4:t).m):integer):prop*)
       
       val f1 : t -> t
       (*@ r_1:t = f1 i_5:t
-          ensures (=  (r_1:t).m (+  (i_5:t).m):integer):prop*)
+          ensures ((r_1:t).m = ):prop*)
       
       val f2 : t -> t
       (*@ r_2:t = f2 i_6:t
-          ensures let h:integer -> integer = (+ ):integer -> integer in (= 
-                  (r_2:t).m (apply  h:integer -> integer (i_6:t).m):integer):prop*)
+          ensures let h:integer -> integer =  in ((r_2:t).m = (apply 
+                  h:integer -> integer (i_6:t).m):integer):prop*)
       
       val f3 : t -> t -> t
       (*@ r_3:t = f3 i_7:t j_2:t
-          ensures (=  (r_3:t).m (++  (i_7:t).m (j_2:t).m):integer):prop*)
+          ensures ((r_3:t).m = ((i_7:t).m ++ (j_2:t).m):integer):prop*)
       
       val f4 : t -> t -> t
       (*@ r_4:t = f4 i_8:t j_3:t
-          ensures let h_1:integer -> integer = (++ 
-                  (i_8:t).m):integer -> integer in (= 
-                  (r_4:t).m (apply  h_1:integer -> integer (j_3:t).m):integer):prop*)
+          ensures let h_1:integer -> integer = ((++) (i_8:t).m):integer ->
+                                                                integer in ((
+                  r_4:t).m = (apply 
+                  h_1:integer -> integer (j_3:t).m):integer):prop*)
       
       val f5 : t -> t -> t -> t
       (*@ r_5:t = f5 i_9:t j_4:t k_1:t
-          ensures (= 
-                  (r_5:t).m ([_.._]  (i_9:t).m (j_4:t).m (k_1:t).m):integer):prop*)
+          ensures ((r_5:t).m = ):prop*)
       
       val f5_1 : t -> t -> t -> t
       (*@ r_6:t = f5_1 i_10:t j_5:t k_2:t
-          ensures let h_2:integer -> integer = ([_.._] 
-                  (i_10:t).m (j_5:t).m):integer -> integer in (= 
-                  (r_6:t).m (apply  h_2:integer -> integer (k_2:t).m):integer):prop*)
+          ensures let h_2:integer -> integer =  in ((r_6:t).m = (apply 
+                  h_2:integer -> integer (k_2:t).m):integer):prop*)
   
