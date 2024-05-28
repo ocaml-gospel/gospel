@@ -120,11 +120,11 @@ Running `gospel check --verbose` to test `T.module.print_file` (calling
       
       (*@ function f (i:integer): integer *)
       
-      (*@ function + (i_1:integer): integer *)
+      (*@ function (+) (i_1:integer): integer *)
       
-      (*@ function ++ (i_2:integer) (j:integer): integer *)
+      (*@ function (++) (i_2:integer) (j:integer): integer *)
       
-      (*@ function [_.._] (i_3:integer) (j_1:integer) (k:integer): integer *)
+      (*@ function ([_.._]) (i_3:integer) (j_1:integer) (k:integer): integer *)
       
       val f0 : t -> t
       (*@ r:t = f0 i_4:t
