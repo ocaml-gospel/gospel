@@ -294,6 +294,7 @@ type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
 
 type module_uc = {
   muc_nm : Ident.t;
+  muc_file : string;
   muc_sigs : signature list;
   muc_prefix : string list;
   (* essential when closing namespaces *)
@@ -539,12 +540,15 @@ let add_sig_contents muc sig_ =
 (* TODO *)
 
 (** Module under construction with primitive types and functions *)
+let path2module p =
+  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
-let init_muc s =
+let init_muc file =
   {
-    muc_nm = Ident.create ~loc:Location.none s;
+    muc_nm = Ident.create ~loc:Location.none (path2module file);
+    muc_file = file;
     muc_sigs = [ [] ];
-    muc_prefix = [ s ];
+    muc_prefix = [ file ];
     muc_import = [ ns_with_primitives ];
     muc_export = [ empty_ns ];
     muc_files = Mstr.empty;
@@ -604,13 +608,12 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
  * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
-  pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@." Ident.pp
-    fl_nm (print_ns fl_nm.id_str) fl_export print_signature fl_sigs
+  pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
+    Ident.pp_simpl fl_nm (print_ns fl_nm.id_str) fl_export print_signature
+    fl_sigs
 
 let write_gospel_file md =
-  let filename =
-    Filename.chop_extension (Fmt.str "%a" Ident.pp md.muc_nm) ^ ".gospel"
-  in
+  let filename = Filename.chop_extension md.muc_file ^ ".gospel" in
   let oc = open_out filename in
   Marshal.to_channel oc md [];
   close_out oc

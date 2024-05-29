@@ -41,6 +41,7 @@ module Ident : sig
   type t = private {
     id_str : string;  (** The identifier name. *)
     id_attrs : string list;  (** The attributes of the identifier. *)
+    id_path : string list;  (** The full path of the identifier *)
     id_loc : Location.t;  (** The location of the identifier. *)
     id_tag : int;  (** The unique tag of the identifier. *)
   }
@@ -50,19 +51,23 @@ module Ident : sig
   val equal : t -> t -> bool
   val hash : t -> int
 
+  val pp_simpl : Format.formatter -> t -> unit
+  (** [pp fmt id] pretty prints [id] *)
+
   val pp : Format.formatter -> t -> unit
-  (** Pretty printer for identifiers. *)
+  (** [pp fmt id] pretty prints [id] with their fully qualified name *)
 
-  val create : ?attrs:string list -> loc:Location.t -> string -> t
-  (** [create ~attrs ~loc id] is a new pre-identifier identified with [id] with
-      attributes [attrs] and location [loc]. A unique tag is automatically
-      affected to the new identifier Default attributes are empty, and default
-      location is [Location.none]. *)
+  val create :
+    ?attrs:string list -> ?path:string list -> loc:Location.t -> string -> t
+  (** [create ~attrs ~path ~loc id] is a new pre-identifier identified with [id]
+      with attributes [attrs], path [path] and location [loc]. A unique tag is
+      automatically affected to the new identifier Default attributes are empty,
+      and default location is [Location.none]. *)
 
-  val of_preid : Preid.t -> t
-  (** [of_preid pid] is a fresh identifier using the same name, attributes and
-      location as [pid]. A unique tag is automatically affected to the new
-      identifier *)
+  val of_preid : ?path:string list -> Preid.t -> t
+  (** [of_preid ~path pid] is a fresh identifier using the same name, attributes
+      and location as [pid]. If necessary, a [path] may also be supplied. A
+      unique tag is automatically affected to the new identifier *)
 
   val set_loc : t -> Location.t -> t
   (** [set_loc t loc] is [t] with [loc] as its location. *)

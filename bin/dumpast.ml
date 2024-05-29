@@ -15,14 +15,9 @@ module W = Gospel.Warnings
 
 type config = { load_path : string list }
 
-let path2module p =
-  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
-
 let type_check load_path name sigs =
   let md = init_muc name in
-  let penv =
-    path2module name |> Utils.Sstr.singleton |> Typing.penv load_path
-  in
+  let penv = Utils.Sstr.singleton name |> Typing.penv load_path in
   let md = List.fold_left (Typing.type_sig_item penv) md sigs in
   wrap_up_muc md
 
