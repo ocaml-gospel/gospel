@@ -1,3 +1,10 @@
+# Unreleased
+
+## Improved
+
+- Display an error message when encoutering a Functor application
+  [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
+
 # 0.3
 
 ## Added
