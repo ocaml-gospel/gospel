@@ -1,3 +1,4 @@
 src/Opprintast.ml
 test/issues/*.mli
+test/unsupported/*.mli
 test/ppx/*expected*

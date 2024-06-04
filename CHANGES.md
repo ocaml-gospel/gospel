@@ -2,6 +2,8 @@
 
 ## Improved
 
+- Display proper error message for a number of unsupported construction
+  [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
 - Display an error message when encoutering a Functor application
   [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
 
