@@ -19,15 +19,15 @@
     Location.loc_ghost = false;
   }
 
-  let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
+  let mk_pid pid ?(fixity = Normal) l = Preid.create pid ~fixity ~attrs:[] ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
-  let get_op l = Qpreid (mk_pid (mixfix "[_]") l)
-  let set_op l = Qpreid (mk_pid (mixfix "[->]") l)
-  let sub_op l = Qpreid (mk_pid (mixfix "[_.._]") l)
-  let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
-  let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
+  let get_op l = Qpreid (mk_pid ~fixity:Mixfix "[_]" l)
+  let set_op l = Qpreid (mk_pid ~fixity:Mixfix "[->]" l)
+  let sub_op l = Qpreid (mk_pid ~fixity:Mixfix "[_.._]" l)
+  let above_op l = Qpreid (mk_pid ~fixity:Mixfix "[_..]" l)
+  let below_op l = Qpreid (mk_pid ~fixity:Mixfix "[.._]" l)
 
   let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
@@ -165,9 +165,9 @@ func:
 func_name:
 | lident_rich {$1}
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{}") $loc }
+  { mk_pid ~fixity:Mixfix "{}" $loc }
 | LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{:_:}") $loc }
+  { mk_pid ~fixity:Mixfix "{:_:}" $loc }
 
 func_spec:
 | EOF { empty_fspec }
@@ -316,7 +316,7 @@ term_:
 | l = term ; o = infix_op_234 ; r = term
     { Tidapp (Qpreid o, [l; r]) }
 | l = term ; COLONCOLON ; r = term
-    { Tidapp (Qpreid (mk_pid (infix "::") $loc), [l; r]) }
+    { Tidapp (Qpreid (mk_pid ~fixity:Infix "::" $loc), [l; r]) }
 | l = term ; o = BACKQUOTE_LIDENT ; r = term
     { let id = mk_pid o $loc in
       Tidapp (Qpreid id, [l; r]) }
@@ -411,9 +411,9 @@ term_block_:
 | LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
 | LEFTBRC term_arg WITH field_list1(term) RIGHTBRC  { Tupdate ($2,$4) }
 | LEFTBRCRIGHTBRC
-    { Tpreid (Qpreid (mk_pid (mixfix "{}") $loc)) }
+    { Tpreid (Qpreid (mk_pid ~fixity:Mixfix "{}" $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = Qpreid (mk_pid (mixfix "{:_:}") $loc) in
+    { let id = Qpreid (mk_pid ~fixity:Mixfix "{:_:}" $loc) in
       Tidapp (id, [t]) }
 ;
 
@@ -538,7 +538,7 @@ pat_conj_:
 pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON mk_pat(pat_uni_)
-    { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
+    { Papp (Qpreid (mk_pid ~fixity:Infix "::" $loc),[$1;$3]) }
 | uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
 | uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
 | mk_pat(pat_uni_) AS attrs(lident)
@@ -590,22 +590,22 @@ op_symbol:
 ;
 
 %inline oppref:
-| o = OPPREF { mk_pid (prefix o) $loc }
+| o = OPPREF { mk_pid ~fixity:Prefix o $loc }
 ;
 
 prefix_op:
-| op_symbol { mk_pid (prefix $1) $loc }
+| op_symbol { mk_pid ~fixity:Prefix $1 $loc }
 ;
 
 %inline infix_op_1:
-| o = OP1   { mk_pid (infix o) $loc }
-| EQUAL     { mk_pid (infix "=") $loc }
-| LTGT      { mk_pid (infix "<>") $loc }
+| o = OP1   { mk_pid ~fixity:Infix o $loc }
+| EQUAL     { mk_pid ~fixity:Infix "=" $loc }
+| LTGT      { mk_pid ~fixity:Infix "<>" $loc }
 %inline infix_op_234:
-| o = OP2   { mk_pid (infix o) $loc }
-| o = OP3   { mk_pid (infix o) $loc }
-| STAR      { mk_pid (infix "*") $loc }
-| o = OP4   { mk_pid (infix o) $loc }
+| o = OP2   { mk_pid ~fixity:Infix o $loc }
+| o = OP3   { mk_pid ~fixity:Infix o $loc }
+| STAR      { mk_pid ~fixity:Infix "*" $loc }
+| o = OP4   { mk_pid ~fixity:Infix o $loc }
 ;
 
 (* Idents *)
@@ -633,20 +633,20 @@ lident_rich:
 ;
 
 lident_op_id:
-| LEFTPAR lident_op RIGHTPAR  { mk_pid $2 $loc }
+| LEFTPAR lident_op RIGHTPAR  { mk_pid ~fixity:(fst $2) (snd $2) $loc }
 ;
 
 lident_op:
-| op_symbol                                   { infix $1 }
-| op_symbol UNDERSCORE                        { prefix $1 }
-| EQUAL                                       { infix "=" }
-| OPPREF UNDERSCORE?                          { prefix $1 }
-| DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
-| LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
-| LEFTSQ ARROW RIGHTSQ                        { mixfix "[->]" }
-| LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { mixfix "[_.._]" }
-| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]" }
-| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]" }
+| op_symbol                                   { Infix, $1 }
+| op_symbol UNDERSCORE                        { Prefix, $1 }
+| EQUAL                                       { Infix, "=" }
+| OPPREF UNDERSCORE?                          { Prefix, $1 }
+| DOT LEFTPAR RIGHTPAR                        { Mixfix, ".()" }
+| LEFTSQ UNDERSCORE RIGHTSQ                   { Mixfix, "[_]" }
+| LEFTSQ ARROW RIGHTSQ                        { Mixfix, "[->]" }
+| LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { Mixfix, "[_.._]" }
+| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { Mixfix, "[.._]" }
+| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { Mixfix, "[_..]" }
 ;
 
 (* Qualified idents *)
