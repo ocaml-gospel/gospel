@@ -6,6 +6,8 @@
   [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
 - Display an error message when encoutering a Functor application
   [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
+- Changed the gospel typechecker to use bool as the type of logical formulae
+  [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
 
 # 0.3
 
