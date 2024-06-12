@@ -48,7 +48,7 @@ type quant = Tforall | Texists [@@deriving show]
 
 type term = {
   t_node : term_node;
-  t_ty : ty option;
+  t_ty : ty;
   t_attrs : string list;
   t_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }

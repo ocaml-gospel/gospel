@@ -32,7 +32,7 @@ module Mvs = Map.Make (Vs)
 type lsymbol = {
   ls_name : Ident.t;
   ls_args : ty list;
-  ls_value : ty option;
+  ls_value : ty;
   ls_constr : bool;
   (* true if it is a construct, false otherwise*)
   ls_field : bool; (* true if it is a record/model field *)
@@ -57,19 +57,19 @@ let lsymbol ?(constr = false) ~field ls_name ls_args ls_value =
   { ls_name; ls_args; ls_value; ls_constr = constr; ls_field = field }
 
 let fsymbol ?(constr = false) ~field nm tyl ty =
-  lsymbol ~constr ~field nm tyl (Some ty)
+  lsymbol ~constr ~field nm tyl ty
 
-let psymbol nm ty = lsymbol ~field:false nm ty None
+let psymbol nm ty = lsymbol ~field:false nm ty ty_bool
 
 let ls_subst_ts old_ts new_ts ({ ls_name; ls_constr; ls_field; _ } as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
-  let ls_value = Option.map (ty_subst_ts old_ts new_ts) ls.ls_value in
+  let ls_value = ty_subst_ts old_ts new_ts ls.ls_value in
   lsymbol ls_name ls_args ls_value ~constr:ls_constr ~field:ls_field
 
 let ls_subst_ty old_ts new_ts new_ty ls =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
   let ls_args = List.map subst ls.ls_args in
-  let ls_value = Option.map subst ls.ls_value in
+  let ls_value = subst ls.ls_value in
   lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr ~field:ls.ls_field
 
 (** buil-in lsymbols *)

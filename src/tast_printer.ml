@@ -17,8 +17,7 @@ let print_variant_field fmt ld =
 let print_rec_field fmt ld =
   pp fmt "%s%a:%a"
     (if ld.ld_mut = Mutable then "mutable " else "")
-    Ident.pp_simpl ld.ld_field.ls_name print_ty
-    (Stdlib.Option.get ld.ld_field.ls_value)
+    Ident.pp_simpl ld.ld_field.ls_name print_ty ld.ld_field.ls_value
 
 let print_label_decl_list print_field fmt fields =
   pp fmt "{%a}" (list ~sep:semi print_field) fields
@@ -54,8 +53,7 @@ let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
     let print_field f (ls, mut) =
       pp f "@[%s%a : %a@]"
         (if mut then "mutable model " else "model ")
-        print_ls_nm ls print_ty
-        (Stdlib.Option.get ls.ls_value)
+        print_ls_nm ls print_ty ls.ls_value
     in
     let print_invariants ppf i =
       pf ppf "with %a@;%a" print_vs (fst i)
@@ -166,7 +164,7 @@ let print_param f p = pp f "(%a:%a)" Ident.pp_simpl p.vs_name print_ty p.vs_ty
 
 let print_function f x =
   let func_pred =
-    if x.fun_ls.ls_value = None then "predicate" else "function"
+    if ty_equal x.fun_ls.ls_value ty_bool then "predicate" else "function"
   in
   let print_term f t = pp f "@[%a@]" print_term t in
   let print_term f t = pp f "@[%a@]" print_term t in
@@ -194,7 +192,7 @@ let print_function f x =
     pp f "@[%s %s%a %a%a%a%a@]" func_pred
       (if x.fun_rec then "rec " else "")
       Ident.pp_simpl x.fun_ls.ls_name (list ~sep:sp print_param) x.fun_params
-      (option (fun f -> pp f ": %a" print_ty))
+      (fun f -> pp f ": %a" print_ty)
       x.fun_ls.ls_value
       (option (fun f -> pp f " =@\n@[<hov2>@[%a@]@]" print_term))
       x.fun_def (option func_spec) x.fun_spec

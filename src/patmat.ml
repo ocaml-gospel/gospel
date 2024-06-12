@@ -173,9 +173,7 @@ end = struct
     match pmat.mat with
     | [ e ] ->
         let args, l = split [] 0 e in
-        let hd =
-          mk_pattern (Papp (ck, args)) (Option.get ck.ls_value) Location.none
-        in
+        let hd = mk_pattern (Papp (ck, args)) ck.ls_value Location.none in
         { rows = 1; cols = pmat.cols - ak + 1; mat = [ hd :: l ] }
     | _ -> assert false
 end

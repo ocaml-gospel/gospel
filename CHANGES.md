@@ -35,6 +35,8 @@
   [\#380](https://github.com/ocaml-gospel/gospel/pull/380)
 - Remove the `gospel_expected` prologue at the end of successful tests
   [\#363](https://github.com/ocaml-gospel/gospel/pull/363)
+- Changed the gospel typechecker to use bool as the type of logical formulae
+  [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
 
 # 0.2
 

@@ -27,7 +27,7 @@ type coercion = {
 
 let ty_of ls =
   match (ls.ls_args, ls.ls_value) with
-  | [ { ty_node = Tyapp (ty1, _) } ], Some { ty_node = Tyapp (ty2, _) } ->
+  | [ { ty_node = Tyapp (ty1, _) } ], { ty_node = Tyapp (ty2, _) } ->
       (ty1.ts_ident.id_str, ty2.ts_ident.id_str)
   | _ -> assert false
 
@@ -47,7 +47,7 @@ let empty = Mts.empty
 
 let create_crc ls =
   match (ls.ls_args, ls.ls_value) with
-  | [ { ty_node = Tyapp (ts1, tl1) } ], Some { ty_node = Tyapp (ts2, tl2) }
+  | [ { ty_node = Tyapp (ts1, tl1) } ], { ty_node = Tyapp (ts2, tl2) }
     when not (ts_equal ts1 ts2) ->
       {
         crc_kind = CRCleaf ls;
