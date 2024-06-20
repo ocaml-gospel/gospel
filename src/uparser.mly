@@ -19,7 +19,7 @@
     Location.loc_ghost = false;
   }
 
-  let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
+  let mk_pid pid l = Preid.create pid ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
@@ -29,7 +29,7 @@
   let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
   let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
 
-  let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
+  let id_anonymous loc = Preid.create "_" ~loc
 
   let array_get l =
     Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
@@ -69,7 +69,6 @@
 %token <string> OP1 OP2 OP3 OP4 OPPREF
 %token <string> QUOTE_LIDENT
 %token <string> BACKQUOTE_LIDENT
-%token <string> ATTRIBUTE
 
 %token <string * char option> INTEGER
 %token <string> FLOAT
@@ -334,7 +333,7 @@ term_:
       | Pvar id -> Tlet (id, def, $6)
       | Pwild -> Tlet (id_anonymous pat.pat_loc, def, $6)
       | _ -> Tcase (def, [pat, None, $6]) }
-| LET attrs(lident_op_id) EQUAL term IN term
+| LET lident_op_id EQUAL term IN term
     { Tlet ($2, $4, $6) }
 | MATCH term WITH match_cases(term)
     { Tcase ($2, $4) }
@@ -372,13 +371,6 @@ guarded_pattern:
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }
-;
-
-attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }
-;
-
-attr:
-| ATTRIBUTE    { $1 }
 ;
 
 term_arg: mk_term(term_arg_) { $1 };
@@ -458,7 +450,7 @@ constant:
 ;
 
 binder_var:
-| attrs(lident)  { $1 }
+| lident  { $1 }
 ;
 
 mk_expr(X): d = X { mk_expr d $loc }
@@ -538,7 +530,7 @@ pat_uni_:
     { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
 | uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
 | uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
-| mk_pat(pat_uni_) AS attrs(lident)
+| mk_pat(pat_uni_) AS lident
                                         { Pas ($1,$3) }
 | mk_pat(pat_uni_) cast                 { Pcast ($1, $2) }
 ;
@@ -550,7 +542,7 @@ pat_arg_:
 ;
 
 pat_arg_no_lpar_:
-| attrs(lident)                         { Pvar $1 }
+| lident                         { Pvar $1 }
 | UNDERSCORE                            { Pwild }
 | uqualid                               { Papp ($1,[]) }
 | constant                              { Pconst $1 }

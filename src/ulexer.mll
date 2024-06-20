@@ -155,8 +155,6 @@ let op_char_34   = op_char_3 | op_char_4
 let op_char_pref = ['!' '?']
 
 rule token = parse
-  | "[@" space* ([^ ' ' '\n' ']']+ (' '+ [^ ' ' '\n' ']']+)* as lbl) space* ']'
-      { ATTRIBUTE lbl }
   | newline
       { newline lexbuf; token lexbuf }
   | space+
