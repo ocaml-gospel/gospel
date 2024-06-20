@@ -7,6 +7,11 @@
 - Display an error message when encoutering a Functor application
   [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
 
+## Internals
+
+- Remove attribute field in identifers
+  [#413] (https://github.com/ocaml-gospel/gospel/pull/413)
+
 # 0.3
 
 ## Added
