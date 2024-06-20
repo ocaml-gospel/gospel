@@ -111,7 +111,6 @@
 
 %nonassoc IN
 %nonassoc DOT ELSE
-%nonassoc prec_named
 %right COLON AS
 
 %right ARROW LRARROW
@@ -345,8 +344,6 @@ term_:
     { Tquant ($1, List.concat $2, $4) }
 | FUN args = pat_arg+ ty = preceded(COLON,fun_typ)? ARROW t = term
     { Tlambda (args, t, ty) }
-| attr term %prec prec_named
-    { Tattr ($1, $2) }
 | term cast
     { Tcast ($1, $2) }
 ;

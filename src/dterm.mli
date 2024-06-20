@@ -31,7 +31,6 @@ type dbinder = Preid.t * dty
 type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 
 and dterm_node =
-  | DTattr of dterm * string list
   | DTvar of Preid.t
   | DTconst of constant
   | DTapp of lsymbol * dterm list
