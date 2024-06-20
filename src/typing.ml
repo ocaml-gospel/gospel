@@ -515,9 +515,6 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tscope (q, t) ->
       let ns = find_q_ns ns q in
       dterm whereami kid crcm ns denv t
-  | Uast.Tattr (at, t) ->
-      let dt = dterm whereami kid crcm ns denv t in
-      mk_dterm ~loc (DTattr (dt, [ at ])) dt.dt_dty
   | Uast.Told t -> (
       match whereami with
       | Requires -> W.(error ~loc (Old_in_precond "requires"))

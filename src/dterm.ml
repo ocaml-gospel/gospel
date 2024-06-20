@@ -108,7 +108,6 @@ type dbinder = Preid.t * dty
 type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 
 and dterm_node =
-  | DTattr of dterm * string list
   | DTvar of Preid.t
   | DTconst of constant
   | DTapp of lsymbol * dterm list
@@ -383,9 +382,6 @@ and term_node ~loc env prop dty dterm_node =
   | DTnot dt -> t_not (term env true dt) loc
   | DTtrue -> if prop then t_true loc else t_bool_true loc
   | DTfalse -> if prop then t_false loc else t_bool_false loc
-  | DTattr (dt, at) ->
-      let t = term env prop dt in
-      t_attr_set at t
   | DTold dt -> t_old (term env prop dt) loc
   | DTquant (q, bl, dt) ->
       let add_var (env, vsl) (pid, dty) =
