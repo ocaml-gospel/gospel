@@ -190,10 +190,16 @@ let print_function f x =
          print_term)
       x.fun_ens
   in
+  let ident f id =
+    match id.Ident.id_fixity with
+    | Identifier.Normal -> pp f "%a" Ident.pp_simpl id
+    | Identifier.Prefix -> pp f "(%s_)" id.Ident.id_str
+    | _ -> pp f "(%a)" Ident.pp_simpl id
+  in
   let func f x =
     pp f "@[%s %s%a %a%a%a%a@]" func_pred
       (if x.fun_rec then "rec " else "")
-      Ident.pp_simpl x.fun_ls.ls_name (list ~sep:sp print_param) x.fun_params
+      ident x.fun_ls.ls_name (list ~sep:sp print_param) x.fun_params
       (option (fun f -> pp f ": %a" print_ty))
       x.fun_ls.ls_value
       (option (fun f -> pp f " =@\n@[<hov2>@[%a@]@]" print_term))

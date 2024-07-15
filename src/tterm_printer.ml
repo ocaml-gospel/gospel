@@ -77,17 +77,54 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tvar vs ->
         pp fmt "%a" print_vs vs;
         assert (vs.vs_ty = Option.get t_ty) (* TODO remove this *)
-    | Tapp (ls, [ x1; x2 ]) when Identifier.is_infix ls.ls_name.id_str ->
-        let op_nm =
-          match String.split_on_char ' ' ls.ls_name.id_str with
-          | [ x ] | [ _; x ] -> x
-          | _ -> assert false
-        in
-        pp fmt "(%a %s %a)%a" print_term x1 op_nm print_term x2 print_ty t_ty
-    | Tapp (ls, tl) ->
-        pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
-          (list ~first:sp ~sep:sp print_term)
-          tl print_ty t_ty
+    | Tapp (ls, tl) -> (
+        match ls.ls_name.id_fixity with
+        | Identifier.Prefix -> (
+            match tl with
+            (* partial application: zero argument *)
+            | [] -> pp fmt "((%a))%a" Ident.pp ls.ls_name print_ty t_ty
+            (* complete application: one or many arguments *)
+            | _ ->
+                pp fmt "((%a) %a)%a" Ident.pp ls.ls_name (list print_term) tl
+                  print_ty t_ty)
+        | Identifier.Infix -> (
+            match tl with
+            (* partial applications: zero or one argument *)
+            | [] -> pp fmt "((%a))%a" Ident.pp_simpl ls.ls_name print_ty t_ty
+            | [ x ] ->
+                pp fmt "((%a) %a)%a" Ident.pp_simpl ls.ls_name print_term x
+                  print_ty t_ty
+            (* total application *)
+            | [ x0; x1 ] ->
+                pp fmt "(%a %a %a)%a" print_term x0 Ident.pp_simpl ls.ls_name
+                  print_term x1 print_ty t_ty
+            | _ -> failwith "three-arguments infix symbols shouldn't happen")
+        | Identifier.Mixfix -> (
+            (* Mixfix symbols are only builtin so they neither begin nor ends
+               with an underscore character. They also assume that the first
+               argument appear before the symbol. *)
+            let exploded =
+              String.split_on_char '_' (str "%a" Ident.pp ls.ls_name)
+            in
+            match Int.compare (List.length tl) (List.length exploded) with
+            (* complete application: one argument before the symbol and then
+               one for each underscore *)
+            | 0 ->
+                let xs = List.combine tl exploded in
+                let aux fmt (a, s) = pp fmt "%a%s" print_term a s in
+                pp fmt "(%a)%a" (list aux) xs print_ty t_ty
+            (* partial application *)
+            | i when i < 0 ->
+                pp fmt "((%a) %a)%a" Ident.pp ls.ls_name
+                  (list ~sep:sp print_term) tl print_ty t_ty
+            | _ ->
+                failwith
+                  "No mixfix symbols are defined with an arity greater than \
+                   the number of underscore + 1 ")
+        | Identifier.Normal ->
+            pp fmt "(%a %a)%a" Ident.pp_simpl ls.ls_name
+              (list ~first:sp ~sep:sp print_term)
+              tl print_ty t_ty)
     | Tfield (t, ls) -> pp fmt "(%a).%a" print_term t Ident.pp_simpl ls.ls_name
     | Tnot t -> pp fmt "not %a" print_term t
     | Tif (t1, t2, t3) ->

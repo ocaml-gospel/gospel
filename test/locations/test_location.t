@@ -185,7 +185,7 @@ First, create a test artifact:
                    sp_checks =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = Gospelstdlib.infix >=;
+                         { Symbols.ls_name = Gospelstdlib.>=;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -266,7 +266,7 @@ First, create a test artifact:
                    sp_post =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = infix =;
+                         { Symbols.ls_name = =;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -389,7 +389,7 @@ First, create a test artifact:
                       t_ty = None; t_attrs = []; t_loc = foo.mli:11:12 };
                      { Tterm.t_node =
                        (Tterm.Tapp (
-                          { Symbols.ls_name = infix =;
+                          { Symbols.ls_name = =;
                             ls_args =
                             [{ Ttypes.ty_node =
                                (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -557,7 +557,7 @@ First, create a test artifact:
                    (Tterm.Tif (
                       { Tterm.t_node =
                         (Tterm.Tapp (
-                           { Symbols.ls_name = infix =;
+                           { Symbols.ls_name = =;
                              ls_args =
                              [{ Ttypes.ty_node =
                                 (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -919,7 +919,7 @@ First, create a test artifact:
            fun_def =
            (Some { Tterm.t_node =
                    (Tterm.Tapp (
-                      { Symbols.ls_name = infix =;
+                      { Symbols.ls_name = =;
                         ls_args =
                         [{ Ttypes.ty_node =
                            (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -1009,7 +1009,7 @@ First, create a test artifact:
                                      p_loc = foo.mli:25:8 },
                                    { Tterm.p_node =
                                      (Tterm.Papp (
-                                        { Symbols.ls_name = infix ::;
+                                        { Symbols.ls_name = ::;
                                           ls_args =
                                           [{ Ttypes.ty_node =
                                              (Ttypes.Tyvar
@@ -1161,7 +1161,7 @@ First, create a test artifact:
                                 t_attrs = []; t_loc = foo.mli:25:24 });
                               ({ Tterm.p_node =
                                  (Tterm.Papp (
-                                    { Symbols.ls_name = infix ::;
+                                    { Symbols.ls_name = ::;
                                       ls_args =
                                       [{ Ttypes.ty_node =
                                          (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
@@ -1219,7 +1219,7 @@ First, create a test artifact:
                                         (Tterm.Pas (
                                            { Tterm.p_node =
                                              (Tterm.Papp (
-                                                { Symbols.ls_name = infix ::;
+                                                { Symbols.ls_name = ::;
                                                   ls_args =
                                                   [{ Ttypes.ty_node =
                                                      (Ttypes.Tyvar
@@ -1396,7 +1396,7 @@ First, create a test artifact:
                                          { Tterm.t_node =
                                            (Tterm.Tapp (
                                               { Symbols.ls_name =
-                                                Gospelstdlib.infix <=;
+                                                Gospelstdlib.<=;
                                                 ls_args =
                                                 [{ Ttypes.ty_node =
                                                    (Ttypes.Tyapp (
@@ -1787,7 +1787,7 @@ First, create a test artifact:
                    sp_post =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = infix =;
+                         { Symbols.ls_name = =;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -1877,7 +1877,7 @@ First, create a test artifact:
                              (Tterm.Tif (
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
-                                     { Symbols.ls_name = infix =;
+                                     { Symbols.ls_name = =;
                                        ls_args =
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar
@@ -2310,7 +2310,7 @@ First, create a test artifact:
                                   t_attrs = []; t_loc = foo.mli:33:30 },
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
-                                     { Symbols.ls_name = infix ::;
+                                     { Symbols.ls_name = ::;
                                        ls_args =
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar
