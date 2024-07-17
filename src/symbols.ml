@@ -53,13 +53,11 @@ end
 module Sls = Set.Make (LS)
 module Mls = Map.Make (LS)
 
-let lsymbol ?(constr = false) ~field ls_name ls_args ls_value =
+let lsymbol ~constr ~field ls_name ls_args ls_value =
   { ls_name; ls_args; ls_value; ls_constr = constr; ls_field = field }
 
-let fsymbol ?(constr = false) ~field nm tyl ty =
-  lsymbol ~constr ~field nm tyl ty
-
-let psymbol nm ty = lsymbol ~field:false nm ty ty_bool
+let fsymbol ~constr ~field nm tyl ty = lsymbol ~constr ~field nm tyl ty
+let psymbol nm ty = lsymbol ~constr:false ~field:false nm ty ty_bool
 
 let ls_subst_ts old_ts new_ts ({ ls_name; ls_constr; ls_field; _ } as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
@@ -96,7 +94,7 @@ let fs_bool_false =
 let fs_apply =
   let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
   let ty_a_to_b = ty_app ts_arrow [ ty_a; ty_b ] in
-  fsymbol ~field:false
+  fsymbol ~constr:false ~field:false
     (Ident.create ~loc:Location.none "apply")
     [ ty_a_to_b; ty_a ] ty_b
 

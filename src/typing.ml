@@ -585,7 +585,9 @@ let mutable_flag = function
 let process_type_spec kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
-    let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty in
+    let ls =
+      fsymbol ~constr:false ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty
+    in
     ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
       (ls, f.f_mutable) :: fields )
   in
@@ -683,7 +685,7 @@ let type_type_declaration path kid crcm ns r tdl =
       let mk_ld ld (ldl, ns) =
         let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
-        let field = fsymbol ~field:true id [ ty ] ty_res in
+        let field = fsymbol ~constr:false ~field:true id [ ty ] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
         (ld :: ldl, ns_add_fd ~allow_duplicate:true ns id.id_str field)
@@ -1068,7 +1070,11 @@ let process_function path kid crcm ns f =
   in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
-  let ls = lsymbol ~field:false (Ident.of_preid ~path f.fun_name) tyl f_ty in
+  let ls =
+    lsymbol ~constr:false ~field:false
+      (Ident.of_preid ~path f.fun_name)
+      tyl f_ty
+  in
   let ns =
     if f.fun_rec then ns_add_ls ~allow_duplicate:true ns f.fun_name.pid_str ls
     else ns
