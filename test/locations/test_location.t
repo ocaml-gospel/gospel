@@ -365,7 +365,7 @@ First, create a test artifact:
                            { Tterm.t_node =
                              (Tterm.Tapp (
                                 Symbols.Constructor_symbol {ls_name = [];
-                                  ls_args = [];
+                                  ls_args = (Symbols.Cstr_tuple []);
                                   ls_value =
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -970,7 +970,7 @@ First, create a test artifact:
                              { Tterm.p_node =
                                (Tterm.Papp (
                                   Symbols.Constructor_symbol {ls_name = [];
-                                    ls_args = [];
+                                    ls_args = (Symbols.Cstr_tuple []);
                                     ls_value =
                                     { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
@@ -1006,23 +1006,25 @@ First, create a test artifact:
                                   Symbols.Constructor_symbol {
                                     ls_name = infix ::;
                                     ls_args =
-                                    [{ Ttypes.ty_node =
-                                       (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
-                                       };
-                                      { Ttypes.ty_node =
-                                        (Ttypes.Tyapp (
-                                           { Ttypes.ts_ident = list;
-                                             ts_args =
-                                             [{ Ttypes.tv_name = a_1 }];
-                                             ts_alias = None },
-                                           [{ Ttypes.ty_node =
-                                              (Ttypes.Tyvar
-                                                 { Ttypes.tv_name = a_1 })
-                                              }
-                                             ]
-                                           ))
-                                        }
-                                      ];
+                                    (Symbols.Cstr_tuple
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar
+                                             { Ttypes.tv_name = a_1 })
+                                          };
+                                         { Ttypes.ty_node =
+                                           (Ttypes.Tyapp (
+                                              { Ttypes.ts_ident = list;
+                                                ts_args =
+                                                [{ Ttypes.tv_name = a_1 }];
+                                                ts_alias = None },
+                                              [{ Ttypes.ty_node =
+                                                 (Ttypes.Tyvar
+                                                    { Ttypes.tv_name = a_1 })
+                                                 }
+                                                ]
+                                              ))
+                                           }
+                                         ]);
                                     ls_value =
                                     { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
@@ -1048,7 +1050,8 @@ First, create a test artifact:
                                     { Tterm.p_node =
                                       (Tterm.Papp (
                                          Symbols.Constructor_symbol {
-                                           ls_name = []; ls_args = [];
+                                           ls_name = [];
+                                           ls_args = (Symbols.Cstr_tuple []);
                                            ls_value =
                                            { Ttypes.ty_node =
                                              (Ttypes.Tyapp (
@@ -1131,21 +1134,23 @@ First, create a test artifact:
                            (Tterm.Papp (
                               Symbols.Constructor_symbol {ls_name = infix ::;
                                 ls_args =
-                                [{ Ttypes.ty_node =
-                                   (Ttypes.Tyvar { Ttypes.tv_name = a_1 }) };
-                                  { Ttypes.ty_node =
-                                    (Ttypes.Tyapp (
-                                       { Ttypes.ts_ident = list;
-                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar
-                                             { Ttypes.tv_name = a_1 })
-                                          }
-                                         ]
-                                       ))
-                                    }
-                                  ];
+                                (Symbols.Cstr_tuple
+                                   [{ Ttypes.ty_node =
+                                      (Ttypes.Tyvar { Ttypes.tv_name = a_1 }) };
+                                     { Ttypes.ty_node =
+                                       (Ttypes.Tyapp (
+                                          { Ttypes.ts_ident = list;
+                                            ts_args =
+                                            [{ Ttypes.tv_name = a_1 }];
+                                            ts_alias = None },
+                                          [{ Ttypes.ty_node =
+                                             (Ttypes.Tyvar
+                                                { Ttypes.tv_name = a_1 })
+                                             }
+                                            ]
+                                          ))
+                                       }
+                                     ]);
                                 ls_value =
                                 { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
@@ -1184,25 +1189,28 @@ First, create a test artifact:
                                           Symbols.Constructor_symbol {
                                             ls_name = infix ::;
                                             ls_args =
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a_1 })
-                                               };
-                                              { Ttypes.ty_node =
-                                                (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = list;
-                                                     ts_args =
-                                                     [{ Ttypes.tv_name = a_1 }];
-                                                     ts_alias = None },
-                                                   [{ Ttypes.ty_node =
-                                                      (Ttypes.Tyvar
-                                                         { Ttypes.tv_name = a_1
-                                                           })
-                                                      }
-                                                     ]
-                                                   ))
-                                                }
-                                              ];
+                                            (Symbols.Cstr_tuple
+                                               [{ Ttypes.ty_node =
+                                                  (Ttypes.Tyvar
+                                                     { Ttypes.tv_name = a_1 })
+                                                  };
+                                                 { Ttypes.ty_node =
+                                                   (Ttypes.Tyapp (
+                                                      { Ttypes.ts_ident = list;
+                                                        ts_args =
+                                                        [{ Ttypes.tv_name = a_1
+                                                           }
+                                                          ];
+                                                        ts_alias = None },
+                                                      [{ Ttypes.ty_node =
+                                                         (Ttypes.Tyvar
+                                                            { Ttypes.tv_name =
+                                                              a_1 })
+                                                         }
+                                                        ]
+                                                      ))
+                                                   }
+                                                 ]);
                                             ls_value =
                                             { Ttypes.ty_node =
                                               (Ttypes.Tyapp (
@@ -2065,24 +2073,25 @@ First, create a test artifact:
                                      Symbols.Constructor_symbol {
                                        ls_name = infix ::;
                                        ls_args =
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar
-                                             { Ttypes.tv_name = a_1 })
-                                          };
-                                         { Ttypes.ty_node =
-                                           (Ttypes.Tyapp (
-                                              { Ttypes.ts_ident = list;
-                                                ts_args =
-                                                [{ Ttypes.tv_name = a_1 }];
-                                                ts_alias = None },
-                                              [{ Ttypes.ty_node =
-                                                 (Ttypes.Tyvar
-                                                    { Ttypes.tv_name = a_1 })
-                                                 }
-                                                ]
-                                              ))
-                                           }
-                                         ];
+                                       (Symbols.Cstr_tuple
+                                          [{ Ttypes.ty_node =
+                                             (Ttypes.Tyvar
+                                                { Ttypes.tv_name = a_1 })
+                                             };
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = list;
+                                                   ts_args =
+                                                   [{ Ttypes.tv_name = a_1 }];
+                                                   ts_alias = None },
+                                                 [{ Ttypes.ty_node =
+                                                    (Ttypes.Tyvar
+                                                       { Ttypes.tv_name = a_1 })
+                                                    }
+                                                   ]
+                                                 ))
+                                              }
+                                            ]);
                                        ls_value =
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (

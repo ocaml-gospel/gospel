@@ -33,10 +33,15 @@ type lsymbol =
   | Function_symbol of { ls_name : Ident.t; ls_args : ty list; ls_value : ty }
   | Constructor_symbol of {
       ls_name : Ident.t;
-      ls_args : ty list;
+      ls_args : constructor_arguments;
       ls_value : ty;
     }
   | Field_symbol of { ls_name : Ident.t; ls_args : ty list; ls_value : ty }
+[@@deriving show]
+
+and constructor_arguments =
+  | Cstr_tuple of ty list
+  | Cstr_record of lsymbol list
 [@@deriving show]
 
 let function_symbol ls_name ls_args ls_value =
@@ -54,22 +59,26 @@ let get_name = function
   | Function_symbol { ls_name; _ } ->
       ls_name
 
-let get_args = function
-  | Constructor_symbol { ls_args; _ }
-  | Field_symbol { ls_args; _ }
-  | Function_symbol { ls_args; _ } ->
-      ls_args
-
 let get_value = function
   | Constructor_symbol { ls_value; _ }
   | Field_symbol { ls_value; _ }
   | Function_symbol { ls_value; _ } ->
       ls_value
 
+let get_args = function
+  | Constructor_symbol { ls_args = Cstr_tuple tys; _ } -> tys
+  | Constructor_symbol { ls_args = Cstr_record fields; _ } ->
+      List.map get_value fields
+  | Field_symbol { ls_args; _ } | Function_symbol { ls_args; _ } -> ls_args
+
 (* We won't want to change the name of a symbol *)
-let fmap f = function
-  | Constructor_symbol { ls_name; ls_args; ls_value } ->
-      let ls_args = List.map f ls_args and ls_value = f ls_value in
+let rec fmap f = function
+  | Constructor_symbol { ls_name; ls_args = Cstr_tuple tys; ls_value } ->
+      let ls_args = Cstr_tuple (List.map f tys) and ls_value = f ls_value in
+      Constructor_symbol { ls_name; ls_args; ls_value }
+  | Constructor_symbol { ls_name; ls_args = Cstr_record fields; ls_value } ->
+      let ls_args = Cstr_record (List.map (fmap f) fields)
+      and ls_value = f ls_value in
       Constructor_symbol { ls_name; ls_args; ls_value }
   | Field_symbol { ls_name; ls_args; ls_value } ->
       let ls_args = List.map f ls_args and ls_value = f ls_value in
@@ -109,13 +118,19 @@ let ps_equ =
   function_symbol Identifier.eq [ tv; tv ] ty_bool
 
 let fs_unit =
-  constructor_symbol (Ident.create ~loc:Location.none "()") [] ty_unit
+  constructor_symbol
+    (Ident.create ~loc:Location.none "()")
+    (Cstr_tuple []) ty_unit
 
 let fs_bool_true =
-  constructor_symbol (Ident.create ~loc:Location.none "true") [] ty_bool
+  constructor_symbol
+    (Ident.create ~loc:Location.none "true")
+    (Cstr_tuple []) ty_bool
 
 let fs_bool_false =
-  constructor_symbol (Ident.create ~loc:Location.none "false") [] ty_bool
+  constructor_symbol
+    (Ident.create ~loc:Location.none "false")
+    (Cstr_tuple []) ty_bool
 
 let fs_apply =
   let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
@@ -128,16 +143,20 @@ let tvo = ts_option.ts_args |> function [ v ] -> v.tv_name | _ -> assert false
 let tvl = ts_list.ts_args |> function [ v ] -> v.tv_name | _ -> assert false
 let tv_option = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvo } }
 let tv_list = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvl } }
-let fs_option_none = constructor_symbol Identifier.none [] (ty_option tv_option)
+
+let fs_option_none =
+  constructor_symbol Identifier.none (Cstr_tuple []) (ty_option tv_option)
 
 let fs_option_some =
-  constructor_symbol Identifier.some [ tv_option ] (ty_option tv_option)
+  constructor_symbol Identifier.some (Cstr_tuple [ tv_option ])
+    (ty_option tv_option)
 
-let fs_list_nil = constructor_symbol Identifier.nil [] (ty_list tv_list)
+let fs_list_nil =
+  constructor_symbol Identifier.nil (Cstr_tuple []) (ty_list tv_list)
 
 let fs_list_cons =
   constructor_symbol Identifier.cons
-    [ tv_list; ty_list tv_list ]
+    (Cstr_tuple [ tv_list; ty_list tv_list ])
     (ty_list tv_list)
 
 (* CHECK do we need two hash tables? *)
@@ -152,7 +171,7 @@ let fs_tuple =
       let ts = ts_tuple n in
       let tyl = List.map ty_of_var ts.ts_args in
       let ty = ty_app (ts_tuple n) tyl in
-      let ls = constructor_symbol id tyl ty in
+      let ls = constructor_symbol id (Cstr_tuple tyl) ty in
       Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls;
       ls

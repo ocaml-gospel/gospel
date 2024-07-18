@@ -321,8 +321,8 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
        applied (and with the usual syntax) without enforcing this on
        functions *)
     match ls with
-    | Constructor_symbol { ls_name; ls_args; _ } -> (
-        let n = List.length ls_args in
+    | Constructor_symbol { ls_name; _ } -> (
+        let n = List.length (get_args ls) in
         match tl with
         | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
             gen_app ~loc ls tl
@@ -678,20 +678,23 @@ let type_type_declaration path kid crcm ns r tdl =
     Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
-      let cs_id = Ident.create ~path ~loc:Location.none ("constr#" ^ s) in
-      let fields_ty =
-        List.map (fun ld -> parse_core alias tvl ld.pld_type) ldl
+      let field ld =
+        let ls_name = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt
+        and ls_args = [ ty ]
+        and ls_value = parse_core alias tvl ld.pld_type in
+        field_symbol ls_name ls_args ls_value
       in
-      let rd_cs = constructor_symbol cs_id fields_ty ty in
-      let mk_ld ld (ldl, ns) =
-        let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
-        let ty_res = parse_core alias tvl ld.pld_type in
-        let field = field_symbol id [ ty ] ty_res in
+      let cs_id = Ident.create ~path ~loc:Location.none ("constr#" ^ s)
+      and fields = List.map (fun ld -> field ld) ldl in
+      let rd_cs = constructor_symbol cs_id (Cstr_record fields) ty in
+      let mk_ld (field, ld) (ldl, ns) =
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
-        (ld :: ldl, ns_add_fd ~allow_duplicate:true ns id.id_str field)
+        ( ld :: ldl,
+          ns_add_fd ~allow_duplicate:true ns (get_name field).id_str field )
       in
-      let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
+      let xs = List.combine fields ldl in
+      let rd_ldl, ns = List.fold_right mk_ld xs ([], ns) in
       ({ rd_cs; rd_ldl }, ns)
     in
 
@@ -704,10 +707,10 @@ let type_type_declaration path kid crcm ns r tdl =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
             let tyl = List.map (parse_core alias tvl) ctl in
-            let ls = constructor_symbol cs_id tyl ty_res in
+            let ls = constructor_symbol cs_id (Cstr_tuple tyl) ty_res in
             (ls, [], ns_add_ls ~allow_duplicate:true ns cs_id.id_str ls)
         | Pcstr_record ldl ->
-            let add ld (ldl, tyl, ns) =
+            let add ld (ldl, fields, ns) =
               let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
               let ty = parse_core alias tvl ld.pld_type in
               let mut = mutable_flag ld.pld_mutable in
@@ -716,11 +719,11 @@ let type_type_declaration path kid crcm ns r tdl =
                 label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
               in
               ( ld :: ldl,
-                ty :: tyl,
+                field :: fields,
                 ns_add_fd ~allow_duplicate:true ns id.id_str field )
             in
-            let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
-            let cs = constructor_symbol cs_id tyl ty_res in
+            let ldl, fields, ns = List.fold_right add ldl ([], [], ns) in
+            let cs = constructor_symbol cs_id (Cstr_record fields) ty_res in
             let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
             (cs, ldl, ns)
       in
