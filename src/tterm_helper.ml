@@ -24,7 +24,7 @@ let ls_arg_inst ls tl =
   in
   short_fold_left2
     (fun tvm ty t -> ty_match tvm ty t.t_ty)
-    Mtv.empty ls.ls_args tl
+    Mtv.empty (get_args ls) tl
 
 let drop n xs =
   let rec aux n xs =
@@ -37,15 +37,16 @@ let drop n xs =
 
 let ls_app_inst ls tl ty =
   let s = ls_arg_inst ls tl in
-  let vty = ls.ls_value in
+  let vty = get_value ls in
   let vty =
     let ntl = List.length tl in
-    if ntl >= List.length ls.ls_args then vty
+    if ntl >= List.length (get_args ls) then vty
     else
       (* build the result type in case of a partial application *)
       List.fold_right
         (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
-        (drop ntl ls.ls_args) vty
+        (drop ntl (get_args ls))
+        vty
   in
   ty_match s vty ty
 

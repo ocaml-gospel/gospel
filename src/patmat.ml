@@ -173,7 +173,7 @@ end = struct
     match pmat.mat with
     | [ e ] ->
         let args, l = split [] 0 e in
-        let hd = mk_pattern (Papp (ck, args)) ck.ls_value Location.none in
+        let hd = mk_pattern (Papp (ck, args)) (get_value ck) Location.none in
         { rows = 1; cols = pmat.cols - ak + 1; mat = [ hd :: l ] }
     | _ -> assert false
 end
@@ -220,7 +220,7 @@ end = struct
     List.fold_left
       (fun acc e ->
         match e with
-        | { p_node = Papp (c, _); _ } :: _ -> Mls.add c c.ls_args acc
+        | { p_node = Papp (c, _); _ } :: _ -> Mls.add c (get_args c) acc
         | { p_node = Por (p1, p2); _ } :: _ ->
             let map1 = from_matrix [ [ p1 ] ] in
             let map2 = from_matrix [ [ p2 ] ] in
@@ -256,7 +256,7 @@ end = struct
     | { ty_node = Tyvar _v } :: _ -> assert false
     | { ty_node = Tyapp (ts, tyl) } :: _ ->
         let subst = ts_match_args ts tyl in
-        List.map (fun e -> ty_full_inst subst e) ls.ls_args
+        List.map (fun e -> ty_full_inst subst e) (get_args ls)
 
   let case f pmat =
     List.fold_left
@@ -353,7 +353,7 @@ end = struct
       match get_constructors ty with
       | Some e ->
           let cc = List.find (fun ls -> not (Mls.mem ls ens)) e in
-          Papp (cc, mk_wild cc.ls_args)
+          Papp (cc, mk_wild (get_args cc))
       | None ->
           Ttypes.pp_ty Fmt.stderr ty;
           assert false
@@ -437,7 +437,7 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
         let typ_nl = tl in
         usefulness typ_nl (mk_spec [] pmat) ll
     | { p_node = Papp (c, pl); _ } :: ll ->
-        let typ_next = c.ls_args in
+        let typ_next = get_args c in
         let typ_nl = typ_next @ tl in
         usefulness typ_nl
           (mk_spec ~constr:c (List.map (fun p -> p.p_ty) pl) pmat)
@@ -452,7 +452,7 @@ let rec usefulness typ_cols (pmat : Pmatrix.t) (qvec : pattern list) : bool =
           else
             Sigma.exists
               (fun ck tyl ->
-                let q = mk_wild ck.ls_args @ ll in
+                let q = mk_wild (get_args ck) @ ll in
                 let typ_cols = Sigma.get_typ_cols typ_cols ck @ tl in
                 usefulness typ_cols (mk_spec ~constr:ck tyl pmat) q)
               sigma
