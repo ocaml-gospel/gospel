@@ -18,15 +18,13 @@ let print_vs fmt { vs_name; vs_ty } =
   pp fmt "@[%a:%a@]" Ident.pp_simpl vs_name print_ty vs_ty
 
 let print_ls_decl fmt { ls_name; ls_args; ls_value; _ } =
-  let is_func = ty_equal ls_value ty_bool in
+  let is_pred = ty_equal ls_value ty_bool in
   let print_unnamed_arg fmt ty = pp fmt "(_:%a)" print_ty ty in
-  pp fmt "%s %a %a%s%a"
-    (if is_func then "function" else "predicate")
+  pp fmt "%s %a %a:%a"
+    (if is_pred then "predicate" else "function")
     Ident.pp_simpl ls_name
     (list ~sep:sp print_unnamed_arg)
-    ls_args
-    (if is_func then " : " else "")
-    print_ty ls_value
+    ls_args print_ty ls_value
 
 let print_ls_nm fmt { ls_name; _ } = pp fmt "%a" Ident.pp_simpl ls_name
 let protect_on x s = if x then "(" ^^ s ^^ ")" else s
