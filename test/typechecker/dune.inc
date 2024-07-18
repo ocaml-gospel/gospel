@@ -338,6 +338,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets inlined_record_expected.gospel)
+ (action
+  (with-outputs-to inlined_record_expected.mli.output
+   (run %{checker} %{dep:inlined_record_expected.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff inlined_record_expected.mli inlined_record_expected.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:inlined_record_expected.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets int_not_bool1.gospel)
  (action
   (with-outputs-to int_not_bool1.mli.output
