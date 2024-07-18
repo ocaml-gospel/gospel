@@ -586,7 +586,7 @@ let process_type_spec kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls =
-      fsymbol ~constr:false ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty
+      lsymbol ~constr:false ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty
     in
     ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
       (ls, f.f_mutable) :: fields )
@@ -681,11 +681,11 @@ let type_type_declaration path kid crcm ns r tdl =
       let fields_ty =
         List.map (fun ld -> parse_core alias tvl ld.pld_type) ldl
       in
-      let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
+      let rd_cs = lsymbol ~constr:true ~field:false cs_id fields_ty ty in
       let mk_ld ld (ldl, ns) =
         let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
         let ty_res = parse_core alias tvl ld.pld_type in
-        let field = fsymbol ~constr:false ~field:true id [ ty ] ty_res in
+        let field = lsymbol ~constr:false ~field:true id [ ty ] ty_res in
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
         (ld :: ldl, ns_add_fd ~allow_duplicate:true ns id.id_str field)
@@ -703,14 +703,14 @@ let type_type_declaration path kid crcm ns r tdl =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
             let tyl = List.map (parse_core alias tvl) ctl in
-            let ls = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let ls = lsymbol ~constr:true ~field:false cs_id tyl ty_res in
             (ls, [], ns_add_ls ~allow_duplicate:true ns cs_id.id_str ls)
         | Pcstr_record ldl ->
             let add ld (ldl, tyl, ns) =
               let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
               let ty = parse_core alias tvl ld.pld_type in
               let mut = mutable_flag ld.pld_mutable in
-              let field = fsymbol ~constr:false ~field:true id [ ty_res ] ty in
+              let field = lsymbol ~constr:false ~field:true id [ ty_res ] ty in
               let ld =
                 label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
               in
@@ -719,7 +719,7 @@ let type_type_declaration path kid crcm ns r tdl =
                 ns_add_fd ~allow_duplicate:true ns id.id_str field )
             in
             let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
-            let cs = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let cs = lsymbol ~constr:true ~field:false cs_id tyl ty_res in
             let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
             (cs, ldl, ns)
       in

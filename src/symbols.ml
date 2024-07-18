@@ -56,9 +56,6 @@ module Mls = Map.Make (LS)
 let lsymbol ~constr ~field ls_name ls_args ls_value =
   { ls_name; ls_args; ls_value; ls_constr = constr; ls_field = field }
 
-let fsymbol ~constr ~field nm tyl ty = lsymbol ~constr ~field nm tyl ty
-let psymbol nm ty = lsymbol ~constr:false ~field:false nm ty ty_bool
-
 let ls_subst_ts old_ts new_ts ({ ls_name; ls_constr; ls_field; _ } as ls) =
   let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
   let ls_value = ty_subst_ts old_ts new_ts ls.ls_value in
@@ -74,27 +71,27 @@ let ls_subst_ty old_ts new_ts new_ty ls =
 
 let ps_equ =
   let tv = fresh_ty_var "a" in
-  psymbol Identifier.eq [ tv; tv ]
+  lsymbol ~constr:false ~field:false Identifier.eq [ tv; tv ] ty_bool
 
 let fs_unit =
-  fsymbol ~constr:true ~field:false
+  lsymbol ~constr:true ~field:false
     (Ident.create ~loc:Location.none "()")
     [] ty_unit
 
 let fs_bool_true =
-  fsymbol ~constr:true ~field:false
+  lsymbol ~constr:true ~field:false
     (Ident.create ~loc:Location.none "true")
     [] ty_bool
 
 let fs_bool_false =
-  fsymbol ~constr:true ~field:false
+  lsymbol ~constr:true ~field:false
     (Ident.create ~loc:Location.none "false")
     [] ty_bool
 
 let fs_apply =
   let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
   let ty_a_to_b = ty_app ts_arrow [ ty_a; ty_b ] in
-  fsymbol ~constr:false ~field:false
+  lsymbol ~constr:false ~field:false
     (Ident.create ~loc:Location.none "apply")
     [ ty_a_to_b; ty_a ] ty_b
 
@@ -104,17 +101,17 @@ let tv_option = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvo } }
 let tv_list = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvl } }
 
 let fs_option_none =
-  fsymbol ~constr:true ~field:false Identifier.none [] (ty_option tv_option)
+  lsymbol ~constr:true ~field:false Identifier.none [] (ty_option tv_option)
 
 let fs_option_some =
-  fsymbol ~constr:true ~field:false Identifier.some [ tv_option ]
+  lsymbol ~constr:true ~field:false Identifier.some [ tv_option ]
     (ty_option tv_option)
 
 let fs_list_nil =
-  fsymbol ~constr:true ~field:false Identifier.nil [] (ty_list tv_list)
+  lsymbol ~constr:true ~field:false Identifier.nil [] (ty_list tv_list)
 
 let fs_list_cons =
-  fsymbol ~constr:true ~field:false Identifier.cons
+  lsymbol ~constr:true ~field:false Identifier.cons
     [ tv_list; ty_list tv_list ]
     (ty_list tv_list)
 
@@ -130,7 +127,7 @@ let fs_tuple =
       let ts = ts_tuple n in
       let tyl = List.map ty_of_var ts.ts_args in
       let ty = ty_app (ts_tuple n) tyl in
-      let ls = fsymbol ~constr:true ~field:false id tyl ty in
+      let ls = lsymbol ~constr:true ~field:false id tyl ty in
       Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls;
       ls
