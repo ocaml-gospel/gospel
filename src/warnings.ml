@@ -46,6 +46,7 @@ type kind =
   | Unbound_variable of string
   | Unsupported of string
   | Unterminated_comment
+  | Wrong_name of string * string
 
 type error = location * kind
 
@@ -162,6 +163,10 @@ let pp_kind ppf = function
       pf ppf "The variable %s does not appear in this pattern" s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
+  | Wrong_name (field, constr) ->
+      pf ppf
+        "The field %s is not part of the record argument for the constructor %s"
+        field constr
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 
