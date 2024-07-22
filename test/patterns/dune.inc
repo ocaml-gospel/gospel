@@ -754,3 +754,24 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:redundant3.mli}))))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets unbound_record_field.gospel)
+ (action
+  (with-outputs-to unbound_record_field.mli.output
+   (run %{checker} %{dep:unbound_record_field.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff unbound_record_field.mli unbound_record_field.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:unbound_record_field.mli}))))
+
