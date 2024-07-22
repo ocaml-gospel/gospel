@@ -18,9 +18,8 @@ type t = { x : int }
 (* TODO better error message: "unknown field name" *)
 
 (* {gospel_expected|
-   [125] File "record_pattern2.mli", line 15, characters 7-8:
+   [125] File "record_pattern2.mli", line 15, characters 6-9:
          15 |     | {y} -> y
-                     ^
-         Error: Symbol y not found in scope
-                (see "Symbols in scope" documentation page).
+                    ^^^
+         Error: Unbound record field: y.
    |gospel_expected} *)

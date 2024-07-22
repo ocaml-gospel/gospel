@@ -16,9 +16,8 @@ type t = { x : int }
 *)
 
 (* {gospel_expected|
-   [125] File "record_pattern3.mli", line 15, characters 11-12:
+   [125] File "record_pattern3.mli", line 15, characters 6-14:
          15 |     | { x; z } -> x
-                         ^
-         Error: Symbol z not found in scope
-                (see "Symbols in scope" documentation page).
+                    ^^^^^^^^
+         Error: Unbound record field: z.
    |gospel_expected} *)

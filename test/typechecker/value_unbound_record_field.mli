@@ -5,9 +5,8 @@
 *)
 
 (* {gospel_expected|
-   [125] File "value_unbound_record_field.mli", line 4, characters 23-24:
+   [125] File "value_unbound_record_field.mli", line 4, characters 10-31:
          4 |   let y = { a = true ; b = 42 } in true
-                                    ^
-         Error: Symbol b not found in scope
-                (see "Symbols in scope" documentation page).
+                       ^^^^^^^^^^^^^^^^^^^^^
+         Error: Unbound record field: b.
    |gospel_expected} *)

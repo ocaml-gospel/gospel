@@ -136,7 +136,16 @@ let find_constructors kid ts =
   | _ -> assert false
 
 let parse_record ~loc kid ns fll =
-  let fll = List.map (fun (q, v) -> (find_q_fd ns q, v)) fll in
+  let find q =
+    try find_q_fd ns q
+    with W.(Error (_, Symbol_not_found _)) ->
+      let label =
+        let open Uast in
+        match q with Qpreid pid | Qdot (_, pid) -> pid.pid_str
+      in
+      W.(error ~loc (Unbound_label label))
+  in
+  let fll = List.map (fun (q, v) -> (find q, v)) fll in
   let fs =
     match fll with
     | [] -> assert false (* foridden at parsing *)
