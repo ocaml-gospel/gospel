@@ -2,6 +2,8 @@
 
 ## Improved
 
+- Improve error message for unbound record fields
+  [#419] (https://github.com/ocaml-gospel/gospel/pull/419)
 - Collect all the missing fields in a record definition and don't accept
   incomplete record pattern syntax that OCaml consider incorrect
   [#418] (https://github.com/ocaml-gospel/gospel/pull/418)
