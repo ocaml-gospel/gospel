@@ -522,14 +522,21 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       | _ ->
           let dt = dterm whereami kid crcm ns denv t in
           mk_dterm ~loc (DTold dt) (Option.get dt.dt_dty))
-  | Uast.Trecord qtl ->
-      let cs, pjl, fll = parse_record ~loc kid ns qtl in
-      let get_term pj =
-        try dterm whereami kid crcm ns denv (Mls.find pj fll)
-        with Not_found ->
-          W.error ~loc (W.Unknown_record_field pj.ls_name.id_str)
+  | Uast.Trecord qtl -> (
+      let cs, fields_name, fields_def = parse_record ~loc kid ns qtl in
+      let dtyl, dty = specialize_ls cs in
+      let aux ls dty (fields, missing) =
+        match Mls.find_opt ls fields_def with
+        | Some t ->
+            let dt = dterm whereami kid crcm ns denv t in
+            (dterm_expected crcm dt dty :: fields, missing)
+        | None -> (fields, ls.ls_name.id_str :: missing)
       in
-      mk_app ~loc cs (List.map get_term pjl)
+      (* Uses [List.fold_right2] to keep fields in their order as records are
+         transformed into applications. *)
+      match List.fold_right2 aux fields_name dtyl ([], []) with
+      | fields, [] -> mk_dterm ~loc (DTapp (cs, fields)) dty
+      | _, missing -> W.error ~loc (W.Label_missing missing))
   | Uast.Tupdate (t, qtl) ->
       let cs, pjl, fll = parse_record ~loc kid ns qtl in
       let get_term pj =
