@@ -235,14 +235,16 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dty = dty_of_pty ns pty in
       dpattern_unify dp dty;
       mk_dpattern ~loc (DPcast (dp, dty)) dty dp.dp_vars
-  | Prec qpl ->
-      let cs, pjl, fll = parse_record ~loc kid ns qpl in
-      let get_pattern pj =
-        try dpattern kid ns (Mls.find pj fll)
-        with Not_found -> mk_pwild loc (dty_of_ty pj.ls_value)
+  | Prec qpl -> (
+      let cs, fields_name, fields_pattern = parse_record ~loc kid ns qpl in
+      let aux ls (patterns, missing) =
+        match Mls.find_opt ls fields_pattern with
+        | Some p -> (dpattern kid ns p :: patterns, missing)
+        | None -> (patterns, ls.ls_name.id_str :: missing)
       in
-      let dpl = List.map get_pattern pjl in
-      mk_papp ~loc cs dpl
+      match List.fold_right aux fields_name ([], []) with
+      | patterns, [] -> mk_papp ~loc cs patterns
+      | _, missing -> W.error ~loc (W.Label_missing missing))
   | Pconst c ->
       let dty =
         match c with
