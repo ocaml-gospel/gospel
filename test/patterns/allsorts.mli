@@ -150,7 +150,7 @@ type t13 = { n : int; s : string }
 (*@ function f13 (x: t13): integer =
     match x with
     | { n=0i; s="beta"|"omega" } -> 0
-    | { n=m } -> 0 *)
+    | { n=m; s } -> 0 *)
 
 (*@ function f13' (x: t13): integer =
     match x with
