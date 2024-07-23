@@ -392,6 +392,80 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       | Constructor_symbol { ls_name; _ } | Function_symbol { ls_name; _ } ->
           W.error ~loc (W.Bad_record_field ls_name.id_str))
   | Uast.Tidapp (q, tl) -> qualid_app q tl
+  (* Inlined records are not supposed to escape the scope of the constructor,
+     so here the left term should be the constructor and the right term a
+     record *)
+  | Uast.Tapply
+      ( ({ term_desc = Tpreid q; _ } as t1),
+        ({ term_desc = Trecord fields_right; _ } as t2) ) -> (
+      match find_q_ls ns q with
+      | Constructor_symbol
+          { ls_name; ls_args = Cstr_record fields_left; ls_value } as ls -> (
+          let dtyl, dty =
+            (* we already know that it is a constructor symbol *)
+            specialize_ls ls
+          in
+          let fields_left =
+            (* [fields_left] and [dtyl] both come from the same logical symbol,
+               hence, we know they have the same length *)
+            List.combine fields_left dtyl
+          in
+          let get_pid_str = function Qpreid pid | Qdot (_, pid) -> pid.pid_str
+          and get_pid_loc = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
+          and constr_str =
+            Fmt.(str "%a.%a" print_ty ls_value Ident.pp_simpl ls_name)
+          in
+          (* normalise order of the fields as the user can provide them in any
+             order *)
+          let sorted_left =
+            let cmp (l, _) (r, _) =
+              String.compare (get_name l).Ident.id_str (get_name r).Ident.id_str
+            in
+            List.sort cmp fields_left
+          and sorted_right =
+            let cmp (l, _) (r, _) =
+              String.compare (get_pid_str l) (get_pid_str r)
+            in
+            List.sort cmp fields_right
+          in
+          (* specialised fold_right2 that handle list with different length *)
+          let rec aux expected defined =
+            match (expected, defined) with
+            | [], [] -> ([], [])
+            | xs, [] ->
+                ([], List.map (fun (ls, _) -> (get_name ls).Ident.id_str) xs)
+            | [], (q, _) :: _ ->
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                W.error ~loc (W.Wrong_name (field_str, constr_str))
+            | (ls, dty) :: xs, ((q, t) as y) :: ys -> (
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                match String.compare (get_name ls).Ident.id_str field_str with
+                | 0 ->
+                    let fields, missing = aux xs ys
+                    and dt = dterm whereami kid crcm ns denv t in
+                    (dterm_expected crcm dt dty :: fields, missing)
+                | n when n < 0 ->
+                    let fields, missing = aux xs (y :: ys) in
+                    (fields, (get_name ls).Ident.id_str :: missing)
+                | _ -> W.error ~loc (W.Wrong_name (field_str, constr_str)))
+          in
+          match aux sorted_left sorted_right with
+          | fields, [] -> mk_dterm ~loc (DTapp (ls, fields)) dty
+          | _, missing -> W.(error ~loc (Label_missing missing)))
+      | Constructor_symbol { ls_name = _; ls_args = Cstr_tuple _; _ } ->
+          unfold_app t1 t2 []
+      | Function_symbol _ -> unfold_app t1 t2 []
+      | Field_symbol { ls_name; _ } ->
+          W.error ~loc (W.Field_application ls_name.id_str))
+  | Uast.Tapply (({ term_desc = Tpreid q; _ } as t1), t2) -> (
+      try
+        (* [find_ls_q] might raise an exception if we are not looking in the
+           right place but the term is however legal *)
+        match find_q_ls ns q with
+        | Constructor_symbol { ls_args = Cstr_record _; _ } ->
+            W.(error ~loc Inlined_record_expected)
+        | _ -> unfold_app t1 t2 []
+      with W.(Error (_, Symbol_not_found _)) -> unfold_app t1 t2 [])
   | Uast.Tapply (t1, t2) -> unfold_app t1 t2 []
   | Uast.Tnot t ->
       let dt = dterm whereami kid crcm ns denv t in
