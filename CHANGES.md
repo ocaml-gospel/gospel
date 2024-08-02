@@ -2,6 +2,8 @@
 
 ## Improved
 
+- Fix typing of expression with inlined record
+  [#420] (https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields
   [#419] (https://github.com/ocaml-gospel/gospel/pull/419)
 - Collect all the missing fields in a record definition and don't accept
@@ -9,7 +11,7 @@
   [#418] (https://github.com/ocaml-gospel/gospel/pull/418)
 - Display proper error message for a number of unsupported construction
   [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
-- Display an error message when encoutering a Functor application
+- Display an error message when encountering a Functor application
   [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
