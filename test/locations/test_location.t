@@ -79,16 +79,16 @@ First, create a test artifact:
                            }
                           ];
                         ls_value =
-                        (Some { Ttypes.ty_node =
-                                (Ttypes.Tyapp (
-                                   { Ttypes.ts_ident = list;
-                                     ts_args = [{ Ttypes.tv_name = a_1 }];
-                                     ts_alias = None },
-                                   [{ Ttypes.ty_node =
-                                      (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                     ]
-                                   ))
-                                });
+                        { Ttypes.ty_node =
+                          (Ttypes.Tyapp (
+                             { Ttypes.ts_ident = list;
+                               ts_args = [{ Ttypes.tv_name = a_1 }];
+                               ts_alias = None },
+                             [{ Ttypes.ty_node =
+                                (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                               ]
+                             ))
+                          };
                         ls_constr = false; ls_field = true },
                       true);
                       ({ Symbols.ls_name = size;
@@ -105,12 +105,12 @@ First, create a test artifact:
                             }
                            ];
                          ls_value =
-                         (Some { Ttypes.ty_node =
-                                 (Ttypes.Tyapp (
-                                    { Ttypes.ts_ident = int; ts_args = [];
-                                      ts_alias = None },
-                                    []))
-                                 });
+                         { Ttypes.ty_node =
+                           (Ttypes.Tyapp (
+                              { Ttypes.ts_ident = int; ts_args = [];
+                                ts_alias = None },
+                              []))
+                           };
                          ls_constr = false; ls_field = true },
                        false)
                       ];
@@ -200,8 +200,14 @@ First, create a test artifact:
                                   []))
                                }
                              ];
-                           ls_value = None; ls_constr = false; ls_field = false
-                           },
+                           ls_value =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = bool; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             };
+                           ls_constr = false; ls_field = false },
                          [{ Tterm.t_node =
                             (Tterm.Tapp (
                                { Symbols.ls_name = Gospelstdlib.integer_of_int;
@@ -214,12 +220,12 @@ First, create a test artifact:
                                     }
                                    ];
                                  ls_value =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = integer;
-                                              ts_args = []; ts_alias = None },
-                                            []))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = integer;
+                                        ts_args = []; ts_alias = None },
+                                      []))
+                                   };
                                  ls_constr = false; ls_field = false },
                                [{ Tterm.t_node =
                                   (Tterm.Tvar
@@ -233,35 +239,42 @@ First, create a test artifact:
                                          }
                                        });
                                   t_ty =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = int;
-                                               ts_args = []; ts_alias = None },
-                                             []))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = int; ts_args = [];
+                                         ts_alias = None },
+                                       []))
+                                    };
                                   t_attrs = []; t_loc = foo.mli:10:11 }
                                  ]
                                ));
                             t_ty =
-                            (Some { Ttypes.ty_node =
-                                    (Ttypes.Tyapp (
-                                       { Ttypes.ts_ident = integer;
-                                         ts_args = []; ts_alias = None },
-                                       []))
-                                    });
+                            { Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = integer; ts_args = [];
+                                   ts_alias = None },
+                                 []))
+                              };
                             t_attrs = []; t_loc = foo.mli:10:11 };
                            { Tterm.t_node = <constant>;
                              t_ty =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = integer;
-                                          ts_args = []; ts_alias = None },
-                                        []))
-                                     });
+                             { Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = integer; ts_args = [];
+                                    ts_alias = None },
+                                  []))
+                               };
                              t_attrs = []; t_loc = foo.mli:10:16 }
                            ]
                          ));
-                      t_ty = None; t_attrs = []; t_loc = foo.mli:10:11 }
+                      t_ty =
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = bool; ts_args = [];
+                             ts_alias = None },
+                           []))
+                        };
+                      t_attrs = []; t_loc = foo.mli:10:11 }
                      ];
                    sp_post =
                    [{ Tterm.t_node =
@@ -273,8 +286,14 @@ First, create a test artifact:
                              { Ttypes.ty_node =
                                (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
                              ];
-                           ls_value = None; ls_constr = false; ls_field = false
-                           },
+                           ls_value =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = bool; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             };
+                           ls_constr = false; ls_field = false },
                          [{ Tterm.t_node =
                             (Tterm.Tfield (
                                { Tterm.t_node =
@@ -295,19 +314,17 @@ First, create a test artifact:
                                         }
                                       });
                                  t_ty =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = t;
-                                              ts_args =
-                                              [{ Ttypes.tv_name = a }];
-                                              ts_alias = None },
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a })
-                                               }
-                                              ]
-                                            ))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = t;
+                                        ts_args = [{ Ttypes.tv_name = a }];
+                                        ts_alias = None },
+                                      [{ Ttypes.ty_node =
+                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                         }
+                                        ]
+                                      ))
+                                   };
                                  t_attrs = []; t_loc = foo.mli:11:12 },
                                { Symbols.ls_name = contents;
                                  ls_args =
@@ -324,69 +341,71 @@ First, create a test artifact:
                                     }
                                    ];
                                  ls_value =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = list;
-                                              ts_args =
-                                              [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a })
-                                               }
-                                              ]
-                                            ))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = list;
+                                        ts_args = [{ Ttypes.tv_name = a_1 }];
+                                        ts_alias = None },
+                                      [{ Ttypes.ty_node =
+                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                         }
+                                        ]
+                                      ))
+                                   };
                                  ls_constr = false; ls_field = true }
                                ));
                             t_ty =
-                            (Some { Ttypes.ty_node =
-                                    (Ttypes.Tyapp (
-                                       { Ttypes.ts_ident = list;
-                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                          }
-                                         ]
-                                       ))
-                                    });
+                            { Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = list;
+                                   ts_args = [{ Ttypes.tv_name = a_1 }];
+                                   ts_alias = None },
+                                 [{ Ttypes.ty_node =
+                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                   ]
+                                 ))
+                              };
                             t_attrs = []; t_loc = foo.mli:11:12 };
                            { Tterm.t_node =
                              (Tterm.Tapp (
                                 { Symbols.ls_name = []; ls_args = [];
                                   ls_value =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a_1 })
-                                                }
-                                               ]
-                                             ))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar
+                                             { Ttypes.tv_name = a_1 })
+                                          }
+                                         ]
+                                       ))
+                                    };
                                   ls_constr = true; ls_field = false },
                                 []));
                              t_ty =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = list;
-                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                          ts_alias = None },
-                                        [{ Ttypes.ty_node =
-                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                           }
-                                          ]
-                                        ))
-                                     });
+                             { Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = list;
+                                    ts_args = [{ Ttypes.tv_name = a_1 }];
+                                    ts_alias = None },
+                                  [{ Ttypes.ty_node =
+                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                    ]
+                                  ))
+                               };
                              t_attrs = []; t_loc = foo.mli:11:25 }
                            ]
                          ));
-                      t_ty = None; t_attrs = []; t_loc = foo.mli:11:12 };
+                      t_ty =
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = bool; ts_args = [];
+                             ts_alias = None },
+                           []))
+                        };
+                      t_attrs = []; t_loc = foo.mli:11:12 };
                      { Tterm.t_node =
                        (Tterm.Tapp (
                           { Symbols.ls_name = infix =;
@@ -396,8 +415,14 @@ First, create a test artifact:
                               { Ttypes.ty_node =
                                 (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
                               ];
-                            ls_value = None; ls_constr = false;
-                            ls_field = false },
+                            ls_value =
+                            { Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = bool; ts_args = [];
+                                   ts_alias = None },
+                                 []))
+                              };
+                            ls_constr = false; ls_field = false },
                           [{ Tterm.t_node =
                              (Tterm.Tfield (
                                 { Tterm.t_node =
@@ -419,19 +444,17 @@ First, create a test artifact:
                                          }
                                        });
                                   t_ty =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = t;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a })
-                                                }
-                                               ]
-                                             ))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = t;
+                                         ts_args = [{ Ttypes.tv_name = a }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                          }
+                                         ]
+                                       ))
+                                    };
                                   t_attrs = []; t_loc = foo.mli:12:12 },
                                 { Symbols.ls_name = size;
                                   ls_args =
@@ -448,21 +471,21 @@ First, create a test artifact:
                                      }
                                     ];
                                   ls_value =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = int;
-                                               ts_args = []; ts_alias = None },
-                                             []))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = int; ts_args = [];
+                                         ts_alias = None },
+                                       []))
+                                    };
                                   ls_constr = false; ls_field = true }
                                 ));
                              t_ty =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = int; ts_args = [];
-                                          ts_alias = None },
-                                        []))
-                                     });
+                             { Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = int; ts_args = [];
+                                    ts_alias = None },
+                                  []))
+                               };
                              t_attrs = []; t_loc = foo.mli:12:12 };
                             { Tterm.t_node =
                               (Tterm.Tvar
@@ -476,16 +499,23 @@ First, create a test artifact:
                                      }
                                    });
                               t_ty =
-                              (Some { Ttypes.ty_node =
-                                      (Ttypes.Tyapp (
-                                         { Ttypes.ts_ident = int; ts_args = [];
-                                           ts_alias = None },
-                                         []))
-                                      });
+                              { Ttypes.ty_node =
+                                (Ttypes.Tyapp (
+                                   { Ttypes.ts_ident = int; ts_args = [];
+                                     ts_alias = None },
+                                   []))
+                                };
                               t_attrs = []; t_loc = foo.mli:12:21 }
                             ]
                           ));
-                       t_ty = None; t_attrs = []; t_loc = foo.mli:12:12 }
+                       t_ty =
+                       { Ttypes.ty_node =
+                         (Ttypes.Tyapp (
+                            { Ttypes.ts_ident = bool; ts_args = [];
+                              ts_alias = None },
+                            []))
+                         };
+                       t_attrs = []; t_loc = foo.mli:12:12 }
                      ];
                    sp_xpost = []; sp_wr = []; sp_cs = []; sp_diverge = false;
                    sp_pure = false; sp_equiv = [];
@@ -499,8 +529,14 @@ First, create a test artifact:
       (Tast.Sig_axiom
          { Tast.ax_name = Foo.a_3;
            ax_term =
-           { Tterm.t_node = Tterm.Ttrue; t_ty = None; t_attrs = [];
-             t_loc = foo.mli:16:14 };
+           { Tterm.t_node = Tterm.Ttrue;
+             t_ty =
+             { Ttypes.ty_node =
+               (Ttypes.Tyapp (
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  []))
+               };
+             t_attrs = []; t_loc = foo.mli:16:14 };
            ax_loc = foo.mli:16:3; ax_text = " axiom a : true " });
       sig_loc = foo.mli:16:0 };
     { Tast.sig_desc =
@@ -523,12 +559,11 @@ First, create a test artifact:
                  }
                ];
              ls_value =
-             (Some { Ttypes.ty_node =
-                     (Ttypes.Tyapp (
-                        { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None
-                          },
-                        []))
-                     });
+             { Ttypes.ty_node =
+               (Ttypes.Tyapp (
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  []))
+               };
              ls_constr = false; ls_field = false };
            fun_rec = false;
            fun_params =
@@ -554,23 +589,50 @@ First, create a test artifact:
              ];
            fun_def =
            (Some { Tterm.t_node =
-                   (Tterm.Tif (
-                      { Tterm.t_node =
-                        (Tterm.Tapp (
-                           { Symbols.ls_name = infix =;
-                             ls_args =
-                             [{ Ttypes.ty_node =
-                                (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
-                               { Ttypes.ty_node =
-                                 (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
-                               ];
-                             ls_value = None; ls_constr = false;
-                             ls_field = false },
-                           [{ Tterm.t_node =
-                              (Tterm.Tapp (
-                                 { Symbols.ls_name = Gospelstdlib.List.length;
-                                   ls_args =
-                                   [{ Ttypes.ty_node =
+                   (Tterm.Tapp (
+                      { Symbols.ls_name = infix =;
+                        ls_args =
+                        [{ Ttypes.ty_node =
+                           (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
+                          { Ttypes.ty_node =
+                            (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
+                          ];
+                        ls_value =
+                        { Ttypes.ty_node =
+                          (Ttypes.Tyapp (
+                             { Ttypes.ts_ident = bool; ts_args = [];
+                               ts_alias = None },
+                             []))
+                          };
+                        ls_constr = false; ls_field = false },
+                      [{ Tterm.t_node =
+                         (Tterm.Tapp (
+                            { Symbols.ls_name = Gospelstdlib.List.length;
+                              ls_args =
+                              [{ Ttypes.ty_node =
+                                 (Ttypes.Tyapp (
+                                    { Ttypes.ts_ident = list;
+                                      ts_args = [{ Ttypes.tv_name = a_1 }];
+                                      ts_alias = None },
+                                    [{ Ttypes.ty_node =
+                                       (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                      ]
+                                    ))
+                                 }
+                                ];
+                              ls_value =
+                              { Ttypes.ty_node =
+                                (Ttypes.Tyapp (
+                                   { Ttypes.ts_ident = integer; ts_args = [];
+                                     ts_alias = None },
+                                   []))
+                                };
+                              ls_constr = false; ls_field = false },
+                            [{ Tterm.t_node =
+                               (Tterm.Tvar
+                                  { Symbols.vs_name = xs;
+                                    vs_ty =
+                                    { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
                                          { Ttypes.ts_ident = list;
                                            ts_args = [{ Ttypes.tv_name = a_1 }];
@@ -582,128 +644,57 @@ First, create a test artifact:
                                            ]
                                          ))
                                       }
-                                     ];
-                                   ls_value =
-                                   (Some { Ttypes.ty_node =
-                                           (Ttypes.Tyapp (
-                                              { Ttypes.ts_ident = integer;
-                                                ts_args = []; ts_alias = None },
-                                              []))
-                                           });
-                                   ls_constr = false; ls_field = false },
-                                 [{ Tterm.t_node =
-                                    (Tterm.Tvar
-                                       { Symbols.vs_name = xs;
-                                         vs_ty =
-                                         { Ttypes.ty_node =
-                                           (Ttypes.Tyapp (
-                                              { Ttypes.ts_ident = list;
-                                                ts_args =
-                                                [{ Ttypes.tv_name = a_1 }];
-                                                ts_alias = None },
-                                              [{ Ttypes.ty_node =
-                                                 (Ttypes.Tyvar
-                                                    { Ttypes.tv_name = a })
-                                                 }
-                                                ]
-                                              ))
-                                           }
-                                         });
-                                    t_ty =
-                                    (Some { Ttypes.ty_node =
-                                            (Ttypes.Tyapp (
-                                               { Ttypes.ts_ident = list;
-                                                 ts_args =
-                                                 [{ Ttypes.tv_name = a_1 }];
-                                                 ts_alias = None },
-                                               [{ Ttypes.ty_node =
-                                                  (Ttypes.Tyvar
-                                                     { Ttypes.tv_name = a })
-                                                  }
-                                                 ]
-                                               ))
-                                            });
-                                    t_attrs = []; t_loc = foo.mli:18:71 }
-                                   ]
-                                 ));
-                              t_ty =
-                              (Some { Ttypes.ty_node =
-                                      (Ttypes.Tyapp (
-                                         { Ttypes.ts_ident = integer;
-                                           ts_args = []; ts_alias = None },
-                                         []))
-                                      });
-                              t_attrs = []; t_loc = foo.mli:18:59 };
-                             { Tterm.t_node =
-                               (Tterm.Tvar
-                                  { Symbols.vs_name = x;
-                                    vs_ty =
-                                    { Ttypes.ty_node =
-                                      (Ttypes.Tyapp (
-                                         { Ttypes.ts_ident = integer;
-                                           ts_args = []; ts_alias = None },
-                                         []))
-                                      }
                                     });
                                t_ty =
-                               (Some { Ttypes.ty_node =
-                                       (Ttypes.Tyapp (
-                                          { Ttypes.ts_ident = integer;
-                                            ts_args = []; ts_alias = None },
-                                          []))
-                                       });
-                               t_attrs = []; t_loc = foo.mli:18:76 }
-                             ]
-                           ));
-                        t_ty = None; t_attrs = []; t_loc = foo.mli:18:59 },
-                      { Tterm.t_node =
-                        (Tterm.Tapp (
-                           { Symbols.ls_name = true; ls_args = [];
-                             ls_value =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = bool; ts_args = [];
-                                          ts_alias = None },
-                                        []))
-                                     });
-                             ls_constr = true; ls_field = false },
-                           []));
-                        t_ty =
-                        (Some { Ttypes.ty_node =
-                                (Ttypes.Tyapp (
-                                   { Ttypes.ts_ident = bool; ts_args = [];
-                                     ts_alias = None },
-                                   []))
-                                });
-                        t_attrs = []; t_loc = foo.mli:18:59 },
-                      { Tterm.t_node =
-                        (Tterm.Tapp (
-                           { Symbols.ls_name = false; ls_args = [];
-                             ls_value =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = bool; ts_args = [];
-                                          ts_alias = None },
-                                        []))
-                                     });
-                             ls_constr = true; ls_field = false },
-                           []));
-                        t_ty =
-                        (Some { Ttypes.ty_node =
-                                (Ttypes.Tyapp (
-                                   { Ttypes.ts_ident = bool; ts_args = [];
-                                     ts_alias = None },
-                                   []))
-                                });
-                        t_attrs = []; t_loc = foo.mli:18:59 }
-                      ));
-                   t_ty =
-                   (Some { Ttypes.ty_node =
+                               { Ttypes.ty_node =
+                                 (Ttypes.Tyapp (
+                                    { Ttypes.ts_ident = list;
+                                      ts_args = [{ Ttypes.tv_name = a_1 }];
+                                      ts_alias = None },
+                                    [{ Ttypes.ty_node =
+                                       (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                      ]
+                                    ))
+                                 };
+                               t_attrs = []; t_loc = foo.mli:18:71 }
+                              ]
+                            ));
+                         t_ty =
+                         { Ttypes.ty_node =
                            (Ttypes.Tyapp (
-                              { Ttypes.ts_ident = bool; ts_args = [];
+                              { Ttypes.ts_ident = integer; ts_args = [];
                                 ts_alias = None },
                               []))
-                           });
+                           };
+                         t_attrs = []; t_loc = foo.mli:18:59 };
+                        { Tterm.t_node =
+                          (Tterm.Tvar
+                             { Symbols.vs_name = x;
+                               vs_ty =
+                               { Ttypes.ty_node =
+                                 (Ttypes.Tyapp (
+                                    { Ttypes.ts_ident = integer; ts_args = [];
+                                      ts_alias = None },
+                                    []))
+                                 }
+                               });
+                          t_ty =
+                          { Ttypes.ty_node =
+                            (Ttypes.Tyapp (
+                               { Ttypes.ts_ident = integer; ts_args = [];
+                                 ts_alias = None },
+                               []))
+                            };
+                          t_attrs = []; t_loc = foo.mli:18:76 }
+                        ]
+                      ));
+                   t_ty =
+                   { Ttypes.ty_node =
+                     (Ttypes.Tyapp (
+                        { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None
+                          },
+                        []))
+                     };
                    t_attrs = []; t_loc = foo.mli:18:59 });
            fun_spec = None;
            fun_text =
@@ -735,20 +726,19 @@ First, create a test artifact:
                  }
                ];
              ls_value =
-             (Some { Ttypes.ty_node =
+             { Ttypes.ty_node =
+               (Ttypes.Tyapp (
+                  { Ttypes.ts_ident = list;
+                    ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                  [{ Ttypes.ty_node =
                      (Ttypes.Tyapp (
-                        { Ttypes.ts_ident = list;
-                          ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None
-                          },
-                        [{ Ttypes.ty_node =
-                           (Ttypes.Tyapp (
-                              { Ttypes.ts_ident = integer; ts_args = [];
-                                ts_alias = None },
-                              []))
-                           }
-                          ]
-                        ))
-                     });
+                        { Ttypes.ts_ident = integer; ts_args = [];
+                          ts_alias = None },
+                        []))
+                     }
+                    ]
+                  ))
+               };
              ls_constr = false; ls_field = false };
            fun_rec = false;
            fun_params =
@@ -800,8 +790,14 @@ First, create a test artifact:
                                        ))
                                     }
                                   ];
-                                ls_value = None; ls_constr = false;
-                                ls_field = false },
+                                ls_value =
+                                { Ttypes.ty_node =
+                                  (Ttypes.Tyapp (
+                                     { Ttypes.ts_ident = bool; ts_args = [];
+                                       ts_alias = None },
+                                     []))
+                                  };
+                                ls_constr = false; ls_field = false },
                               [{ Tterm.t_node =
                                  (Tterm.Tvar
                                     { Symbols.vs_name = x_1;
@@ -814,12 +810,12 @@ First, create a test artifact:
                                         }
                                       });
                                  t_ty =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = integer;
-                                              ts_args = []; ts_alias = None },
-                                            []))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = integer;
+                                        ts_args = []; ts_alias = None },
+                                      []))
+                                   };
                                  t_attrs = []; t_loc = foo.mli:21:27 };
                                 { Tterm.t_node =
                                   (Tterm.Tvar
@@ -843,31 +839,50 @@ First, create a test artifact:
                                          }
                                        });
                                   t_ty =
-                                  (Some { Ttypes.ty_node =
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
                                           (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = integer;
-                                                     ts_args = [];
-                                                     ts_alias = None },
-                                                   []))
-                                                }
-                                               ]
-                                             ))
-                                          });
+                                             { Ttypes.ts_ident = integer;
+                                               ts_args = []; ts_alias = None },
+                                             []))
+                                          }
+                                         ]
+                                       ))
+                                    };
                                   t_attrs = []; t_loc = foo.mli:21:29 }
                                 ]
                               ));
-                           t_ty = None; t_attrs = []; t_loc = foo.mli:21:17 });
-                      t_ty = None; t_attrs = []; t_loc = foo.mli:21:13 }
+                           t_ty =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = bool; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             };
+                           t_attrs = []; t_loc = foo.mli:21:17 });
+                      t_ty =
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = bool; ts_args = [];
+                             ts_alias = None },
+                           []))
+                        };
+                      t_attrs = []; t_loc = foo.mli:21:13 }
                      ];
                    fun_ens =
-                   [{ Tterm.t_node = Tterm.Ttrue; t_ty = None; t_attrs = [];
-                      t_loc = foo.mli:22:12 }
+                   [{ Tterm.t_node = Tterm.Ttrue;
+                      t_ty =
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = bool; ts_args = [];
+                             ts_alias = None },
+                           []))
+                        };
+                      t_attrs = []; t_loc = foo.mli:22:12 }
                      ];
                    fun_variant = []; fun_coer = false;
                    fun_text =
@@ -896,7 +911,13 @@ First, create a test artifact:
                    ))
                 }
                ];
-             ls_value = None; ls_constr = false; ls_field = false };
+             ls_value =
+             { Ttypes.ty_node =
+               (Ttypes.Tyapp (
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  []))
+               };
+             ls_constr = false; ls_field = false };
            fun_rec = true;
            fun_params =
            [{ Symbols.vs_name = l;
@@ -918,819 +939,655 @@ First, create a test artifact:
              ];
            fun_def =
            (Some { Tterm.t_node =
-                   (Tterm.Tapp (
-                      { Symbols.ls_name = infix =;
-                        ls_args =
-                        [{ Ttypes.ty_node =
-                           (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
-                          { Ttypes.ty_node =
-                            (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
-                          ];
-                        ls_value = None; ls_constr = false; ls_field = false },
-                      [{ Tterm.t_node =
-                         (Tterm.Tcase (
-                            { Tterm.t_node =
-                              (Tterm.Tvar
-                                 { Symbols.vs_name = l;
-                                   vs_ty =
-                                   { Ttypes.ty_node =
+                   (Tterm.Tcase (
+                      { Tterm.t_node =
+                        (Tterm.Tvar
+                           { Symbols.vs_name = l;
+                             vs_ty =
+                             { Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = list;
+                                    ts_args = [{ Ttypes.tv_name = a_1 }];
+                                    ts_alias = None },
+                                  [{ Ttypes.ty_node =
                                      (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = list;
-                                          ts_args = [{ Ttypes.tv_name = a_1 }];
+                                        { Ttypes.ts_ident = int; ts_args = [];
                                           ts_alias = None },
-                                        [{ Ttypes.ty_node =
-                                           (Ttypes.Tyapp (
-                                              { Ttypes.ts_ident = int;
-                                                ts_args = []; ts_alias = None },
-                                              []))
-                                           }
-                                          ]
-                                        ))
+                                        []))
                                      }
-                                   });
-                              t_ty =
-                              (Some { Ttypes.ty_node =
+                                    ]
+                                  ))
+                               }
+                             });
+                        t_ty =
+                        { Ttypes.ty_node =
+                          (Ttypes.Tyapp (
+                             { Ttypes.ts_ident = list;
+                               ts_args = [{ Ttypes.tv_name = a_1 }];
+                               ts_alias = None },
+                             [{ Ttypes.ty_node =
+                                (Ttypes.Tyapp (
+                                   { Ttypes.ts_ident = int; ts_args = [];
+                                     ts_alias = None },
+                                   []))
+                                }
+                               ]
+                             ))
+                          };
+                        t_attrs = []; t_loc = foo.mli:24:55 },
+                      [({ Tterm.p_node =
+                          (Tterm.Por (
+                             { Tterm.p_node =
+                               (Tterm.Papp (
+                                  { Symbols.ls_name = []; ls_args = [];
+                                    ls_value =
+                                    { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
                                          { Ttypes.ts_ident = list;
                                            ts_args = [{ Ttypes.tv_name = a_1 }];
                                            ts_alias = None },
                                          [{ Ttypes.ty_node =
-                                            (Ttypes.Tyapp (
-                                               { Ttypes.ts_ident = int;
-                                                 ts_args = []; ts_alias = None
-                                                 },
-                                               []))
+                                            (Ttypes.Tyvar
+                                               { Ttypes.tv_name = a_1 })
                                             }
                                            ]
                                          ))
-                                      });
-                              t_attrs = []; t_loc = foo.mli:24:55 },
-                            [({ Tterm.p_node =
-                                (Tterm.Por (
-                                   { Tterm.p_node =
-                                     (Tterm.Papp (
-                                        { Symbols.ls_name = []; ls_args = [];
-                                          ls_value =
-                                          (Some { Ttypes.ty_node =
-                                                  (Ttypes.Tyapp (
-                                                     { Ttypes.ts_ident = list;
-                                                       ts_args =
-                                                       [{ Ttypes.tv_name = a_1
-                                                          }
-                                                         ];
-                                                       ts_alias = None },
-                                                     [{ Ttypes.ty_node =
-                                                        (Ttypes.Tyvar
-                                                           { Ttypes.tv_name =
-                                                             a_1 })
-                                                        }
-                                                       ]
-                                                     ))
-                                                  });
-                                          ls_constr = true; ls_field = false },
-                                        []));
+                                      };
+                                    ls_constr = true; ls_field = false },
+                                  []));
+                               p_ty =
+                               { Ttypes.ty_node =
+                                 (Ttypes.Tyapp (
+                                    { Ttypes.ts_ident = list;
+                                      ts_args = [{ Ttypes.tv_name = a_1 }];
+                                      ts_alias = None },
+                                    [{ Ttypes.ty_node =
+                                       (Ttypes.Tyapp (
+                                          { Ttypes.ts_ident = int;
+                                            ts_args = []; ts_alias = None },
+                                          []))
+                                       }
+                                      ]
+                                    ))
+                                 };
+                               p_loc = foo.mli:25:8 },
+                             { Tterm.p_node =
+                               (Tterm.Papp (
+                                  { Symbols.ls_name = infix ::;
+                                    ls_args =
+                                    [{ Ttypes.ty_node =
+                                       (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
+                                       };
+                                      { Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = list;
+                                             ts_args =
+                                             [{ Ttypes.tv_name = a_1 }];
+                                             ts_alias = None },
+                                           [{ Ttypes.ty_node =
+                                              (Ttypes.Tyvar
+                                                 { Ttypes.tv_name = a_1 })
+                                              }
+                                             ]
+                                           ))
+                                        }
+                                      ];
+                                    ls_value =
+                                    { Ttypes.ty_node =
+                                      (Ttypes.Tyapp (
+                                         { Ttypes.ts_ident = list;
+                                           ts_args = [{ Ttypes.tv_name = a_1 }];
+                                           ts_alias = None },
+                                         [{ Ttypes.ty_node =
+                                            (Ttypes.Tyvar
+                                               { Ttypes.tv_name = a_1 })
+                                            }
+                                           ]
+                                         ))
+                                      };
+                                    ls_constr = true; ls_field = false },
+                                  [{ Tterm.p_node = Tterm.Pwild;
                                      p_ty =
                                      { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
-                                          { Ttypes.ts_ident = list;
-                                            ts_args =
-                                            [{ Ttypes.tv_name = a_1 }];
-                                            ts_alias = None },
-                                          [{ Ttypes.ty_node =
-                                             (Ttypes.Tyapp (
-                                                { Ttypes.ts_ident = int;
-                                                  ts_args = []; ts_alias = None
-                                                  },
-                                                []))
-                                             }
-                                            ]
-                                          ))
+                                          { Ttypes.ts_ident = int;
+                                            ts_args = []; ts_alias = None },
+                                          []))
                                        };
-                                     p_loc = foo.mli:25:8 },
-                                   { Tterm.p_node =
-                                     (Tterm.Papp (
-                                        { Symbols.ls_name = infix ::;
-                                          ls_args =
-                                          [{ Ttypes.ty_node =
-                                             (Ttypes.Tyvar
-                                                { Ttypes.tv_name = a_1 })
-                                             };
-                                            { Ttypes.ty_node =
-                                              (Ttypes.Tyapp (
-                                                 { Ttypes.ts_ident = list;
-                                                   ts_args =
-                                                   [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
-                                                 [{ Ttypes.ty_node =
-                                                    (Ttypes.Tyvar
-                                                       { Ttypes.tv_name = a_1 })
-                                                    }
-                                                   ]
-                                                 ))
-                                              }
-                                            ];
-                                          ls_value =
-                                          (Some { Ttypes.ty_node =
-                                                  (Ttypes.Tyapp (
-                                                     { Ttypes.ts_ident = list;
-                                                       ts_args =
-                                                       [{ Ttypes.tv_name = a_1
-                                                          }
-                                                         ];
-                                                       ts_alias = None },
-                                                     [{ Ttypes.ty_node =
-                                                        (Ttypes.Tyvar
-                                                           { Ttypes.tv_name =
-                                                             a_1 })
-                                                        }
-                                                       ]
-                                                     ))
-                                                  });
-                                          ls_constr = true; ls_field = false },
-                                        [{ Tterm.p_node = Tterm.Pwild;
-                                           p_ty =
+                                     p_loc = foo.mli:25:13 };
+                                    { Tterm.p_node =
+                                      (Tterm.Papp (
+                                         { Symbols.ls_name = []; ls_args = [];
+                                           ls_value =
                                            { Ttypes.ty_node =
                                              (Ttypes.Tyapp (
-                                                { Ttypes.ts_ident = int;
-                                                  ts_args = []; ts_alias = None
-                                                  },
-                                                []))
+                                                { Ttypes.ts_ident = list;
+                                                  ts_args =
+                                                  [{ Ttypes.tv_name = a_1 }];
+                                                  ts_alias = None },
+                                                [{ Ttypes.ty_node =
+                                                   (Ttypes.Tyvar
+                                                      { Ttypes.tv_name = a_1 })
+                                                   }
+                                                  ]
+                                                ))
                                              };
-                                           p_loc = foo.mli:25:13 };
-                                          { Tterm.p_node =
-                                            (Tterm.Papp (
-                                               { Symbols.ls_name = [];
-                                                 ls_args = [];
-                                                 ls_value =
-                                                 (Some { Ttypes.ty_node =
-                                                         (Ttypes.Tyapp (
-                                                            { Ttypes.ts_ident =
-                                                              list;
-                                                              ts_args =
-                                                              [{ Ttypes.tv_name =
-                                                                 a_1 }
-                                                                ];
-                                                              ts_alias = None },
-                                                            [{ Ttypes.ty_node =
-                                                               (Ttypes.Tyvar
-                                                                  { Ttypes.tv_name =
-                                                                    a_1 })
-                                                               }
-                                                              ]
-                                                            ))
-                                                         });
-                                                 ls_constr = true;
-                                                 ls_field = false },
-                                               []));
-                                            p_ty =
-                                            { Ttypes.ty_node =
-                                              (Ttypes.Tyapp (
-                                                 { Ttypes.ts_ident = list;
-                                                   ts_args =
-                                                   [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
-                                                 [{ Ttypes.ty_node =
-                                                    (Ttypes.Tyapp (
-                                                       { Ttypes.ts_ident = int;
-                                                         ts_args = [];
-                                                         ts_alias = None },
-                                                       []))
-                                                    }
-                                                   ]
-                                                 ))
-                                              };
-                                            p_loc = foo.mli:25:18 }
-                                          ]
-                                        ));
-                                     p_ty =
-                                     { Ttypes.ty_node =
-                                       (Ttypes.Tyapp (
-                                          { Ttypes.ts_ident = list;
-                                            ts_args =
-                                            [{ Ttypes.tv_name = a_1 }];
-                                            ts_alias = None },
-                                          [{ Ttypes.ty_node =
-                                             (Ttypes.Tyapp (
-                                                { Ttypes.ts_ident = int;
-                                                  ts_args = []; ts_alias = None
-                                                  },
-                                                []))
-                                             }
-                                            ]
-                                          ))
-                                       };
-                                     p_loc = foo.mli:25:13 }
-                                   ));
-                                p_ty =
-                                { Ttypes.ty_node =
-                                  (Ttypes.Tyapp (
-                                     { Ttypes.ts_ident = list;
-                                       ts_args = [{ Ttypes.tv_name = a_1 }];
-                                       ts_alias = None },
-                                     [{ Ttypes.ty_node =
+                                           ls_constr = true; ls_field = false },
+                                         []));
+                                      p_ty =
+                                      { Ttypes.ty_node =
                                         (Ttypes.Tyapp (
-                                           { Ttypes.ts_ident = int;
-                                             ts_args = []; ts_alias = None },
-                                           []))
-                                        }
-                                       ]
-                                     ))
-                                  };
-                                p_loc = foo.mli:25:8 },
-                              None,
-                              { Tterm.t_node =
-                                (Tterm.Tapp (
-                                   { Symbols.ls_name = true; ls_args = [];
-                                     ls_value =
-                                     (Some { Ttypes.ty_node =
-                                             (Ttypes.Tyapp (
-                                                { Ttypes.ts_ident = bool;
-                                                  ts_args = []; ts_alias = None
-                                                  },
-                                                []))
-                                             });
-                                     ls_constr = true; ls_field = false },
-                                   []));
-                                t_ty =
-                                (Some { Ttypes.ty_node =
-                                        (Ttypes.Tyapp (
-                                           { Ttypes.ts_ident = bool;
-                                             ts_args = []; ts_alias = None },
-                                           []))
-                                        });
-                                t_attrs = []; t_loc = foo.mli:25:24 });
-                              ({ Tterm.p_node =
-                                 (Tterm.Papp (
-                                    { Symbols.ls_name = infix ::;
-                                      ls_args =
-                                      [{ Ttypes.ty_node =
-                                         (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
-                                         };
-                                        { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a_1 })
-                                                }
-                                               ]
-                                             ))
-                                          }
-                                        ];
-                                      ls_value =
-                                      (Some { Ttypes.ty_node =
-                                              (Ttypes.Tyapp (
-                                                 { Ttypes.ts_ident = list;
-                                                   ts_args =
-                                                   [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
-                                                 [{ Ttypes.ty_node =
-                                                    (Ttypes.Tyvar
-                                                       { Ttypes.tv_name = a_1 })
-                                                    }
-                                                   ]
-                                                 ))
-                                              });
-                                      ls_constr = true; ls_field = false },
-                                    [{ Tterm.p_node =
-                                       (Tterm.Pvar
-                                          { Symbols.vs_name = h;
-                                            vs_ty =
-                                            { Ttypes.ty_node =
+                                           { Ttypes.ts_ident = list;
+                                             ts_args =
+                                             [{ Ttypes.tv_name = a_1 }];
+                                             ts_alias = None },
+                                           [{ Ttypes.ty_node =
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
                                                    ts_alias = None },
                                                  []))
                                               }
-                                            });
-                                       p_ty =
-                                       { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = int;
-                                              ts_args = []; ts_alias = None },
-                                            []))
-                                         };
-                                       p_loc = foo.mli:26:8 };
-                                      { Tterm.p_node =
-                                        (Tterm.Pas (
-                                           { Tterm.p_node =
-                                             (Tterm.Papp (
-                                                { Symbols.ls_name = infix ::;
-                                                  ls_args =
-                                                  [{ Ttypes.ty_node =
-                                                     (Ttypes.Tyvar
-                                                        { Ttypes.tv_name = a_1
-                                                          })
-                                                     };
-                                                    { Ttypes.ty_node =
-                                                      (Ttypes.Tyapp (
-                                                         { Ttypes.ts_ident =
-                                                           list;
-                                                           ts_args =
-                                                           [{ Ttypes.tv_name =
-                                                              a_1 }
-                                                             ];
-                                                           ts_alias = None },
-                                                         [{ Ttypes.ty_node =
-                                                            (Ttypes.Tyvar
-                                                               { Ttypes.tv_name =
-                                                                 a_1 })
-                                                            }
-                                                           ]
-                                                         ))
-                                                      }
-                                                    ];
-                                                  ls_value =
-                                                  (Some { Ttypes.ty_node =
-                                                          (Ttypes.Tyapp (
-                                                             { Ttypes.ts_ident =
-                                                               list;
-                                                               ts_args =
-                                                               [{ Ttypes.tv_name =
-                                                                  a_1 }
-                                                                 ];
-                                                               ts_alias = None
-                                                               },
-                                                             [{ Ttypes.ty_node =
-                                                                (Ttypes.Tyvar
-                                                                   { Ttypes.tv_name =
-                                                                     a_1 })
-                                                                }
-                                                               ]
-                                                             ))
-                                                          });
-                                                  ls_constr = true;
-                                                  ls_field = false },
-                                                [{ Tterm.p_node =
-                                                   (Tterm.Pvar
-                                                      { Symbols.vs_name = y;
-                                                        vs_ty =
-                                                        { Ttypes.ty_node =
-                                                          (Ttypes.Tyapp (
-                                                             { Ttypes.ts_ident =
-                                                               int;
-                                                               ts_args = [];
-                                                               ts_alias = None
-                                                               },
-                                                             []))
-                                                          }
-                                                        });
-                                                   p_ty =
-                                                   { Ttypes.ty_node =
-                                                     (Ttypes.Tyapp (
-                                                        { Ttypes.ts_ident = int;
-                                                          ts_args = [];
-                                                          ts_alias = None },
-                                                        []))
-                                                     };
-                                                   p_loc = foo.mli:26:14 };
-                                                  { Tterm.p_node = Tterm.Pwild;
-                                                    p_ty =
-                                                    { Ttypes.ty_node =
-                                                      (Ttypes.Tyapp (
-                                                         { Ttypes.ts_ident =
-                                                           list;
-                                                           ts_args =
-                                                           [{ Ttypes.tv_name =
-                                                              a_1 }
-                                                             ];
-                                                           ts_alias = None },
-                                                         [{ Ttypes.ty_node =
-                                                            (Ttypes.Tyapp (
-                                                               { Ttypes.ts_ident =
-                                                                 int;
-                                                                 ts_args = [];
-                                                                 ts_alias =
-                                                                 None },
-                                                               []))
-                                                            }
-                                                           ]
-                                                         ))
-                                                      };
-                                                    p_loc = foo.mli:26:19 }
-                                                  ]
-                                                ));
-                                             p_ty =
-                                             { Ttypes.ty_node =
-                                               (Ttypes.Tyapp (
-                                                  { Ttypes.ts_ident = list;
-                                                    ts_args =
-                                                    [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
-                                                  [{ Ttypes.ty_node =
-                                                     (Ttypes.Tyapp (
-                                                        { Ttypes.ts_ident = int;
-                                                          ts_args = [];
-                                                          ts_alias = None },
-                                                        []))
-                                                     }
-                                                    ]
-                                                  ))
-                                               };
-                                             p_loc = foo.mli:26:14 },
-                                           { Symbols.vs_name = t_2;
-                                             vs_ty =
-                                             { Ttypes.ty_node =
-                                               (Ttypes.Tyapp (
-                                                  { Ttypes.ts_ident = list;
-                                                    ts_args =
-                                                    [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
-                                                  [{ Ttypes.ty_node =
-                                                     (Ttypes.Tyapp (
-                                                        { Ttypes.ts_ident = int;
-                                                          ts_args = [];
-                                                          ts_alias = None },
-                                                        []))
-                                                     }
-                                                    ]
-                                                  ))
-                                               }
-                                             }
-                                           ));
-                                        p_ty =
-                                        { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = int;
-                                                     ts_args = [];
-                                                     ts_alias = None },
-                                                   []))
-                                                }
-                                               ]
-                                             ))
-                                          };
-                                        p_loc = foo.mli:26:13 }
+                                             ]
+                                           ))
+                                        };
+                                      p_loc = foo.mli:25:18 }
+                                    ]
+                                  ));
+                               p_ty =
+                               { Ttypes.ty_node =
+                                 (Ttypes.Tyapp (
+                                    { Ttypes.ts_ident = list;
+                                      ts_args = [{ Ttypes.tv_name = a_1 }];
+                                      ts_alias = None },
+                                    [{ Ttypes.ty_node =
+                                       (Ttypes.Tyapp (
+                                          { Ttypes.ts_ident = int;
+                                            ts_args = []; ts_alias = None },
+                                          []))
+                                       }
                                       ]
-                                    ));
+                                    ))
+                                 };
+                               p_loc = foo.mli:25:13 }
+                             ));
+                          p_ty =
+                          { Ttypes.ty_node =
+                            (Ttypes.Tyapp (
+                               { Ttypes.ts_ident = list;
+                                 ts_args = [{ Ttypes.tv_name = a_1 }];
+                                 ts_alias = None },
+                               [{ Ttypes.ty_node =
+                                  (Ttypes.Tyapp (
+                                     { Ttypes.ts_ident = int; ts_args = [];
+                                       ts_alias = None },
+                                     []))
+                                  }
+                                 ]
+                               ))
+                            };
+                          p_loc = foo.mli:25:8 },
+                        None,
+                        { Tterm.t_node = Tterm.Ttrue;
+                          t_ty =
+                          { Ttypes.ty_node =
+                            (Ttypes.Tyapp (
+                               { Ttypes.ts_ident = bool; ts_args = [];
+                                 ts_alias = None },
+                               []))
+                            };
+                          t_attrs = []; t_loc = foo.mli:25:24 });
+                        ({ Tterm.p_node =
+                           (Tterm.Papp (
+                              { Symbols.ls_name = infix ::;
+                                ls_args =
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyvar { Ttypes.tv_name = a_1 }) };
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar
+                                             { Ttypes.tv_name = a_1 })
+                                          }
+                                         ]
+                                       ))
+                                    }
+                                  ];
+                                ls_value =
+                                { Ttypes.ty_node =
+                                  (Ttypes.Tyapp (
+                                     { Ttypes.ts_ident = list;
+                                       ts_args = [{ Ttypes.tv_name = a_1 }];
+                                       ts_alias = None },
+                                     [{ Ttypes.ty_node =
+                                        (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
+                                        }
+                                       ]
+                                     ))
+                                  };
+                                ls_constr = true; ls_field = false },
+                              [{ Tterm.p_node =
+                                 (Tterm.Pvar
+                                    { Symbols.vs_name = h;
+                                      vs_ty =
+                                      { Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = int;
+                                             ts_args = []; ts_alias = None },
+                                           []))
+                                        }
+                                      });
                                  p_ty =
                                  { Ttypes.ty_node =
                                    (Ttypes.Tyapp (
-                                      { Ttypes.ts_ident = list;
-                                        ts_args = [{ Ttypes.tv_name = a_1 }];
+                                      { Ttypes.ts_ident = int; ts_args = [];
                                         ts_alias = None },
-                                      [{ Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = int;
-                                              ts_args = []; ts_alias = None },
-                                            []))
-                                         }
-                                        ]
-                                      ))
+                                      []))
                                    };
-                                 p_loc = foo.mli:26:8 },
-                               None,
-                               { Tterm.t_node =
-                                 (Tterm.Tif (
-                                    { Tterm.t_node =
-                                      (Tterm.Tbinop (Tterm.Tand,
-                                         { Tterm.t_node =
-                                           (Tterm.Tapp (
-                                              { Symbols.ls_name =
-                                                Gospelstdlib.infix <=;
-                                                ls_args =
-                                                [{ Ttypes.ty_node =
-                                                   (Ttypes.Tyapp (
-                                                      { Ttypes.ts_ident =
-                                                        integer; ts_args = [];
-                                                        ts_alias = None },
-                                                      []))
-                                                   };
+                                 p_loc = foo.mli:26:8 };
+                                { Tterm.p_node =
+                                  (Tterm.Pas (
+                                     { Tterm.p_node =
+                                       (Tterm.Papp (
+                                          { Symbols.ls_name = infix ::;
+                                            ls_args =
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyvar
+                                                  { Ttypes.tv_name = a_1 })
+                                               };
+                                              { Ttypes.ty_node =
+                                                (Ttypes.Tyapp (
+                                                   { Ttypes.ts_ident = list;
+                                                     ts_args =
+                                                     [{ Ttypes.tv_name = a_1 }];
+                                                     ts_alias = None },
+                                                   [{ Ttypes.ty_node =
+                                                      (Ttypes.Tyvar
+                                                         { Ttypes.tv_name = a_1
+                                                           })
+                                                      }
+                                                     ]
+                                                   ))
+                                                }
+                                              ];
+                                            ls_value =
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = list;
+                                                   ts_args =
+                                                   [{ Ttypes.tv_name = a_1 }];
+                                                   ts_alias = None },
+                                                 [{ Ttypes.ty_node =
+                                                    (Ttypes.Tyvar
+                                                       { Ttypes.tv_name = a_1 })
+                                                    }
+                                                   ]
+                                                 ))
+                                              };
+                                            ls_constr = true; ls_field = false
+                                            },
+                                          [{ Tterm.p_node =
+                                             (Tterm.Pvar
+                                                { Symbols.vs_name = y;
+                                                  vs_ty =
                                                   { Ttypes.ty_node =
                                                     (Ttypes.Tyapp (
-                                                       { Ttypes.ts_ident =
-                                                         integer; ts_args = [];
+                                                       { Ttypes.ts_ident = int;
+                                                         ts_args = [];
                                                          ts_alias = None },
                                                        []))
                                                     }
-                                                  ];
-                                                ls_value = None;
-                                                ls_constr = false;
-                                                ls_field = false },
-                                              [{ Tterm.t_node =
-                                                 (Tterm.Tapp (
-                                                    { Symbols.ls_name =
-                                                      Gospelstdlib.integer_of_int;
-                                                      ls_args =
-                                                      [{ Ttypes.ty_node =
-                                                         (Ttypes.Tyapp (
-                                                            { Ttypes.ts_ident =
-                                                              int;
-                                                              ts_args = [];
-                                                              ts_alias = None },
-                                                            []))
-                                                         }
-                                                        ];
-                                                      ls_value =
-                                                      (Some { Ttypes.ty_node =
-                                                              (Ttypes.Tyapp (
-                                                                 { Ttypes.ts_ident =
-                                                                   integer;
-                                                                   ts_args = [];
-                                                                   ts_alias =
-                                                                   None },
-                                                                 []))
-                                                              });
-                                                      ls_constr = false;
-                                                      ls_field = false },
-                                                    [{ Tterm.t_node =
-                                                       (Tterm.Tvar
-                                                          { Symbols.vs_name = h;
-                                                            vs_ty =
-                                                            { Ttypes.ty_node =
-                                                              (Ttypes.Tyapp (
-                                                                 { Ttypes.ts_ident =
-                                                                   int;
-                                                                   ts_args = [];
-                                                                   ts_alias =
-                                                                   None },
-                                                                 []))
-                                                              }
-                                                            });
-                                                       t_ty =
-                                                       (Some { Ttypes.ty_node =
-                                                               (Ttypes.Tyapp (
-                                                                  { Ttypes.ts_ident =
-                                                                    int;
-                                                                    ts_args =
-                                                                    [];
-                                                                    ts_alias =
-                                                                    None },
-                                                                  []))
-                                                               });
-                                                       t_attrs = [];
-                                                       t_loc = foo.mli:26:30 }
-                                                      ]
-                                                    ));
-                                                 t_ty =
-                                                 (Some { Ttypes.ty_node =
-                                                         (Ttypes.Tyapp (
-                                                            { Ttypes.ts_ident =
-                                                              integer;
-                                                              ts_args = [];
-                                                              ts_alias = None },
-                                                            []))
-                                                         });
-                                                 t_attrs = [];
-                                                 t_loc = foo.mli:26:30 };
-                                                { Tterm.t_node =
-                                                  (Tterm.Tapp (
-                                                     { Symbols.ls_name =
-                                                       Gospelstdlib.integer_of_int;
-                                                       ls_args =
-                                                       [{ Ttypes.ty_node =
-                                                          (Ttypes.Tyapp (
-                                                             { Ttypes.ts_ident =
-                                                               int;
-                                                               ts_args = [];
-                                                               ts_alias = None
-                                                               },
-                                                             []))
-                                                          }
-                                                         ];
-                                                       ls_value =
-                                                       (Some { Ttypes.ty_node =
-                                                               (Ttypes.Tyapp (
-                                                                  { Ttypes.ts_ident =
-                                                                    integer;
-                                                                    ts_args =
-                                                                    [];
-                                                                    ts_alias =
-                                                                    None },
-                                                                  []))
-                                                               });
-                                                       ls_constr = false;
-                                                       ls_field = false },
-                                                     [{ Tterm.t_node =
-                                                        (Tterm.Tvar
-                                                           { Symbols.vs_name =
-                                                             y;
-                                                             vs_ty =
-                                                             { Ttypes.ty_node =
-                                                               (Ttypes.Tyapp (
-                                                                  { Ttypes.ts_ident =
-                                                                    int;
-                                                                    ts_args =
-                                                                    [];
-                                                                    ts_alias =
-                                                                    None },
-                                                                  []))
-                                                               }
-                                                             });
-                                                        t_ty =
-                                                        (Some { Ttypes.ty_node =
-                                                                (Ttypes.Tyapp (
-                                                                   { Ttypes.ts_ident =
-                                                                     int;
-                                                                     ts_args =
-                                                                     [];
-                                                                     ts_alias =
-                                                                     None },
-                                                                   []))
-                                                                });
-                                                        t_attrs = [];
-                                                        t_loc = foo.mli:26:35 }
-                                                       ]
-                                                     ));
-                                                  t_ty =
-                                                  (Some { Ttypes.ty_node =
-                                                          (Ttypes.Tyapp (
-                                                             { Ttypes.ts_ident =
-                                                               integer;
-                                                               ts_args = [];
-                                                               ts_alias = None
-                                                               },
-                                                             []))
-                                                          });
-                                                  t_attrs = [];
-                                                  t_loc = foo.mli:26:35 }
-                                                ]
-                                              ));
-                                           t_ty = None; t_attrs = [];
-                                           t_loc = foo.mli:26:30 },
-                                         { Tterm.t_node =
-                                           (Tterm.Tapp (
-                                              { Symbols.ls_name =
-                                                Foo.is_sorted_list;
-                                                ls_args =
-                                                [{ Ttypes.ty_node =
-                                                   (Ttypes.Tyapp (
-                                                      { Ttypes.ts_ident = list;
-                                                        ts_args =
-                                                        [{ Ttypes.tv_name = a_1
-                                                           }
-                                                          ];
-                                                        ts_alias = None },
-                                                      [{ Ttypes.ty_node =
-                                                         (Ttypes.Tyapp (
-                                                            { Ttypes.ts_ident =
-                                                              int;
-                                                              ts_args = [];
-                                                              ts_alias = None },
-                                                            []))
-                                                         }
-                                                        ]
-                                                      ))
-                                                   }
-                                                  ];
-                                                ls_value = None;
-                                                ls_constr = false;
-                                                ls_field = false },
-                                              [{ Tterm.t_node =
-                                                 (Tterm.Tvar
-                                                    { Symbols.vs_name = t_2;
-                                                      vs_ty =
-                                                      { Ttypes.ty_node =
-                                                        (Ttypes.Tyapp (
-                                                           { Ttypes.ts_ident =
-                                                             list;
-                                                             ts_args =
-                                                             [{ Ttypes.tv_name =
-                                                                a_1 }
-                                                               ];
-                                                             ts_alias = None },
-                                                           [{ Ttypes.ty_node =
-                                                              (Ttypes.Tyapp (
-                                                                 { Ttypes.ts_ident =
-                                                                   int;
-                                                                   ts_args = [];
-                                                                   ts_alias =
-                                                                   None },
-                                                                 []))
-                                                              }
-                                                             ]
-                                                           ))
-                                                        }
-                                                      });
-                                                 t_ty =
-                                                 (Some { Ttypes.ty_node =
-                                                         (Ttypes.Tyapp (
-                                                            { Ttypes.ts_ident =
-                                                              list;
-                                                              ts_args =
-                                                              [{ Ttypes.tv_name =
-                                                                 a_1 }
-                                                                ];
-                                                              ts_alias = None },
-                                                            [{ Ttypes.ty_node =
-                                                               (Ttypes.Tyapp (
-                                                                  { Ttypes.ts_ident =
-                                                                    int;
-                                                                    ts_args =
-                                                                    [];
-                                                                    ts_alias =
-                                                                    None },
-                                                                  []))
-                                                               }
-                                                              ]
-                                                            ))
-                                                         });
-                                                 t_attrs = [];
-                                                 t_loc = foo.mli:26:55 }
-                                                ]
-                                              ));
-                                           t_ty = None; t_attrs = [];
-                                           t_loc = foo.mli:26:40 }
-                                         ));
-                                      t_ty = None; t_attrs = [];
-                                      t_loc = foo.mli:26:30 },
-                                    { Tterm.t_node =
-                                      (Tterm.Tapp (
-                                         { Symbols.ls_name = true;
-                                           ls_args = [];
-                                           ls_value =
-                                           (Some { Ttypes.ty_node =
-                                                   (Ttypes.Tyapp (
-                                                      { Ttypes.ts_ident = bool;
-                                                        ts_args = [];
-                                                        ts_alias = None },
-                                                      []))
-                                                   });
-                                           ls_constr = true; ls_field = false },
-                                         []));
-                                      t_ty =
-                                      (Some { Ttypes.ty_node =
-                                              (Ttypes.Tyapp (
-                                                 { Ttypes.ts_ident = bool;
-                                                   ts_args = [];
-                                                   ts_alias = None },
-                                                 []))
-                                              });
-                                      t_attrs = []; t_loc = foo.mli:26:30 },
-                                    { Tterm.t_node =
-                                      (Tterm.Tapp (
-                                         { Symbols.ls_name = false;
-                                           ls_args = [];
-                                           ls_value =
-                                           (Some { Ttypes.ty_node =
-                                                   (Ttypes.Tyapp (
-                                                      { Ttypes.ts_ident = bool;
-                                                        ts_args = [];
-                                                        ts_alias = None },
-                                                      []))
-                                                   });
-                                           ls_constr = true; ls_field = false },
-                                         []));
-                                      t_ty =
-                                      (Some { Ttypes.ty_node =
-                                              (Ttypes.Tyapp (
-                                                 { Ttypes.ts_ident = bool;
-                                                   ts_args = [];
-                                                   ts_alias = None },
-                                                 []))
-                                              });
-                                      t_attrs = []; t_loc = foo.mli:26:30 }
-                                    ));
-                                 t_ty =
-                                 (Some { Ttypes.ty_node =
+                                                  });
+                                             p_ty =
+                                             { Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = int;
+                                                    ts_args = [];
+                                                    ts_alias = None },
+                                                  []))
+                                               };
+                                             p_loc = foo.mli:26:14 };
+                                            { Tterm.p_node = Tterm.Pwild;
+                                              p_ty =
+                                              { Ttypes.ty_node =
+                                                (Ttypes.Tyapp (
+                                                   { Ttypes.ts_ident = list;
+                                                     ts_args =
+                                                     [{ Ttypes.tv_name = a_1 }];
+                                                     ts_alias = None },
+                                                   [{ Ttypes.ty_node =
+                                                      (Ttypes.Tyapp (
+                                                         { Ttypes.ts_ident =
+                                                           int; ts_args = [];
+                                                           ts_alias = None },
+                                                         []))
+                                                      }
+                                                     ]
+                                                   ))
+                                                };
+                                              p_loc = foo.mli:26:19 }
+                                            ]
+                                          ));
+                                       p_ty =
+                                       { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = bool;
+                                            { Ttypes.ts_ident = list;
+                                              ts_args =
+                                              [{ Ttypes.tv_name = a_1 }];
+                                              ts_alias = None },
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = int;
+                                                    ts_args = [];
+                                                    ts_alias = None },
+                                                  []))
+                                               }
+                                              ]
+                                            ))
+                                         };
+                                       p_loc = foo.mli:26:14 },
+                                     { Symbols.vs_name = t_2;
+                                       vs_ty =
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = list;
+                                              ts_args =
+                                              [{ Ttypes.tv_name = a_1 }];
+                                              ts_alias = None },
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = int;
+                                                    ts_args = [];
+                                                    ts_alias = None },
+                                                  []))
+                                               }
+                                              ]
+                                            ))
+                                         }
+                                       }
+                                     ));
+                                  p_ty =
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyapp (
+                                             { Ttypes.ts_ident = int;
+                                               ts_args = []; ts_alias = None },
+                                             []))
+                                          }
+                                         ]
+                                       ))
+                                    };
+                                  p_loc = foo.mli:26:13 }
+                                ]
+                              ));
+                           p_ty =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = list;
+                                  ts_args = [{ Ttypes.tv_name = a_1 }];
+                                  ts_alias = None },
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = int; ts_args = [];
+                                        ts_alias = None },
+                                      []))
+                                   }
+                                  ]
+                                ))
+                             };
+                           p_loc = foo.mli:26:8 },
+                         None,
+                         { Tterm.t_node =
+                           (Tterm.Tbinop (Tterm.Tand,
+                              { Tterm.t_node =
+                                (Tterm.Tapp (
+                                   { Symbols.ls_name = Gospelstdlib.infix <=;
+                                     ls_args =
+                                     [{ Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = integer;
+                                             ts_args = []; ts_alias = None },
+                                           []))
+                                        };
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = integer;
                                               ts_args = []; ts_alias = None },
                                             []))
-                                         });
-                                 t_attrs = []; t_loc = foo.mli:26:30 })
-                              ]
-                            ));
-                         t_ty =
-                         (Some { Ttypes.ty_node =
-                                 (Ttypes.Tyapp (
-                                    { Ttypes.ts_ident = bool; ts_args = [];
-                                      ts_alias = None },
-                                    []))
-                                 });
-                         t_attrs = []; t_loc = foo.mli:24:49 };
-                        { Tterm.t_node =
-                          (Tterm.Tapp (
-                             { Symbols.ls_name = true; ls_args = [];
-                               ls_value =
-                               (Some { Ttypes.ty_node =
+                                         }
+                                       ];
+                                     ls_value =
+                                     { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = bool;
                                             ts_args = []; ts_alias = None },
                                           []))
-                                       });
-                               ls_constr = true; ls_field = false },
-                             []));
-                          t_ty =
-                          (Some { Ttypes.ty_node =
+                                       };
+                                     ls_constr = false; ls_field = false },
+                                   [{ Tterm.t_node =
+                                      (Tterm.Tapp (
+                                         { Symbols.ls_name =
+                                           Gospelstdlib.integer_of_int;
+                                           ls_args =
+                                           [{ Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = int;
+                                                   ts_args = [];
+                                                   ts_alias = None },
+                                                 []))
+                                              }
+                                             ];
+                                           ls_value =
+                                           { Ttypes.ty_node =
+                                             (Ttypes.Tyapp (
+                                                { Ttypes.ts_ident = integer;
+                                                  ts_args = []; ts_alias = None
+                                                  },
+                                                []))
+                                             };
+                                           ls_constr = false; ls_field = false
+                                           },
+                                         [{ Tterm.t_node =
+                                            (Tterm.Tvar
+                                               { Symbols.vs_name = h;
+                                                 vs_ty =
+                                                 { Ttypes.ty_node =
+                                                   (Ttypes.Tyapp (
+                                                      { Ttypes.ts_ident = int;
+                                                        ts_args = [];
+                                                        ts_alias = None },
+                                                      []))
+                                                   }
+                                                 });
+                                            t_ty =
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = int;
+                                                   ts_args = [];
+                                                   ts_alias = None },
+                                                 []))
+                                              };
+                                            t_attrs = []; t_loc = foo.mli:26:30
+                                            }
+                                           ]
+                                         ));
+                                      t_ty =
+                                      { Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = integer;
+                                             ts_args = []; ts_alias = None },
+                                           []))
+                                        };
+                                      t_attrs = []; t_loc = foo.mli:26:30 };
+                                     { Tterm.t_node =
+                                       (Tterm.Tapp (
+                                          { Symbols.ls_name =
+                                            Gospelstdlib.integer_of_int;
+                                            ls_args =
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = int;
+                                                    ts_args = [];
+                                                    ts_alias = None },
+                                                  []))
+                                               }
+                                              ];
+                                            ls_value =
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = integer;
+                                                   ts_args = [];
+                                                   ts_alias = None },
+                                                 []))
+                                              };
+                                            ls_constr = false; ls_field = false
+                                            },
+                                          [{ Tterm.t_node =
+                                             (Tterm.Tvar
+                                                { Symbols.vs_name = y;
+                                                  vs_ty =
+                                                  { Ttypes.ty_node =
+                                                    (Ttypes.Tyapp (
+                                                       { Ttypes.ts_ident = int;
+                                                         ts_args = [];
+                                                         ts_alias = None },
+                                                       []))
+                                                    }
+                                                  });
+                                             t_ty =
+                                             { Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = int;
+                                                    ts_args = [];
+                                                    ts_alias = None },
+                                                  []))
+                                               };
+                                             t_attrs = [];
+                                             t_loc = foo.mli:26:35 }
+                                            ]
+                                          ));
+                                       t_ty =
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = integer;
+                                              ts_args = []; ts_alias = None },
+                                            []))
+                                         };
+                                       t_attrs = []; t_loc = foo.mli:26:35 }
+                                     ]
+                                   ));
+                                t_ty =
+                                { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = bool; ts_args = [];
                                        ts_alias = None },
                                      []))
-                                  });
-                          t_attrs = []; t_loc = foo.mli:24:49 }
+                                  };
+                                t_attrs = []; t_loc = foo.mli:26:30 },
+                              { Tterm.t_node =
+                                (Tterm.Tapp (
+                                   { Symbols.ls_name = Foo.is_sorted_list;
+                                     ls_args =
+                                     [{ Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = list;
+                                             ts_args =
+                                             [{ Ttypes.tv_name = a_1 }];
+                                             ts_alias = None },
+                                           [{ Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = int;
+                                                   ts_args = [];
+                                                   ts_alias = None },
+                                                 []))
+                                              }
+                                             ]
+                                           ))
+                                        }
+                                       ];
+                                     ls_value =
+                                     { Ttypes.ty_node =
+                                       (Ttypes.Tyapp (
+                                          { Ttypes.ts_ident = bool;
+                                            ts_args = []; ts_alias = None },
+                                          []))
+                                       };
+                                     ls_constr = false; ls_field = false },
+                                   [{ Tterm.t_node =
+                                      (Tterm.Tvar
+                                         { Symbols.vs_name = t_2;
+                                           vs_ty =
+                                           { Ttypes.ty_node =
+                                             (Ttypes.Tyapp (
+                                                { Ttypes.ts_ident = list;
+                                                  ts_args =
+                                                  [{ Ttypes.tv_name = a_1 }];
+                                                  ts_alias = None },
+                                                [{ Ttypes.ty_node =
+                                                   (Ttypes.Tyapp (
+                                                      { Ttypes.ts_ident = int;
+                                                        ts_args = [];
+                                                        ts_alias = None },
+                                                      []))
+                                                   }
+                                                  ]
+                                                ))
+                                             }
+                                           });
+                                      t_ty =
+                                      { Ttypes.ty_node =
+                                        (Ttypes.Tyapp (
+                                           { Ttypes.ts_ident = list;
+                                             ts_args =
+                                             [{ Ttypes.tv_name = a_1 }];
+                                             ts_alias = None },
+                                           [{ Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = int;
+                                                   ts_args = [];
+                                                   ts_alias = None },
+                                                 []))
+                                              }
+                                             ]
+                                           ))
+                                        };
+                                      t_attrs = []; t_loc = foo.mli:26:55 }
+                                     ]
+                                   ));
+                                t_ty =
+                                { Ttypes.ty_node =
+                                  (Ttypes.Tyapp (
+                                     { Ttypes.ts_ident = bool; ts_args = [];
+                                       ts_alias = None },
+                                     []))
+                                  };
+                                t_attrs = []; t_loc = foo.mli:26:40 }
+                              ));
+                           t_ty =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = bool; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             };
+                           t_attrs = []; t_loc = foo.mli:26:30 })
                         ]
                       ));
-                   t_ty = None; t_attrs = []; t_loc = foo.mli:24:49 });
+                   t_ty =
+                   { Ttypes.ty_node =
+                     (Ttypes.Tyapp (
+                        { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None
+                          },
+                        []))
+                     };
+                   t_attrs = []; t_loc = foo.mli:24:49 });
            fun_spec = None;
            fun_text =
            " predicate rec is_sorted_list (l: int list) = match l with\n      | [] | _ :: [] -> true\n      | h :: (y :: _ as t) -> h <= y /\\ is_sorted_list t ";
@@ -1794,8 +1651,14 @@ First, create a test artifact:
                              { Ttypes.ty_node =
                                (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) }
                              ];
-                           ls_value = None; ls_constr = false; ls_field = false
-                           },
+                           ls_value =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = bool; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             };
+                           ls_constr = false; ls_field = false },
                          [{ Tterm.t_node =
                             (Tterm.Tfield (
                                { Tterm.t_node =
@@ -1816,19 +1679,17 @@ First, create a test artifact:
                                         }
                                       });
                                  t_ty =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = t;
-                                              ts_args =
-                                              [{ Ttypes.tv_name = a }];
-                                              ts_alias = None },
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a })
-                                               }
-                                              ]
-                                            ))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = t;
+                                        ts_args = [{ Ttypes.tv_name = a }];
+                                        ts_alias = None },
+                                      [{ Ttypes.ty_node =
+                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                         }
+                                        ]
+                                      ))
+                                   };
                                  t_attrs = []; t_loc = foo.mli:32:12 },
                                { Symbols.ls_name = contents;
                                  ls_args =
@@ -1845,60 +1706,111 @@ First, create a test artifact:
                                     }
                                    ];
                                  ls_value =
-                                 (Some { Ttypes.ty_node =
-                                         (Ttypes.Tyapp (
-                                            { Ttypes.ts_ident = list;
-                                              ts_args =
-                                              [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a })
-                                               }
-                                              ]
-                                            ))
-                                         });
+                                 { Ttypes.ty_node =
+                                   (Ttypes.Tyapp (
+                                      { Ttypes.ts_ident = list;
+                                        ts_args = [{ Ttypes.tv_name = a_1 }];
+                                        ts_alias = None },
+                                      [{ Ttypes.ty_node =
+                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                         }
+                                        ]
+                                      ))
+                                   };
                                  ls_constr = false; ls_field = true }
                                ));
                             t_ty =
-                            (Some { Ttypes.ty_node =
-                                    (Ttypes.Tyapp (
-                                       { Ttypes.ts_ident = list;
-                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                          }
-                                         ]
-                                       ))
-                                    });
+                            { Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = list;
+                                   ts_args = [{ Ttypes.tv_name = a_1 }];
+                                   ts_alias = None },
+                                 [{ Ttypes.ty_node =
+                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                   ]
+                                 ))
+                              };
                             t_attrs = []; t_loc = foo.mli:32:12 };
                            { Tterm.t_node =
                              (Tterm.Tif (
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
-                                     { Symbols.ls_name = infix =;
+                                     { Symbols.ls_name = Foo.is_full;
                                        ls_args =
                                        [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar
-                                             { Ttypes.tv_name = a_2 })
+                                          (Ttypes.Tyapp (
+                                             { Ttypes.ts_ident = list;
+                                               ts_args =
+                                               [{ Ttypes.tv_name = a_1 }];
+                                               ts_alias = None },
+                                             [{ Ttypes.ty_node =
+                                                (Ttypes.Tyvar
+                                                   { Ttypes.tv_name = a })
+                                                }
+                                               ]
+                                             ))
                                           };
                                          { Ttypes.ty_node =
-                                           (Ttypes.Tyvar
-                                              { Ttypes.tv_name = a_2 })
+                                           (Ttypes.Tyapp (
+                                              { Ttypes.ts_ident = integer;
+                                                ts_args = []; ts_alias = None },
+                                              []))
                                            }
                                          ];
-                                       ls_value = None; ls_constr = false;
-                                       ls_field = false },
+                                       ls_value =
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = bool;
+                                              ts_args = []; ts_alias = None },
+                                            []))
+                                         };
+                                       ls_constr = false; ls_field = false },
                                      [{ Tterm.t_node =
-                                        (Tterm.Tapp (
-                                           { Symbols.ls_name = Foo.is_full;
+                                        (Tterm.Tfield (
+                                           { Tterm.t_node =
+                                             (Tterm.Tvar
+                                                { Symbols.vs_name = t_3;
+                                                  vs_ty =
+                                                  { Ttypes.ty_node =
+                                                    (Ttypes.Tyapp (
+                                                       { Ttypes.ts_ident = t;
+                                                         ts_args =
+                                                         [{ Ttypes.tv_name = a
+                                                            }
+                                                           ];
+                                                         ts_alias = None },
+                                                       [{ Ttypes.ty_node =
+                                                          (Ttypes.Tyvar
+                                                             { Ttypes.tv_name =
+                                                               a })
+                                                          }
+                                                         ]
+                                                       ))
+                                                    }
+                                                  });
+                                             t_ty =
+                                             { Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = t;
+                                                    ts_args =
+                                                    [{ Ttypes.tv_name = a }];
+                                                    ts_alias = None },
+                                                  [{ Ttypes.ty_node =
+                                                     (Ttypes.Tyvar
+                                                        { Ttypes.tv_name = a })
+                                                     }
+                                                    ]
+                                                  ))
+                                               };
+                                             t_attrs = [];
+                                             t_loc = foo.mli:32:36 },
+                                           { Symbols.ls_name = contents;
                                              ls_args =
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = list;
+                                                   { Ttypes.ts_ident = t;
                                                      ts_args =
-                                                     [{ Ttypes.tv_name = a_1 }];
+                                                     [{ Ttypes.tv_name = a }];
                                                      ts_alias = None },
                                                    [{ Ttypes.ty_node =
                                                       (Ttypes.Tyvar
@@ -1906,52 +1818,70 @@ First, create a test artifact:
                                                       }
                                                      ]
                                                    ))
-                                                };
-                                               { Ttypes.ty_node =
+                                                }
+                                               ];
+                                             ls_value =
+                                             { Ttypes.ty_node =
+                                               (Ttypes.Tyapp (
+                                                  { Ttypes.ts_ident = list;
+                                                    ts_args =
+                                                    [{ Ttypes.tv_name = a_1 }];
+                                                    ts_alias = None },
+                                                  [{ Ttypes.ty_node =
+                                                     (Ttypes.Tyvar
+                                                        { Ttypes.tv_name = a })
+                                                     }
+                                                    ]
+                                                  ))
+                                               };
+                                             ls_constr = false; ls_field = true
+                                             }
+                                           ));
+                                        t_ty =
+                                        { Ttypes.ty_node =
+                                          (Ttypes.Tyapp (
+                                             { Ttypes.ts_ident = list;
+                                               ts_args =
+                                               [{ Ttypes.tv_name = a_1 }];
+                                               ts_alias = None },
+                                             [{ Ttypes.ty_node =
+                                                (Ttypes.Tyvar
+                                                   { Ttypes.tv_name = a })
+                                                }
+                                               ]
+                                             ))
+                                          };
+                                        t_attrs = []; t_loc = foo.mli:32:36 };
+                                       { Tterm.t_node =
+                                         (Tterm.Tapp (
+                                            { Symbols.ls_name =
+                                              Gospelstdlib.integer_of_int;
+                                              ls_args =
+                                              [{ Ttypes.ty_node =
                                                  (Ttypes.Tyapp (
-                                                    { Ttypes.ts_ident = integer;
+                                                    { Ttypes.ts_ident = int;
                                                       ts_args = [];
                                                       ts_alias = None },
                                                     []))
                                                  }
-                                               ];
-                                             ls_value =
-                                             (Some { Ttypes.ty_node =
-                                                     (Ttypes.Tyapp (
-                                                        { Ttypes.ts_ident =
-                                                          bool; ts_args = [];
-                                                          ts_alias = None },
-                                                        []))
-                                                     });
-                                             ls_constr = false;
-                                             ls_field = false },
-                                           [{ Tterm.t_node =
-                                              (Tterm.Tfield (
-                                                 { Tterm.t_node =
-                                                   (Tterm.Tvar
-                                                      { Symbols.vs_name = t_3;
-                                                        vs_ty =
-                                                        { Ttypes.ty_node =
-                                                          (Ttypes.Tyapp (
-                                                             { Ttypes.ts_ident =
-                                                               t;
-                                                               ts_args =
-                                                               [{ Ttypes.tv_name =
-                                                                  a }
-                                                                 ];
-                                                               ts_alias = None
-                                                               },
-                                                             [{ Ttypes.ty_node =
-                                                                (Ttypes.Tyvar
-                                                                   { Ttypes.tv_name =
-                                                                     a })
-                                                                }
-                                                               ]
-                                                             ))
-                                                          }
-                                                        });
-                                                   t_ty =
-                                                   (Some { Ttypes.ty_node =
+                                                ];
+                                              ls_value =
+                                              { Ttypes.ty_node =
+                                                (Ttypes.Tyapp (
+                                                   { Ttypes.ts_ident = integer;
+                                                     ts_args = [];
+                                                     ts_alias = None },
+                                                   []))
+                                                };
+                                              ls_constr = false;
+                                              ls_field = false },
+                                            [{ Tterm.t_node =
+                                               (Tterm.Tfield (
+                                                  { Tterm.t_node =
+                                                    (Tterm.Tvar
+                                                       { Symbols.vs_name = t_3;
+                                                         vs_ty =
+                                                         { Ttypes.ty_node =
                                                            (Ttypes.Tyapp (
                                                               { Ttypes.ts_ident =
                                                                 t;
@@ -1968,12 +1898,10 @@ First, create a test artifact:
                                                                  }
                                                                 ]
                                                               ))
-                                                           });
-                                                   t_attrs = [];
-                                                   t_loc = foo.mli:32:36 },
-                                                 { Symbols.ls_name = contents;
-                                                   ls_args =
-                                                   [{ Ttypes.ty_node =
+                                                           }
+                                                         });
+                                                    t_ty =
+                                                    { Ttypes.ty_node =
                                                       (Ttypes.Tyapp (
                                                          { Ttypes.ts_ident = t;
                                                            ts_args =
@@ -1988,217 +1916,69 @@ First, create a test artifact:
                                                             }
                                                            ]
                                                          ))
-                                                      }
-                                                     ];
-                                                   ls_value =
-                                                   (Some { Ttypes.ty_node =
-                                                           (Ttypes.Tyapp (
-                                                              { Ttypes.ts_ident =
-                                                                list;
-                                                                ts_args =
-                                                                [{ Ttypes.tv_name =
-                                                                   a_1 }
-                                                                  ];
-                                                                ts_alias = None
-                                                                },
-                                                              [{ Ttypes.ty_node =
-                                                                 (Ttypes.Tyvar
-                                                                    { Ttypes.tv_name =
-                                                                      a })
-                                                                 }
-                                                                ]
-                                                              ))
-                                                           });
-                                                   ls_constr = false;
-                                                   ls_field = true }
-                                                 ));
-                                              t_ty =
-                                              (Some { Ttypes.ty_node =
-                                                      (Ttypes.Tyapp (
-                                                         { Ttypes.ts_ident =
-                                                           list;
-                                                           ts_args =
-                                                           [{ Ttypes.tv_name =
-                                                              a_1 }
-                                                             ];
-                                                           ts_alias = None },
-                                                         [{ Ttypes.ty_node =
-                                                            (Ttypes.Tyvar
-                                                               { Ttypes.tv_name =
-                                                                 a })
-                                                            }
-                                                           ]
-                                                         ))
-                                                      });
-                                              t_attrs = [];
-                                              t_loc = foo.mli:32:36 };
-                                             { Tterm.t_node =
-                                               (Tterm.Tapp (
-                                                  { Symbols.ls_name =
-                                                    Gospelstdlib.integer_of_int;
+                                                      };
+                                                    t_attrs = [];
+                                                    t_loc = foo.mli:32:47 },
+                                                  { Symbols.ls_name = size;
                                                     ls_args =
                                                     [{ Ttypes.ty_node =
                                                        (Ttypes.Tyapp (
-                                                          { Ttypes.ts_ident =
-                                                            int; ts_args = [];
+                                                          { Ttypes.ts_ident = t;
+                                                            ts_args =
+                                                            [{ Ttypes.tv_name =
+                                                               a }
+                                                              ];
                                                             ts_alias = None },
-                                                          []))
+                                                          [{ Ttypes.ty_node =
+                                                             (Ttypes.Tyvar
+                                                                { Ttypes.tv_name =
+                                                                  a })
+                                                             }
+                                                            ]
+                                                          ))
                                                        }
                                                       ];
                                                     ls_value =
-                                                    (Some { Ttypes.ty_node =
-                                                            (Ttypes.Tyapp (
-                                                               { Ttypes.ts_ident =
-                                                                 integer;
-                                                                 ts_args = [];
-                                                                 ts_alias =
-                                                                 None },
-                                                               []))
-                                                            });
-                                                    ls_constr = false;
-                                                    ls_field = false },
-                                                  [{ Tterm.t_node =
-                                                     (Tterm.Tfield (
-                                                        { Tterm.t_node =
-                                                          (Tterm.Tvar
-                                                             { Symbols.vs_name =
-                                                               t_3;
-                                                               vs_ty =
-                                                               { Ttypes.ty_node =
-                                                                 (Ttypes.Tyapp (
-                                                                    { Ttypes.ts_ident =
-                                                                      t;
-                                                                      ts_args =
-                                                                      [{ Ttypes.tv_name =
-                                                                      a }];
-                                                                      ts_alias =
-                                                                      None },
-                                                                    [{ Ttypes.ty_node =
-                                                                      (Ttypes.Tyvar
-                                                                      { Ttypes.tv_name =
-                                                                      a }) }]
-                                                                    ))
-                                                                 }
-                                                               });
-                                                          t_ty =
-                                                          (Some { Ttypes.ty_node =
-                                                                  (Ttypes.Tyapp (
-                                                                     { Ttypes.ts_ident =
-                                                                      t;
-                                                                      ts_args =
-                                                                      [{ Ttypes.tv_name =
-                                                                      a }];
-                                                                      ts_alias =
-                                                                      None },
-                                                                     [{ Ttypes.ty_node =
-                                                                      (Ttypes.Tyvar
-                                                                      { Ttypes.tv_name =
-                                                                      a }) }]
-                                                                     ))
-                                                                  });
-                                                          t_attrs = [];
-                                                          t_loc = foo.mli:32:47
-                                                          },
-                                                        { Symbols.ls_name =
-                                                          size;
-                                                          ls_args =
-                                                          [{ Ttypes.ty_node =
-                                                             (Ttypes.Tyapp (
-                                                                { Ttypes.ts_ident =
-                                                                  t;
-                                                                  ts_args =
-                                                                  [{ Ttypes.tv_name =
-                                                                     a }
-                                                                    ];
-                                                                  ts_alias =
-                                                                  None },
-                                                                [{ Ttypes.ty_node =
-                                                                   (Ttypes.Tyvar
-                                                                      { Ttypes.tv_name =
-                                                                      a })
-                                                                   }
-                                                                  ]
-                                                                ))
-                                                             }
-                                                            ];
-                                                          ls_value =
-                                                          (Some { Ttypes.ty_node =
-                                                                  (Ttypes.Tyapp (
-                                                                     { Ttypes.ts_ident =
-                                                                      int;
-                                                                      ts_args =
-                                                                      [];
-                                                                      ts_alias =
-                                                                      None },
-                                                                     []))
-                                                                  });
-                                                          ls_constr = false;
-                                                          ls_field = true }
-                                                        ));
-                                                     t_ty =
-                                                     (Some { Ttypes.ty_node =
-                                                             (Ttypes.Tyapp (
-                                                                { Ttypes.ts_ident =
-                                                                  int;
-                                                                  ts_args = [];
-                                                                  ts_alias =
-                                                                  None },
-                                                                []))
-                                                             });
-                                                     t_attrs = [];
-                                                     t_loc = foo.mli:32:47 }
-                                                    ]
-                                                  ));
-                                               t_ty =
-                                               (Some { Ttypes.ty_node =
-                                                       (Ttypes.Tyapp (
-                                                          { Ttypes.ts_ident =
-                                                            integer;
-                                                            ts_args = [];
-                                                            ts_alias = None },
-                                                          []))
-                                                       });
-                                               t_attrs = [];
-                                               t_loc = foo.mli:32:47 }
-                                             ]
-                                           ));
-                                        t_ty =
-                                        (Some { Ttypes.ty_node =
-                                                (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = bool;
-                                                     ts_args = [];
-                                                     ts_alias = None },
-                                                   []))
-                                                });
-                                        t_attrs = []; t_loc = foo.mli:32:28 };
-                                       { Tterm.t_node =
-                                         (Tterm.Tapp (
-                                            { Symbols.ls_name = true;
-                                              ls_args = [];
-                                              ls_value =
-                                              (Some { Ttypes.ty_node =
+                                                    { Ttypes.ty_node =
                                                       (Ttypes.Tyapp (
                                                          { Ttypes.ts_ident =
-                                                           bool; ts_args = [];
+                                                           int; ts_args = [];
                                                            ts_alias = None },
                                                          []))
-                                                      });
-                                              ls_constr = true;
-                                              ls_field = false },
-                                            []));
-                                         t_ty =
-                                         (Some { Ttypes.ty_node =
+                                                      };
+                                                    ls_constr = false;
+                                                    ls_field = true }
+                                                  ));
+                                               t_ty =
+                                               { Ttypes.ty_node =
                                                  (Ttypes.Tyapp (
-                                                    { Ttypes.ts_ident = bool;
+                                                    { Ttypes.ts_ident = int;
                                                       ts_args = [];
                                                       ts_alias = None },
                                                     []))
-                                                 });
-                                         t_attrs = []; t_loc = foo.mli:32:28 }
+                                                 };
+                                               t_attrs = [];
+                                               t_loc = foo.mli:32:47 }
+                                              ]
+                                            ));
+                                         t_ty =
+                                         { Ttypes.ty_node =
+                                           (Ttypes.Tyapp (
+                                              { Ttypes.ts_ident = integer;
+                                                ts_args = []; ts_alias = None },
+                                              []))
+                                           };
+                                         t_attrs = []; t_loc = foo.mli:32:47 }
                                        ]
                                      ));
-                                  t_ty = None; t_attrs = [];
-                                  t_loc = foo.mli:32:28 },
+                                  t_ty =
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = bool; ts_args = [];
+                                         ts_alias = None },
+                                       []))
+                                    };
+                                  t_attrs = []; t_loc = foo.mli:32:28 },
                                 { Tterm.t_node =
                                   (Tterm.Told
                                      { Tterm.t_node =
@@ -2224,22 +2004,19 @@ First, create a test artifact:
                                                    }
                                                  });
                                             t_ty =
-                                            (Some { Ttypes.ty_node =
-                                                    (Ttypes.Tyapp (
-                                                       { Ttypes.ts_ident = t;
-                                                         ts_args =
-                                                         [{ Ttypes.tv_name = a
-                                                            }
-                                                           ];
-                                                         ts_alias = None },
-                                                       [{ Ttypes.ty_node =
-                                                          (Ttypes.Tyvar
-                                                             { Ttypes.tv_name =
-                                                               a })
-                                                          }
-                                                         ]
-                                                       ))
-                                                    });
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = t;
+                                                   ts_args =
+                                                   [{ Ttypes.tv_name = a }];
+                                                   ts_alias = None },
+                                                 [{ Ttypes.ty_node =
+                                                    (Ttypes.Tyvar
+                                                       { Ttypes.tv_name = a })
+                                                    }
+                                                   ]
+                                                 ))
+                                              };
                                             t_attrs = []; t_loc = foo.mli:33:34
                                             },
                                           { Symbols.ls_name = contents;
@@ -2259,54 +2036,49 @@ First, create a test artifact:
                                                }
                                               ];
                                             ls_value =
-                                            (Some { Ttypes.ty_node =
-                                                    (Ttypes.Tyapp (
-                                                       { Ttypes.ts_ident = list;
-                                                         ts_args =
-                                                         [{ Ttypes.tv_name =
-                                                            a_1 }
-                                                           ];
-                                                         ts_alias = None },
-                                                       [{ Ttypes.ty_node =
-                                                          (Ttypes.Tyvar
-                                                             { Ttypes.tv_name =
-                                                               a })
-                                                          }
-                                                         ]
-                                                       ))
-                                                    });
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = list;
+                                                   ts_args =
+                                                   [{ Ttypes.tv_name = a_1 }];
+                                                   ts_alias = None },
+                                                 [{ Ttypes.ty_node =
+                                                    (Ttypes.Tyvar
+                                                       { Ttypes.tv_name = a })
+                                                    }
+                                                   ]
+                                                 ))
+                                              };
                                             ls_constr = false; ls_field = true
                                             }
                                           ));
                                        t_ty =
-                                       (Some { Ttypes.ty_node =
-                                               (Ttypes.Tyapp (
-                                                  { Ttypes.ts_ident = list;
-                                                    ts_args =
-                                                    [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
-                                                  [{ Ttypes.ty_node =
-                                                     (Ttypes.Tyvar
-                                                        { Ttypes.tv_name = a })
-                                                     }
-                                                    ]
-                                                  ))
-                                               });
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = list;
+                                              ts_args =
+                                              [{ Ttypes.tv_name = a_1 }];
+                                              ts_alias = None },
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyvar
+                                                  { Ttypes.tv_name = a })
+                                               }
+                                              ]
+                                            ))
+                                         };
                                        t_attrs = []; t_loc = foo.mli:33:34 });
                                   t_ty =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a })
-                                                }
-                                               ]
-                                             ))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                          }
+                                         ]
+                                       ))
+                                    };
                                   t_attrs = []; t_loc = foo.mli:33:30 },
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
@@ -2331,20 +2103,19 @@ First, create a test artifact:
                                            }
                                          ];
                                        ls_value =
-                                       (Some { Ttypes.ty_node =
-                                               (Ttypes.Tyapp (
-                                                  { Ttypes.ts_ident = list;
-                                                    ts_args =
-                                                    [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
-                                                  [{ Ttypes.ty_node =
-                                                     (Ttypes.Tyvar
-                                                        { Ttypes.tv_name = a_1
-                                                          })
-                                                     }
-                                                    ]
-                                                  ))
-                                               });
+                                       { Ttypes.ty_node =
+                                         (Ttypes.Tyapp (
+                                            { Ttypes.ts_ident = list;
+                                              ts_args =
+                                              [{ Ttypes.tv_name = a_1 }];
+                                              ts_alias = None },
+                                            [{ Ttypes.ty_node =
+                                               (Ttypes.Tyvar
+                                                  { Ttypes.tv_name = a_1 })
+                                               }
+                                              ]
+                                            ))
+                                         };
                                        ls_constr = true; ls_field = false },
                                      [{ Tterm.t_node =
                                         (Tterm.Tvar
@@ -2356,10 +2127,9 @@ First, create a test artifact:
                                                }
                                              });
                                         t_ty =
-                                        (Some { Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a })
-                                                });
+                                        { Ttypes.ty_node =
+                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                          };
                                         t_attrs = []; t_loc = foo.mli:34:30 };
                                        { Tterm.t_node =
                                          (Tterm.Told
@@ -2389,24 +2159,22 @@ First, create a test artifact:
                                                           }
                                                         });
                                                    t_ty =
-                                                   (Some { Ttypes.ty_node =
-                                                           (Ttypes.Tyapp (
-                                                              { Ttypes.ts_ident =
-                                                                t;
-                                                                ts_args =
-                                                                [{ Ttypes.tv_name =
-                                                                   a }
-                                                                  ];
-                                                                ts_alias = None
-                                                                },
-                                                              [{ Ttypes.ty_node =
-                                                                 (Ttypes.Tyvar
-                                                                    { Ttypes.tv_name =
-                                                                      a })
-                                                                 }
-                                                                ]
-                                                              ))
-                                                           });
+                                                   { Ttypes.ty_node =
+                                                     (Ttypes.Tyapp (
+                                                        { Ttypes.ts_ident = t;
+                                                          ts_args =
+                                                          [{ Ttypes.tv_name = a
+                                                             }
+                                                            ];
+                                                          ts_alias = None },
+                                                        [{ Ttypes.ty_node =
+                                                           (Ttypes.Tyvar
+                                                              { Ttypes.tv_name =
+                                                                a })
+                                                           }
+                                                          ]
+                                                        ))
+                                                     };
                                                    t_attrs = [];
                                                    t_loc = foo.mli:34:40 },
                                                  { Symbols.ls_name = contents;
@@ -2429,98 +2197,95 @@ First, create a test artifact:
                                                       }
                                                      ];
                                                    ls_value =
-                                                   (Some { Ttypes.ty_node =
-                                                           (Ttypes.Tyapp (
-                                                              { Ttypes.ts_ident =
-                                                                list;
-                                                                ts_args =
-                                                                [{ Ttypes.tv_name =
-                                                                   a_1 }
-                                                                  ];
-                                                                ts_alias = None
-                                                                },
-                                                              [{ Ttypes.ty_node =
-                                                                 (Ttypes.Tyvar
-                                                                    { Ttypes.tv_name =
-                                                                      a })
-                                                                 }
-                                                                ]
-                                                              ))
-                                                           });
+                                                   { Ttypes.ty_node =
+                                                     (Ttypes.Tyapp (
+                                                        { Ttypes.ts_ident =
+                                                          list;
+                                                          ts_args =
+                                                          [{ Ttypes.tv_name =
+                                                             a_1 }
+                                                            ];
+                                                          ts_alias = None },
+                                                        [{ Ttypes.ty_node =
+                                                           (Ttypes.Tyvar
+                                                              { Ttypes.tv_name =
+                                                                a })
+                                                           }
+                                                          ]
+                                                        ))
+                                                     };
                                                    ls_constr = false;
                                                    ls_field = true }
                                                  ));
                                               t_ty =
-                                              (Some { Ttypes.ty_node =
-                                                      (Ttypes.Tyapp (
-                                                         { Ttypes.ts_ident =
-                                                           list;
-                                                           ts_args =
-                                                           [{ Ttypes.tv_name =
-                                                              a_1 }
-                                                             ];
-                                                           ts_alias = None },
-                                                         [{ Ttypes.ty_node =
-                                                            (Ttypes.Tyvar
-                                                               { Ttypes.tv_name =
-                                                                 a })
-                                                            }
-                                                           ]
-                                                         ))
-                                                      });
+                                              { Ttypes.ty_node =
+                                                (Ttypes.Tyapp (
+                                                   { Ttypes.ts_ident = list;
+                                                     ts_args =
+                                                     [{ Ttypes.tv_name = a_1 }];
+                                                     ts_alias = None },
+                                                   [{ Ttypes.ty_node =
+                                                      (Ttypes.Tyvar
+                                                         { Ttypes.tv_name = a })
+                                                      }
+                                                     ]
+                                                   ))
+                                                };
                                               t_attrs = [];
                                               t_loc = foo.mli:34:40 });
                                          t_ty =
-                                         (Some { Ttypes.ty_node =
-                                                 (Ttypes.Tyapp (
-                                                    { Ttypes.ts_ident = list;
-                                                      ts_args =
-                                                      [{ Ttypes.tv_name = a_1 }
-                                                        ];
-                                                      ts_alias = None },
-                                                    [{ Ttypes.ty_node =
-                                                       (Ttypes.Tyvar
-                                                          { Ttypes.tv_name = a
-                                                            })
-                                                       }
-                                                      ]
-                                                    ))
-                                                 });
+                                         { Ttypes.ty_node =
+                                           (Ttypes.Tyapp (
+                                              { Ttypes.ts_ident = list;
+                                                ts_args =
+                                                [{ Ttypes.tv_name = a_1 }];
+                                                ts_alias = None },
+                                              [{ Ttypes.ty_node =
+                                                 (Ttypes.Tyvar
+                                                    { Ttypes.tv_name = a })
+                                                 }
+                                                ]
+                                              ))
+                                           };
                                          t_attrs = []; t_loc = foo.mli:34:35 }
                                        ]
                                      ));
                                   t_ty =
-                                  (Some { Ttypes.ty_node =
-                                          (Ttypes.Tyapp (
-                                             { Ttypes.ts_ident = list;
-                                               ts_args =
-                                               [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
-                                             [{ Ttypes.ty_node =
-                                                (Ttypes.Tyvar
-                                                   { Ttypes.tv_name = a })
-                                                }
-                                               ]
-                                             ))
-                                          });
+                                  { Ttypes.ty_node =
+                                    (Ttypes.Tyapp (
+                                       { Ttypes.ts_ident = list;
+                                         ts_args = [{ Ttypes.tv_name = a_1 }];
+                                         ts_alias = None },
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
+                                          }
+                                         ]
+                                       ))
+                                    };
                                   t_attrs = []; t_loc = foo.mli:34:30 }
                                 ));
                              t_ty =
-                             (Some { Ttypes.ty_node =
-                                     (Ttypes.Tyapp (
-                                        { Ttypes.ts_ident = list;
-                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                          ts_alias = None },
-                                        [{ Ttypes.ty_node =
-                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                           }
-                                          ]
-                                        ))
-                                     });
+                             { Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = list;
+                                    ts_args = [{ Ttypes.tv_name = a_1 }];
+                                    ts_alias = None },
+                                  [{ Ttypes.ty_node =
+                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                    ]
+                                  ))
+                               };
                              t_attrs = []; t_loc = foo.mli:32:25 }
                            ]
                          ));
-                      t_ty = None; t_attrs = []; t_loc = foo.mli:32:12 }
+                      t_ty =
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = bool; ts_args = [];
+                             ts_alias = None },
+                           []))
+                        };
+                      t_attrs = []; t_loc = foo.mli:32:12 }
                      ];
                    sp_xpost = [];
                    sp_wr =
@@ -2542,17 +2307,16 @@ First, create a test artifact:
                                   }
                                 });
                            t_ty =
-                           (Some { Ttypes.ty_node =
-                                   (Ttypes.Tyapp (
-                                      { Ttypes.ts_ident = t;
-                                        ts_args = [{ Ttypes.tv_name = a }];
-                                        ts_alias = None },
-                                      [{ Ttypes.ty_node =
-                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                         }
-                                        ]
-                                      ))
-                                   });
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = t;
+                                  ts_args = [{ Ttypes.tv_name = a }];
+                                  ts_alias = None },
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                  ]
+                                ))
+                             };
                            t_attrs = []; t_loc = foo.mli:30:13 },
                          { Symbols.ls_name = contents;
                            ls_args =
@@ -2568,30 +2332,29 @@ First, create a test artifact:
                               }
                              ];
                            ls_value =
-                           (Some { Ttypes.ty_node =
-                                   (Ttypes.Tyapp (
-                                      { Ttypes.ts_ident = list;
-                                        ts_args = [{ Ttypes.tv_name = a_1 }];
-                                        ts_alias = None },
-                                      [{ Ttypes.ty_node =
-                                         (Ttypes.Tyvar { Ttypes.tv_name = a })
-                                         }
-                                        ]
-                                      ))
-                                   });
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = list;
+                                  ts_args = [{ Ttypes.tv_name = a_1 }];
+                                  ts_alias = None },
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                  ]
+                                ))
+                             };
                            ls_constr = false; ls_field = true }
                          ));
                       t_ty =
-                      (Some { Ttypes.ty_node =
-                              (Ttypes.Tyapp (
-                                 { Ttypes.ts_ident = list;
-                                   ts_args = [{ Ttypes.tv_name = a_1 }];
-                                   ts_alias = None },
-                                 [{ Ttypes.ty_node =
-                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                   ]
-                                 ))
-                              });
+                      { Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = list;
+                             ts_args = [{ Ttypes.tv_name = a_1 }];
+                             ts_alias = None },
+                           [{ Ttypes.ty_node =
+                              (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                             ]
+                           ))
+                        };
                       t_attrs = []; t_loc = foo.mli:30:13 }
                      ];
                    sp_cs = []; sp_diverge = false; sp_pure = false;

@@ -22,5 +22,5 @@
    [125] File "variant_integer.mli", line 13, characters 12-17:
          13 |     variant x = 0
                           ^^^^^
-         Error: A term was expected.
+         Error: This term has type bool but a term was expected of type integer.
    |gospel_expected} *)
