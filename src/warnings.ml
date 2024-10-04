@@ -23,6 +23,7 @@ type kind =
   | Illegal_escape of string * string option
   | Invalid_coercion_type of string
   | Invalid_int_literal of string * char option
+  | Label_missing of string list
   | Module_not_found of string
   | Name_clash of string
   | Not_a_constructor of string
@@ -105,6 +106,8 @@ let pp_kind ppf = function
       pf ppf "The function %s does not have a valid coercion type" f
   | Invalid_int_literal (s, c) ->
       pf ppf "Invalid int literal: %s%a" s (option char) c
+  | Label_missing labels ->
+      pf ppf "Some record fields are undefined: %a" (list ~sep:sp string) labels
   | Module_not_found m -> pf ppf "No module with name %s" m
   | Name_clash s ->
       pf ppf "A declaration for %s already exists in this context" s

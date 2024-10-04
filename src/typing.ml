@@ -235,14 +235,16 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let dty = dty_of_pty ns pty in
       dpattern_unify dp dty;
       mk_dpattern ~loc (DPcast (dp, dty)) dty dp.dp_vars
-  | Prec qpl ->
-      let cs, pjl, fll = parse_record ~loc kid ns qpl in
-      let get_pattern pj =
-        try dpattern kid ns (Mls.find pj fll)
-        with Not_found -> mk_pwild loc (dty_of_ty pj.ls_value)
+  | Prec qpl -> (
+      let cs, fields_name, fields_pattern = parse_record ~loc kid ns qpl in
+      let aux ls (patterns, missing) =
+        match Mls.find_opt ls fields_pattern with
+        | Some p -> (dpattern kid ns p :: patterns, missing)
+        | None -> (patterns, ls.ls_name.id_str :: missing)
       in
-      let dpl = List.map get_pattern pjl in
-      mk_papp ~loc cs dpl
+      match List.fold_right aux fields_name ([], []) with
+      | patterns, [] -> mk_papp ~loc cs patterns
+      | _, missing -> W.error ~loc (W.Label_missing missing))
   | Pconst c ->
       let dty =
         match c with
@@ -522,14 +524,21 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       | _ ->
           let dt = dterm whereami kid crcm ns denv t in
           mk_dterm ~loc (DTold dt) (Option.get dt.dt_dty))
-  | Uast.Trecord qtl ->
-      let cs, pjl, fll = parse_record ~loc kid ns qtl in
-      let get_term pj =
-        try dterm whereami kid crcm ns denv (Mls.find pj fll)
-        with Not_found ->
-          W.error ~loc (W.Unknown_record_field pj.ls_name.id_str)
+  | Uast.Trecord qtl -> (
+      let cs, fields_name, fields_def = parse_record ~loc kid ns qtl in
+      let dtyl, dty = specialize_ls cs in
+      let aux ls dty (fields, missing) =
+        match Mls.find_opt ls fields_def with
+        | Some t ->
+            let dt = dterm whereami kid crcm ns denv t in
+            (dterm_expected crcm dt dty :: fields, missing)
+        | None -> (fields, ls.ls_name.id_str :: missing)
       in
-      mk_app ~loc cs (List.map get_term pjl)
+      (* Uses [List.fold_right2] to keep fields in their order as records are
+         transformed into applications. *)
+      match List.fold_right2 aux fields_name dtyl ([], []) with
+      | fields, [] -> mk_dterm ~loc (DTapp (cs, fields)) dty
+      | _, missing -> W.error ~loc (W.Label_missing missing))
   | Uast.Tupdate (t, qtl) ->
       let cs, pjl, fll = parse_record ~loc kid ns qtl in
       let get_term pj =

@@ -2,6 +2,9 @@
 
 ## Improved
 
+- Collect all the missing fields in a record definition and don't accept
+  incomplete record pattern syntax that OCaml consider incorrect
+  [#418] (https://github.com/ocaml-gospel/gospel/pull/418)
 - Display proper error message for a number of unsupported construction
   [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
 - Display an error message when encoutering a Functor application
