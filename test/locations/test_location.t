@@ -65,7 +65,7 @@ First, create a test artifact:
             td_spec =
             (Some { Tast.ty_ephemeral = true;
                     ty_fields =
-                    [({ Symbols.ls_name = contents;
+                    [(Symbols.Field_symbol {ls_name = contents;
                         ls_args =
                         [{ Ttypes.ty_node =
                            (Ttypes.Tyapp (
@@ -88,10 +88,9 @@ First, create a test artifact:
                                 (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                ]
                              ))
-                          };
-                        ls_constr = false; ls_field = true },
+                          }},
                       true);
-                      ({ Symbols.ls_name = size;
+                      (Symbols.Field_symbol {ls_name = size;
                          ls_args =
                          [{ Ttypes.ty_node =
                             (Ttypes.Tyapp (
@@ -110,8 +109,7 @@ First, create a test artifact:
                               { Ttypes.ts_ident = int; ts_args = [];
                                 ts_alias = None },
                               []))
-                           };
-                         ls_constr = false; ls_field = true },
+                           }},
                        false)
                       ];
                     ty_invariants = None;
@@ -185,7 +183,8 @@ First, create a test artifact:
                    sp_checks =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = Gospelstdlib.infix >=;
+                         Symbols.Function_symbol {
+                           ls_name = Gospelstdlib.infix >=;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -206,11 +205,11 @@ First, create a test artifact:
                                 { Ttypes.ts_ident = bool; ts_args = [];
                                   ts_alias = None },
                                 []))
-                             };
-                           ls_constr = false; ls_field = false },
+                             }},
                          [{ Tterm.t_node =
                             (Tterm.Tapp (
-                               { Symbols.ls_name = Gospelstdlib.integer_of_int;
+                               Symbols.Function_symbol {
+                                 ls_name = Gospelstdlib.integer_of_int;
                                  ls_args =
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -225,8 +224,7 @@ First, create a test artifact:
                                       { Ttypes.ts_ident = integer;
                                         ts_args = []; ts_alias = None },
                                       []))
-                                   };
-                                 ls_constr = false; ls_field = false },
+                                   }},
                                [{ Tterm.t_node =
                                   (Tterm.Tvar
                                      { Symbols.vs_name = i;
@@ -279,7 +277,7 @@ First, create a test artifact:
                    sp_post =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = infix =;
+                         Symbols.Function_symbol {ls_name = infix =;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -292,8 +290,7 @@ First, create a test artifact:
                                 { Ttypes.ts_ident = bool; ts_args = [];
                                   ts_alias = None },
                                 []))
-                             };
-                           ls_constr = false; ls_field = false },
+                             }},
                          [{ Tterm.t_node =
                             (Tterm.Tfield (
                                { Tterm.t_node =
@@ -326,7 +323,7 @@ First, create a test artifact:
                                       ))
                                    };
                                  t_attrs = []; t_loc = foo.mli:11:12 },
-                               { Symbols.ls_name = contents;
+                               Symbols.Field_symbol {ls_name = contents;
                                  ls_args =
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -351,8 +348,7 @@ First, create a test artifact:
                                          }
                                         ]
                                       ))
-                                   };
-                                 ls_constr = false; ls_field = true }
+                                   }}
                                ));
                             t_ty =
                             { Ttypes.ty_node =
@@ -368,7 +364,8 @@ First, create a test artifact:
                             t_attrs = []; t_loc = foo.mli:11:12 };
                            { Tterm.t_node =
                              (Tterm.Tapp (
-                                { Symbols.ls_name = []; ls_args = [];
+                                Symbols.Constructor_symbol {ls_name = [];
+                                  ls_args = (Symbols.Cstr_tuple []);
                                   ls_value =
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -381,8 +378,7 @@ First, create a test artifact:
                                           }
                                          ]
                                        ))
-                                    };
-                                  ls_constr = true; ls_field = false },
+                                    }},
                                 []));
                              t_ty =
                              { Ttypes.ty_node =
@@ -408,7 +404,7 @@ First, create a test artifact:
                       t_attrs = []; t_loc = foo.mli:11:12 };
                      { Tterm.t_node =
                        (Tterm.Tapp (
-                          { Symbols.ls_name = infix =;
+                          Symbols.Function_symbol {ls_name = infix =;
                             ls_args =
                             [{ Ttypes.ty_node =
                                (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -421,8 +417,7 @@ First, create a test artifact:
                                  { Ttypes.ts_ident = bool; ts_args = [];
                                    ts_alias = None },
                                  []))
-                              };
-                            ls_constr = false; ls_field = false },
+                              }},
                           [{ Tterm.t_node =
                              (Tterm.Tfield (
                                 { Tterm.t_node =
@@ -456,7 +451,7 @@ First, create a test artifact:
                                        ))
                                     };
                                   t_attrs = []; t_loc = foo.mli:12:12 },
-                                { Symbols.ls_name = size;
+                                Symbols.Field_symbol {ls_name = size;
                                   ls_args =
                                   [{ Ttypes.ty_node =
                                      (Ttypes.Tyapp (
@@ -476,8 +471,7 @@ First, create a test artifact:
                                        { Ttypes.ts_ident = int; ts_args = [];
                                          ts_alias = None },
                                        []))
-                                    };
-                                  ls_constr = false; ls_field = true }
+                                    }}
                                 ));
                              t_ty =
                              { Ttypes.ty_node =
@@ -542,7 +536,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = Foo.is_full;
+           Symbols.Function_symbol {ls_name = Foo.is_full;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -563,8 +557,7 @@ First, create a test artifact:
                (Ttypes.Tyapp (
                   { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
                   []))
-               };
-             ls_constr = false; ls_field = false };
+               }};
            fun_rec = false;
            fun_params =
            [{ Symbols.vs_name = xs;
@@ -590,7 +583,7 @@ First, create a test artifact:
            fun_def =
            (Some { Tterm.t_node =
                    (Tterm.Tapp (
-                      { Symbols.ls_name = infix =;
+                      Symbols.Function_symbol {ls_name = infix =;
                         ls_args =
                         [{ Ttypes.ty_node =
                            (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -603,11 +596,11 @@ First, create a test artifact:
                              { Ttypes.ts_ident = bool; ts_args = [];
                                ts_alias = None },
                              []))
-                          };
-                        ls_constr = false; ls_field = false },
+                          }},
                       [{ Tterm.t_node =
                          (Tterm.Tapp (
-                            { Symbols.ls_name = Gospelstdlib.List.length;
+                            Symbols.Function_symbol {
+                              ls_name = Gospelstdlib.List.length;
                               ls_args =
                               [{ Ttypes.ty_node =
                                  (Ttypes.Tyapp (
@@ -626,8 +619,7 @@ First, create a test artifact:
                                    { Ttypes.ts_ident = integer; ts_args = [];
                                      ts_alias = None },
                                    []))
-                                };
-                              ls_constr = false; ls_field = false },
+                                }},
                             [{ Tterm.t_node =
                                (Tterm.Tvar
                                   { Symbols.vs_name = xs;
@@ -704,7 +696,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = Foo.with_spec;
+           Symbols.Function_symbol {ls_name = Foo.with_spec;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -738,8 +730,7 @@ First, create a test artifact:
                      }
                     ]
                   ))
-               };
-             ls_constr = false; ls_field = false };
+               }};
            fun_rec = false;
            fun_params =
            [{ Symbols.vs_name = x_1;
@@ -774,7 +765,8 @@ First, create a test artifact:
                       (Tterm.Tnot
                          { Tterm.t_node =
                            (Tterm.Tapp (
-                              { Symbols.ls_name = Gospelstdlib.List.mem;
+                              Symbols.Function_symbol {
+                                ls_name = Gospelstdlib.List.mem;
                                 ls_args =
                                 [{ Ttypes.ty_node =
                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) };
@@ -796,8 +788,7 @@ First, create a test artifact:
                                      { Ttypes.ts_ident = bool; ts_args = [];
                                        ts_alias = None },
                                      []))
-                                  };
-                                ls_constr = false; ls_field = false },
+                                  }},
                               [{ Tterm.t_node =
                                  (Tterm.Tvar
                                     { Symbols.vs_name = x_1;
@@ -895,7 +886,7 @@ First, create a test artifact:
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
-           { Symbols.ls_name = Foo.is_sorted_list;
+           Symbols.Function_symbol {ls_name = Foo.is_sorted_list;
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
@@ -916,8 +907,7 @@ First, create a test artifact:
                (Ttypes.Tyapp (
                   { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
                   []))
-               };
-             ls_constr = false; ls_field = false };
+               }};
            fun_rec = true;
            fun_params =
            [{ Symbols.vs_name = l;
@@ -979,7 +969,8 @@ First, create a test artifact:
                           (Tterm.Por (
                              { Tterm.p_node =
                                (Tterm.Papp (
-                                  { Symbols.ls_name = []; ls_args = [];
+                                  Symbols.Constructor_symbol {ls_name = [];
+                                    ls_args = (Symbols.Cstr_tuple []);
                                     ls_value =
                                     { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
@@ -992,8 +983,7 @@ First, create a test artifact:
                                             }
                                            ]
                                          ))
-                                      };
-                                    ls_constr = true; ls_field = false },
+                                      }},
                                   []));
                                p_ty =
                                { Ttypes.ty_node =
@@ -1013,25 +1003,28 @@ First, create a test artifact:
                                p_loc = foo.mli:25:8 },
                              { Tterm.p_node =
                                (Tterm.Papp (
-                                  { Symbols.ls_name = infix ::;
+                                  Symbols.Constructor_symbol {
+                                    ls_name = infix ::;
                                     ls_args =
-                                    [{ Ttypes.ty_node =
-                                       (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
-                                       };
-                                      { Ttypes.ty_node =
-                                        (Ttypes.Tyapp (
-                                           { Ttypes.ts_ident = list;
-                                             ts_args =
-                                             [{ Ttypes.tv_name = a_1 }];
-                                             ts_alias = None },
-                                           [{ Ttypes.ty_node =
-                                              (Ttypes.Tyvar
-                                                 { Ttypes.tv_name = a_1 })
-                                              }
-                                             ]
-                                           ))
-                                        }
-                                      ];
+                                    (Symbols.Cstr_tuple
+                                       [{ Ttypes.ty_node =
+                                          (Ttypes.Tyvar
+                                             { Ttypes.tv_name = a_1 })
+                                          };
+                                         { Ttypes.ty_node =
+                                           (Ttypes.Tyapp (
+                                              { Ttypes.ts_ident = list;
+                                                ts_args =
+                                                [{ Ttypes.tv_name = a_1 }];
+                                                ts_alias = None },
+                                              [{ Ttypes.ty_node =
+                                                 (Ttypes.Tyvar
+                                                    { Ttypes.tv_name = a_1 })
+                                                 }
+                                                ]
+                                              ))
+                                           }
+                                         ]);
                                     ls_value =
                                     { Ttypes.ty_node =
                                       (Ttypes.Tyapp (
@@ -1044,8 +1037,7 @@ First, create a test artifact:
                                             }
                                            ]
                                          ))
-                                      };
-                                    ls_constr = true; ls_field = false },
+                                      }},
                                   [{ Tterm.p_node = Tterm.Pwild;
                                      p_ty =
                                      { Ttypes.ty_node =
@@ -1057,7 +1049,9 @@ First, create a test artifact:
                                      p_loc = foo.mli:25:13 };
                                     { Tterm.p_node =
                                       (Tterm.Papp (
-                                         { Symbols.ls_name = []; ls_args = [];
+                                         Symbols.Constructor_symbol {
+                                           ls_name = [];
+                                           ls_args = (Symbols.Cstr_tuple []);
                                            ls_value =
                                            { Ttypes.ty_node =
                                              (Ttypes.Tyapp (
@@ -1071,8 +1065,7 @@ First, create a test artifact:
                                                    }
                                                   ]
                                                 ))
-                                             };
-                                           ls_constr = true; ls_field = false },
+                                             }},
                                          []));
                                       p_ty =
                                       { Ttypes.ty_node =
@@ -1139,23 +1132,25 @@ First, create a test artifact:
                           t_attrs = []; t_loc = foo.mli:25:24 });
                         ({ Tterm.p_node =
                            (Tterm.Papp (
-                              { Symbols.ls_name = infix ::;
+                              Symbols.Constructor_symbol {ls_name = infix ::;
                                 ls_args =
-                                [{ Ttypes.ty_node =
-                                   (Ttypes.Tyvar { Ttypes.tv_name = a_1 }) };
-                                  { Ttypes.ty_node =
-                                    (Ttypes.Tyapp (
-                                       { Ttypes.ts_ident = list;
-                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar
-                                             { Ttypes.tv_name = a_1 })
-                                          }
-                                         ]
-                                       ))
-                                    }
-                                  ];
+                                (Symbols.Cstr_tuple
+                                   [{ Ttypes.ty_node =
+                                      (Ttypes.Tyvar { Ttypes.tv_name = a_1 }) };
+                                     { Ttypes.ty_node =
+                                       (Ttypes.Tyapp (
+                                          { Ttypes.ts_ident = list;
+                                            ts_args =
+                                            [{ Ttypes.tv_name = a_1 }];
+                                            ts_alias = None },
+                                          [{ Ttypes.ty_node =
+                                             (Ttypes.Tyvar
+                                                { Ttypes.tv_name = a_1 })
+                                             }
+                                            ]
+                                          ))
+                                       }
+                                     ]);
                                 ls_value =
                                 { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
@@ -1167,8 +1162,7 @@ First, create a test artifact:
                                         }
                                        ]
                                      ))
-                                  };
-                                ls_constr = true; ls_field = false },
+                                  }},
                               [{ Tterm.p_node =
                                  (Tterm.Pvar
                                     { Symbols.vs_name = h;
@@ -1192,27 +1186,31 @@ First, create a test artifact:
                                   (Tterm.Pas (
                                      { Tterm.p_node =
                                        (Tterm.Papp (
-                                          { Symbols.ls_name = infix ::;
+                                          Symbols.Constructor_symbol {
+                                            ls_name = infix ::;
                                             ls_args =
-                                            [{ Ttypes.ty_node =
-                                               (Ttypes.Tyvar
-                                                  { Ttypes.tv_name = a_1 })
-                                               };
-                                              { Ttypes.ty_node =
-                                                (Ttypes.Tyapp (
-                                                   { Ttypes.ts_ident = list;
-                                                     ts_args =
-                                                     [{ Ttypes.tv_name = a_1 }];
-                                                     ts_alias = None },
-                                                   [{ Ttypes.ty_node =
-                                                      (Ttypes.Tyvar
-                                                         { Ttypes.tv_name = a_1
-                                                           })
-                                                      }
-                                                     ]
-                                                   ))
-                                                }
-                                              ];
+                                            (Symbols.Cstr_tuple
+                                               [{ Ttypes.ty_node =
+                                                  (Ttypes.Tyvar
+                                                     { Ttypes.tv_name = a_1 })
+                                                  };
+                                                 { Ttypes.ty_node =
+                                                   (Ttypes.Tyapp (
+                                                      { Ttypes.ts_ident = list;
+                                                        ts_args =
+                                                        [{ Ttypes.tv_name = a_1
+                                                           }
+                                                          ];
+                                                        ts_alias = None },
+                                                      [{ Ttypes.ty_node =
+                                                         (Ttypes.Tyvar
+                                                            { Ttypes.tv_name =
+                                                              a_1 })
+                                                         }
+                                                        ]
+                                                      ))
+                                                   }
+                                                 ]);
                                             ls_value =
                                             { Ttypes.ty_node =
                                               (Ttypes.Tyapp (
@@ -1226,9 +1224,7 @@ First, create a test artifact:
                                                     }
                                                    ]
                                                  ))
-                                              };
-                                            ls_constr = true; ls_field = false
-                                            },
+                                              }},
                                           [{ Tterm.p_node =
                                              (Tterm.Pvar
                                                 { Symbols.vs_name = y;
@@ -1348,7 +1344,8 @@ First, create a test artifact:
                            (Tterm.Tbinop (Tterm.Tand,
                               { Tterm.t_node =
                                 (Tterm.Tapp (
-                                   { Symbols.ls_name = Gospelstdlib.infix <=;
+                                   Symbols.Function_symbol {
+                                     ls_name = Gospelstdlib.infix <=;
                                      ls_args =
                                      [{ Ttypes.ty_node =
                                         (Ttypes.Tyapp (
@@ -1369,11 +1366,11 @@ First, create a test artifact:
                                           { Ttypes.ts_ident = bool;
                                             ts_args = []; ts_alias = None },
                                           []))
-                                       };
-                                     ls_constr = false; ls_field = false },
+                                       }},
                                    [{ Tterm.t_node =
                                       (Tterm.Tapp (
-                                         { Symbols.ls_name =
+                                         Symbols.Function_symbol {
+                                           ls_name =
                                            Gospelstdlib.integer_of_int;
                                            ls_args =
                                            [{ Ttypes.ty_node =
@@ -1391,9 +1388,7 @@ First, create a test artifact:
                                                   ts_args = []; ts_alias = None
                                                   },
                                                 []))
-                                             };
-                                           ls_constr = false; ls_field = false
-                                           },
+                                             }},
                                          [{ Tterm.t_node =
                                             (Tterm.Tvar
                                                { Symbols.vs_name = h;
@@ -1428,7 +1423,8 @@ First, create a test artifact:
                                       t_attrs = []; t_loc = foo.mli:26:30 };
                                      { Tterm.t_node =
                                        (Tterm.Tapp (
-                                          { Symbols.ls_name =
+                                          Symbols.Function_symbol {
+                                            ls_name =
                                             Gospelstdlib.integer_of_int;
                                             ls_args =
                                             [{ Ttypes.ty_node =
@@ -1446,9 +1442,7 @@ First, create a test artifact:
                                                    ts_args = [];
                                                    ts_alias = None },
                                                  []))
-                                              };
-                                            ls_constr = false; ls_field = false
-                                            },
+                                              }},
                                           [{ Tterm.t_node =
                                              (Tterm.Tvar
                                                 { Symbols.vs_name = y;
@@ -1493,7 +1487,8 @@ First, create a test artifact:
                                 t_attrs = []; t_loc = foo.mli:26:30 },
                               { Tterm.t_node =
                                 (Tterm.Tapp (
-                                   { Symbols.ls_name = Foo.is_sorted_list;
+                                   Symbols.Function_symbol {
+                                     ls_name = Foo.is_sorted_list;
                                      ls_args =
                                      [{ Ttypes.ty_node =
                                         (Ttypes.Tyapp (
@@ -1518,8 +1513,7 @@ First, create a test artifact:
                                           { Ttypes.ts_ident = bool;
                                             ts_args = []; ts_alias = None },
                                           []))
-                                       };
-                                     ls_constr = false; ls_field = false },
+                                       }},
                                    [{ Tterm.t_node =
                                       (Tterm.Tvar
                                          { Symbols.vs_name = t_2;
@@ -1644,7 +1638,7 @@ First, create a test artifact:
                    sp_post =
                    [{ Tterm.t_node =
                       (Tterm.Tapp (
-                         { Symbols.ls_name = infix =;
+                         Symbols.Function_symbol {ls_name = infix =;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyvar { Ttypes.tv_name = a_2 }) };
@@ -1657,8 +1651,7 @@ First, create a test artifact:
                                 { Ttypes.ts_ident = bool; ts_args = [];
                                   ts_alias = None },
                                 []))
-                             };
-                           ls_constr = false; ls_field = false },
+                             }},
                          [{ Tterm.t_node =
                             (Tterm.Tfield (
                                { Tterm.t_node =
@@ -1691,7 +1684,7 @@ First, create a test artifact:
                                       ))
                                    };
                                  t_attrs = []; t_loc = foo.mli:32:12 },
-                               { Symbols.ls_name = contents;
+                               Symbols.Field_symbol {ls_name = contents;
                                  ls_args =
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyapp (
@@ -1716,8 +1709,7 @@ First, create a test artifact:
                                          }
                                         ]
                                       ))
-                                   };
-                                 ls_constr = false; ls_field = true }
+                                   }}
                                ));
                             t_ty =
                             { Ttypes.ty_node =
@@ -1735,7 +1727,8 @@ First, create a test artifact:
                              (Tterm.Tif (
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
-                                     { Symbols.ls_name = Foo.is_full;
+                                     Symbols.Function_symbol {
+                                       ls_name = Foo.is_full;
                                        ls_args =
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyapp (
@@ -1763,8 +1756,7 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = bool;
                                               ts_args = []; ts_alias = None },
                                             []))
-                                         };
-                                       ls_constr = false; ls_field = false },
+                                         }},
                                      [{ Tterm.t_node =
                                         (Tterm.Tfield (
                                            { Tterm.t_node =
@@ -1804,7 +1796,8 @@ First, create a test artifact:
                                                };
                                              t_attrs = [];
                                              t_loc = foo.mli:32:36 },
-                                           { Symbols.ls_name = contents;
+                                           Symbols.Field_symbol {
+                                             ls_name = contents;
                                              ls_args =
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyapp (
@@ -1833,9 +1826,7 @@ First, create a test artifact:
                                                      }
                                                     ]
                                                   ))
-                                               };
-                                             ls_constr = false; ls_field = true
-                                             }
+                                               }}
                                            ));
                                         t_ty =
                                         { Ttypes.ty_node =
@@ -1854,7 +1845,8 @@ First, create a test artifact:
                                         t_attrs = []; t_loc = foo.mli:32:36 };
                                        { Tterm.t_node =
                                          (Tterm.Tapp (
-                                            { Symbols.ls_name =
+                                            Symbols.Function_symbol {
+                                              ls_name =
                                               Gospelstdlib.integer_of_int;
                                               ls_args =
                                               [{ Ttypes.ty_node =
@@ -1872,9 +1864,7 @@ First, create a test artifact:
                                                      ts_args = [];
                                                      ts_alias = None },
                                                    []))
-                                                };
-                                              ls_constr = false;
-                                              ls_field = false },
+                                                }},
                                             [{ Tterm.t_node =
                                                (Tterm.Tfield (
                                                   { Tterm.t_node =
@@ -1919,7 +1909,8 @@ First, create a test artifact:
                                                       };
                                                     t_attrs = [];
                                                     t_loc = foo.mli:32:47 },
-                                                  { Symbols.ls_name = size;
+                                                  Symbols.Field_symbol {
+                                                    ls_name = size;
                                                     ls_args =
                                                     [{ Ttypes.ty_node =
                                                        (Ttypes.Tyapp (
@@ -1945,9 +1936,7 @@ First, create a test artifact:
                                                            int; ts_args = [];
                                                            ts_alias = None },
                                                          []))
-                                                      };
-                                                    ls_constr = false;
-                                                    ls_field = true }
+                                                      }}
                                                   ));
                                                t_ty =
                                                { Ttypes.ty_node =
@@ -2019,7 +2008,8 @@ First, create a test artifact:
                                               };
                                             t_attrs = []; t_loc = foo.mli:33:34
                                             },
-                                          { Symbols.ls_name = contents;
+                                          Symbols.Field_symbol {
+                                            ls_name = contents;
                                             ls_args =
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyapp (
@@ -2048,9 +2038,7 @@ First, create a test artifact:
                                                     }
                                                    ]
                                                  ))
-                                              };
-                                            ls_constr = false; ls_field = true
-                                            }
+                                              }}
                                           ));
                                        t_ty =
                                        { Ttypes.ty_node =
@@ -2082,26 +2070,28 @@ First, create a test artifact:
                                   t_attrs = []; t_loc = foo.mli:33:30 },
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
-                                     { Symbols.ls_name = infix ::;
+                                     Symbols.Constructor_symbol {
+                                       ls_name = infix ::;
                                        ls_args =
-                                       [{ Ttypes.ty_node =
-                                          (Ttypes.Tyvar
-                                             { Ttypes.tv_name = a_1 })
-                                          };
-                                         { Ttypes.ty_node =
-                                           (Ttypes.Tyapp (
-                                              { Ttypes.ts_ident = list;
-                                                ts_args =
-                                                [{ Ttypes.tv_name = a_1 }];
-                                                ts_alias = None },
-                                              [{ Ttypes.ty_node =
-                                                 (Ttypes.Tyvar
-                                                    { Ttypes.tv_name = a_1 })
-                                                 }
-                                                ]
-                                              ))
-                                           }
-                                         ];
+                                       (Symbols.Cstr_tuple
+                                          [{ Ttypes.ty_node =
+                                             (Ttypes.Tyvar
+                                                { Ttypes.tv_name = a_1 })
+                                             };
+                                            { Ttypes.ty_node =
+                                              (Ttypes.Tyapp (
+                                                 { Ttypes.ts_ident = list;
+                                                   ts_args =
+                                                   [{ Ttypes.tv_name = a_1 }];
+                                                   ts_alias = None },
+                                                 [{ Ttypes.ty_node =
+                                                    (Ttypes.Tyvar
+                                                       { Ttypes.tv_name = a_1 })
+                                                    }
+                                                   ]
+                                                 ))
+                                              }
+                                            ]);
                                        ls_value =
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
@@ -2115,8 +2105,7 @@ First, create a test artifact:
                                                }
                                               ]
                                             ))
-                                         };
-                                       ls_constr = true; ls_field = false },
+                                         }},
                                      [{ Tterm.t_node =
                                         (Tterm.Tvar
                                            { Symbols.vs_name = a_4;
@@ -2177,7 +2166,8 @@ First, create a test artifact:
                                                      };
                                                    t_attrs = [];
                                                    t_loc = foo.mli:34:40 },
-                                                 { Symbols.ls_name = contents;
+                                                 Symbols.Field_symbol {
+                                                   ls_name = contents;
                                                    ls_args =
                                                    [{ Ttypes.ty_node =
                                                       (Ttypes.Tyapp (
@@ -2213,9 +2203,7 @@ First, create a test artifact:
                                                            }
                                                           ]
                                                         ))
-                                                     };
-                                                   ls_constr = false;
-                                                   ls_field = true }
+                                                     }}
                                                  ));
                                               t_ty =
                                               { Ttypes.ty_node =
@@ -2318,7 +2306,7 @@ First, create a test artifact:
                                 ))
                              };
                            t_attrs = []; t_loc = foo.mli:30:13 },
-                         { Symbols.ls_name = contents;
+                         Symbols.Field_symbol {ls_name = contents;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -2341,8 +2329,7 @@ First, create a test artifact:
                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                   ]
                                 ))
-                             };
-                           ls_constr = false; ls_field = true }
+                             }}
                          ));
                       t_ty =
                       { Ttypes.ty_node =

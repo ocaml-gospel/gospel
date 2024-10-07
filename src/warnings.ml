@@ -21,6 +21,7 @@ type kind =
   | Functor_application of string
   | Illegal_character of char
   | Illegal_escape of string * string option
+  | Inlined_record_expected
   | Invalid_coercion_type of string
   | Invalid_int_literal of string * char option
   | Label_missing of string list
@@ -45,6 +46,7 @@ type kind =
   | Unbound_variable of string
   | Unsupported of string
   | Unterminated_comment
+  | Wrong_name of string * string
 
 type error = location * kind
 
@@ -102,6 +104,8 @@ let pp_kind ppf = function
       pf ppf "Illegal backslash escape in string or character (%s)%a" s
         (option (fmt ": %s"))
         explanation
+  | Inlined_record_expected ->
+      pf ppf "This constructor expects an inlined record argument"
   | Invalid_coercion_type f ->
       pf ppf "The function %s does not have a valid coercion type" f
   | Invalid_int_literal (s, c) ->
@@ -159,6 +163,10 @@ let pp_kind ppf = function
       pf ppf "The variable %s does not appear in this pattern" s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
+  | Wrong_name (field, constr) ->
+      pf ppf
+        "The field %s is not part of the record argument for the constructor %s"
+        field constr
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
 

@@ -57,15 +57,15 @@ let ns_add_ts ~allow_duplicate ns s ts =
 
 let ns_add_ls ~allow_duplicate:_ ns s ls =
   let ns_ls =
-    add ~allow_duplicate:true ~equal:ls_equal ~loc:ls.ls_name.id_loc ns.ns_ls s
-      ls
+    add ~allow_duplicate:true ~equal:ls_equal ~loc:(get_name ls).id_loc ns.ns_ls
+      s ls
   in
   { ns with ns_ls }
 
 let ns_add_fd ~allow_duplicate:_ ns s fd =
   let ns_fd =
-    add ~allow_duplicate:true ~equal:ls_equal ~loc:fd.ls_name.id_loc ns.ns_fd s
-      fd
+    add ~allow_duplicate:true ~equal:ls_equal ~loc:(get_name fd).id_loc ns.ns_fd
+      s fd
   in
   { ns with ns_fd }
 
@@ -266,7 +266,7 @@ let ns_with_primitives =
   Hts.add type_declarations ts_option td_option;
   Hts.add type_declarations ts_list td_list;
 
-  let primitive_ps = [ (ps_equ.ls_name.id_str, ps_equ) ] in
+  let primitive_ps = [ ((get_name ps_equ).id_str, ps_equ) ] in
   let primitive_ls =
     [
       (none.id_str, fs_option_none);
@@ -481,41 +481,37 @@ let add_sig_contents muc sig_ =
   | Sig_val (({ vd_spec = Some { sp_pure = true; _ }; _ } as v), _) ->
       let tyl = List.map ty_of_lb_arg v.vd_args in
       let ty = ty_tuple (List.map ty_of_lb_arg v.vd_ret) in
-      let ls = lsymbol ~field:false v.vd_name tyl ty in
-      let muc = add_ls ~export:true muc ls.ls_name.id_str ls in
-      add_kid muc ls.ls_name sig_
+      let ls = function_symbol v.vd_name tyl ty in
+      let muc = add_ls ~export:true muc (get_name ls).id_str ls in
+      add_kid muc (get_name ls) sig_
   | Sig_function f ->
-      let muc = add_ls ~export:true muc f.fun_ls.ls_name.id_str f.fun_ls in
+      let muc = add_ls ~export:true muc (get_name f.fun_ls).id_str f.fun_ls in
       let muc =
         match f.fun_spec with
         | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
         | _ -> muc
       in
-      add_kid muc f.fun_ls.ls_name sig_
+      add_kid muc (get_name f.fun_ls) sig_
   | Sig_type (_, tdl, _) ->
       let add_td muc td =
         let s = (ts_ident td.td_ts).id_str in
         let muc = add_ts ~export:true muc s td.td_ts in
         let csl = get_cs_pjs td.td_kind in
-        let muc =
-          List.fold_left
-            (fun muc cs ->
-              (if cs.ls_field then add_fd else add_ls)
-                ~export:true muc cs.ls_name.id_str cs)
-            muc csl
+        let add muc x =
+          match x with
+          | Field_symbol { ls_name; _ } ->
+              add_fd ~export:true muc ls_name.id_str x
+          | Constructor_symbol { ls_name; _ } | Function_symbol { ls_name; _ }
+            ->
+              add_ls ~export:true muc ls_name.id_str x
         in
+        let muc = List.fold_left add muc csl in
         let fields =
           Option.fold ~none:[]
             ~some:(fun spec -> List.map fst spec.ty_fields)
             td.td_spec
         in
-        let muc =
-          List.fold_left
-            (fun muc ls ->
-              (if ls.ls_field then add_fd else add_ls)
-                ~export:true muc ls.ls_name.id_str ls)
-            muc fields
-        in
+        let muc = List.fold_left add muc fields in
         add_kid muc td.td_ts.ts_ident sig_
       in
       List.fold_left add_td muc tdl

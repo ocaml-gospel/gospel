@@ -152,9 +152,9 @@ let parse_record ~loc kid ns fll =
     | (fs, _) :: _ -> fs
   in
   let ts =
-    match fs.ls_args with
+    match get_args fs with
     | [ { ty_node = Tyapp (ts, _) } ] -> ts
-    | _ -> W.error ~loc (W.Bad_record_field fs.ls_name.id_str)
+    | _ -> W.error ~loc (W.Bad_record_field (get_name fs).id_str)
   in
   let cs, pjl = find_constructors kid ts in
   let pjs = Sls.of_list pjl in
@@ -162,9 +162,9 @@ let parse_record ~loc kid ns fll =
     List.fold_left
       (fun m (pj, v) ->
         if not (Sls.mem pj pjs) then
-          W.error ~loc (W.Bad_record_field pj.ls_name.id_str)
+          W.error ~loc (W.Bad_record_field (get_name pj).id_str)
         else if Mls.mem pj m then
-          W.error ~loc (Duplicated_record_field pj.ls_name.id_str)
+          W.error ~loc (Duplicated_record_field (get_name pj).id_str)
         else Mls.add pj v m)
       Mls.empty fll
   in
@@ -177,7 +177,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
   let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
   let rec mk_papp ~loc cs dpl =
     let dtyl, dty = specialize_cs ~loc cs in
-    match (dpl, cs.ls_args) with
+    match (dpl, get_args cs) with
     (* allow pattern C (x,y) when the constructor C expects only one
        argument, which can be a tuple (such as ('a * 'b) option) *)
     | _ :: _ :: _, [ _ ] ->
@@ -249,7 +249,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       let aux ls (patterns, missing) =
         match Mls.find_opt ls fields_pattern with
         | Some p -> (dpattern kid ns p :: patterns, missing)
-        | None -> (patterns, ls.ls_name.id_str :: missing)
+        | None -> (patterns, (get_name ls).id_str :: missing)
       in
       match List.fold_right aux fields_name ([], []) with
       | patterns, [] -> mk_papp ~loc cs patterns
@@ -298,7 +298,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     mk_dterm ~loc (DTapp (ls, dtl)) dty
   in
   let gen_app ~loc ls tl =
-    let nls = List.length ls.ls_args and ntl = List.length tl in
+    let nls = List.length (get_args ls) and ntl = List.length tl in
     let args, extra = split_at_i nls tl in
     let dtl = List.map (dterm whereami kid crcm ns denv) args in
     let dtyl, dty = specialize_ls ls in
@@ -320,23 +320,26 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
     (* gen_app in two layers, to check that constructors are fully
        applied (and with the usual syntax) without enforcing this on
        functions *)
-    if ls.ls_constr then
-      let n = List.length ls.ls_args in
-      match tl with
-      | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
-          gen_app ~loc ls tl
-      | [ { term_desc = Ttuple tl; _ } ] when n > 1 ->
-          W.error ~loc (W.Bad_arity (ls.ls_name.id_str, n, List.length tl))
-      | _ when List.length tl < n ->
-          W.error ~loc (W.Partial_application ls.ls_name.id_str)
-      | _ :: _ :: _ when not (is_fs_tuple ls || ls_equal ls fs_list_cons) ->
-          W.error ~loc W.Syntax_error
-      | _ -> gen_app ~loc ls tl
-    else gen_app ~loc ls tl
+    match ls with
+    | Constructor_symbol { ls_name; _ } -> (
+        let n = List.length (get_args ls) in
+        match tl with
+        | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
+            gen_app ~loc ls tl
+        | [ { term_desc = Ttuple tl; _ } ] when n > 1 ->
+            W.error ~loc (W.Bad_arity (ls_name.id_str, n, List.length tl))
+        | _ when List.length tl < n ->
+            W.error ~loc (W.Partial_application ls_name.id_str)
+        | _ :: _ :: _ when not (is_fs_tuple ls || ls_equal ls fs_list_cons) ->
+            W.error ~loc W.Syntax_error
+        | _ -> gen_app ~loc ls tl)
+    | _ -> gen_app ~loc ls tl
   in
   let fun_app ~loc ls tl =
-    if ls.ls_field then W.error ~loc (W.Field_application ls.ls_name.id_str);
-    gen_app ~loc ls tl
+    match ls with
+    | Field_symbol { ls_name; _ } ->
+        W.error ~loc (W.Field_application ls_name.id_str)
+    | _ -> gen_app ~loc ls tl
   in
   let qualid_app q tl =
     match q with
@@ -377,18 +380,92 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   | Uast.Tpreid (Qpreid pid) when is_in_denv denv pid.pid_str ->
       let dty = denv_find ~loc:pid.pid_loc pid.pid_str denv in
       mk_dterm ~loc (DTvar pid) dty
-  | Uast.Tpreid q ->
+  | Uast.Tpreid q -> (
       (* in this case it must be a constant *)
-      let ls = find_q_ls ns q in
-      if ls.ls_field then
-        W.error ~loc (W.Symbol_not_found (string_list_of_qualid q));
-      gen_app ~loc ls []
-  | Uast.Tfield (t, q) ->
-      let ls = find_q_fd ns q in
-      if not ls.ls_field then
-        W.error ~loc (W.Bad_record_field ls.ls_name.id_str);
-      gen_app ~loc ls [ t ]
+      match find_q_ls ns q with
+      | Field_symbol _ ->
+          W.error ~loc (W.Symbol_not_found (string_list_of_qualid q))
+      | _ as ls -> gen_app ~loc ls [])
+  | Uast.Tfield (t, q) -> (
+      match find_q_fd ns q with
+      | Field_symbol _ as ls -> gen_app ~loc ls [ t ]
+      | Constructor_symbol { ls_name; _ } | Function_symbol { ls_name; _ } ->
+          W.error ~loc (W.Bad_record_field ls_name.id_str))
   | Uast.Tidapp (q, tl) -> qualid_app q tl
+  (* Inlined records are not supposed to escape the scope of the constructor,
+     so here the left term should be the constructor and the right term a
+     record *)
+  | Uast.Tapply
+      ( ({ term_desc = Tpreid q; _ } as t1),
+        ({ term_desc = Trecord fields_right; _ } as t2) ) -> (
+      match find_q_ls ns q with
+      | Constructor_symbol
+          { ls_name; ls_args = Cstr_record fields_left; ls_value } as ls -> (
+          let dtyl, dty =
+            (* we already know that it is a constructor symbol *)
+            specialize_ls ls
+          in
+          let fields_left =
+            (* [fields_left] and [dtyl] both come from the same logical symbol,
+               hence, we know they have the same length *)
+            List.combine fields_left dtyl
+          in
+          let get_pid_str = function Qpreid pid | Qdot (_, pid) -> pid.pid_str
+          and get_pid_loc = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
+          and constr_str =
+            Fmt.(str "%a.%a" print_ty ls_value Ident.pp_simpl ls_name)
+          in
+          (* normalise order of the fields as the user can provide them in any
+             order *)
+          let sorted_left =
+            let cmp (l, _) (r, _) =
+              String.compare (get_name l).Ident.id_str (get_name r).Ident.id_str
+            in
+            List.sort cmp fields_left
+          and sorted_right =
+            let cmp (l, _) (r, _) =
+              String.compare (get_pid_str l) (get_pid_str r)
+            in
+            List.sort cmp fields_right
+          in
+          (* specialised fold_right2 that handle list with different length *)
+          let rec aux expected defined =
+            match (expected, defined) with
+            | [], [] -> ([], [])
+            | xs, [] ->
+                ([], List.map (fun (ls, _) -> (get_name ls).Ident.id_str) xs)
+            | [], (q, _) :: _ ->
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                W.error ~loc (W.Wrong_name (field_str, constr_str))
+            | (ls, dty) :: xs, ((q, t) as y) :: ys -> (
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                match String.compare (get_name ls).Ident.id_str field_str with
+                | 0 ->
+                    let fields, missing = aux xs ys
+                    and dt = dterm whereami kid crcm ns denv t in
+                    (dterm_expected crcm dt dty :: fields, missing)
+                | n when n < 0 ->
+                    let fields, missing = aux xs (y :: ys) in
+                    (fields, (get_name ls).Ident.id_str :: missing)
+                | _ -> W.error ~loc (W.Wrong_name (field_str, constr_str)))
+          in
+          match aux sorted_left sorted_right with
+          | fields, [] -> mk_dterm ~loc (DTapp (ls, fields)) dty
+          | _, missing -> W.(error ~loc (Label_missing missing)))
+      | Constructor_symbol { ls_name = _; ls_args = Cstr_tuple _; _ } ->
+          unfold_app t1 t2 []
+      | Function_symbol _ -> unfold_app t1 t2 []
+      | Field_symbol { ls_name; _ } ->
+          W.error ~loc (W.Field_application ls_name.id_str))
+  | Uast.Tapply (({ term_desc = Tpreid q; _ } as t1), t2) -> (
+      try
+        (* [find_ls_q] might raise an exception if we are not looking in the
+           right place but the term is however legal *)
+        match find_q_ls ns q with
+        | Constructor_symbol { ls_args = Cstr_record _; _ } ->
+            W.(error ~loc Inlined_record_expected)
+        | _ -> unfold_app t1 t2 []
+      with W.(Error (_, Symbol_not_found _)) -> unfold_app t1 t2 [])
   | Uast.Tapply (t1, t2) -> unfold_app t1 t2 []
   | Uast.Tnot t ->
       let dt = dterm whereami kid crcm ns denv t in
@@ -541,7 +618,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         | Some t ->
             let dt = dterm whereami kid crcm ns denv t in
             (dterm_expected crcm dt dty :: fields, missing)
-        | None -> (fields, ls.ls_name.id_str :: missing)
+        | None -> (fields, (get_name ls).id_str :: missing)
       in
       (* Uses [List.fold_right2] to keep fields in their order as records are
          transformed into applications. *)
@@ -585,7 +662,7 @@ let mutable_flag = function
 let process_type_spec kid crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
-    let ls = fsymbol ~field:true (Ident.of_preid f.f_preid) [ ty ] f_ty in
+    let ls = field_symbol (Ident.of_preid f.f_preid) [ ty ] f_ty in
     ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
       (ls, f.f_mutable) :: fields )
   in
@@ -675,20 +752,23 @@ let type_type_declaration path kid crcm ns r tdl =
     Hashtbl.add hts s td_ts;
 
     let process_record ty alias ldl =
-      let cs_id = Ident.create ~path ~loc:Location.none ("constr#" ^ s) in
-      let fields_ty =
-        List.map (fun ld -> parse_core alias tvl ld.pld_type) ldl
+      let field ld =
+        let ls_name = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt
+        and ls_args = [ ty ]
+        and ls_value = parse_core alias tvl ld.pld_type in
+        field_symbol ls_name ls_args ls_value
       in
-      let rd_cs = fsymbol ~constr:true ~field:false cs_id fields_ty ty in
-      let mk_ld ld (ldl, ns) =
-        let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
-        let ty_res = parse_core alias tvl ld.pld_type in
-        let field = fsymbol ~field:true id [ ty ] ty_res in
+      let cs_id = Ident.create ~path ~loc:Location.none ("constr#" ^ s)
+      and fields = List.map (fun ld -> field ld) ldl in
+      let rd_cs = constructor_symbol cs_id (Cstr_record fields) ty in
+      let mk_ld (field, ld) (ldl, ns) =
         let mut = mutable_flag ld.pld_mutable in
         let ld = label_declaration field mut ld.pld_loc ld.pld_attributes in
-        (ld :: ldl, ns_add_fd ~allow_duplicate:true ns id.id_str field)
+        ( ld :: ldl,
+          ns_add_fd ~allow_duplicate:true ns (get_name field).id_str field )
       in
-      let rd_ldl, ns = List.fold_right mk_ld ldl ([], ns) in
+      let xs = List.combine fields ldl in
+      let rd_ldl, ns = List.fold_right mk_ld xs ([], ns) in
       ({ rd_cs; rd_ldl }, ns)
     in
 
@@ -701,23 +781,23 @@ let type_type_declaration path kid crcm ns r tdl =
         match cd.pcd_args with
         | Pcstr_tuple ctl ->
             let tyl = List.map (parse_core alias tvl) ctl in
-            let ls = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let ls = constructor_symbol cs_id (Cstr_tuple tyl) ty_res in
             (ls, [], ns_add_ls ~allow_duplicate:true ns cs_id.id_str ls)
         | Pcstr_record ldl ->
-            let add ld (ldl, tyl, ns) =
+            let add ld (ldl, fields, ns) =
               let id = Ident.create ~path ~loc:ld.pld_loc ld.pld_name.txt in
               let ty = parse_core alias tvl ld.pld_type in
               let mut = mutable_flag ld.pld_mutable in
-              let field = fsymbol ~constr:false ~field:true id [ ty_res ] ty in
+              let field = field_symbol id [ ty_res ] ty in
               let ld =
                 label_declaration (id, ty) mut ld.pld_loc ld.pld_attributes
               in
               ( ld :: ldl,
-                ty :: tyl,
+                field :: fields,
                 ns_add_fd ~allow_duplicate:true ns id.id_str field )
             in
-            let ldl, tyl, ns = List.fold_right add ldl ([], [], ns) in
-            let cs = fsymbol ~constr:true ~field:false cs_id tyl ty_res in
+            let ldl, fields, ns = List.fold_right add ldl ([], [], ns) in
+            let cs = constructor_symbol cs_id (Cstr_record fields) ty_res in
             let ns = ns_add_ls ~allow_duplicate:true ns cs_id.id_str cs in
             (cs, ldl, ns)
       in
@@ -1068,7 +1148,7 @@ let process_function path kid crcm ns f =
   in
   let tyl = List.map (fun vs -> vs.vs_ty) params in
 
-  let ls = lsymbol ~field:false (Ident.of_preid ~path f.fun_name) tyl f_ty in
+  let ls = function_symbol (Ident.of_preid ~path f.fun_name) tyl f_ty in
   let ns =
     if f.fun_rec then ns_add_ls ~allow_duplicate:true ns f.fun_name.pid_str ls
     else ns

@@ -27,20 +27,78 @@ end
 module Svs = Set.Make (Vs)
 module Mvs = Map.Make (Vs)
 
-(* Function and predicate symbols *)
+(* Function, field and constructor symbols *)
 
-type lsymbol = {
-  ls_name : Ident.t;
-  ls_args : ty list;
-  ls_value : ty;
-  ls_constr : bool;
-  (* true if it is a construct, false otherwise*)
-  ls_field : bool; (* true if it is a record/model field *)
-}
+type lsymbol =
+  | Function_symbol of { ls_name : Ident.t; ls_args : ty list; ls_value : ty }
+  | Constructor_symbol of {
+      ls_name : Ident.t;
+      ls_args : constructor_arguments;
+      ls_value : ty;
+    }
+  | Field_symbol of { ls_name : Ident.t; ls_args : ty list; ls_value : ty }
 [@@deriving show]
 
+and constructor_arguments =
+  | Cstr_tuple of ty list
+  | Cstr_record of lsymbol list
+[@@deriving show]
+
+let function_symbol ls_name ls_args ls_value =
+  Function_symbol { ls_name; ls_args; ls_value }
+
+let constructor_symbol ls_name ls_args ls_value =
+  Constructor_symbol { ls_name; ls_args; ls_value }
+
+let field_symbol ls_name ls_args ls_value =
+  Field_symbol { ls_name; ls_args; ls_value }
+
+let get_name = function
+  | Constructor_symbol { ls_name; _ }
+  | Field_symbol { ls_name; _ }
+  | Function_symbol { ls_name; _ } ->
+      ls_name
+
+let get_value = function
+  | Constructor_symbol { ls_value; _ }
+  | Field_symbol { ls_value; _ }
+  | Function_symbol { ls_value; _ } ->
+      ls_value
+
+let get_args = function
+  | Constructor_symbol { ls_args = Cstr_tuple tys; _ } -> tys
+  | Constructor_symbol { ls_args = Cstr_record fields; _ } ->
+      List.map get_value fields
+  | Field_symbol { ls_args; _ } | Function_symbol { ls_args; _ } -> ls_args
+
+(* We won't want to change the name of a symbol *)
+let rec fmap f = function
+  | Constructor_symbol { ls_name; ls_args = Cstr_tuple tys; ls_value } ->
+      let ls_args = Cstr_tuple (List.map f tys) and ls_value = f ls_value in
+      Constructor_symbol { ls_name; ls_args; ls_value }
+  | Constructor_symbol { ls_name; ls_args = Cstr_record fields; ls_value } ->
+      let ls_args = Cstr_record (List.map (fmap f) fields)
+      and ls_value = f ls_value in
+      Constructor_symbol { ls_name; ls_args; ls_value }
+  | Field_symbol { ls_name; ls_args; ls_value } ->
+      let ls_args = List.map f ls_args and ls_value = f ls_value in
+      Field_symbol { ls_name; ls_args; ls_value }
+  | Function_symbol { ls_name; ls_args; ls_value } ->
+      let ls_args = List.map f ls_args and ls_value = f ls_value in
+      Function_symbol { ls_name; ls_args; ls_value }
+
+let ls_subst_ts old_ts new_ts symbol =
+  let subst = ty_subst_ts old_ts new_ts in
+  fmap subst symbol
+
+let ls_subst_ty old_ts new_ts new_ty symbol =
+  let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
+  fmap subst symbol
+
 (* CHECK *)
-let ls_equal l r = Ident.equal l.ls_name r.ls_name
+let ls_equal l r =
+  let l = get_name l and r = get_name r in
+  Ident.equal l r
 
 module LS = struct
   type t = lsymbol
@@ -53,50 +111,31 @@ end
 module Sls = Set.Make (LS)
 module Mls = Map.Make (LS)
 
-let lsymbol ?(constr = false) ~field ls_name ls_args ls_value =
-  { ls_name; ls_args; ls_value; ls_constr = constr; ls_field = field }
-
-let fsymbol ?(constr = false) ~field nm tyl ty =
-  lsymbol ~constr ~field nm tyl ty
-
-let psymbol nm ty = lsymbol ~field:false nm ty ty_bool
-
-let ls_subst_ts old_ts new_ts ({ ls_name; ls_constr; ls_field; _ } as ls) =
-  let ls_args = List.map (ty_subst_ts old_ts new_ts) ls.ls_args in
-  let ls_value = ty_subst_ts old_ts new_ts ls.ls_value in
-  lsymbol ls_name ls_args ls_value ~constr:ls_constr ~field:ls_field
-
-let ls_subst_ty old_ts new_ts new_ty ls =
-  let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
-  let ls_args = List.map subst ls.ls_args in
-  let ls_value = subst ls.ls_value in
-  lsymbol ls.ls_name ls_args ls_value ~constr:ls.ls_constr ~field:ls.ls_field
-
-(** buil-in lsymbols *)
+(** built-in lsymbols *)
 
 let ps_equ =
   let tv = fresh_ty_var "a" in
-  psymbol Identifier.eq [ tv; tv ]
+  function_symbol Identifier.eq [ tv; tv ] ty_bool
 
 let fs_unit =
-  fsymbol ~constr:true ~field:false
+  constructor_symbol
     (Ident.create ~loc:Location.none "()")
-    [] ty_unit
+    (Cstr_tuple []) ty_unit
 
 let fs_bool_true =
-  fsymbol ~constr:true ~field:false
+  constructor_symbol
     (Ident.create ~loc:Location.none "true")
-    [] ty_bool
+    (Cstr_tuple []) ty_bool
 
 let fs_bool_false =
-  fsymbol ~constr:true ~field:false
+  constructor_symbol
     (Ident.create ~loc:Location.none "false")
-    [] ty_bool
+    (Cstr_tuple []) ty_bool
 
 let fs_apply =
   let ty_a, ty_b = (fresh_ty_var "a", fresh_ty_var "b") in
   let ty_a_to_b = ty_app ts_arrow [ ty_a; ty_b ] in
-  fsymbol ~field:false
+  function_symbol
     (Ident.create ~loc:Location.none "apply")
     [ ty_a_to_b; ty_a ] ty_b
 
@@ -106,18 +145,18 @@ let tv_option = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvo } }
 let tv_list = { Ttypes.ty_node = Ttypes.Tyvar { Ttypes.tv_name = tvl } }
 
 let fs_option_none =
-  fsymbol ~constr:true ~field:false Identifier.none [] (ty_option tv_option)
+  constructor_symbol Identifier.none (Cstr_tuple []) (ty_option tv_option)
 
 let fs_option_some =
-  fsymbol ~constr:true ~field:false Identifier.some [ tv_option ]
+  constructor_symbol Identifier.some (Cstr_tuple [ tv_option ])
     (ty_option tv_option)
 
 let fs_list_nil =
-  fsymbol ~constr:true ~field:false Identifier.nil [] (ty_list tv_list)
+  constructor_symbol Identifier.nil (Cstr_tuple []) (ty_list tv_list)
 
 let fs_list_cons =
-  fsymbol ~constr:true ~field:false Identifier.cons
-    [ tv_list; ty_list tv_list ]
+  constructor_symbol Identifier.cons
+    (Cstr_tuple [ tv_list; ty_list tv_list ])
     (ty_list tv_list)
 
 (* CHECK do we need two hash tables? *)
@@ -132,9 +171,11 @@ let fs_tuple =
       let ts = ts_tuple n in
       let tyl = List.map ty_of_var ts.ts_args in
       let ty = ty_app (ts_tuple n) tyl in
-      let ls = fsymbol ~constr:true ~field:false id tyl ty in
+      let ls = constructor_symbol id (Cstr_tuple tyl) ty in
       Hashtbl.add fs_tuple_ids id ls;
       Hashtbl.add ls_tuples n ls;
       ls
 
-let is_fs_tuple fs = fs.ls_constr && Hashtbl.mem fs_tuple_ids fs.ls_name
+let is_fs_tuple = function
+  | Constructor_symbol { ls_name; _ } -> Hashtbl.mem fs_tuple_ids ls_name
+  | _ -> false

@@ -74,13 +74,15 @@ let specialize_ls ls =
     | Tyvar tv -> find_tv tv
     | Tyapp (ts, tyl) -> Tapp (ts, List.map spec tyl)
   in
-  (List.map spec ls.ls_args, spec ls.ls_value)
+  (List.map spec (get_args ls), spec (get_value ls))
 
 let specialize_cs ~loc cs =
-  if cs.ls_constr = false then
-    W.error ~loc (W.Not_a_constructor cs.ls_name.id_str);
-  let dtyl, dty = specialize_ls cs in
-  (dtyl, dty)
+  match cs with
+  | Constructor_symbol _ ->
+      let dtyl, dty = specialize_ls cs in
+      (dtyl, dty)
+  | Field_symbol { ls_name; _ } | Function_symbol { ls_name; _ } ->
+      W.error ~loc (W.Not_a_constructor ls_name.id_str)
 
 (* terms *)
 
@@ -162,13 +164,15 @@ let rec unify dty1 dty2 =
 let app_unify ~loc ls unify l dtyl2 =
   if List.length l <> List.length dtyl2 then
     W.error ~loc
-      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length l));
+      (W.Bad_arity
+         ((get_name ls).id_str, List.length (get_args ls), List.length l));
   List.iter2 unify l dtyl2
 
 let app_unify_map ~loc ls unify l dtyl =
   if List.length l <> List.length dtyl then
     W.error ~loc
-      (W.Bad_arity (ls.ls_name.id_str, List.length ls.ls_args, List.length l));
+      (W.Bad_arity
+         ((get_name ls).id_str, List.length (get_args ls), List.length l));
   List.map2 unify l dtyl
 
 let dpattern_unify dp dty =
@@ -337,7 +341,7 @@ and term_node ~loc env dty dterm_node =
   | DTconst c -> t_const c (ty_of_dty (Option.get dty)) loc
   | DTapp (ls, []) when ls_equal ls fs_bool_true -> t_true loc
   | DTapp (ls, []) when ls_equal ls fs_bool_false -> t_false loc
-  | DTapp (ls, [ dt1 ]) when ls.ls_field ->
+  | DTapp ((Field_symbol _ as ls), [ dt1 ]) ->
       t_field (term env dt1) ls
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
         loc

@@ -26,7 +26,7 @@ type coercion = {
 }
 
 let ty_of ls =
-  match (ls.ls_args, ls.ls_value) with
+  match (get_args ls, get_value ls) with
   | [ { ty_node = Tyapp (ty1, _) } ], { ty_node = Tyapp (ty2, _) } ->
       (ty1.ts_ident.id_str, ty2.ts_ident.id_str)
   | _ -> assert false
@@ -35,7 +35,7 @@ let to_string crc =
   let rec aux = function
     | CRCleaf ls ->
         let s1, s2 = ty_of ls in
-        [ (ls.ls_name.id_str, s1, s2) ]
+        [ ((get_name ls).id_str, s1, s2) ]
     | CRCcomp (k1, k2) -> aux k1 @ aux k2
   in
   aux crc.crc_kind
@@ -46,7 +46,7 @@ type t = coercion Mts.t Mts.t
 let empty = Mts.empty
 
 let create_crc ls =
-  match (ls.ls_args, ls.ls_value) with
+  match (get_args ls, get_value ls) with
   | [ { ty_node = Tyapp (ts1, tl1) } ], { ty_node = Tyapp (ts2, tl2) }
     when not (ts_equal ts1 ts2) ->
       {
@@ -57,7 +57,8 @@ let create_crc ls =
         crc_tar_tl = tl2;
       }
   | _ ->
-      W.error ~loc:ls.ls_name.id_loc (W.Invalid_coercion_type ls.ls_name.id_str)
+      let name = get_name ls in
+      W.error ~loc:name.id_loc (W.Invalid_coercion_type name.id_str)
 
 let mem t ts1 ts2 =
   try
@@ -145,12 +146,12 @@ let add_crc ~loc crcmap crc =
   in
   Mts.fold close_left_right crcmap_uc2 crcmap_uc2
 
-let add crcmap ls = add_crc ~loc:ls.ls_name.id_loc crcmap (create_crc ls)
+let add crcmap ls = add_crc ~loc:(get_name ls).id_loc crcmap (create_crc ls)
 
 let union crcmap1 crcmap2 =
   let add _ty2 crc crcmap =
     match crc.crc_kind with
-    | CRCleaf ls -> add_crc ~loc:ls.ls_name.id_loc crcmap crc
+    | CRCleaf ls -> add_crc ~loc:(get_name ls).id_loc crcmap crc
     | CRCcomp _ -> crcmap
   in
   Mts.fold (fun _ty1 m1 crcmap -> Mts.fold add m1 crcmap) crcmap2 crcmap1
