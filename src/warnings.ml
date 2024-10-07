@@ -41,8 +41,8 @@ type kind =
   | Syntax_error
   | Term_expected
   | Type_checking_error of string
+  | Unbound_label of string
   | Unbound_variable of string
-  | Unknown_record_field of string
   | Unsupported of string
   | Unterminated_comment
 
@@ -154,9 +154,9 @@ let pp_kind ppf = function
   | Syntax_error -> pf ppf "Syntax error"
   | Term_expected -> pf ppf "A term was expected"
   | Type_checking_error msg -> pf ppf "Type checking error: %a" text msg
+  | Unbound_label s -> pf ppf "Unbound record field: %s" s
   | Unbound_variable s ->
       pf ppf "The variable %s does not appear in this pattern" s
-  | Unknown_record_field s -> pf ppf "The field %s is unknown" s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
 

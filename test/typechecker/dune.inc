@@ -972,6 +972,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets value_unbound_record_field.gospel)
+ (action
+  (with-outputs-to value_unbound_record_field.mli.output
+   (run %{checker} %{dep:value_unbound_record_field.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff value_unbound_record_field.mli value_unbound_record_field.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:value_unbound_record_field.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets variant_integer.gospel)
  (action
   (with-outputs-to variant_integer.mli.output
