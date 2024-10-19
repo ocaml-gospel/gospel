@@ -44,6 +44,9 @@
 (*@ type 'a set *)
 (** The type for sets. *)
 
+(*@ type ('a, 'b) map = 'a -> 'b*)
+(** The type for total maps *)
+
 (** {1 Arithmetic}
 
     The type [integer] is built-in. This is the type of arbitrary precision
@@ -270,6 +273,12 @@ module Set : sig
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+
+(*@ axiom map_set_def :
+    forall f : ('a -> 'b).
+    forall x : 'a.
+    forall y : 'b.
+    f[x -> y] = fun arg -> if arg = x then y else f x *)
 
 module Map : sig
   (** Maps from keys of type ['a] to values of type ['b] are represented by
