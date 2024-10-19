@@ -22,7 +22,7 @@ val f : 'a -> 'a
    [125] File "tuple_arity2.mli", line 18, characters 13-18:
          18 |     raises E (x,y) -> integer_of_int x = 1
                            ^^^^^
-         Error: This pattern matches values of type 'a40 * 'a41
+         Error: This pattern matches values of type 'a3 * 'a4
                 but a pattern was expected which matches values of type
                 int * int * int.
    |gospel_expected} *)
