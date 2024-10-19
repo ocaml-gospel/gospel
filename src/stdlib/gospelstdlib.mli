@@ -101,56 +101,226 @@ module Sequence : sig
   (*@ function length (s: 'a t): integer *)
   (** [length s] is the length of the sequence [s]. *)
 
+  (*@ predicate in_range (s : 'a t) (i : integer) *)
+
+  (*@ axiom in_range_def :
+        forall s i.
+        in_range s i <-> in_range s i *)
+
+  (*@ axiom length_nonneg :
+        forall s.
+        0 <= length s *)
+
+  (*@ axiom subseq_l :
+        forall s i.
+        in_range s i ->
+        s[i ..] = s[i .. length s] *)
+
+  (*@ axiom subseq_r :
+        forall s i.
+        in_range s i ->
+        s[..i] = s[0 .. i] *)
+
+  (*@ axiom subseq :
+        forall s i i1 i2.
+        0 <= i1 <= i < i2 <= length s ->
+        s[i] = (s[i1 .. i2])[i-i1] *)
+
+  (*@ axiom subseq_len :
+        forall s i1 i2.
+        0 <= i1 <= i2 < length s ->
+        length (s[i1 .. i2]) = i2 - i1 *)
+
   (*@ function empty : 'a t *)
   (** [empty] is the empty sequence. *)
 
-  (*@ function singleton (x: 'a) : 'a t *)
-  (** [singleton] is an alias for {!return}. *)
+  (*@ axiom empty_length : length empty = 0 *)
 
   (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
 
+  (*@ axiom init_length :
+        forall n f.
+        n >= 0 ->
+        length (init n f) = n *)
+
+  (*@ axiom init_elems :
+        forall n f i.
+        0 <= i < n -> (init n f)[i] = f i *)
+
+  (*@ function singleton (x: 'a) : 'a t *)
+  (** [singleton] is the sequence containing [x]. *)
+
+  (*@ axiom singleton_def :
+        forall x f.
+        f 0 = x ->
+        singleton x = init 1 f *)
+
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
   (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
 
+  (*@ axiom cons_def :
+        forall x s.
+        cons x s = (singleton x) ++ s *)
+
   (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
   (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
+
+  (*@ axiom snoc_def :
+        forall s x.
+        snoc s x = s ++ (singleton x) *)
 
   (*@ function hd (s: 'a t) : 'a *)
   (** When [s] contains one or more elements, [hd s] is the first element of
       [s]. *)
 
+  (*@ axiom hd_def :
+        forall s.
+        hd s = s[0] *)
+
   (*@ function tl (s: 'a t) : 'a t *)
   (** When [s] contains one or more elements, [tl s] is the sequence of the
       elements of [s], starting at position 2. *)
 
-  (*@ function append (s s': 'a t) : 'a t *)
+  (*@ axiom tl_def :
+        forall s.
+        tl s = s[1 ..] *)
+
+  (*@ function append (s1 : 'a t) (s2 : 'a t) : 'a t *)
   (** [append s s'] is [s ++ s']. *)
 
-  (*@ predicate mem (s: 'a t) (x: 'a) *)
+  (*@ axiom append_def :
+        forall s1 s2.
+        append s1 s2 = s1 ++ s2 *)
+
+  (*@ axiom append_length :
+        forall s s'.
+        length (s++s') = length s + length s' *)
+
+  (*@ axiom append_elems_left :
+        forall s s' i.
+        in_range s i ->
+        (s ++ s')[i] = s[i] *)
+
+  (*@ axiom append_elems_right :
+        forall s s' i.
+        length s <= i < length s + length s' ->
+        (s ++ s')[i] = s'[i - length s] *)
+
+  (*@ function multiplicity (x : 'a) (s: 'a t) : integer *)
+  (** [multiplicity x s] counts the number of occurrences of [x] in [s] *)
+
+  (*@ axiom mult_empty :
+        forall x.
+        multiplicity x empty = 0 *)
+
+  (*@ axiom mult_cons :
+        forall s x.
+        1 + multiplicity x s = multiplicity x (cons x s) *)
+
+  (*@ axiom mult_cons_neutral :
+        forall s x1 x2.
+        x1 <> x2 ->
+        multiplicity x1 s = multiplicity x1 (cons x2 s) *)
+
+  (*@ axiom mult_length :
+        forall x s.
+        0 <= multiplicity x s <= length s *)
+
+  (*@ predicate mem (x: 'a) (s: 'a t) *)
   (** [mem s x] holds iff [x] is in [s]. *)
+
+  (*@ axiom mem_def :
+        forall s x.
+        mem x s <-> multiplicity x s > 0 *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a sequence whose elements are the elements of [s],
       transformed by [f]. *)
 
+  (*@ axiom map_elems :
+        forall i f s.
+        in_range s i ->
+        (map f s)[i] = f (s[i]) *)
+
   (*@ function filter (f: 'a -> bool) (s: 'a t) : 'a t *)
   (** [filter f s] is a sequence whose elements are the elements of [s], that
       satisfy [f]. *)
 
+  (*@ axiom filter_elems :
+        forall f s x.
+        mem x s -> f x ->
+        mem x (filter f s) *)
+
   (*@ function get (s: 'a t) (i: integer) : 'a *)
   (** [get s i] is [s[i]]. *)
 
+  (*@ axiom get_def :
+        forall s i.
+        get s i = s[i] *)
+
   (*@ function set (s: 'a t) (i: integer) (x: 'a): 'a t *)
-  (** [set s i x] is the sequence [s] where the [i]th element is [x]. *)
+  (** [set s i x] returns a new sequence identical to x where the only
+      difference is that the element at index [i] equal [x] *)
+
+  (*@ axiom set_elem :
+        forall s i x.
+        in_range s i ->
+        (set s i x)[i] = x *)
+
+  (*@ axiom set_elem_other :
+        forall s i1 i2 x.
+        i1 <> i2 ->
+        in_range s i1 ->
+        in_range s i2 ->
+        (set s i1 x)[i2] = s[i2] *)
 
   (*@ function rev (s: 'a t) : 'a t *)
   (** [rev s] is the sequence containing the same elements as [s], in reverse
       order. *)
-  (* <---- to be removed *)
-  (*@ function rec fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b sequence) : 'a *)
 
-  (*@ function rec fold_right (f: 'a -> 'b -> 'b) (s: 'a t) (acc: 'b) : 'b *)
+  (*@ axiom rev_length :
+        forall s.
+        length s = length (rev s) *)
+
+  (*@ axiom rev_elems :
+        forall i s.
+        in_range s i ->
+        (rev s)[i] = s[length s - 1 - i] *)
+
+  (*@ axiom extensionality :
+        forall s1 s2.
+        length s1 = length s2 ->
+        (forall i. in_range s1 i -> s1[i] = s2[i]) ->
+        s1 = s2 *)
+
+  (*@ function fold_left (f: 'a -> 'b -> 'a) (acc: 'a) (s: 'b t) : 'a *)
+  (** [fold_left f acc s] is [f (... (f (f acc s[0]) s[1]) ...) s[n-1]], where
+      [n] is the length of [s]. *)
+
+  (*@ axiom fold_left_empty :
+        forall f acc.
+        fold_left f acc empty = acc *)
+
+  (*@ axiom fold_left_cons :
+        forall f acc x l.
+        fold_left f acc (cons x l) = fold_left f (f acc x) l *)
+
+  (*@ function fold_right (f: 'a -> 'b -> 'b) (s: 'a t) (acc: 'b) : 'b *)
+  (** [fold_right f s acc] is [f s[1] (f s[2] (... (f s[n] acc) ...))] where [n]
+      is the length of [s]. *)
+
+  (*@ axiom fold_right_empty :
+        forall acc f.
+        fold_right f empty acc = acc *)
+
+  (*@ axiom fold_right_cons :
+        forall acc f x l.
+        fold_right f (cons x l) acc = f x (fold_right f l acc) *)
+
+  (* <---- to be removed *)
+  (*@ function of_list (s : 'a list) : 'a sequence *)
+  (*@ coercion *)
 end
 
 (** {1 Bags} *)
@@ -210,9 +380,6 @@ module Bag : sig
   (*@ function cardinal (b: 'a t) : integer *)
   (** [cardinal b] is the total number of elements in [b], all occurrences being
       counted. *)
-
-  (*@ function of_list (l: 'a list) : 'a sequence *)
-  (*@ coercion *)
 end
 
 (** {1 Sets} *)
