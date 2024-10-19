@@ -49,8 +49,8 @@ First, create a test artifact:
   arg
   r
   infix =
-  a
-  a
+  a_1
+  a_1
   arg
   r
   Path_test.M
@@ -61,11 +61,11 @@ First, create a test artifact:
   result_1
   Path_test.M.f
   n
-  Path_test.M.a_1
+  Path_test.M.a_2
   n_1
   infix =
-  a
-  a
+  a_1
+  a_1
   Gospelstdlib.integer_of_int
   Path_test.M.f
   n_1
