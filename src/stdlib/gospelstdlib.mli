@@ -44,6 +44,9 @@
 (*@ type 'a set *)
 (** The type for sets. *)
 
+(*@ type ('a, 'b) map = 'a -> 'b*)
+(** The type for total maps *)
+
 (** {1 Arithmetic}
 
     The type [integer] is built-in. This is the type of arbitrary precision
@@ -90,6 +93,22 @@
 (*@ function ([_.._]) (s: 'a sequence) (i1: integer) (i2: integer): 'a sequence *)
 (*@ function ([_..]) (s: 'a sequence) (i: integer): 'a sequence *)
 (*@ function ([.._]) (s: 'a sequence) (i: integer): 'a sequence *)
+
+(*@ predicate monoid (f : 'a -> 'a -> 'a) (neutral : 'a) *)
+
+(*@ axiom monoid_def :
+      forall f neutral.
+      monoid f neutral <->
+        (forall x. (f neutral x = f x neutral = x)) /\
+        (forall x y z. f x (f y z) = f (f x y) z) *)
+
+(*@ predicate comm_monoid (f : 'a -> 'a -> 'a) (neutral : 'a) *)
+
+(*@ axiom comm_monoid_def :
+      forall f neutral.
+      comm_monoid f neutral <->
+        monoid f neutral /\
+        (forall x y. f x y = f y x) *)
 
 module Sequence : sig
   (*@ type 'a t = 'a sequence *)
@@ -275,6 +294,12 @@ module Set : sig
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+
+(*@ axiom map_set_def :
+    forall f : ('a -> 'b).
+    forall x : 'a.
+    forall y : 'b.
+    f[x -> y] = fun arg -> if arg = x then y else f x *)
 
 module Map : sig
   (** Maps from keys of type ['a] to values of type ['b] are represented by
