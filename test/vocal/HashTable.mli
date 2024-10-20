@@ -58,7 +58,9 @@ module Make (K : HashedType) : sig
     ensures  forall k: key. h2.view k = h1.view k *)
 
   (*@ function pop (h: 'a t) : integer =
-    Set.fold (fun k c -> List.length (h.view k) + c) h.dom 0 *)
+    Set.fold
+      (fun k -> Sequence.length (h.view k))
+      (fun l c -> l + c) h.dom 0 *)
 
   val population : 'a t -> int
   (*@ n = population h
