@@ -393,56 +393,181 @@ module Bag : sig
   (** An alias for ['a bag]. *)
 
   (*@ function multiplicity (x: 'a) (b: 'a t): integer *)
-  (** [occurrences x b] is the number of occurrences of [x] in [s]. *)
+  (** [multiplicity x b] is the number of occurrences of [x] in [s]. *)
+
+  (*@ axiom well_formed :
+        forall b x.
+        multiplicity x b >= 0 *)
 
   (*@ function empty : 'a t *)
   (** [empty] is the empty bag. *)
 
+  (*@ axiom empty_mult :
+        forall x.
+        multiplicity x empty = 0 *)
+
+  (*@ function init (f : 'a -> integer) : 'a t *)
+  (** [init f] creates a bag where every element [x] has multiplicity
+      [max 0 (f x)]. *)
+
+  (*@ axiom init_axiom :
+        forall f x.
+        max 0 (f x) = multiplicity x (init f) *)
+
   (*@ predicate mem (x: 'a) (b: 'a t) *)
   (** [mem x b] holds iff [b] contains [x] at least once. *)
+
+  (*@ axiom mem_def :
+        forall x b.
+        mem x b <-> multiplicity x b > 0 *)
 
   (*@ function add (x: 'a) (b: 'a t) : 'a t *)
   (** [add x b] is [b] when an occurence of [x] was added. *)
 
+  (*@ axiom add_mult_x :
+        forall b x.
+        multiplicity x (add x b) = 1 + multiplicity x b *)
+
+  (*@ axiom add_mult_neg_x :
+        forall x y b. x <> y ->
+        multiplicity y (add x b) = (multiplicity y b) *)
+
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton x] is a bag containing one occurence of [x]. *)
 
+  (*@ axiom singleton_def :
+        forall x.
+        singleton x = add x empty *)
+
   (*@ function remove (x: 'a) (b: 'a t) : 'a t *)
   (** [remove x b] is [b] where an occurence of [x] was removed. *)
+
+  (*@ axiom remove_mult_x :
+        forall b x.
+        multiplicity x (remove x b) = max 0 (multiplicity x b - 1) *)
+
+  (*@ axiom remove_mult_neg_x :
+        forall x y b.
+        x <> y ->
+        multiplicity y (remove x b) = multiplicity y b *)
 
   (*@ function union (b b': 'a t) : 'a t *)
   (** [union b b'] is a bag [br] where for all element [x],
       [occurences x br = max
       (occurences x b) (occurences x b')]. *)
 
+  (*@ axiom union_all :
+        forall b b' x.
+        max (multiplicity x b) (multiplicity x b') =
+          multiplicity x (union b b') *)
+
   (*@ function sum (b b': 'a t) : 'a t *)
   (** [sum b b'] is a bag [br] where for all element [x],
       [occurences x br =
       (occurences x b) + (occurences x b')]. *)
+
+  (*@ axiom sum_all :
+        forall b b' x.
+        multiplicity x b + multiplicity x b' =
+          multiplicity x (sum b b') *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
   (** [inter b b'] is a bag [br] where for all element [x],
       [occurences x br =
       min (occurences x b) (occurences x b')]. *)
 
+  (*@ axiom inter_all :
+        forall b b' x.
+        min (multiplicity x b) (multiplicity x b') =
+        multiplicity x (inter b b') *)
+
   (*@ predicate disjoint (b b': 'a t) *)
   (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
+
+  (*@ axiom disjoint_def :
+        forall b b'.
+        disjoint b b' <->
+          (forall x. mem x b -> not (mem x b'))*)
 
   (*@ function diff (b b': 'a t) : 'a t *)
   (** [diff b b'] is a bag [br] where for all element [x],
       [occurences x br =
       max 0 (occurences x b - occurences x b')]. *)
 
+  (*@ axiom diff_all :
+        forall b b' x.
+        max 0 (multiplicity x b - multiplicity x b') =
+          multiplicity x (diff b b') *)
+
   (*@ predicate subset (b b': 'a t) *)
   (** [subset b b'] holds iff for all element [x],
-      [occurences x b <= occurences x b']. *)
+      [multiplicity x b <= multiplicity x b']. *)
+
+  (*@ axiom subset_def :
+       forall b b'.
+       subset b b' <->
+         (forall x. multiplicity x b <= multiplicity x b') *)
 
   (*@ function filter (f: 'a -> bool) (b: 'a t) : 'a t *)
   (** [filter f b] is the bag of all elements in [b] that satisfy [f]. *)
 
+  (*@ axiom filter_mem :
+        forall b x f.
+        f x ->
+        multiplicity x (filter f b) = multiplicity x b *)
+
+  (*@ axiom filter_mem_neg :
+        forall b x f.
+        not (f x) ->
+        multiplicity x (filter f b) = 0 *)
+
   (*@ function cardinal (b: 'a t) : integer *)
   (** [cardinal b] is the total number of elements in [b], all occurrences being
       counted. *)
+
+  (*@ predicate finite (b : 'a t) *)
+  (** [finite b] holds when there are a finite number of elements in bag [b] *)
+
+  (*@ axiom finite_def :
+        forall b.
+        finite b <->
+          (exists s. forall x.
+           mem x b ->
+           Sequence.mem x s) *)
+
+  (*@ axiom card_nonneg :
+        forall b.
+        cardinal b >= 0 *)
+
+  (*@ axiom card_empty : cardinal empty = 0 *)
+
+  (*@ axiom card_singleton :
+        forall x.
+        cardinal (singleton x) = 1 *)
+
+  (*@ axiom card_union :
+        forall b1 b2.
+        finite b1 ->
+        finite b2 ->
+        cardinal (union b1 b2) = cardinal b1 + cardinal b2 *)
+
+  (*@ axiom card_add :
+       forall x b.
+       finite b ->
+       cardinal (add x b) = cardinal b + 1 *)
+
+  (*@ axiom card_map :
+       forall f b.
+       finite b ->
+       cardinal (filter f b) <= cardinal b *)
+
+  (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
+  (** [of_seq s] returns a bag where the multiplicity of each element is the
+      same as in [s] *)
+
+  (*@ axiom of_seq_multiplicity :
+        forall s x.
+        Sequence.multiplicity x s = multiplicity x (of_seq s) *)
 end
 
 (** {1 Sets} *)
