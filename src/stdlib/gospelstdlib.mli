@@ -763,16 +763,28 @@ module Set : sig
 end
 
 (*@ function ( [->] ) (f: 'a -> 'b) (x:'a) (y: 'b) : 'a -> 'b *)
+(** [f[x -> y]] returns a new function where [x] maps to [y] and all other
+    values have the same mapping as [f] *)
 
 (*@ axiom map_set_def :
-    forall f : ('a -> 'b).
-    forall x : 'a.
-    forall y : 'b.
-    f[x -> y] = fun arg -> if arg = x then y else f x *)
+      forall f : ('a -> 'b).
+      forall x : 'a.
+      forall y : 'b.
+      f[x -> y] = fun arg -> if arg = x then y else f x *)
 
 module Map : sig
   (** Maps from keys of type ['a] to values of type ['b] are represented by
       Gospel functions of type ['a -> 'b]. *)
+
+  (*@ type ('a, 'b) t = ('a, 'b) map *)
+
+  (*@ function domain (default : 'b) (m : ('a, 'b) t) : 'a Set.t *)
+  (** [domain default m] returns the set of values [x] where [m x <> default]. *)
+
+  (*@ axiom domain_mem :
+        forall x m default.
+        m x <> default ->
+        Set.mem x (domain default m) *)
 end
 
 (* The following modules are deprecated and only exist to ensure the tests pass. In the future, assuming this branch is merged, they should be removed and the tests changed*)
