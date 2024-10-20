@@ -525,8 +525,21 @@ module Set : sig
   (*@ predicate mem (x: 'a) (s: 'a t) *)
   (** [mem x s] is [x ∈ s]. *)
 
+  (*@ axiom empty_mem :
+      forall x.
+      not (mem x empty) *)
+
   (*@ function add (x: 'a) (s: 'a t) : 'a t *)
   (** [add x s] is [s ∪ {x}]. *)
+
+  (*@ axiom add_mem :
+        forall s x.
+        mem x (add x s) *)
+
+  (*@ axiom add_mem_neq :
+        forall s x y.
+        x <> y ->
+        (mem x s <-> mem x (add y s)) *)
 
   (*@ function singleton (x: 'a) : 'a t *)
   (** [singleton x] is [{x}]. *)
@@ -534,32 +547,124 @@ module Set : sig
   (*@ function remove (x: 'a) (s: 'a t) : 'a t *)
   (** [remove x s] is [s ∖ {x}]. *)
 
+  (*@ axiom remove_mem :
+        forall s x.
+        not (mem x (remove x s)) *)
+
+  (*@ axiom remove_mem_neq :
+        forall s x y.
+        x <> y ->
+        (mem x s <-> mem x (remove y s)) *)
+
   (*@ function union (s s': 'a t) : 'a t *)
   (** [union s s'] is [s ∪ s']. *)
+
+  (*@ axiom union_mem :
+        forall s s' x.
+        (mem x s || mem x s') ->
+        mem x (union s s') *)
+
+  (*@ axiom union_mem_neg :
+      forall s s' x.
+      not (mem x s) ->
+      not (mem x s') ->
+      not (mem x (union s s')) *)
 
   (*@ function inter (s s': 'a t) : 'a t *)
   (** [inter s s'] is [s ∩ s']. *)
 
+  (*@ axiom inter_mem :
+        forall s s' x.
+        mem x s ->
+        mem x s' ->
+        mem x (inter s s') *)
+
+  (*@ axiom inter_mem_neq :
+        forall s s' x.
+        not (mem x s || mem x s') ->
+        not mem x (inter s s') *)
+
   (*@ predicate disjoint (s s': 'a t) *)
   (** [disjoint s s'] is [s ∩ s' = ∅]. *)
+
+  (*@ axiom disjoint_def :
+        forall s s'.
+        disjoint s s' <-> inter s s' = empty *)
 
   (*@ function diff (s s': 'a t) : 'a t *)
   (** [diff s s'] is [s ∖ s']. *)
 
+  (*@ axiom diff_mem :
+        forall s s' x.
+        mem x s' ->
+        not (mem x (diff s s')) *)
+
+  (*@ axiom diff_mem_fst :
+        forall s s' x.
+        not (mem x s') ->
+        (mem x s <-> mem x (diff s s')) *)
+
   (*@ predicate subset (s s': 'a t) *)
   (** [subset s s'] is [s ⊂ s']. *)
 
-  (*@ function cardinal (s: 'a t) : integer *)
-  (** [cardinal s] is the number of elements in [s]. *)
+  (*@ axiom subset_def :
+        forall s s'.
+        subset s s' <->
+          (forall x. mem x s -> mem x s') *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
       [x1 ... xN] are the elements of [s]. *)
 
+  (*@ axiom set_map :
+        forall f s x.
+        mem x (map f s) <->
+          (exists y. f y = x && mem y s) *)
+
   (*@ function partition (f: 'a -> bool) (s: 'a t) : ('a t * 'a t) *)
   (** [partition f s] is the pair of sets [(s1, s2)], where [s1] is the set of
       all the elements of [s] that satisfy the predicate [f], and [s2] is the
       set of all the elements of [s] that do not satisfy [f]. *)
+
+  (*@ axiom partition_l_mem :
+        forall f s x p1 p2.
+        mem x s ->
+        f x ->
+        partition f s = (p1, p2) ->
+        mem x p1 *)
+
+  (*@ axiom partition_r_mem :
+        forall f s x p1 p2.
+        mem x s ->
+        not f x ->
+        partition f s = (p1, p2) ->
+        mem x p2 *)
+
+  (*@ function cardinal (s: 'a t) : integer *)
+  (** [cardinal s] is the number of elements in [s]. *)
+
+  (*@ predicate finite (s : 'a t) =
+       exists seq. forall x.
+         mem x s -> Sequence.mem x seq *)
+
+  (*@ axiom cardinal_nonneg :
+        forall s.
+        cardinal s >= 0 *)
+
+  (*@ axiom cardinal_empty : cardinal empty = 0 *)
+
+  (*@ axiom cardinal_remove :
+        forall s x.
+        finite s ->
+        if mem x s
+         then cardinal (remove x s) = cardinal s - 1
+         else cardinal (remove x s) = cardinal s *)
+
+  (*@ axiom cardinal_add :
+        forall s x. finite s ->
+        if mem x s
+          then cardinal (add x s) = cardinal s
+          else cardinal (add x s) = cardinal s + 1 *)
 
   (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
 
