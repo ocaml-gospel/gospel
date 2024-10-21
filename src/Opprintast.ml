@@ -57,9 +57,9 @@ let varify_type_constructors var_names t =
           Ptyp_constr (longident, List.map loop lst)
       | Ptyp_object (lst, o) -> Ptyp_object (List.map loop_object_field lst, o)
       | Ptyp_class (longident, lst) -> Ptyp_class (longident, List.map loop lst)
-      | Ptyp_alias (core_type, string) ->
-          check_variable var_names t.ptyp_loc string;
-          Ptyp_alias (loop core_type, string)
+      | Ptyp_alias (core_type, str) ->
+          check_variable var_names t.ptyp_loc str.txt;
+          Ptyp_alias (loop core_type, str)
       | Ptyp_variant (row_field_list, flag, lbl_lst_option) ->
           Ptyp_variant
             (List.map loop_row_field row_field_list, flag, lbl_lst_option)
@@ -71,6 +71,7 @@ let varify_type_constructors var_names t =
       | Ptyp_package (longident, lst) ->
           Ptyp_package (longident, List.map (fun (n, typ) -> (n, loop typ)) lst)
       | Ptyp_extension (s, arg) -> Ptyp_extension (s, arg)
+      | Ptyp_open (longident, core_type) -> Ptyp_open (longident, loop core_type)
     in
     { t with ptyp_desc = desc }
   and loop_row_field field =
@@ -222,12 +223,13 @@ let is_simple_construct : construct -> bool = function
 
 let pp = fprintf
 
-type ctxt = { pipe : bool; semi : bool; ifthenelse : bool }
+type ctxt = { pipe : bool; semi : bool; ifthenelse : bool; functionrhs : bool }
 
-let reset_ctxt = { pipe = false; semi = false; ifthenelse = false }
+let reset_ctxt = { pipe = false; semi = false; ifthenelse = false; functionrhs = false }
 let under_pipe ctxt = { ctxt with pipe = true }
 let under_semi ctxt = { ctxt with semi = true }
 let under_ifthenelse ctxt = { ctxt with ifthenelse = true }
+let under_functionrhs ctxt = { ctxt with functionrhs = true }
 (*
 let reset_semi ctxt = { ctxt with semi=false }
 let reset_ifthenelse ctxt = { ctxt with ifthenelse=false }
@@ -370,7 +372,7 @@ and core_type ctxt f x =
         pp f "@[<2>%a@;->@;%a@]" (* FIXME remove parens later *)
           (type_with_label ctxt) (l, ct1) (core_type ctxt) ct2
     | Ptyp_alias (ct, s) ->
-        pp f "@[<2>%a@;as@;%a@]" (core_type1 ctxt) ct tyvar s
+        pp f "@[<2>%a@;as@;%a@]" (core_type1 ctxt) ct tyvar_loc s
     | Ptyp_poly ([], ct) -> core_type ctxt f ct
     | Ptyp_poly (sl, ct) ->
         pp f "@[<2>%a%a@]"
@@ -683,6 +685,35 @@ and sugar_expr ctxt f e =
         | _ -> false)
     | _ -> false
 
+and function_param ctxt f param =
+  match param.pparam_desc with
+  | Pparam_val (a, b, c) -> label_exp ctxt f (a, b, c)
+  | Pparam_newtype ty -> pp f "(type %s)@;" ty.txt
+
+and function_body ctxt f function_body =
+  match function_body with
+  | Pfunction_body body -> expression ctxt f body
+  | Pfunction_cases (cases, _, attrs) ->
+      pp f "@[<hv>function%a%a@]"
+        (item_attributes ctxt) attrs
+        (case_list ctxt) cases
+
+and type_constraint ctxt f constraint_ =
+  match constraint_ with
+  | Pconstraint ty ->
+      pp f ":@;%a" (core_type ctxt) ty
+  | Pcoerce (ty1, ty2) ->
+      pp f "%a:>@;%a"
+        (option ~first:":@;" (core_type ctxt)) ty1
+        (core_type ctxt) ty2
+
+and function_params_then_body ctxt f params constraint_ body ~delimiter =
+  pp f "%a%a%s@;%a"
+    (list (function_param ctxt) ~sep:"") params
+    (option (type_constraint ctxt)) constraint_
+    delimiter
+    (function_body (under_functionrhs ctxt)) body
+
 and expression ctxt f x =
   if x.pexp_attributes <> [] then
     pp f "((%a)@,%a)" (expression ctxt)
@@ -690,7 +721,7 @@ and expression ctxt f x =
       (attributes ctxt) x.pexp_attributes
   else
     match x.pexp_desc with
-    | Pexp_function _ | Pexp_fun _ | Pexp_match _ | Pexp_try _ | Pexp_sequence _
+    | Pexp_function _ | Pexp_match _ | Pexp_try _ | Pexp_sequence _
     | Pexp_newtype _
       when ctxt.pipe || ctxt.semi ->
         paren true (expression reset_ctxt) f x
@@ -700,12 +731,33 @@ and expression ctxt f x =
     | Pexp_letop _
       when ctxt.semi ->
         paren true (expression reset_ctxt) f x
-    | Pexp_fun (l, e0, p, e) ->
-        pp f "@[<2>fun@;%a->@;%a@]" (label_exp ctxt) (l, e0, p)
-          (expression ctxt) e
     | Pexp_newtype (lid, e) ->
         pp f "@[<2>fun@;(type@;%s)@;->@;%a@]" lid.txt (expression ctxt) e
-    | Pexp_function l -> pp f "@[<hv>function%a@]" (case_list ctxt) l
+    | Pexp_function (params, c, body) ->
+        begin match params, c with
+        (* Omit [fun] if there are no params. *)
+        | [], None ->
+            (* If function cases are a direct body of a function,
+               the function node should be wrapped in parens so
+               it doesn't become part of the enclosing function. *)
+            let should_paren =
+              match body with
+              | Pfunction_cases _ -> ctxt.functionrhs
+              | Pfunction_body _ -> false
+            in
+            let ctxt' = if should_paren then reset_ctxt else ctxt in
+            pp f "@[<2>%a@]" (paren should_paren (function_body ctxt')) body
+        | [], Some c ->
+            pp f "@[<2>(%a@;%a)@]"
+              (function_body ctxt) body
+              (type_constraint ctxt) c
+        | _ :: _, _ ->
+          pp f "@[<2>fun@;%a@]"
+            (fun f () ->
+               function_params_then_body ctxt f params c body ~delimiter:"->")
+            ();
+
+        end
     | Pexp_match (e, l) ->
         pp f "@[<hv0>@[<hv0>@[<2>match %a@]@ with@]%a@]" (expression reset_ctxt)
           e (case_list ctxt) l
@@ -1043,6 +1095,7 @@ and class_field ctxt f x =
             pvb_expr = e;
             pvb_attributes = [];
             pvb_loc = Location.none;
+            pvb_constraint = None;
           }
       in
       pp f "@[<2>method%s %a%a@]%a" (override ovf) private_flag pf
@@ -1283,6 +1336,8 @@ and module_expr ctxt f x =
     | Pmod_apply (me1, me2) ->
         pp f "(%a)(%a)" (module_expr ctxt) me1 (module_expr ctxt) me2
         (* Cf: #7200 *)
+    | Pmod_apply_unit me1 ->
+        pp f "(%a)()" (module_expr ctxt) me1
     | Pmod_unpack e -> pp f "(val@ %a)" (expression ctxt) e
     | Pmod_extension e -> extension ctxt f e
 
@@ -1312,14 +1367,9 @@ and binding ctxt f { pvb_pat = p; pvb_expr = x; _ } =
   (* .pvb_attributes have already been printed by the caller, #bindings *)
   let rec pp_print_pexp_function f x =
     if x.pexp_attributes <> [] then pp f "=@;%a" (expression ctxt) x
-    else
-      match x.pexp_desc with
-      | Pexp_fun (label, eo, p, e) ->
-          if label = Nolabel then
-            pp f "%a@ %a" (simple_pattern ctxt) p pp_print_pexp_function e
-          else
-            pp f "%a@ %a" (label_exp ctxt) (label, eo, p) pp_print_pexp_function
-              e
+    else match x.pexp_desc with
+      | Pexp_function (params, c, body) ->
+          function_params_then_body ctxt f params c body ~delimiter:"="
       | Pexp_newtype (str, e) ->
           pp f "(type@ %s)@ %a" str.txt pp_print_pexp_function e
       | _ -> pp f "=@;%a" (expression ctxt) x
