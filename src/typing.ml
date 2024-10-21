@@ -614,8 +614,14 @@ let type_type_declaration kid crcm ns r tdl =
           W.error ~loc
             (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl));
         ty_app ts tyl
-    | _ -> assert false
-  (* TODO what to do with other cases? *)
+    | Ptyp_alias _ -> W.(error ~loc (Unsupported "type alias"))
+    | Ptyp_class _ -> W.(error ~loc (Unsupported "class type"))
+    | Ptyp_extension _ -> W.(error ~loc (Unsupported "type extension"))
+    | Ptyp_object _ -> W.(error ~loc (Unsupported "object type"))
+    | Ptyp_package _ -> W.(error ~loc (Unsupported "first class module"))
+    | Ptyp_poly _ -> W.(error ~loc (Unsupported "polymorphic type"))
+    | Ptyp_open _ -> W.(error ~loc (Unsupported "local open on type")) 
+    | Ptyp_variant _ -> W.(error ~loc (Unsupported "polymorphic variant"))
   and visit ~alias s td =
     let parse_params (ct, vi) (tvl, params, vs) =
       let loc = ct.ptyp_loc in
