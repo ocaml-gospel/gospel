@@ -27,6 +27,7 @@
     "rehype-katex": "5",
     "remark-definition-list": "^1.2.0",
     "remark-math": "3",
+    "to-fast-properties": "^4.0.0",
     "url-loader": "^4.1.1"
   },
   "browserslist": {
