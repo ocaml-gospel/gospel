@@ -4,10 +4,6 @@ sidebar_position: 3
 
 # Expressions
 
-Gospel expression can be either a term (e.g. `x+1`) or a formula (e.g.
-`forall i. i > 2 -> f i > 0`). This distinction is made during type checking,
-and not at the syntax level.
-
 The syntax for Gospel expressions is largely OCaml's syntax.
 The main differences are:
 
