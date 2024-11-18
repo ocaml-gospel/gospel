@@ -2,22 +2,22 @@
 
 ## Added
 
-- Add support for mutualy recursive ghost types
-  [#403] (https://github.com/ocaml-gospel/gospel/pull/403)
+- Add support for mutually recursive ghost types
+  [\#403](https://github.com/ocaml-gospel/gospel/pull/403)
 
 ## Improved
 
 - Fix typing of expression with inlined record
-  [#420] (https://github.com/ocaml-gospel/gospel/pull/420)
+  [\#420](https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields
-  [#419] (https://github.com/ocaml-gospel/gospel/pull/419)
+  [\#419](https://github.com/ocaml-gospel/gospel/pull/419)
 - Collect all the missing fields in a record definition and don't accept
   incomplete record pattern syntax that OCaml consider incorrect
-  [#418] (https://github.com/ocaml-gospel/gospel/pull/418)
+  [\#418](https://github.com/ocaml-gospel/gospel/pull/418)
 - Display proper error message for a number of unsupported construction
-  [#406] (https://github.com/ocaml-gospel/gospel/pull/406)
+  [\#406](https://github.com/ocaml-gospel/gospel/pull/406)
 - Display an error message when encountering a Functor application
-  [#404] (https://github.com/ocaml-gospel/gospel/pull/404)
+  [\#404](https://github.com/ocaml-gospel/gospel/pull/404)
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
 
@@ -27,7 +27,7 @@
 
 - Created a gallery of Gospel examples that might serve as a working ground
   to experiment with Gospel syntax and future extensions of the language.
-  [#361] (https://github.com/ocaml-gospel/gospel/pull/361)
+  [\#361](https://github.com/ocaml-gospel/gospel/pull/361)
 
 ## Improved
 
@@ -123,7 +123,7 @@
 ## Fixed
 
 - Fix the performance issues in the preprocessor
-  [\353](https://github/ocaml-gospel/gospel/pull/353)
+  [\#353](https://github/ocaml-gospel/gospel/pull/353)
 - Gospel preprocessor support documentation for ghost declaration
   [\#331](https://github/ocaml-gospel/gospel/pull/331)
 - Consider comments as spaces while preprocessing (to ensure specification can
