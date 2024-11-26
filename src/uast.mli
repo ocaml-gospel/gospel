@@ -98,8 +98,10 @@ type val_spec = {
   sp_checks : term list;
   sp_post : term list;
   sp_xpost : xpost list;
-  sp_writes : lens_term list;
+  sp_consumes : lens_term list;
   sp_produces : lens_term list;
+  sp_writes : lens_term list;
+  sp_preserves : lens_term list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_equiv : string list;
