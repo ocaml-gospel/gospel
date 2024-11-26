@@ -713,7 +713,7 @@ let mutable_flag = function
   | Asttypes.Mutable -> Mutable
   | Asttypes.Immutable -> Immutable
 
-let process_type_spec kid crcm ns ty spec =
+let process_type_spec kid eph crcm ns ty spec =
   let field (ns, fields) f =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = field_symbol (Ident.of_preid f.f_preid) [ ty ] f_ty in
@@ -738,7 +738,7 @@ let process_type_spec kid crcm ns ty spec =
         (self_vs, List.map (fmla Invariant kid crcm ns env) xs)
   in
   let invariants = Option.map aux spec.ty_invariant in
-  type_spec spec.ty_ephemeral model invariants spec.ty_text spec.ty_loc
+  type_spec eph model invariants spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
 let type_type_declaration path kid crcm ns r tdl =
@@ -809,8 +809,18 @@ let type_type_declaration path kid crcm ns r tdl =
       in
       Option.map (parse_core alias tvl) td.tmanifest
     in
+    let td_model =
+      Option.fold ~none:(false, Ttypes.Self)
+        ~some:(fun spec ->
+          match spec.Uast.ty_model with
+          | Self -> (spec.ty_ephemeral, Ttypes.Self)
+          | Default (m, pty) -> (m, Ttypes.Model (ty_of_pty ns pty))
+          | Fields l -> (List.exists (fun x -> x.f_mutable) l, Ttypes.Fields))
+        td.tspec
+    in
+
     let td_ts =
-      mk_ts (Ident.create ~path ~loc:td.tname.loc s) params manifest
+      mk_ts (Ident.create ~path ~loc:td.tname.loc s) params manifest td_model
     in
     Hashtbl.add hts s td_ts;
 
@@ -905,7 +915,8 @@ let type_type_declaration path kid crcm ns r tdl =
     in
     Hts.add type_declarations td_ts inv_td;
 
-    let spec = Option.map (process_type_spec kid crcm ns ty) td.tspec in
+    let eph = fst td_model in
+    let spec = Option.map (process_type_spec kid eph crcm ns ty) td.tspec in
 
     if td.tcstrs != [] then
       W.error ~loc:td.tloc (W.Unsupported "type constraints");

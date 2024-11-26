@@ -9,7 +9,7 @@ val vs_of_lb_arg : lb_arg -> vsymbol
 
 val type_spec :
   bool ->
-  model ->
+  Tast.model ->
   (vsymbol * term list) option ->
   string ->
   Location.t ->

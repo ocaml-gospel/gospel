@@ -162,7 +162,12 @@ let mk_td ts kind =
 
 let mk_abstract_td ts =
   mk_td
-    { Ttypes.ts_ident = ts.ts_ident; ts_args = []; ts_alias = None }
+    {
+      Ttypes.ts_ident = ts.ts_ident;
+      ts_args = [];
+      ts_alias = None;
+      ts_model = (false, Self);
+    }
     Tast.Pty_abstract
 
 let ns_with_primitives =

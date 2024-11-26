@@ -55,8 +55,11 @@ and tysymbol = {
   (* we need to keep variables to do things like
      type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
   ts_alias : ty option;
+  ts_model : bool * model;
 }
 [@@deriving show]
+
+and model = Fields | Self | Model of ty [@@deriving show]
 
 let ts_equal x y = Ident.equal x.ts_ident y.ts_ident
 
@@ -78,8 +81,12 @@ end
 module Mts = Map.Make (Ts)
 module Hts = Hashtbl.Make (Ts)
 
-let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
-let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }
+let ts id args =
+  { ts_ident = id; ts_args = args; ts_alias = None; ts_model = (false, Self) }
+
+let mk_ts id args alias model =
+  { ts_ident = id; ts_args = args; ts_alias = alias; ts_model = model }
+
 let ts_ident ts = ts.ts_ident
 let ts_args ts = ts.ts_args
 let ts_alias ts = ts.ts_alias
@@ -116,11 +123,12 @@ let ty_app ?loc ts tyl =
   | None -> ty_app ?loc ts tyl
   | Some ty -> ty_full_inst ?loc (ts_match_args ?loc ts tyl) ty
 
-let rec ts_subst_ts old_ts new_ts ({ ts_ident; ts_args; ts_alias } as ts) =
+let rec ts_subst_ts old_ts new_ts
+    ({ ts_ident; ts_args; ts_alias; ts_model } as ts) =
   if ts_equal old_ts ts then new_ts
   else
     let ts_alias = Option.map (ty_subst_ts old_ts new_ts) ts_alias in
-    mk_ts ts_ident ts_args ts_alias
+    mk_ts ts_ident ts_args ts_alias ts_model
 
 and ty_subst_ts old_ts new_ts ty =
   match ty.ty_node with
@@ -142,7 +150,7 @@ let rec ty_subst_ty old_ts new_ts new_ty ty =
 and ts_subst_ty old_ts new_ts new_ty ts =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
   let ts_alias = Option.map subst ts.ts_alias in
-  mk_ts ts.ts_ident ts.ts_args ts_alias
+  mk_ts ts.ts_ident ts.ts_args ts_alias new_ts.ts_model
 
 (** type matching *)
 

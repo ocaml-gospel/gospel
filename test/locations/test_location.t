@@ -58,12 +58,12 @@ First, create a test artifact:
       (Tast.Sig_type (Tast.Recursive,
          [{ Tast.td_ts =
             { Ttypes.ts_ident = t; ts_args = [{ Ttypes.tv_name = a }];
-              ts_alias = None };
+              ts_alias = None; ts_model = (true, Ttypes.Fields) };
             td_params = ({ Ttypes.tv_name = a }, (<variance>, <injectivity>));
             td_cstrs = ; td_kind = Tast.Pty_abstract; td_private = Tast.Public;
             td_manifest = None; td_attrs = <attributes>;
             td_spec =
-            (Some { Tast.ty_ephemeral = false;
+            (Some { Tast.ty_ephemeral = true;
                     ty_model =
                     (Tast.Fields
                        [(false,
@@ -73,7 +73,8 @@ First, create a test artifact:
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = t;
                                    ts_args = [{ Ttypes.tv_name = a }];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (true, Ttypes.Fields) },
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                    ]
@@ -84,7 +85,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = int; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              }});
                          (true,
@@ -94,7 +96,8 @@ First, create a test artifact:
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = t;
                                     ts_args = [{ Ttypes.tv_name = a }];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (true, Ttypes.Fields) },
                                   [{ Ttypes.ty_node =
                                      (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                     ]
@@ -106,7 +109,8 @@ First, create a test artifact:
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = list;
                                    ts_args = [{ Ttypes.tv_name = a_1 }];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                    ]
@@ -131,7 +135,8 @@ First, create a test artifact:
                  vs_ty =
                  { Ttypes.ty_node =
                    (Ttypes.Tyapp (
-                      { Ttypes.ts_ident = int; ts_args = []; ts_alias = None },
+                      { Ttypes.ts_ident = int; ts_args = []; ts_alias = None;
+                        ts_model = (false, Ttypes.Self) },
                       []))
                    }
                  })
@@ -143,7 +148,8 @@ First, create a test artifact:
                  { Ttypes.ty_node =
                    (Ttypes.Tyapp (
                       { Ttypes.ts_ident = t;
-                        ts_args = [{ Ttypes.tv_name = a }]; ts_alias = None },
+                        ts_args = [{ Ttypes.tv_name = a }]; ts_alias = None;
+                        ts_model = (true, Ttypes.Fields) },
                       [{ Ttypes.ty_node = (Ttypes.Tyvar { Ttypes.tv_name = a })
                          }
                         ]
@@ -159,7 +165,8 @@ First, create a test artifact:
                          { Ttypes.ty_node =
                            (Ttypes.Tyapp (
                               { Ttypes.ts_ident = int; ts_args = [];
-                                ts_alias = None },
+                                ts_alias = None;
+                                ts_model = (false, Ttypes.Self) },
                               []))
                            }
                          })
@@ -172,7 +179,8 @@ First, create a test artifact:
                            (Ttypes.Tyapp (
                               { Ttypes.ts_ident = t;
                                 ts_args = [{ Ttypes.tv_name = a }];
-                                ts_alias = None },
+                                ts_alias = None;
+                                ts_model = (true, Ttypes.Fields) },
                               [{ Ttypes.ty_node =
                                  (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                 ]
@@ -190,13 +198,15 @@ First, create a test artifact:
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = integer; ts_args = [];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  []))
                               };
                              { Ttypes.ty_node =
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = integer; ts_args = [];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   []))
                                }
                              ];
@@ -204,7 +214,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = bool; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              }},
                          [{ Tterm.t_node =
@@ -215,7 +226,8 @@ First, create a test artifact:
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = int; ts_args = [];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        []))
                                     }
                                    ];
@@ -223,7 +235,8 @@ First, create a test artifact:
                                  { Ttypes.ty_node =
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = integer;
-                                        ts_args = []; ts_alias = None },
+                                        ts_args = []; ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       []))
                                    }},
                                [{ Tterm.t_node =
@@ -233,7 +246,8 @@ First, create a test artifact:
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
                                             { Ttypes.ts_ident = int;
-                                              ts_args = []; ts_alias = None },
+                                              ts_args = []; ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             []))
                                          }
                                        });
@@ -241,7 +255,8 @@ First, create a test artifact:
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = int; ts_args = [];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        []))
                                     };
                                   t_attrs = []; t_loc = foo.mli:10:11 }
@@ -251,7 +266,8 @@ First, create a test artifact:
                             { Ttypes.ty_node =
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = integer; ts_args = [];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  []))
                               };
                             t_attrs = []; t_loc = foo.mli:10:11 };
@@ -260,7 +276,8 @@ First, create a test artifact:
                              { Ttypes.ty_node =
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = integer; ts_args = [];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   []))
                                };
                              t_attrs = []; t_loc = foo.mli:10:16 }
@@ -270,7 +287,7 @@ First, create a test artifact:
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = bool; ts_args = [];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
                       t_attrs = []; t_loc = foo.mli:10:11 }
@@ -289,7 +306,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = bool; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              }},
                          [{ Tterm.t_node =
@@ -302,7 +320,8 @@ First, create a test artifact:
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = t;
                                              ts_args = [{ Ttypes.tv_name = a }];
-                                             ts_alias = None },
+                                             ts_alias = None;
+                                             ts_model = (true, Ttypes.Fields) },
                                            [{ Ttypes.ty_node =
                                               (Ttypes.Tyvar
                                                  { Ttypes.tv_name = a })
@@ -316,7 +335,8 @@ First, create a test artifact:
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = t;
                                         ts_args = [{ Ttypes.tv_name = a }];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (true, Ttypes.Fields) },
                                       [{ Ttypes.ty_node =
                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
                                          }
@@ -330,7 +350,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = t;
                                          ts_args = [{ Ttypes.tv_name = a }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (true, Ttypes.Fields) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -343,7 +364,8 @@ First, create a test artifact:
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = list;
                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       [{ Ttypes.ty_node =
                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
                                          }
@@ -356,7 +378,8 @@ First, create a test artifact:
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = list;
                                    ts_args = [{ Ttypes.tv_name = a_1 }];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                    ]
@@ -372,7 +395,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = list;
                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar
                                              { Ttypes.tv_name = a_1 })
@@ -386,7 +410,8 @@ First, create a test artifact:
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = list;
                                     ts_args = [{ Ttypes.tv_name = a_1 }];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   [{ Ttypes.ty_node =
                                      (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                     ]
@@ -399,7 +424,7 @@ First, create a test artifact:
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = bool; ts_args = [];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
                       t_attrs = []; t_loc = foo.mli:11:12 };
@@ -416,7 +441,8 @@ First, create a test artifact:
                             { Ttypes.ty_node =
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = bool; ts_args = [];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  []))
                               }},
                           [{ Tterm.t_node =
@@ -430,7 +456,9 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = t;
                                               ts_args =
                                               [{ Ttypes.tv_name = a }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (true, Ttypes.Fields)
+                                              },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyvar
                                                   { Ttypes.tv_name = a })
@@ -444,7 +472,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = t;
                                          ts_args = [{ Ttypes.tv_name = a }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (true, Ttypes.Fields) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -458,7 +487,8 @@ First, create a test artifact:
                                      (Ttypes.Tyapp (
                                         { Ttypes.ts_ident = t;
                                           ts_args = [{ Ttypes.tv_name = a }];
-                                          ts_alias = None },
+                                          ts_alias = None;
+                                          ts_model = (true, Ttypes.Fields) },
                                         [{ Ttypes.ty_node =
                                            (Ttypes.Tyvar { Ttypes.tv_name = a })
                                            }
@@ -470,7 +500,8 @@ First, create a test artifact:
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = int; ts_args = [];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        []))
                                     }}
                                 ));
@@ -478,7 +509,8 @@ First, create a test artifact:
                              { Ttypes.ty_node =
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = int; ts_args = [];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   []))
                                };
                              t_attrs = []; t_loc = foo.mli:12:12 };
@@ -489,7 +521,8 @@ First, create a test artifact:
                                    { Ttypes.ty_node =
                                      (Ttypes.Tyapp (
                                         { Ttypes.ts_ident = int; ts_args = [];
-                                          ts_alias = None },
+                                          ts_alias = None;
+                                          ts_model = (false, Ttypes.Self) },
                                         []))
                                      }
                                    });
@@ -497,7 +530,8 @@ First, create a test artifact:
                               { Ttypes.ty_node =
                                 (Ttypes.Tyapp (
                                    { Ttypes.ts_ident = int; ts_args = [];
-                                     ts_alias = None },
+                                     ts_alias = None;
+                                     ts_model = (false, Ttypes.Self) },
                                    []))
                                 };
                               t_attrs = []; t_loc = foo.mli:12:21 }
@@ -507,7 +541,8 @@ First, create a test artifact:
                        { Ttypes.ty_node =
                          (Ttypes.Tyapp (
                             { Ttypes.ts_ident = bool; ts_args = [];
-                              ts_alias = None },
+                              ts_alias = None; ts_model = (false, Ttypes.Self)
+                              },
                             []))
                          };
                        t_attrs = []; t_loc = foo.mli:12:12 }
@@ -528,7 +563,8 @@ First, create a test artifact:
              t_ty =
              { Ttypes.ty_node =
                (Ttypes.Tyapp (
-                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None;
+                    ts_model = (false, Ttypes.Self) },
                   []))
                };
              t_attrs = []; t_loc = foo.mli:16:14 };
@@ -542,21 +578,23 @@ First, create a test artifact:
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
                    { Ttypes.ts_ident = list;
-                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    [{ Ttypes.ty_node = (Ttypes.Tyvar { Ttypes.tv_name = a }) }]
                    ))
                 };
                { Ttypes.ty_node =
                  (Ttypes.Tyapp (
-                    { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None
-                      },
+                    { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None;
+                      ts_model = (false, Ttypes.Self) },
                     []))
                  }
                ];
              ls_value =
              { Ttypes.ty_node =
                (Ttypes.Tyapp (
-                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None;
+                    ts_model = (false, Ttypes.Self) },
                   []))
                }};
            fun_rec = false;
@@ -566,7 +604,8 @@ First, create a test artifact:
               { Ttypes.ty_node =
                 (Ttypes.Tyapp (
                    { Ttypes.ts_ident = list;
-                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    [{ Ttypes.ty_node = (Ttypes.Tyvar { Ttypes.tv_name = a }) }]
                    ))
                 }
@@ -575,8 +614,8 @@ First, create a test artifact:
                vs_ty =
                { Ttypes.ty_node =
                  (Ttypes.Tyapp (
-                    { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None
-                      },
+                    { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None;
+                      ts_model = (false, Ttypes.Self) },
                     []))
                  }
                }
@@ -595,7 +634,8 @@ First, create a test artifact:
                         { Ttypes.ty_node =
                           (Ttypes.Tyapp (
                              { Ttypes.ts_ident = bool; ts_args = [];
-                               ts_alias = None },
+                               ts_alias = None; ts_model = (false, Ttypes.Self)
+                               },
                              []))
                           }},
                       [{ Tterm.t_node =
@@ -607,7 +647,8 @@ First, create a test artifact:
                                  (Ttypes.Tyapp (
                                     { Ttypes.ts_ident = sequence;
                                       ts_args = [{ Ttypes.tv_name = a }];
-                                      ts_alias = None },
+                                      ts_alias = None;
+                                      ts_model = (false, Ttypes.Self) },
                                     [{ Ttypes.ty_node =
                                        (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                       ]
@@ -618,7 +659,8 @@ First, create a test artifact:
                               { Ttypes.ty_node =
                                 (Ttypes.Tyapp (
                                    { Ttypes.ts_ident = integer; ts_args = [];
-                                     ts_alias = None },
+                                     ts_alias = None;
+                                     ts_model = (false, Ttypes.Self) },
                                    []))
                                 }},
                             [{ Tterm.t_node =
@@ -631,7 +673,8 @@ First, create a test artifact:
                                           { Ttypes.ts_ident = list;
                                             ts_args =
                                             [{ Ttypes.tv_name = a_1 }];
-                                            ts_alias = None },
+                                            ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           [{ Ttypes.ty_node =
                                              (Ttypes.Tyvar
                                                 { Ttypes.tv_name = a })
@@ -645,7 +688,8 @@ First, create a test artifact:
                                       (Ttypes.Tyapp (
                                          { Ttypes.ts_ident = sequence;
                                            ts_args = [{ Ttypes.tv_name = a }];
-                                           ts_alias = None },
+                                           ts_alias = None;
+                                           ts_model = (false, Ttypes.Self) },
                                          [{ Ttypes.ty_node =
                                             (Ttypes.Tyvar
                                                { Ttypes.tv_name = a })
@@ -662,7 +706,9 @@ First, create a test artifact:
                                                { Ttypes.ts_ident = list;
                                                  ts_args =
                                                  [{ Ttypes.tv_name = a_1 }];
-                                                 ts_alias = None },
+                                                 ts_alias = None;
+                                                 ts_model =
+                                                 (false, Ttypes.Self) },
                                                [{ Ttypes.ty_node =
                                                   (Ttypes.Tyvar
                                                      { Ttypes.tv_name = a })
@@ -677,7 +723,8 @@ First, create a test artifact:
                                           { Ttypes.ts_ident = list;
                                             ts_args =
                                             [{ Ttypes.tv_name = a_1 }];
-                                            ts_alias = None },
+                                            ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           [{ Ttypes.ty_node =
                                              (Ttypes.Tyvar
                                                 { Ttypes.tv_name = a })
@@ -693,7 +740,8 @@ First, create a test artifact:
                                  (Ttypes.Tyapp (
                                     { Ttypes.ts_ident = sequence;
                                       ts_args = [{ Ttypes.tv_name = a }];
-                                      ts_alias = None },
+                                      ts_alias = None;
+                                      ts_model = (false, Ttypes.Self) },
                                     [{ Ttypes.ty_node =
                                        (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                       ]
@@ -706,7 +754,8 @@ First, create a test artifact:
                          { Ttypes.ty_node =
                            (Ttypes.Tyapp (
                               { Ttypes.ts_ident = integer; ts_args = [];
-                                ts_alias = None },
+                                ts_alias = None;
+                                ts_model = (false, Ttypes.Self) },
                               []))
                            };
                          t_attrs = []; t_loc = foo.mli:18:59 };
@@ -717,7 +766,8 @@ First, create a test artifact:
                                { Ttypes.ty_node =
                                  (Ttypes.Tyapp (
                                     { Ttypes.ts_ident = integer; ts_args = [];
-                                      ts_alias = None },
+                                      ts_alias = None;
+                                      ts_model = (false, Ttypes.Self) },
                                     []))
                                  }
                                });
@@ -725,7 +775,8 @@ First, create a test artifact:
                           { Ttypes.ty_node =
                             (Ttypes.Tyapp (
                                { Ttypes.ts_ident = integer; ts_args = [];
-                                 ts_alias = None },
+                                 ts_alias = None;
+                                 ts_model = (false, Ttypes.Self) },
                                []))
                             };
                           t_attrs = []; t_loc = foo.mli:18:80 }
@@ -734,8 +785,8 @@ First, create a test artifact:
                    t_ty =
                    { Ttypes.ty_node =
                      (Ttypes.Tyapp (
-                        { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None
-                          },
+                        { Ttypes.ts_ident = bool; ts_args = [];
+                          ts_alias = None; ts_model = (false, Ttypes.Self) },
                         []))
                      };
                    t_attrs = []; t_loc = foo.mli:18:59 });
@@ -751,17 +802,19 @@ First, create a test artifact:
              ls_args =
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
-                   { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None },
+                   { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    []))
                 };
                { Ttypes.ty_node =
                  (Ttypes.Tyapp (
                     { Ttypes.ts_ident = list;
-                      ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                      ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                      ts_model = (false, Ttypes.Self) },
                     [{ Ttypes.ty_node =
                        (Ttypes.Tyapp (
                           { Ttypes.ts_ident = integer; ts_args = [];
-                            ts_alias = None },
+                            ts_alias = None; ts_model = (false, Ttypes.Self) },
                           []))
                        }
                       ]
@@ -772,11 +825,12 @@ First, create a test artifact:
              { Ttypes.ty_node =
                (Ttypes.Tyapp (
                   { Ttypes.ts_ident = list;
-                    ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                    ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                    ts_model = (false, Ttypes.Self) },
                   [{ Ttypes.ty_node =
                      (Ttypes.Tyapp (
                         { Ttypes.ts_ident = integer; ts_args = [];
-                          ts_alias = None },
+                          ts_alias = None; ts_model = (false, Ttypes.Self) },
                         []))
                      }
                     ]
@@ -788,7 +842,8 @@ First, create a test artifact:
               vs_ty =
               { Ttypes.ty_node =
                 (Ttypes.Tyapp (
-                   { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None },
+                   { Ttypes.ts_ident = integer; ts_args = []; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    []))
                 }
               };
@@ -797,11 +852,12 @@ First, create a test artifact:
                { Ttypes.ty_node =
                  (Ttypes.Tyapp (
                     { Ttypes.ts_ident = list;
-                      ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                      ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                      ts_model = (false, Ttypes.Self) },
                     [{ Ttypes.ty_node =
                        (Ttypes.Tyapp (
                           { Ttypes.ts_ident = integer; ts_args = [];
-                            ts_alias = None },
+                            ts_alias = None; ts_model = (false, Ttypes.Self) },
                           []))
                        }
                       ]
@@ -825,7 +881,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = sequence;
                                          ts_args = [{ Ttypes.tv_name = a }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -837,7 +894,8 @@ First, create a test artifact:
                                 { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = bool; ts_args = [];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (false, Ttypes.Self) },
                                      []))
                                   }},
                               [{ Tterm.t_node =
@@ -847,7 +905,8 @@ First, create a test artifact:
                                       { Ttypes.ty_node =
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = integer;
-                                             ts_args = []; ts_alias = None },
+                                             ts_args = []; ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            []))
                                         }
                                       });
@@ -855,7 +914,8 @@ First, create a test artifact:
                                  { Ttypes.ty_node =
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = integer;
-                                        ts_args = []; ts_alias = None },
+                                        ts_args = []; ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       []))
                                    };
                                  t_attrs = []; t_loc = foo.mli:21:31 };
@@ -869,7 +929,9 @@ First, create a test artifact:
                                              { Ttypes.ts_ident = list;
                                                ts_args =
                                                [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
+                                               ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyvar
                                                    { Ttypes.tv_name = a })
@@ -884,7 +946,8 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = sequence;
                                               ts_args =
                                               [{ Ttypes.tv_name = a }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyvar
                                                   { Ttypes.tv_name = a })
@@ -901,13 +964,18 @@ First, create a test artifact:
                                                   { Ttypes.ts_ident = list;
                                                     ts_args =
                                                     [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   [{ Ttypes.ty_node =
                                                      (Ttypes.Tyapp (
                                                         { Ttypes.ts_ident =
                                                           integer;
                                                           ts_args = [];
-                                                          ts_alias = None },
+                                                          ts_alias = None;
+                                                          ts_model =
+                                                          (false, Ttypes.Self)
+                                                          },
                                                         []))
                                                      }
                                                     ]
@@ -920,12 +988,16 @@ First, create a test artifact:
                                              { Ttypes.ts_ident = list;
                                                ts_args =
                                                [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
+                                               ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyapp (
                                                    { Ttypes.ts_ident = integer;
                                                      ts_args = [];
-                                                     ts_alias = None },
+                                                     ts_alias = None;
+                                                     ts_model =
+                                                     (false, Ttypes.Self) },
                                                    []))
                                                 }
                                                ]
@@ -939,11 +1011,14 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = sequence;
                                          ts_args = [{ Ttypes.tv_name = a }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyapp (
                                              { Ttypes.ts_ident = integer;
-                                               ts_args = []; ts_alias = None },
+                                               ts_args = []; ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              []))
                                           }
                                          ]
@@ -956,7 +1031,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = bool; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              };
                            t_attrs = []; t_loc = foo.mli:21:17 });
@@ -964,7 +1040,7 @@ First, create a test artifact:
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = bool; ts_args = [];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
                       t_attrs = []; t_loc = foo.mli:21:13 }
@@ -975,7 +1051,7 @@ First, create a test artifact:
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = bool; ts_args = [];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
                       t_attrs = []; t_loc = foo.mli:22:12 }
@@ -996,11 +1072,12 @@ First, create a test artifact:
              [{ Ttypes.ty_node =
                 (Ttypes.Tyapp (
                    { Ttypes.ts_ident = list;
-                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    [{ Ttypes.ty_node =
                       (Ttypes.Tyapp (
-                         { Ttypes.ts_ident = int; ts_args = []; ts_alias = None
-                           },
+                         { Ttypes.ts_ident = int; ts_args = [];
+                           ts_alias = None; ts_model = (false, Ttypes.Self) },
                          []))
                       }
                      ]
@@ -1010,7 +1087,8 @@ First, create a test artifact:
              ls_value =
              { Ttypes.ty_node =
                (Ttypes.Tyapp (
-                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None }, 
+                  { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None;
+                    ts_model = (false, Ttypes.Self) },
                   []))
                }};
            fun_rec = true;
@@ -1020,11 +1098,12 @@ First, create a test artifact:
               { Ttypes.ty_node =
                 (Ttypes.Tyapp (
                    { Ttypes.ts_ident = list;
-                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None },
+                     ts_args = [{ Ttypes.tv_name = a_1 }]; ts_alias = None;
+                     ts_model = (false, Ttypes.Self) },
                    [{ Ttypes.ty_node =
                       (Ttypes.Tyapp (
-                         { Ttypes.ts_ident = int; ts_args = []; ts_alias = None
-                           },
+                         { Ttypes.ts_ident = int; ts_args = [];
+                           ts_alias = None; ts_model = (false, Ttypes.Self) },
                          []))
                       }
                      ]
@@ -1043,11 +1122,13 @@ First, create a test artifact:
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = list;
                                     ts_args = [{ Ttypes.tv_name = a_1 }];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   [{ Ttypes.ty_node =
                                      (Ttypes.Tyapp (
                                         { Ttypes.ts_ident = int; ts_args = [];
-                                          ts_alias = None },
+                                          ts_alias = None;
+                                          ts_model = (false, Ttypes.Self) },
                                         []))
                                      }
                                     ]
@@ -1059,11 +1140,13 @@ First, create a test artifact:
                           (Ttypes.Tyapp (
                              { Ttypes.ts_ident = list;
                                ts_args = [{ Ttypes.tv_name = a_1 }];
-                               ts_alias = None },
+                               ts_alias = None; ts_model = (false, Ttypes.Self)
+                               },
                              [{ Ttypes.ty_node =
                                 (Ttypes.Tyapp (
                                    { Ttypes.ts_ident = int; ts_args = [];
-                                     ts_alias = None },
+                                     ts_alias = None;
+                                     ts_model = (false, Ttypes.Self) },
                                    []))
                                 }
                                ]
@@ -1081,7 +1164,8 @@ First, create a test artifact:
                                       (Ttypes.Tyapp (
                                          { Ttypes.ts_ident = list;
                                            ts_args = [{ Ttypes.tv_name = a_1 }];
-                                           ts_alias = None },
+                                           ts_alias = None;
+                                           ts_model = (false, Ttypes.Self) },
                                          [{ Ttypes.ty_node =
                                             (Ttypes.Tyvar
                                                { Ttypes.tv_name = a_1 })
@@ -1095,11 +1179,13 @@ First, create a test artifact:
                                  (Ttypes.Tyapp (
                                     { Ttypes.ts_ident = list;
                                       ts_args = [{ Ttypes.tv_name = a_1 }];
-                                      ts_alias = None },
+                                      ts_alias = None;
+                                      ts_model = (false, Ttypes.Self) },
                                     [{ Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = int;
-                                            ts_args = []; ts_alias = None },
+                                            ts_args = []; ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           []))
                                        }
                                       ]
@@ -1121,7 +1207,9 @@ First, create a test artifact:
                                               { Ttypes.ts_ident = list;
                                                 ts_args =
                                                 [{ Ttypes.tv_name = a_1 }];
-                                                ts_alias = None },
+                                                ts_alias = None;
+                                                ts_model = (false, Ttypes.Self)
+                                                },
                                               [{ Ttypes.ty_node =
                                                  (Ttypes.Tyvar
                                                     { Ttypes.tv_name = a_1 })
@@ -1135,7 +1223,8 @@ First, create a test artifact:
                                       (Ttypes.Tyapp (
                                          { Ttypes.ts_ident = list;
                                            ts_args = [{ Ttypes.tv_name = a_1 }];
-                                           ts_alias = None },
+                                           ts_alias = None;
+                                           ts_model = (false, Ttypes.Self) },
                                          [{ Ttypes.ty_node =
                                             (Ttypes.Tyvar
                                                { Ttypes.tv_name = a_1 })
@@ -1148,7 +1237,8 @@ First, create a test artifact:
                                      { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = int;
-                                            ts_args = []; ts_alias = None },
+                                            ts_args = []; ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           []))
                                        };
                                      p_loc = foo.mli:25:13 };
@@ -1163,7 +1253,9 @@ First, create a test artifact:
                                                 { Ttypes.ts_ident = list;
                                                   ts_args =
                                                   [{ Ttypes.tv_name = a_1 }];
-                                                  ts_alias = None },
+                                                  ts_alias = None;
+                                                  ts_model =
+                                                  (false, Ttypes.Self) },
                                                 [{ Ttypes.ty_node =
                                                    (Ttypes.Tyvar
                                                       { Ttypes.tv_name = a_1 })
@@ -1178,12 +1270,15 @@ First, create a test artifact:
                                            { Ttypes.ts_ident = list;
                                              ts_args =
                                              [{ Ttypes.tv_name = a_1 }];
-                                             ts_alias = None },
+                                             ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            [{ Ttypes.ty_node =
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               }
                                              ]
@@ -1197,11 +1292,13 @@ First, create a test artifact:
                                  (Ttypes.Tyapp (
                                     { Ttypes.ts_ident = list;
                                       ts_args = [{ Ttypes.tv_name = a_1 }];
-                                      ts_alias = None },
+                                      ts_alias = None;
+                                      ts_model = (false, Ttypes.Self) },
                                     [{ Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = int;
-                                            ts_args = []; ts_alias = None },
+                                            ts_args = []; ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           []))
                                        }
                                       ]
@@ -1214,11 +1311,13 @@ First, create a test artifact:
                             (Ttypes.Tyapp (
                                { Ttypes.ts_ident = list;
                                  ts_args = [{ Ttypes.tv_name = a_1 }];
-                                 ts_alias = None },
+                                 ts_alias = None;
+                                 ts_model = (false, Ttypes.Self) },
                                [{ Ttypes.ty_node =
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = int; ts_args = [];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (false, Ttypes.Self) },
                                      []))
                                   }
                                  ]
@@ -1231,7 +1330,8 @@ First, create a test artifact:
                           { Ttypes.ty_node =
                             (Ttypes.Tyapp (
                                { Ttypes.ts_ident = bool; ts_args = [];
-                                 ts_alias = None },
+                                 ts_alias = None;
+                                 ts_model = (false, Ttypes.Self) },
                                []))
                             };
                           t_attrs = []; t_loc = foo.mli:25:24 });
@@ -1247,7 +1347,8 @@ First, create a test artifact:
                                           { Ttypes.ts_ident = list;
                                             ts_args =
                                             [{ Ttypes.tv_name = a_1 }];
-                                            ts_alias = None },
+                                            ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           [{ Ttypes.ty_node =
                                              (Ttypes.Tyvar
                                                 { Ttypes.tv_name = a_1 })
@@ -1261,7 +1362,8 @@ First, create a test artifact:
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = list;
                                        ts_args = [{ Ttypes.tv_name = a_1 }];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (false, Ttypes.Self) },
                                      [{ Ttypes.ty_node =
                                         (Ttypes.Tyvar { Ttypes.tv_name = a_1 })
                                         }
@@ -1275,7 +1377,8 @@ First, create a test artifact:
                                       { Ttypes.ty_node =
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = int;
-                                             ts_args = []; ts_alias = None },
+                                             ts_args = []; ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            []))
                                         }
                                       });
@@ -1283,7 +1386,8 @@ First, create a test artifact:
                                  { Ttypes.ty_node =
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = int; ts_args = [];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       []))
                                    };
                                  p_loc = foo.mli:26:8 };
@@ -1306,7 +1410,9 @@ First, create a test artifact:
                                                         [{ Ttypes.tv_name = a_1
                                                            }
                                                           ];
-                                                        ts_alias = None },
+                                                        ts_alias = None;
+                                                        ts_model =
+                                                        (false, Ttypes.Self) },
                                                       [{ Ttypes.ty_node =
                                                          (Ttypes.Tyvar
                                                             { Ttypes.tv_name =
@@ -1322,7 +1428,9 @@ First, create a test artifact:
                                                  { Ttypes.ts_ident = list;
                                                    ts_args =
                                                    [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  [{ Ttypes.ty_node =
                                                     (Ttypes.Tyvar
                                                        { Ttypes.tv_name = a_1 })
@@ -1338,7 +1446,9 @@ First, create a test artifact:
                                                     (Ttypes.Tyapp (
                                                        { Ttypes.ts_ident = int;
                                                          ts_args = [];
-                                                         ts_alias = None },
+                                                         ts_alias = None;
+                                                         ts_model =
+                                                         (false, Ttypes.Self) },
                                                        []))
                                                     }
                                                   });
@@ -1347,7 +1457,9 @@ First, create a test artifact:
                                                (Ttypes.Tyapp (
                                                   { Ttypes.ts_ident = int;
                                                     ts_args = [];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   []))
                                                };
                                              p_loc = foo.mli:26:14 };
@@ -1358,12 +1470,17 @@ First, create a test artifact:
                                                    { Ttypes.ts_ident = list;
                                                      ts_args =
                                                      [{ Ttypes.tv_name = a_1 }];
-                                                     ts_alias = None },
+                                                     ts_alias = None;
+                                                     ts_model =
+                                                     (false, Ttypes.Self) },
                                                    [{ Ttypes.ty_node =
                                                       (Ttypes.Tyapp (
                                                          { Ttypes.ts_ident =
                                                            int; ts_args = [];
-                                                           ts_alias = None },
+                                                           ts_alias = None;
+                                                           ts_model =
+                                                           (false, Ttypes.Self)
+                                                           },
                                                          []))
                                                       }
                                                      ]
@@ -1378,12 +1495,15 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = list;
                                               ts_args =
                                               [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyapp (
                                                   { Ttypes.ts_ident = int;
                                                     ts_args = [];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   []))
                                                }
                                               ]
@@ -1397,12 +1517,15 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = list;
                                               ts_args =
                                               [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyapp (
                                                   { Ttypes.ts_ident = int;
                                                     ts_args = [];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   []))
                                                }
                                               ]
@@ -1415,11 +1538,14 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = list;
                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyapp (
                                              { Ttypes.ts_ident = int;
-                                               ts_args = []; ts_alias = None },
+                                               ts_args = []; ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              []))
                                           }
                                          ]
@@ -1433,11 +1559,13 @@ First, create a test artifact:
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = list;
                                   ts_args = [{ Ttypes.tv_name = a_1 }];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 [{ Ttypes.ty_node =
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = int; ts_args = [];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       []))
                                    }
                                   ]
@@ -1455,13 +1583,15 @@ First, create a test artifact:
                                      [{ Ttypes.ty_node =
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = integer;
-                                             ts_args = []; ts_alias = None },
+                                             ts_args = []; ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            []))
                                         };
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
                                             { Ttypes.ts_ident = integer;
-                                              ts_args = []; ts_alias = None },
+                                              ts_args = []; ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             []))
                                          }
                                        ];
@@ -1469,7 +1599,8 @@ First, create a test artifact:
                                      { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = bool;
-                                            ts_args = []; ts_alias = None },
+                                            ts_args = []; ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           []))
                                        }},
                                    [{ Tterm.t_node =
@@ -1482,7 +1613,9 @@ First, create a test artifact:
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               }
                                              ];
@@ -1490,8 +1623,10 @@ First, create a test artifact:
                                            { Ttypes.ty_node =
                                              (Ttypes.Tyapp (
                                                 { Ttypes.ts_ident = integer;
-                                                  ts_args = []; ts_alias = None
-                                                  },
+                                                  ts_args = [];
+                                                  ts_alias = None;
+                                                  ts_model =
+                                                  (false, Ttypes.Self) },
                                                 []))
                                              }},
                                          [{ Tterm.t_node =
@@ -1502,7 +1637,9 @@ First, create a test artifact:
                                                    (Ttypes.Tyapp (
                                                       { Ttypes.ts_ident = int;
                                                         ts_args = [];
-                                                        ts_alias = None },
+                                                        ts_alias = None;
+                                                        ts_model =
+                                                        (false, Ttypes.Self) },
                                                       []))
                                                    }
                                                  });
@@ -1511,7 +1648,9 @@ First, create a test artifact:
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               };
                                             t_attrs = []; t_loc = foo.mli:26:30
@@ -1522,7 +1661,8 @@ First, create a test artifact:
                                       { Ttypes.ty_node =
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = integer;
-                                             ts_args = []; ts_alias = None },
+                                             ts_args = []; ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            []))
                                         };
                                       t_attrs = []; t_loc = foo.mli:26:30 };
@@ -1536,7 +1676,9 @@ First, create a test artifact:
                                                (Ttypes.Tyapp (
                                                   { Ttypes.ts_ident = int;
                                                     ts_args = [];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   []))
                                                }
                                               ];
@@ -1545,7 +1687,9 @@ First, create a test artifact:
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = integer;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               }},
                                           [{ Tterm.t_node =
@@ -1556,7 +1700,9 @@ First, create a test artifact:
                                                     (Ttypes.Tyapp (
                                                        { Ttypes.ts_ident = int;
                                                          ts_args = [];
-                                                         ts_alias = None },
+                                                         ts_alias = None;
+                                                         ts_model =
+                                                         (false, Ttypes.Self) },
                                                        []))
                                                     }
                                                   });
@@ -1565,7 +1711,9 @@ First, create a test artifact:
                                                (Ttypes.Tyapp (
                                                   { Ttypes.ts_ident = int;
                                                     ts_args = [];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   []))
                                                };
                                              t_attrs = [];
@@ -1576,7 +1724,8 @@ First, create a test artifact:
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
                                             { Ttypes.ts_ident = integer;
-                                              ts_args = []; ts_alias = None },
+                                              ts_args = []; ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             []))
                                          };
                                        t_attrs = []; t_loc = foo.mli:26:35 }
@@ -1586,7 +1735,8 @@ First, create a test artifact:
                                 { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = bool; ts_args = [];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (false, Ttypes.Self) },
                                      []))
                                   };
                                 t_attrs = []; t_loc = foo.mli:26:30 },
@@ -1600,12 +1750,15 @@ First, create a test artifact:
                                            { Ttypes.ts_ident = list;
                                              ts_args =
                                              [{ Ttypes.tv_name = a_1 }];
-                                             ts_alias = None },
+                                             ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            [{ Ttypes.ty_node =
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               }
                                              ]
@@ -1616,7 +1769,8 @@ First, create a test artifact:
                                      { Ttypes.ty_node =
                                        (Ttypes.Tyapp (
                                           { Ttypes.ts_ident = bool;
-                                            ts_args = []; ts_alias = None },
+                                            ts_args = []; ts_alias = None;
+                                            ts_model = (false, Ttypes.Self) },
                                           []))
                                        }},
                                    [{ Tterm.t_node =
@@ -1628,12 +1782,16 @@ First, create a test artifact:
                                                 { Ttypes.ts_ident = list;
                                                   ts_args =
                                                   [{ Ttypes.tv_name = a_1 }];
-                                                  ts_alias = None },
+                                                  ts_alias = None;
+                                                  ts_model =
+                                                  (false, Ttypes.Self) },
                                                 [{ Ttypes.ty_node =
                                                    (Ttypes.Tyapp (
                                                       { Ttypes.ts_ident = int;
                                                         ts_args = [];
-                                                        ts_alias = None },
+                                                        ts_alias = None;
+                                                        ts_model =
+                                                        (false, Ttypes.Self) },
                                                       []))
                                                    }
                                                   ]
@@ -1646,12 +1804,15 @@ First, create a test artifact:
                                            { Ttypes.ts_ident = list;
                                              ts_args =
                                              [{ Ttypes.tv_name = a_1 }];
-                                             ts_alias = None },
+                                             ts_alias = None;
+                                             ts_model = (false, Ttypes.Self) },
                                            [{ Ttypes.ty_node =
                                               (Ttypes.Tyapp (
                                                  { Ttypes.ts_ident = int;
                                                    ts_args = [];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  []))
                                               }
                                              ]
@@ -1664,7 +1825,8 @@ First, create a test artifact:
                                 { Ttypes.ty_node =
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = bool; ts_args = [];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (false, Ttypes.Self) },
                                      []))
                                   };
                                 t_attrs = []; t_loc = foo.mli:26:40 }
@@ -1673,7 +1835,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = bool; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              };
                            t_attrs = []; t_loc = foo.mli:26:30 })
@@ -1682,8 +1845,8 @@ First, create a test artifact:
                    t_ty =
                    { Ttypes.ty_node =
                      (Ttypes.Tyapp (
-                        { Ttypes.ts_ident = bool; ts_args = []; ts_alias = None
-                          },
+                        { Ttypes.ts_ident = bool; ts_args = [];
+                          ts_alias = None; ts_model = (false, Ttypes.Self) },
                         []))
                      };
                    t_attrs = []; t_loc = foo.mli:24:49 });
@@ -1707,7 +1870,8 @@ First, create a test artifact:
                   { Ttypes.ty_node =
                     (Ttypes.Tyapp (
                        { Ttypes.ts_ident = t;
-                         ts_args = [{ Ttypes.tv_name = a }]; ts_alias = None },
+                         ts_args = [{ Ttypes.tv_name = a }]; ts_alias = None;
+                         ts_model = (true, Ttypes.Fields) },
                        [{ Ttypes.ty_node =
                           (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                          ]
@@ -1731,7 +1895,8 @@ First, create a test artifact:
                             (Ttypes.Tyapp (
                                { Ttypes.ts_ident = t;
                                  ts_args = [{ Ttypes.tv_name = a }];
-                                 ts_alias = None },
+                                 ts_alias = None;
+                                 ts_model = (true, Ttypes.Fields) },
                                [{ Ttypes.ty_node =
                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                  ]
@@ -1754,7 +1919,8 @@ First, create a test artifact:
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = bool; ts_args = [];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 []))
                              }},
                          [{ Tterm.t_node =
@@ -1767,7 +1933,8 @@ First, create a test artifact:
                                         (Ttypes.Tyapp (
                                            { Ttypes.ts_ident = t;
                                              ts_args = [{ Ttypes.tv_name = a }];
-                                             ts_alias = None },
+                                             ts_alias = None;
+                                             ts_model = (true, Ttypes.Fields) },
                                            [{ Ttypes.ty_node =
                                               (Ttypes.Tyvar
                                                  { Ttypes.tv_name = a })
@@ -1781,7 +1948,8 @@ First, create a test artifact:
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = t;
                                         ts_args = [{ Ttypes.tv_name = a }];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (true, Ttypes.Fields) },
                                       [{ Ttypes.ty_node =
                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
                                          }
@@ -1795,7 +1963,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = t;
                                          ts_args = [{ Ttypes.tv_name = a }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (true, Ttypes.Fields) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -1808,7 +1977,8 @@ First, create a test artifact:
                                    (Ttypes.Tyapp (
                                       { Ttypes.ts_ident = list;
                                         ts_args = [{ Ttypes.tv_name = a_1 }];
-                                        ts_alias = None },
+                                        ts_alias = None;
+                                        ts_model = (false, Ttypes.Self) },
                                       [{ Ttypes.ty_node =
                                          (Ttypes.Tyvar { Ttypes.tv_name = a })
                                          }
@@ -1821,7 +1991,8 @@ First, create a test artifact:
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = list;
                                    ts_args = [{ Ttypes.tv_name = a_1 }];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (false, Ttypes.Self) },
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                    ]
@@ -1840,7 +2011,9 @@ First, create a test artifact:
                                              { Ttypes.ts_ident = list;
                                                ts_args =
                                                [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
+                                               ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyvar
                                                    { Ttypes.tv_name = a })
@@ -1851,7 +2024,9 @@ First, create a test artifact:
                                          { Ttypes.ty_node =
                                            (Ttypes.Tyapp (
                                               { Ttypes.ts_ident = integer;
-                                                ts_args = []; ts_alias = None },
+                                                ts_args = []; ts_alias = None;
+                                                ts_model = (false, Ttypes.Self)
+                                                },
                                               []))
                                            }
                                          ];
@@ -1859,7 +2034,8 @@ First, create a test artifact:
                                        { Ttypes.ty_node =
                                          (Ttypes.Tyapp (
                                             { Ttypes.ts_ident = bool;
-                                              ts_args = []; ts_alias = None },
+                                              ts_args = []; ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             []))
                                          }},
                                      [{ Tterm.t_node =
@@ -1875,7 +2051,10 @@ First, create a test artifact:
                                                          [{ Ttypes.tv_name = a
                                                             }
                                                            ];
-                                                         ts_alias = None },
+                                                         ts_alias = None;
+                                                         ts_model =
+                                                         (true, Ttypes.Fields)
+                                                         },
                                                        [{ Ttypes.ty_node =
                                                           (Ttypes.Tyvar
                                                              { Ttypes.tv_name =
@@ -1891,7 +2070,9 @@ First, create a test artifact:
                                                   { Ttypes.ts_ident = t;
                                                     ts_args =
                                                     [{ Ttypes.tv_name = a }];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (true, Ttypes.Fields) },
                                                   [{ Ttypes.ty_node =
                                                      (Ttypes.Tyvar
                                                         { Ttypes.tv_name = a })
@@ -1909,7 +2090,9 @@ First, create a test artifact:
                                                    { Ttypes.ts_ident = t;
                                                      ts_args =
                                                      [{ Ttypes.tv_name = a }];
-                                                     ts_alias = None },
+                                                     ts_alias = None;
+                                                     ts_model =
+                                                     (true, Ttypes.Fields) },
                                                    [{ Ttypes.ty_node =
                                                       (Ttypes.Tyvar
                                                          { Ttypes.tv_name = a })
@@ -1924,7 +2107,9 @@ First, create a test artifact:
                                                   { Ttypes.ts_ident = list;
                                                     ts_args =
                                                     [{ Ttypes.tv_name = a_1 }];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (false, Ttypes.Self) },
                                                   [{ Ttypes.ty_node =
                                                      (Ttypes.Tyvar
                                                         { Ttypes.tv_name = a })
@@ -1939,7 +2124,9 @@ First, create a test artifact:
                                              { Ttypes.ts_ident = list;
                                                ts_args =
                                                [{ Ttypes.tv_name = a_1 }];
-                                               ts_alias = None },
+                                               ts_alias = None;
+                                               ts_model = (false, Ttypes.Self)
+                                               },
                                              [{ Ttypes.ty_node =
                                                 (Ttypes.Tyvar
                                                    { Ttypes.tv_name = a })
@@ -1958,7 +2145,9 @@ First, create a test artifact:
                                                  (Ttypes.Tyapp (
                                                     { Ttypes.ts_ident = int;
                                                       ts_args = [];
-                                                      ts_alias = None },
+                                                      ts_alias = None;
+                                                      ts_model =
+                                                      (false, Ttypes.Self) },
                                                     []))
                                                  }
                                                 ];
@@ -1967,7 +2156,9 @@ First, create a test artifact:
                                                 (Ttypes.Tyapp (
                                                    { Ttypes.ts_ident = integer;
                                                      ts_args = [];
-                                                     ts_alias = None },
+                                                     ts_alias = None;
+                                                     ts_model =
+                                                     (false, Ttypes.Self) },
                                                    []))
                                                 }},
                                             [{ Tterm.t_node =
@@ -1984,7 +2175,10 @@ First, create a test artifact:
                                                                 [{ Ttypes.tv_name =
                                                                    a }
                                                                   ];
-                                                                ts_alias = None
+                                                                ts_alias = None;
+                                                                ts_model =
+                                                                (true,
+                                                                 Ttypes.Fields)
                                                                 },
                                                               [{ Ttypes.ty_node =
                                                                  (Ttypes.Tyvar
@@ -2003,7 +2197,10 @@ First, create a test artifact:
                                                            [{ Ttypes.tv_name =
                                                               a }
                                                              ];
-                                                           ts_alias = None },
+                                                           ts_alias = None;
+                                                           ts_model =
+                                                           (true, Ttypes.Fields)
+                                                           },
                                                          [{ Ttypes.ty_node =
                                                             (Ttypes.Tyvar
                                                                { Ttypes.tv_name =
@@ -2024,7 +2221,11 @@ First, create a test artifact:
                                                             [{ Ttypes.tv_name =
                                                                a }
                                                               ];
-                                                            ts_alias = None },
+                                                            ts_alias = None;
+                                                            ts_model =
+                                                            (true,
+                                                             Ttypes.Fields)
+                                                            },
                                                           [{ Ttypes.ty_node =
                                                              (Ttypes.Tyvar
                                                                 { Ttypes.tv_name =
@@ -2039,7 +2240,10 @@ First, create a test artifact:
                                                       (Ttypes.Tyapp (
                                                          { Ttypes.ts_ident =
                                                            int; ts_args = [];
-                                                           ts_alias = None },
+                                                           ts_alias = None;
+                                                           ts_model =
+                                                           (false, Ttypes.Self)
+                                                           },
                                                          []))
                                                       }}
                                                   ));
@@ -2048,7 +2252,9 @@ First, create a test artifact:
                                                  (Ttypes.Tyapp (
                                                     { Ttypes.ts_ident = int;
                                                       ts_args = [];
-                                                      ts_alias = None },
+                                                      ts_alias = None;
+                                                      ts_model =
+                                                      (false, Ttypes.Self) },
                                                     []))
                                                  };
                                                t_attrs = [];
@@ -2059,7 +2265,9 @@ First, create a test artifact:
                                          { Ttypes.ty_node =
                                            (Ttypes.Tyapp (
                                               { Ttypes.ts_ident = integer;
-                                                ts_args = []; ts_alias = None },
+                                                ts_args = []; ts_alias = None;
+                                                ts_model = (false, Ttypes.Self)
+                                                },
                                               []))
                                            };
                                          t_attrs = []; t_loc = foo.mli:32:47 }
@@ -2069,7 +2277,8 @@ First, create a test artifact:
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = bool; ts_args = [];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        []))
                                     };
                                   t_attrs = []; t_loc = foo.mli:32:28 },
@@ -2087,7 +2296,9 @@ First, create a test artifact:
                                                         ts_args =
                                                         [{ Ttypes.tv_name = a }
                                                           ];
-                                                        ts_alias = None },
+                                                        ts_alias = None;
+                                                        ts_model =
+                                                        (true, Ttypes.Fields) },
                                                       [{ Ttypes.ty_node =
                                                          (Ttypes.Tyvar
                                                             { Ttypes.tv_name =
@@ -2103,7 +2314,9 @@ First, create a test artifact:
                                                  { Ttypes.ts_ident = t;
                                                    ts_args =
                                                    [{ Ttypes.tv_name = a }];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (true, Ttypes.Fields) },
                                                  [{ Ttypes.ty_node =
                                                     (Ttypes.Tyvar
                                                        { Ttypes.tv_name = a })
@@ -2121,7 +2334,9 @@ First, create a test artifact:
                                                   { Ttypes.ts_ident = t;
                                                     ts_args =
                                                     [{ Ttypes.tv_name = a }];
-                                                    ts_alias = None },
+                                                    ts_alias = None;
+                                                    ts_model =
+                                                    (true, Ttypes.Fields) },
                                                   [{ Ttypes.ty_node =
                                                      (Ttypes.Tyvar
                                                         { Ttypes.tv_name = a })
@@ -2136,7 +2351,9 @@ First, create a test artifact:
                                                  { Ttypes.ts_ident = list;
                                                    ts_args =
                                                    [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  [{ Ttypes.ty_node =
                                                     (Ttypes.Tyvar
                                                        { Ttypes.tv_name = a })
@@ -2151,7 +2368,8 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = list;
                                               ts_args =
                                               [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyvar
                                                   { Ttypes.tv_name = a })
@@ -2165,7 +2383,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = list;
                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -2188,7 +2407,9 @@ First, create a test artifact:
                                                  { Ttypes.ts_ident = list;
                                                    ts_args =
                                                    [{ Ttypes.tv_name = a_1 }];
-                                                   ts_alias = None },
+                                                   ts_alias = None;
+                                                   ts_model =
+                                                   (false, Ttypes.Self) },
                                                  [{ Ttypes.ty_node =
                                                     (Ttypes.Tyvar
                                                        { Ttypes.tv_name = a_1 })
@@ -2203,7 +2424,8 @@ First, create a test artifact:
                                             { Ttypes.ts_ident = list;
                                               ts_args =
                                               [{ Ttypes.tv_name = a_1 }];
-                                              ts_alias = None },
+                                              ts_alias = None;
+                                              ts_model = (false, Ttypes.Self) },
                                             [{ Ttypes.ty_node =
                                                (Ttypes.Tyvar
                                                   { Ttypes.tv_name = a_1 })
@@ -2241,7 +2463,10 @@ First, create a test artifact:
                                                                [{ Ttypes.tv_name =
                                                                   a }
                                                                  ];
-                                                               ts_alias = None
+                                                               ts_alias = None;
+                                                               ts_model =
+                                                               (true,
+                                                                Ttypes.Fields)
                                                                },
                                                              [{ Ttypes.ty_node =
                                                                 (Ttypes.Tyvar
@@ -2260,7 +2485,10 @@ First, create a test artifact:
                                                           [{ Ttypes.tv_name = a
                                                              }
                                                             ];
-                                                          ts_alias = None },
+                                                          ts_alias = None;
+                                                          ts_model =
+                                                          (true, Ttypes.Fields)
+                                                          },
                                                         [{ Ttypes.ty_node =
                                                            (Ttypes.Tyvar
                                                               { Ttypes.tv_name =
@@ -2281,7 +2509,10 @@ First, create a test artifact:
                                                            [{ Ttypes.tv_name =
                                                               a }
                                                              ];
-                                                           ts_alias = None },
+                                                           ts_alias = None;
+                                                           ts_model =
+                                                           (true, Ttypes.Fields)
+                                                           },
                                                          [{ Ttypes.ty_node =
                                                             (Ttypes.Tyvar
                                                                { Ttypes.tv_name =
@@ -2300,7 +2531,10 @@ First, create a test artifact:
                                                           [{ Ttypes.tv_name =
                                                              a_1 }
                                                             ];
-                                                          ts_alias = None },
+                                                          ts_alias = None;
+                                                          ts_model =
+                                                          (false, Ttypes.Self)
+                                                          },
                                                         [{ Ttypes.ty_node =
                                                            (Ttypes.Tyvar
                                                               { Ttypes.tv_name =
@@ -2316,7 +2550,9 @@ First, create a test artifact:
                                                    { Ttypes.ts_ident = list;
                                                      ts_args =
                                                      [{ Ttypes.tv_name = a_1 }];
-                                                     ts_alias = None },
+                                                     ts_alias = None;
+                                                     ts_model =
+                                                     (false, Ttypes.Self) },
                                                    [{ Ttypes.ty_node =
                                                       (Ttypes.Tyvar
                                                          { Ttypes.tv_name = a })
@@ -2332,7 +2568,9 @@ First, create a test artifact:
                                               { Ttypes.ts_ident = list;
                                                 ts_args =
                                                 [{ Ttypes.tv_name = a_1 }];
-                                                ts_alias = None },
+                                                ts_alias = None;
+                                                ts_model = (false, Ttypes.Self)
+                                                },
                                               [{ Ttypes.ty_node =
                                                  (Ttypes.Tyvar
                                                     { Ttypes.tv_name = a })
@@ -2348,7 +2586,8 @@ First, create a test artifact:
                                     (Ttypes.Tyapp (
                                        { Ttypes.ts_ident = list;
                                          ts_args = [{ Ttypes.tv_name = a_1 }];
-                                         ts_alias = None },
+                                         ts_alias = None;
+                                         ts_model = (false, Ttypes.Self) },
                                        [{ Ttypes.ty_node =
                                           (Ttypes.Tyvar { Ttypes.tv_name = a })
                                           }
@@ -2362,7 +2601,8 @@ First, create a test artifact:
                                (Ttypes.Tyapp (
                                   { Ttypes.ts_ident = list;
                                     ts_args = [{ Ttypes.tv_name = a_1 }];
-                                    ts_alias = None },
+                                    ts_alias = None;
+                                    ts_model = (false, Ttypes.Self) },
                                   [{ Ttypes.ty_node =
                                      (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                     ]
@@ -2375,7 +2615,7 @@ First, create a test artifact:
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = bool; ts_args = [];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
                       t_attrs = []; t_loc = foo.mli:32:12 }
@@ -2392,7 +2632,8 @@ First, create a test artifact:
                                   (Ttypes.Tyapp (
                                      { Ttypes.ts_ident = t;
                                        ts_args = [{ Ttypes.tv_name = a }];
-                                       ts_alias = None },
+                                       ts_alias = None;
+                                       ts_model = (true, Ttypes.Fields) },
                                      [{ Ttypes.ty_node =
                                         (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                        ]
@@ -2404,7 +2645,8 @@ First, create a test artifact:
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = t;
                                   ts_args = [{ Ttypes.tv_name = a }];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (true, Ttypes.Fields) },
                                 [{ Ttypes.ty_node =
                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                   ]
@@ -2417,7 +2659,8 @@ First, create a test artifact:
                               (Ttypes.Tyapp (
                                  { Ttypes.ts_ident = t;
                                    ts_args = [{ Ttypes.tv_name = a }];
-                                   ts_alias = None },
+                                   ts_alias = None;
+                                   ts_model = (true, Ttypes.Fields) },
                                  [{ Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                    ]
@@ -2429,7 +2672,8 @@ First, create a test artifact:
                              (Ttypes.Tyapp (
                                 { Ttypes.ts_ident = list;
                                   ts_args = [{ Ttypes.tv_name = a_1 }];
-                                  ts_alias = None },
+                                  ts_alias = None;
+                                  ts_model = (false, Ttypes.Self) },
                                 [{ Ttypes.ty_node =
                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                                   ]
@@ -2441,7 +2685,7 @@ First, create a test artifact:
                         (Ttypes.Tyapp (
                            { Ttypes.ts_ident = list;
                              ts_args = [{ Ttypes.tv_name = a_1 }];
-                             ts_alias = None },
+                             ts_alias = None; ts_model = (false, Ttypes.Self) },
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyvar { Ttypes.tv_name = a }) }
                              ]
@@ -2458,6 +2702,24 @@ First, create a test artifact:
          Tast.Nonghost));
       sig_loc = foo.mli:28:0 }
     ]
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
+<<<<<<< HEAD
+=======
+>>>>>>> 2de243f (Type symbols store the logical model of the type)
 
 A smaller example, focused on locations after a directive:
 
