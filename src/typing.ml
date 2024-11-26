@@ -718,18 +718,27 @@ let process_type_spec kid crcm ns ty spec =
     let f_ty = ty_of_pty ns f.f_pty in
     let ls = field_symbol (Ident.of_preid f.f_preid) [ ty ] f_ty in
     ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
-      (ls, f.f_mutable) :: fields )
+      (f.f_mutable, ls) :: fields )
   in
-  let ns, fields = List.fold_left field (ns, []) spec.ty_field in
-  let fields = List.rev fields in
+  let model = spec.Uast.ty_model in
+  let ns, model =
+    match model with
+    | Uast.Self -> (ns, Self)
+    | Uast.Default (mut, pty) -> (ns, Default (mut, ty_of_pty ns pty))
+    | Uast.Fields l ->
+        let ns, l = List.fold_left field (ns, []) l in
+        (ns, Fields l)
+  in
+
   let aux = function
     | vs, xs ->
+        let ty = match model with Default (_, d) -> d | _ -> ty in
         let self_vs = create_vsymbol vs ty in
         let env = Mstr.singleton self_vs.vs_name.id_str self_vs in
         (self_vs, List.map (fmla Invariant kid crcm ns env) xs)
   in
   let invariants = Option.map aux spec.ty_invariant in
-  type_spec spec.ty_ephemeral fields invariants spec.ty_text spec.ty_loc
+  type_spec spec.ty_ephemeral model invariants spec.ty_text spec.ty_loc
 
 (* TODO compare manifest with td_kind *)
 let type_type_declaration path kid crcm ns r tdl =

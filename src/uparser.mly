@@ -182,9 +182,9 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| e=ts_ephemeral m=list(type_spec_model) i=ts_invariants EOF
-  { { ty_ephemeral = e || List.exists (fun f -> f.f_mutable) m;
-      ty_field = m;
+| e=ts_ephemeral m=type_spec_model i=ts_invariants EOF
+  { { ty_ephemeral = e;
+      ty_model = m;
       ty_invariant = i;
       ty_text = "";
       ty_loc = Location.none;
@@ -206,9 +206,22 @@ ts_invariant:
 ;
 
 type_spec_model:
-| f_mutable=boption(MUTABLE) MODEL f_preid=lident_rich COLON f_pty=typ
-  { { f_preid; f_mutable; f_pty;
-      f_loc = mk_loc $loc } }
+  | (* epsilon *)
+    { Self }
+  | model = type_spec_model_default
+    { let f_mutable, f_pty = model in Default (f_mutable, f_pty) }
+  |  mod_fields=nonempty_list(type_spec_model_field)
+    { Fields mod_fields }
+;
+
+type_spec_model_default:
+|f_mutable=boption(MUTABLE) MODEL COLON f_pty=typ
+  { f_mutable, f_pty }
+;
+
+type_spec_model_field:
+| f_mutable=boption(MUTABLE) MODEL f_preid=lident COLON f_pty=typ
+  { {f_mutable; f_preid; f_pty} }
 ;
 
 val_spec_header:

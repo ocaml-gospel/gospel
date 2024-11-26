@@ -54,9 +54,12 @@ type val_description = {
 }
 [@@deriving show]
 
+type model = Self | Default of bool * ty | Fields of (bool * lsymbol) list
+[@@deriving show]
+
 type type_spec = {
   ty_ephemeral : bool;  (** Ephemeral *)
-  ty_fields : (lsymbol * bool) list;  (** Models (field symbol * mutable) *)
+  ty_model : model;  (** Models (field symbol * mutable) *)
   ty_invariants : (vsymbol * term list) option;  (** Invariants *)
   ty_text : string;
       (** String containing the original specificaion as written by the user *)

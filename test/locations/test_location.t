@@ -63,55 +63,56 @@ First, create a test artifact:
             td_cstrs = ; td_kind = Tast.Pty_abstract; td_private = Tast.Public;
             td_manifest = None; td_attrs = <attributes>;
             td_spec =
-            (Some { Tast.ty_ephemeral = true;
-                    ty_fields =
-                    [(Symbols.Field_symbol {ls_name = contents;
-                        ls_args =
-                        [{ Ttypes.ty_node =
-                           (Ttypes.Tyapp (
-                              { Ttypes.ts_ident = t;
-                                ts_args = [{ Ttypes.tv_name = a }];
-                                ts_alias = None },
-                              [{ Ttypes.ty_node =
-                                 (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                ]
-                              ))
-                           }
-                          ];
-                        ls_value =
-                        { Ttypes.ty_node =
-                          (Ttypes.Tyapp (
-                             { Ttypes.ts_ident = list;
-                               ts_args = [{ Ttypes.tv_name = a_1 }];
-                               ts_alias = None },
-                             [{ Ttypes.ty_node =
-                                (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                               ]
-                             ))
-                          }},
-                      true);
-                      (Symbols.Field_symbol {ls_name = size;
-                         ls_args =
-                         [{ Ttypes.ty_node =
-                            (Ttypes.Tyapp (
-                               { Ttypes.ts_ident = t;
-                                 ts_args = [{ Ttypes.tv_name = a }];
-                                 ts_alias = None },
-                               [{ Ttypes.ty_node =
-                                  (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                 ]
-                               ))
-                            }
-                           ];
-                         ls_value =
-                         { Ttypes.ty_node =
-                           (Ttypes.Tyapp (
-                              { Ttypes.ts_ident = int; ts_args = [];
-                                ts_alias = None },
-                              []))
-                           }},
-                       false)
-                      ];
+            (Some { Tast.ty_ephemeral = false;
+                    ty_model =
+                    (Tast.Fields
+                       [(false,
+                         Symbols.Field_symbol {ls_name = size;
+                           ls_args =
+                           [{ Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = t;
+                                   ts_args = [{ Ttypes.tv_name = a }];
+                                   ts_alias = None },
+                                 [{ Ttypes.ty_node =
+                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                   ]
+                                 ))
+                              }
+                             ];
+                           ls_value =
+                           { Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = int; ts_args = [];
+                                  ts_alias = None },
+                                []))
+                             }});
+                         (true,
+                          Symbols.Field_symbol {ls_name = contents;
+                            ls_args =
+                            [{ Ttypes.ty_node =
+                               (Ttypes.Tyapp (
+                                  { Ttypes.ts_ident = t;
+                                    ts_args = [{ Ttypes.tv_name = a }];
+                                    ts_alias = None },
+                                  [{ Ttypes.ty_node =
+                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                    ]
+                                  ))
+                               }
+                              ];
+                            ls_value =
+                            { Ttypes.ty_node =
+                              (Ttypes.Tyapp (
+                                 { Ttypes.ts_ident = list;
+                                   ts_args = [{ Ttypes.tv_name = a_1 }];
+                                   ts_alias = None },
+                                 [{ Ttypes.ty_node =
+                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                   ]
+                                 ))
+                              }})
+                         ]);
                     ty_invariants = None;
                     ty_text =
                     " mutable model contents : 'a list\n    model size : int ";

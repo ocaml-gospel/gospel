@@ -44,16 +44,27 @@ let print_type_kind fmt = function
         (list ~sep:newline print_ls_decl)
         (rd.rd_cs :: pjs)
 
-let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
-  if (not ty_ephemeral) && ty_fields = [] && Option.is_none ty_invariants then
+let print_type_spec fmt { ty_ephemeral; ty_model; ty_invariants; _ } =
+  if (not ty_ephemeral) && ty_model <> Self && Option.is_none ty_invariants then
     ()
   else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
     let print_term f t = pp f "@[%a@]" print_term t in
-    let print_field f (ls, mut) =
-      pp f "@[%s%a : %a@]"
+    let print_default f (mut, ty) =
+      pp f "@[%s : %a@]"
         (if mut then "mutable model " else "model ")
-        print_ls_nm ls print_ty (get_value ls)
+        print_ty ty
+    in
+    let print_field f (mut, ls) =
+      pp f "@[%s %a@]"
+        (if mut then "mutable model " else "model ")
+        print_ls_decl ls
+    in
+    let print_model f model =
+      match model with
+      | Tast.Self -> ()
+      | Default (m, ty) -> print_default f (m, ty)
+      | Fields l -> list ~sep:newline print_field f l
     in
     let print_invariants ppf i =
       pf ppf "with %a@;%a" print_vs (fst i)
@@ -63,9 +74,8 @@ let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
            print_term)
         (snd i)
     in
-    pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral
-      (list ~first:newline ~sep:newline print_field)
-      ty_fields
+    pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral print_model
+      ty_model
       (* (option print_invariant_vs) *)
       (* ty_invariants *)
       (option print_invariants)

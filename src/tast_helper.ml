@@ -43,8 +43,8 @@ let mk_val_description vd_name vd_type vd_prim vd_attrs vd_args vd_ret vd_spec
     vd_loc =
   { vd_name; vd_type; vd_prim; vd_attrs; vd_args; vd_ret; vd_spec; vd_loc }
 
-let type_spec ty_ephemeral ty_fields ty_invariants ty_text ty_loc =
-  { ty_ephemeral; ty_fields; ty_invariants; ty_text; ty_loc }
+let type_spec ty_ephemeral ty_model ty_invariants ty_text ty_loc =
+  { ty_ephemeral; ty_model; ty_invariants; ty_text; ty_loc }
 
 let label_declaration ld_field ld_mut ld_loc ld_attrs =
   { ld_field; ld_mut; ld_loc; ld_attrs }
