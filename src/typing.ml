@@ -1028,16 +1028,12 @@ let process_val_spec kid crcm ns id args ret vs =
 
   let pre = List.map (fmla Requires kid crcm ns env) vs.sp_pre in
   let checks = List.map (fmla Checks kid crcm ns env) vs.sp_checks in
-  let wr =
-    List.map
-      (fun t -> dterm Modifies kid crcm ns env t |> term env)
-      vs.sp_writes
+  let spatial_term t whereami =
+    dterm whereami kid crcm ns env t.s_term |> term env
   in
-  let cs =
-    List.map
-      (fun t -> dterm Consumes kid crcm ns env t |> term env)
-      vs.sp_consumes
-  in
+  let spatial_terms whereami = List.map (fun x -> spatial_term x whereami) in
+  let wr = spatial_terms Modifies vs.sp_writes in
+  let cs = spatial_terms Consumes vs.sp_consumes in
 
   let process_xpost (loc, exn) =
     let merge_xpost t tl =

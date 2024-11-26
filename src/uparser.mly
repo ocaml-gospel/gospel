@@ -94,6 +94,7 @@
 
 (* symbols *)
 
+%token LENS
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
 %token MUTABLE MODEL
@@ -234,15 +235,22 @@ val_spec_header:
   { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
 ;
 
+lens_term:
+| t=term { {s_term = t; s_lens = None} }
+| t=term LENS ty=typ { {s_term = t; s_lens = Some ty } }
+;
+
 val_spec_body:
 | (* Empty spec *) { empty_vspec }
 | PURE bd=val_spec_body
   { {bd with sp_pure = true} }
 | DIVERGES bd=val_spec_body
   { {bd with sp_diverge = true} }
-| MODIFIES wr=separated_list(COMMA, term) bd=val_spec_body
+| MODIFIES wr=separated_list(COMMA, lens_term)
+           bd=val_spec_body
   { { bd with sp_writes = wr @ bd.sp_writes } }
-| CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
+| CONSUMES cs=separated_list(COMMA, lens_term)
+           bd=val_spec_body
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }

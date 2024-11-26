@@ -213,6 +213,8 @@ rule token = parse
       { DOTDOT }
   | "|"
       { BAR }
+  | "@"
+      { LENS }
   | "="
       { EQUAL }
   | "<>"

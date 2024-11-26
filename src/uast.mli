@@ -81,6 +81,8 @@ and term_desc =
 (* Specification *)
 
 type xpost = Location.t * (qualid * (pattern * term) option) list
+type lens = pty
+type lens_term = { s_term : term; s_lens : lens option }
 
 type spec_header = {
   sp_hd_nm : Preid.t;
@@ -96,8 +98,8 @@ type val_spec = {
   sp_checks : term list;
   sp_post : term list;
   sp_xpost : xpost list;
-  sp_writes : term list;
-  sp_consumes : term list;
+  sp_writes : lens_term list;
+  sp_produces : lens_term list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_equiv : string list;
