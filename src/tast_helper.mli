@@ -4,8 +4,8 @@ open Tterm
 open Symbols
 open Ttypes
 
+val spec_arg : arg_label -> vsymbol -> bool -> lb_arg
 val ty_of_lb_arg : lb_arg -> ty
-val vs_of_lb_arg : lb_arg -> vsymbol
 
 val type_spec :
   bool ->
@@ -25,8 +25,6 @@ val mk_val_spec :
   term list ->
   term list ->
   (xsymbol * (pattern * term) list) list ->
-  term list ->
-  term list ->
   bool ->
   bool ->
   string list ->

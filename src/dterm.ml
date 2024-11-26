@@ -125,6 +125,18 @@ and dterm_node =
   | DTtrue
   | DTfalse
 
+type 'a full_env = { env : 'a Mstr.t; old_env : 'a Mstr.t }
+type env = vsymbol full_env
+
+let to_old env = { env = env.old_env; old_env = env.old_env }
+
+let add_env env x y =
+  { env = Mstr.add x y env.env; old_env = Mstr.add x y env.old_env }
+
+let union_env env vs =
+  let join _ _ vs = Some vs in
+  { env = Mstr.union join env.env vs; old_env = Mstr.union join env.old_env vs }
+
 let dty_of_dterm dt = match dt.dt_dty with None -> dty_bool | Some dty -> dty
 
 (* type unification *)
@@ -204,16 +216,21 @@ let unify dt dty =
 
 (* environment *)
 
-type denv = dty Mstr.t
+type denv = dty full_env
+
+let env_union env m =
+  let join _ _ vs = Some vs in
+  { env = Mstr.union join env.env m; old_env = Mstr.union join env.old_env m }
 
 let denv_find ~loc s denv =
-  try Mstr.find s denv with Not_found -> W.error ~loc (W.Unbound_variable s)
+  try Mstr.find s denv.env
+  with Not_found -> W.error ~loc (W.Unbound_variable s)
 
-let is_in_denv denv s = Mstr.mem s denv
+let is_in_denv denv s = Mstr.mem s denv.env
 
 (* let denv_empty = Mstr.empty *)
-let denv_get_opt denv s = Mstr.find_opt s denv
-let denv_add_var denv s dty = Mstr.add s dty denv
+let denv_get_opt denv s = Mstr.find_opt s denv.env
+let denv_add_var = add_env
 
 let denv_add_var_quant denv vl =
   let add acc (pid, dty) =
@@ -223,7 +240,10 @@ let denv_add_var_quant denv vl =
   in
   let vl = List.fold_left add Mstr.empty vl in
   let choose_snd _ _ x = Some x in
-  Mstr.union choose_snd denv vl
+  {
+    env = Mstr.union choose_snd denv.env vl;
+    old_env = Mstr.union choose_snd denv.old_env vl;
+  }
 
 (** coercions *)
 
@@ -355,7 +375,7 @@ and term_node ~loc env dty dterm_node =
   | DTlet (pid, dt1, dt2) ->
       let t1 = term env dt1 in
       let vs = create_vsymbol pid t1.t_ty in
-      let env = Mstr.add pid.pid_str vs env in
+      let env = add_env env pid.pid_str vs in
       let t2 = term env dt2 in
       t_let vs t1 t2 loc
   | DTbinop (b, dt1, dt2) ->
@@ -367,21 +387,18 @@ and term_node ~loc env dty dterm_node =
   | DTattr (dt, at) ->
       let t = term env dt in
       t_attr_set at t
-  | DTold dt -> t_old (term env dt) loc
+  | DTold dt -> t_old (term (to_old env) dt) loc
   | DTquant (q, bl, dt) ->
       let add_var (env, vsl) (pid, dty) =
         let vs = create_vsymbol pid (ty_of_dty dty) in
-        (Mstr.add pid.pid_str vs env, vs :: vsl)
+        (add_env env pid.pid_str vs, vs :: vsl)
       in
       let env, vsl = List.fold_left add_var (env, []) bl in
       let t = term env dt in
       t_quant q (List.rev vsl) t (ty_of_dty (Option.get dty)) loc
   | DTlambda (dpl, dt) ->
       let ty = ty_of_dty_raw dty and pl = List.map pattern dpl in
-      let env =
-        let join _ _ vs = Some vs in
-        List.fold_left (fun env (_, vs) -> Mstr.union join env vs) env pl
-      in
+      let env = List.fold_left (fun env (_, vs) -> union_env env vs) env pl in
       let t = term env dt in
       (* Are the patterns exhaustive? *)
       List.iter
@@ -396,8 +413,7 @@ and term_node ~loc env dty dterm_node =
       let t = term env dt in
       let branch (dp, guard, dt) =
         let p, vars = pattern dp in
-        let join _ _ vs = Some vs in
-        let env = Mstr.union join env vars in
+        let env = env_union env vars in
         let dt = term env dt in
         let guard =
           match guard with None -> None | Some g -> Some (term env g)

@@ -23,15 +23,14 @@ open Symbols
 type whereami =
   | Axiom
   | Checks
-  | Consumes
   | Ensures
   | Function_or_predicate
   | Fun_spec
   | Invariant
-  | Modifies
   | Raises
   | Requires
   | Variant
+  | Ownership
 
 let flatten_exn lid =
   try Longident.flatten_exn lid.txt
@@ -608,11 +607,8 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
         (dp, dty)
       in
       let args = List.map arg pl in
-      let choose_snd _ _ vs = Some vs in
       let denv =
-        List.fold_left
-          (fun denv (dp, _) -> Mstr.union choose_snd denv dp.dp_vars)
-          denv args
+        List.fold_left (fun denv (dp, _) -> env_union denv dp.dp_vars) denv args
       in
       let dt = dterm whereami kid crcm ns denv t in
       let dt =
@@ -632,8 +628,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let branch (p, g, t) =
         let dp = dpattern kid ns p in
         dpattern_unify dp dt_dty;
-        let choose_snd _ _ x = Some x in
-        let denv = Mstr.union choose_snd denv dp.dp_vars in
+        let denv = env_union denv dp.dp_vars in
         let dt = dterm whereami kid crcm ns denv t in
         let dg =
           match g with
@@ -671,7 +666,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       | Checks -> W.(error ~loc (Old_in_precond "checks"))
       | Fun_spec -> W.(error ~loc Old_in_fun_spec)
       | _ ->
-          let dt = dterm whereami kid crcm ns denv t in
+          let dt = dterm whereami kid crcm ns (to_old denv) t in
           mk_dterm ~loc (DTold dt) (Option.get dt.dt_dty))
   | Uast.Trecord qtl -> (
       let cs, fields_name, fields_def = parse_record ~loc kid ns qtl in
@@ -690,8 +685,9 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       | _, missing -> W.error ~loc (W.Label_missing missing))
 
 let dterm whereami kid crcm ns env t =
-  let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
-  dterm whereami kid crcm ns denv t
+  let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env.env in
+  let old_denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env.old_env in
+  dterm whereami kid crcm ns { env = denv; old_env = old_denv } t
 
 let term_with_unify whereami kid crcm ty ns env t =
   let dt = dterm whereami kid crcm ns env t in
@@ -737,6 +733,7 @@ let process_type_spec kid eph crcm ns ty spec =
         let ty = match model with Default (_, d) -> d | _ -> ty in
         let self_vs = create_vsymbol vs ty in
         let env = Mstr.singleton self_vs.vs_name.id_str self_vs in
+        let env = { env; old_env = Mstr.empty } in
         (self_vs, List.map (fmla Invariant kid crcm ns env) xs)
   in
   let invariants = Option.map aux spec.ty_invariant in
@@ -950,6 +947,84 @@ let rec val_parse_core_type ns cty =
       ((ty_of_core ns ct1, lbl) :: args, res)
   | _ -> ([], ty_of_core ns cty)
 
+let add_arg env vs =
+  if Ident.equal vs.vs_name none_id then env
+  else
+    let vs_str = vs.vs_name.id_str in
+    let add = function
+      | None -> Some vs
+      | Some _ -> W.error ~loc:vs.vs_name.id_loc (W.Duplicated_variable vs_str)
+    in
+    Mstr.update vs_str add env
+
+let args_to_env l = List.fold_left add_arg Mstr.empty l
+let largs_to_env l = args_to_env (List.map snd l)
+
+(* Checks the following
+   1 - the val id string is equal to the name in val header
+   2 - no duplicated names in arguments and arguments in header
+   match core type
+*)
+
+(** Creates a list of each each function argument paired with their respective
+    label and type
+    @param args Function parameters (or possibly return values).
+    @param where
+      Parameter if we are processing the function's arguments or Return if we
+      are parsing the return values.
+    @param tyl
+      The type of the parameters. If the size of this list is not the same as
+      that of {!args}, then the gospel header is incorrect.
+    @param env The environment that contains this functions' parameters.*)
+let process_args loc ns where args tyl =
+  let wh_msg =
+    match where with `Parameter -> "parameter" | `Return -> "returned value"
+  in
+  let mismatch_msg = wh_msg ^ " does not match with val type" in
+  let rec loop args arg_types =
+    match (args, arg_types) with
+    | Uast.Lghost (pid, pty) :: args, _ ->
+        let ty = ty_of_pty ns pty in
+        let vs = create_vsymbol pid ty in
+        (Lghost, vs) :: loop args arg_types
+    | Loptional pid :: args, (ty, Asttypes.Optional s) :: arg_types ->
+        if not (String.equal pid.pid_str s) then
+          W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
+        let ty = ty_app ts_option [ ty ] in
+        let vs = create_vsymbol pid ty in
+        (Loptional, vs) :: loop args arg_types
+    | Lnamed pid :: args, (ty, Asttypes.Labelled s) :: arg_types ->
+        if not (String.equal pid.pid_str s) then
+          W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
+        let vs = create_vsymbol pid ty in
+        (Lnamed, vs) :: loop args arg_types
+    | Lnone pid :: args, (ty, Asttypes.Nolabel) :: arg_types ->
+        let vs = create_vsymbol pid ty in
+        (Lnone, vs) :: loop args arg_types
+    | Lunit :: args, _ :: arg_types ->
+        (Lunit, none_vsymbol) :: loop args arg_types
+    | [], [] -> []
+    | _, [] ->
+        let msg = "too many " ^ wh_msg ^ "s" in
+        W.type_checking_error ~loc msg
+    | [], _ ->
+        let msg =
+          match (where, tyl) with
+          | `Return, _ :: _ :: _ ->
+              "too few returned values: when a function returns a tuple, the \
+               gospel header should name each member of the tuple; so the \
+               header of a function returning a pair might be \"x,y = ...\""
+          | `Return, _ -> "too few returned values"
+          | `Parameter, _ -> "too few parameters"
+        in
+        W.type_checking_error ~loc msg
+    | la :: _, _ ->
+        W.type_checking_error ~loc:(pid_of_label la).pid_loc mismatch_msg
+  in
+  (* Adds the argument into the environment and checks if it is duplicated *)
+  let l = loop args tyl in
+  (l, largs_to_env l)
+
 (* Checks the following
    1 - the val id string is equal to the name in val header
    2 - no duplicated names in arguments and arguments in header
@@ -957,96 +1032,144 @@ let rec val_parse_core_type ns cty =
 *)
 let process_val_spec kid crcm ns id args ret vs =
   let header = Option.get vs.sp_header in
+  let process_args = process_args header.sp_hd_nm.pid_loc ns in
   let loc = header.sp_hd_nm.pid_loc in
   let id_val = id.Ident.id_str in
   let id_spec = header.sp_hd_nm.pid_str in
   let cmp_ids =
     match String.split_on_char ' ' id_spec with
-    | [ "infix"; s ] -> String.equal s id_val
+    | [ "infix"; s ] | [ "prefix"; s ] -> String.equal s id_val
     | [ _ ] -> id_val = id_spec
     | _ -> assert false
   in
   if not cmp_ids then
     W.type_checking_error ~loc "val specification header does not match name";
 
-  let add_arg la env lal =
-    match la with
-    | Lunit -> (env, la :: lal)
-    | _ ->
-        let vs = vs_of_lb_arg la in
-        let vs_str = vs.vs_name.id_str in
-        let add = function
-          | None -> Some vs
-          | Some _ ->
-              W.error ~loc:vs.vs_name.id_loc (W.Duplicated_variable vs_str)
+  let args, arg_env = process_args `Parameter header.sp_hd_args args in
+  let env = { env = arg_env; old_env = Mstr.empty } in
+
+  let type_lens env t =
+    let d_typed = dterm Ownership kid crcm ns env t.Uast.s_term in
+    let typed = term env d_typed in
+    let ty = typed.t_ty in
+    let lens_ns = ns in
+    let lens_type =
+      match t.Uast.s_lens with None -> ty | Some t -> ty_of_pty lens_ns t
+    in
+    (typed, lens_type)
+  in
+
+  let wr = List.map (type_lens env) vs.sp_writes in
+  let cs = List.map (type_lens env) vs.sp_consumes in
+  let pres = List.map (type_lens env) vs.sp_preserves in
+
+  let ret, ret_env =
+    match (header.sp_hd_ret, ret.ty_node) with
+    | [], _ -> ([], Mstr.empty)
+    | _, Tyapp (ts, tyl) when is_ts_tuple ts ->
+        let tyl = List.map (fun ty -> (ty, Asttypes.Nolabel)) tyl in
+        process_args `Return header.sp_hd_ret tyl
+    | _, _ -> process_args `Return header.sp_hd_ret [ (ret, Asttypes.Nolabel) ]
+  in
+  let prod_env = Mstr.union (fun _ -> assert false) arg_env ret_env in
+  let prod =
+    List.map (type_lens { env = prod_env; old_env = Mstr.empty }) vs.sp_produces
+  in
+
+  let equal_arg arg (t, _) =
+    let rec aux arg t =
+      match t.t_node with
+      | Tvar v -> v.vs_name.id_str = arg.vs_name.id_str
+      | Tfield (t, _) -> aux arg t
+      | _ -> false
+    in
+    aux arg t
+  in
+  let term_of_vs x =
+    { t_node = Tvar x; t_ty = x.vs_ty; t_attrs = []; t_loc = Location.none }
+  in
+
+  let read_only =
+    let pres_args =
+      List.filter
+        (fun (_, x) -> not (List.exists (equal_arg x) (wr @ cs @ prod @ pres)))
+        args
+    in
+    pres @ List.map (fun (_, x) -> (term_of_vs x, x.vs_ty)) pres_args
+  in
+
+  let prod =
+    let prod_ret =
+      List.filter (fun (_, x) -> not (List.exists (equal_arg x) prod)) ret
+    in
+    prod @ List.map (fun (_, x) -> (term_of_vs x, x.vs_ty)) prod_ret
+  in
+
+  let cs, prod = (cs @ read_only @ wr, prod @ read_only @ wr) in
+
+  let spec_args =
+    List.map
+      (fun (l, v) ->
+        let modified = not (List.exists (equal_arg v) read_only) in
+        spec_arg l v modified)
+      args
+  in
+
+  let spec_ret = List.map (fun (_, v) -> spec_arg Lnone v true) ret in
+
+  let apply_lens l vs =
+    match List.find_opt (equal_arg vs) l with
+    | None -> None
+    | Some (t, s_ty) ->
+        let ty, s_ty =
+          match t.t_node with
+          | Tvar _ -> (t.t_ty, s_ty)
+          | Tfield (t, _) ->
+              let rec get_var = function
+                | Tvar x -> (x.vs_ty, x.vs_ty)
+                | Tfield (t, _) -> get_var t.t_node
+                | _ -> assert false
+              in
+              get_var t.t_node
+          | _ -> assert false
         in
-        (Mstr.update vs_str add env, la :: lal)
+        Some (s_ty, ty_apply_lens ty s_ty)
   in
 
-  let process_args where args tyl env lal =
-    let wh_msg =
-      match where with `Parameter -> "parameter" | `Return -> "returned value"
-    in
-    let mismatch_msg = wh_msg ^ " does not match with val type" in
-    let global_tyl = tyl in
-    let rec aux args tyl env lal =
-      match (args, tyl) with
-      | [], [] -> (env, List.rev lal)
-      | [], _ ->
-          let msg =
-            match (where, global_tyl) with
-            | `Return, _ :: _ :: _ ->
-                "too few returned values: when a function returns a tuple, the \
-                 gospel header should name each member of the tuple; so the \
-                 header of a function returning a pair might be \"x,y = ...\""
-            | `Return, _ -> "too few returned values"
-            | `Parameter, _ -> "too few parameters"
-          in
-          W.type_checking_error ~loc:header.sp_hd_nm.pid_loc msg
-      | Uast.Lghost (pid, pty) :: args, _ ->
-          let ty = ty_of_pty ns pty in
-          let vs = create_vsymbol pid ty in
-          let env, lal = add_arg (Lghost vs) env lal in
-          aux args tyl env lal
-      | Loptional pid :: args, (ty, Asttypes.Optional s) :: tyl ->
-          if not (String.equal pid.pid_str s) then
-            W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
-          let ty = ty_app ts_option [ ty ] in
-          let vs = create_vsymbol pid ty in
-          let env, lal = add_arg (Loptional vs) env lal in
-          aux args tyl env lal
-      | Lnamed pid :: args, (ty, Asttypes.Labelled s) :: tyl ->
-          if not (String.equal pid.pid_str s) then
-            W.type_checking_error ~loc:pid.pid_loc mismatch_msg;
-          let vs = create_vsymbol pid ty in
-          let env, lal = add_arg (Lnamed vs) env lal in
-          aux args tyl env lal
-      | Lnone pid :: args, (ty, Asttypes.Nolabel) :: tyl ->
-          let vs = create_vsymbol pid ty in
-          let env, lal = add_arg (Lnone vs) env lal in
-          aux args tyl env lal
-      | Lunit :: args, _ :: tyl -> aux args tyl env (Lunit :: lal)
-      | _, [] ->
-          let msg = "too many " ^ wh_msg ^ "s" in
-          W.type_checking_error ~loc:header.sp_hd_nm.pid_loc msg
-      | la :: _, _ ->
-          W.type_checking_error ~loc:(pid_of_label la).pid_loc mismatch_msg
-    in
-    aux args tyl env lal
+  let apply_lens_spec l con sa =
+    match apply_lens l sa.lb_vs with
+    | None -> sa
+    | Some sp ->
+        if con then { sa with lb_consumes = Some sp }
+        else { sa with lb_produces = Some sp }
   in
 
-  let env, args =
-    process_args `Parameter header.sp_hd_args args Mstr.empty []
+  let spec_args = List.map (apply_lens_spec cs true) spec_args in
+  let spec_args = List.map (apply_lens_spec prod false) spec_args in
+  let spec_ret = List.map (apply_lens_spec prod false) spec_ret in
+
+  let update_env env vs ty =
+    match ty with
+    | None -> env
+    | Some (_, ty) ->
+        let log_v = { vs with vs_ty = ty } in
+        Mstr.add vs.vs_name.id_str log_v env
   in
 
-  let pre = List.map (fmla Requires kid crcm ns env) vs.sp_pre in
-  let checks = List.map (fmla Checks kid crcm ns env) vs.sp_checks in
-  let spatial_term t whereami =
-    dterm whereami kid crcm ns env t.s_term |> term env
+  let add_env (old_env, env) e =
+    let old_env = update_env old_env e.lb_vs e.lb_consumes in
+    let env = update_env env e.lb_vs e.lb_produces in
+    (old_env, env)
   in
-  let spatial_terms whereami = List.map (fun x -> spatial_term x whereami) in
-  let wr = spatial_terms Modifies vs.sp_writes in
-  let cs = spatial_terms Consumes vs.sp_consumes in
+
+  let old_env, env =
+    List.fold_left add_env (Mstr.empty, Mstr.empty) (spec_args @ spec_ret)
+  in
+
+  let pre_env = { env = old_env; old_env } in
+  let pre = List.map (fmla Requires kid crcm ns pre_env) vs.sp_pre in
+  let checks = List.map (fmla Checks kid crcm ns pre_env) vs.sp_checks in
+  let post = List.map (fmla Ensures kid crcm ns { env; old_env }) vs.sp_post in
 
   let process_xpost (loc, exn) =
     let merge_xpost t tl =
@@ -1105,7 +1228,7 @@ let process_val_spec kid crcm ns id args ret vs =
           let p, vars = pattern dp in
           let choose_snd _ _ vs = Some vs in
           let env = Mstr.union choose_snd env vars in
-          let t = fmla Raises kid crcm ns env t in
+          let t = fmla Raises kid crcm ns { env; old_env = env } t in
           Mxs.update xs (merge_xpost (Some (p, t))) mxs
     in
     List.fold_left process Mxs.empty exn |> Mxs.bindings
@@ -1113,18 +1236,6 @@ let process_val_spec kid crcm ns id args ret vs =
   let xpost =
     List.fold_right (fun xp acc -> process_xpost xp @ acc) vs.sp_xpost []
   in
-
-  let env, ret =
-    match (header.sp_hd_ret, ret.ty_node) with
-    | [], _ -> (env, [])
-    | _, Tyapp (ts, tyl) when is_ts_tuple ts ->
-        let tyl = List.map (fun ty -> (ty, Asttypes.Nolabel)) tyl in
-        process_args `Return header.sp_hd_ret tyl env []
-    | _, _ ->
-        process_args `Return header.sp_hd_ret [ (ret, Asttypes.Nolabel) ] env []
-  in
-  let post = List.map (fmla Ensures kid crcm ns env) vs.sp_post in
-
   if vs.sp_pure then (
     if vs.sp_diverge then
       W.type_checking_error ~loc "a pure function cannot diverge";
@@ -1132,7 +1243,7 @@ let process_val_spec kid crcm ns id args ret vs =
       W.type_checking_error ~loc "a pure function cannot have writes";
     if xpost <> [] || checks <> [] then
       W.type_checking_error ~loc "a pure function cannot raise exceptions");
-  mk_val_spec args ret pre checks post xpost wr cs vs.sp_diverge vs.sp_pure
+  mk_val_spec spec_args spec_ret pre checks post xpost vs.sp_diverge vs.sp_pure
     vs.sp_equiv vs.sp_text vs.sp_loc
 
 let empty_spec preid ret args =
@@ -1198,9 +1309,9 @@ let process_val path ~loc ?(ghost = Nonghost) kid crcm ns vd =
     if Ttypes.(ty_equal ret ty_unit) && args <> [] then
       match so with
       | None -> ()
-      | Some sp ->
-          if sp.sp_wr = [] then
-            W.error ~loc (W.Return_unit_without_modifies id.id_str)
+      | Some _ ->
+          if Option.fold ~none:false ~some:(fun s -> s.sp_writes = []) vd.vspec
+          then W.error ~loc (W.Return_unit_without_modifies id.id_str)
   in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
@@ -1245,6 +1356,7 @@ let process_function path kid crcm ns f =
     let result = create_vsymbol (Preid.create ~loc:f.fun_loc "result") f_ty in
     Mstr.add "result" result env
   in
+  let env = { old_env = Mstr.empty; env } in
 
   let def =
     Option.map
@@ -1271,7 +1383,8 @@ let process_function path kid crcm ns f =
 
 let process_axiom path loc kid crcm ns a =
   let id = Ident.of_preid ~path a.Uast.ax_name in
-  let t = fmla Axiom kid crcm ns Mstr.empty a.Uast.ax_term in
+  let env = { env = Mstr.empty; old_env = Mstr.empty } in
+  let t = fmla Axiom kid crcm ns env a.Uast.ax_term in
   let ax = mk_axiom id t a.ax_loc a.ax_text in
   mk_sig_item (Sig_axiom ax) loc
 

@@ -102,12 +102,14 @@ let print_type_declaration fmt td =
     (list ~sep:(const string " constraint ") print_constraint)
     td.td_cstrs (option print_type_spec) td.td_spec
 
-let print_lb_arg fmt = function
-  | Lunit -> pp fmt "()"
-  | Lnone vs -> print_vs fmt vs
-  | Loptional vs -> pp fmt "?%a" print_vs vs
-  | Lnamed vs -> pp fmt "~%a" print_vs vs
-  | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
+let print_lb_arg fmt arg =
+  let vs = arg.lb_vs in
+  match arg.lb_label with
+  | Lnone -> print_vs fmt vs
+  | Loptional -> pp fmt "?%a" print_vs vs
+  | Lnamed -> pp fmt "~%a" print_vs vs
+  | Lghost -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
+  | Lunit -> pp fmt "%s" "()"
 
 let print_xposts f xposts =
   if xposts = [] then ()
@@ -132,7 +134,7 @@ let print_vd_spec val_id fmt spec =
   match spec with
   | None -> ()
   | Some vs ->
-      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
+      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
         (list ~sep:comma print_lb_arg)
         vs.sp_ret
         (if vs.sp_ret = [] then "" else " =")
@@ -154,16 +156,6 @@ let print_vd_spec val_id fmt spec =
            ~sep:(newline ++ const string "ensures ")
            print_term)
         vs.sp_post print_xposts vs.sp_xpost
-        (list
-           ~first:(newline ++ const string "writes ")
-           ~sep:(newline ++ const string "writes ")
-           print_term)
-        vs.sp_wr
-        (list
-           ~first:(newline ++ const string "consumes ")
-           ~sep:(newline ++ const string "consumes ")
-           print_term)
-        vs.sp_cs
         (list
            ~first:(newline ++ const string "equivalent ")
            ~sep:(newline ++ const string "equivalent ")

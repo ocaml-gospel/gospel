@@ -106,6 +106,15 @@ let ty_app ?loc ts tyl =
     W.error ~loc
       (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl))
 
+let rec ty_apply_lens ty lens =
+  match (ty.ty_node, lens.ty_node) with
+  | Tyvar v1, Tyvar v2 when tv_equal v1 v2 -> ty
+  | Tyapp (ts1, l1), Tyapp (ts2, l2) when ts_equal ts1 ts2 -> (
+      match ts1.ts_model with
+      | _, Model ty -> ty
+      | _ -> { ty_node = Tyapp (ts1, List.map2 ty_apply_lens l1 l2) })
+  | _ -> assert false (*TODO: replace with W.error *)
+
 let rec ty_full_inst ?loc m ty =
   match ty.ty_node with
   | Tyvar tv -> Mtv.find tv m

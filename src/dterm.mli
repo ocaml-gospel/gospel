@@ -46,8 +46,12 @@ and dterm_node =
   | DTtrue
   | DTfalse
 
-type denv = dty Mstr.t
+type 'a full_env = { env : 'a Mstr.t; old_env : 'a Mstr.t }
+type denv = dty full_env
+type env = vsymbol full_env
 
+val to_old : 'a full_env -> 'a full_env
+val env_union : 'a full_env -> 'a Mstr.t -> 'a full_env
 val dty_bool : dty
 val dty_char : dty
 val dty_float : dty
@@ -75,10 +79,13 @@ val unify : dterm -> dty option -> unit
 val dterm_expected : Coercion.t -> dterm -> dty -> dterm
 val dfmla_expected : Coercion.t -> dterm -> dterm
 val dterm_expected_op : Coercion.t -> dterm -> dty option -> dterm
-val denv_get_opt : 'a Mstr.t -> string -> 'a option
+val denv_get_opt : 'a full_env -> string -> 'a option
 val denv_find : loc:Location.t -> string -> denv -> dty
 val is_in_denv : denv -> string -> bool
 val denv_add_var : denv -> string -> dty -> denv
-val denv_add_var_quant : denv -> (Identifier.Preid.t * dty) list -> denv
-val term : vsymbol Mstr.t -> dterm -> term
+
+val denv_add_var_quant :
+  'a full_env -> (Identifier.Preid.t * 'a) list -> 'a full_env
+
+val term : vsymbol full_env -> dterm -> term
 val pattern : dpattern -> Tterm.pattern * vsymbol Mstr.t
