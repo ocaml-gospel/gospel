@@ -65,6 +65,10 @@ let print_quantifier fmt = function
   | Tforall -> pp fmt "forall"
   | Texists -> pp fmt "exists"
 
+let print_tbinder fmt b =
+  pp fmt "%a : %a %@ %a" print_vs b.bind_vs print_ty b.bind_prog print_ty
+    b.bind_lens
+
 (* TODO use pretty printer from why3 *)
 let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
   let print_ty fmt ty = pp fmt ":%a" print_ty ty in
@@ -97,8 +101,9 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tbinop (op, t1, t2) ->
         pp fmt "%a %a %a" print_term t1 print_binop op print_term t2
     | Tquant (q, vsl, t) ->
-        pp fmt "%a %a. %a" print_quantifier q (list ~sep:sp print_vs) vsl
-          print_term t
+        pp fmt "%a %a. %a" print_quantifier q
+          (list ~sep:sp print_tbinder)
+          vsl print_term t
     | Tlambda (pl, t) ->
         pp fmt "fun %a -> %a" (list ~sep:sp print_pattern) pl print_term t
     | Tcase (t, ptl) ->

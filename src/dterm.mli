@@ -26,7 +26,7 @@ and dpattern_node =
   | DPconst of Parsetree.constant
   | DPinterval of char * char
 
-type dbinder = Preid.t * dty
+type dbinder = Preid.t * dty option * dty
 
 type dterm = { dt_node : dterm_node; dt_dty : dty option; dt_loc : Location.t }
 
@@ -85,7 +85,7 @@ val is_in_denv : denv -> string -> bool
 val denv_add_var : denv -> string -> dty -> denv
 
 val denv_add_var_quant :
-  'a full_env -> (Identifier.Preid.t * 'a) list -> 'a full_env
+  denv -> (Identifier.Preid.t * dty option * dty) list -> denv
 
 val term : vsymbol full_env -> dterm -> term
 val pattern : dpattern -> Tterm.pattern * vsymbol Mstr.t

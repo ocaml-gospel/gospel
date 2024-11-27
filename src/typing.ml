@@ -590,9 +590,20 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       mk_dterm ~loc (DTbinop (binop op, dt1, dt2)) dty_bool
   | Uast.Tquant (q, vl, t) ->
       let get_dty pty =
-        match pty with None -> dty_fresh () | Some pty -> dty_of_pty ns pty
+        match pty with
+        | Infer -> (None, dty_fresh ())
+        | Pty pty ->
+            let t = dty_of_pty ns pty in
+            (Some t, t)
+        | Lens (p1, p2) -> (Some (dty_of_pty ns p1), dty_of_pty ns p2)
       in
-      let vl = List.map (fun (pid, pty) -> (pid, get_dty pty)) vl in
+      let vl =
+        List.map
+          (fun (pid, pty) ->
+            let lens, dty = get_dty pty in
+            (pid, lens, dty))
+          vl
+      in
       let denv = denv_add_var_quant denv vl in
       let dt = dterm whereami kid crcm ns denv t in
       dfmla_unify dt;

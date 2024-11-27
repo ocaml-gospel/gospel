@@ -400,8 +400,14 @@ guarded_pattern:
 | pattern WHEN term { $1, Some $3 }
 ;
 
+lens_cast:
+| (* epsilon *) { Infer }
+| t = cast { Pty t }
+| t = cast LENS m = ty_arg { Lens(t, m) }
+;
+
 quant_vars:
-| binder_var+ cast? { List.map (fun id -> id, $2) $1 }
+| binder_var+ lens_cast { List.map (fun id -> id, $2) $1 }
 ;
 
 attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }
