@@ -65,6 +65,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Hashset.gospel)
+ (action
+  (with-outputs-to Hashset.mli.output
+   (run %{checker} %{dep:Hashset.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff Hashset.mli Hashset.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Hashset.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets Hashtbl.gospel)
  (action
   (with-outputs-to Hashtbl.mli.output
