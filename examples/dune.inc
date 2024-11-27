@@ -23,6 +23,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Dyn_array.gospel)
+ (action
+  (with-outputs-to Dyn_array.mli.output
+   (run %{checker} %{dep:Dyn_array.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff Dyn_array.mli Dyn_array.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Dyn_array.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets Eq.gospel)
  (action
   (with-outputs-to Eq.mli.output
