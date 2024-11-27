@@ -2,6 +2,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Eq.gospel)
+ (action
+  (with-outputs-to Eq.mli.output
+   (run %{checker} %{dep:Eq.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff Eq.mli Eq.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Eq.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets Hashtbl.gospel)
  (action
   (with-outputs-to Hashtbl.mli.output
