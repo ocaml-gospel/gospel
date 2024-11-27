@@ -128,39 +128,36 @@ let print_xposts f xposts =
     in
     List.iter print_xpost xposts
 
-let print_vd_spec val_id fmt spec =
+let print_vd_spec val_id fmt vs =
   let print_term f t = pp f "@[%a@]" print_term t in
   let print_diverges f d = if not d then () else pp f "@\n@[diverges@]" in
-  match spec with
-  | None -> ()
-  | Some vs ->
-      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
-        (list ~sep:comma print_lb_arg)
-        vs.sp_ret
-        (if vs.sp_ret = [] then "" else " =")
-        Ident.pp_simpl val_id
-        (list ~sep:sp print_lb_arg)
-        vs.sp_args print_diverges vs.sp_diverge
-        (list
-           ~first:(newline ++ const string "requires ")
-           ~sep:(newline ++ const string "requires ")
-           print_term)
-        vs.sp_pre
-        (list
-           ~first:(newline ++ const string "checks ")
-           ~sep:(newline ++ const string "checks ")
-           print_term)
-        vs.sp_checks
-        (list
-           ~first:(newline ++ const string "ensures ")
-           ~sep:(newline ++ const string "ensures ")
-           print_term)
-        vs.sp_post print_xposts vs.sp_xpost
-        (list
-           ~first:(newline ++ const string "equivalent ")
-           ~sep:(newline ++ const string "equivalent ")
-           constant_string)
-        vs.sp_equiv
+  pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
+    (list ~sep:comma print_lb_arg)
+    vs.sp_ret
+    (if vs.sp_ret = [] then "" else " =")
+    Ident.pp_simpl val_id
+    (list ~sep:sp print_lb_arg)
+    vs.sp_args print_diverges vs.sp_diverge
+    (list
+       ~first:(newline ++ const string "requires ")
+       ~sep:(newline ++ const string "requires ")
+       print_term)
+    vs.sp_pre
+    (list
+       ~first:(newline ++ const string "checks ")
+       ~sep:(newline ++ const string "checks ")
+       print_term)
+    vs.sp_checks
+    (list
+       ~first:(newline ++ const string "ensures ")
+       ~sep:(newline ++ const string "ensures ")
+       print_term)
+    vs.sp_post print_xposts vs.sp_xpost
+    (list
+       ~first:(newline ++ const string "equivalent ")
+       ~sep:(newline ++ const string "equivalent ")
+       constant_string)
+    vs.sp_equiv
 
 let print_param f p = pp f "(%a:%a)" Ident.pp_simpl p.vs_name print_ty p.vs_ty
 

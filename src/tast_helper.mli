@@ -60,7 +60,7 @@ val mk_val_description :
   attributes ->
   lb_arg list ->
   lb_arg list ->
-  val_spec option ->
+  val_spec ->
   Location.t ->
   val_description
 

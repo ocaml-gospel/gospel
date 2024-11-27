@@ -483,7 +483,7 @@ let add_sig_contents muc sig_ =
   in
   match sig_.sig_desc with
   | Sig_val (({ vd_args = []; _ } as v), _)
-  | Sig_val (({ vd_spec = Some { sp_pure = true; _ }; _ } as v), _) ->
+  | Sig_val (({ vd_spec = { sp_pure = true; _ }; _ } as v), _) ->
       let tyl = List.map ty_of_lb_arg v.vd_args in
       let ty = ty_tuple (List.map ty_of_lb_arg v.vd_ret) in
       let ls = function_symbol v.vd_name tyl ty in

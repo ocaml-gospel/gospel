@@ -53,7 +53,7 @@ type val_description = {
   vd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   vd_args : lb_arg list;
   vd_ret : lb_arg list;
-  vd_spec : val_spec option;
+  vd_spec : val_spec;
   vd_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]

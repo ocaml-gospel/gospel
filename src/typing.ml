@@ -1303,19 +1303,15 @@ let process_val path ~loc ?(ghost = Nonghost) kid crcm ns vd =
     | Some s -> s
   in
   let spec = process_val_spec kid crcm ns id args ret spec in
-  let so = Option.map (fun _ -> spec) vd.vspec in
   let () =
     (* check there is a modifies clause if the return type is unit, throw a warning if not *)
     if Ttypes.(ty_equal ret ty_unit) && args <> [] then
-      match so with
-      | None -> ()
-      | Some _ ->
-          if Option.fold ~none:false ~some:(fun s -> s.sp_writes = []) vd.vspec
-          then W.error ~loc (W.Return_unit_without_modifies id.id_str)
+      if Option.fold ~none:false ~some:(fun s -> s.sp_writes = []) vd.vspec then
+        W.error ~loc (W.Return_unit_without_modifies id.id_str)
   in
   let vd =
     mk_val_description id vd.vtype vd.vprim vd.vattributes spec.sp_args
-      spec.sp_ret so vd.vloc
+      spec.sp_ret spec vd.vloc
   in
   mk_sig_item (Sig_val (vd, ghost)) loc
 
