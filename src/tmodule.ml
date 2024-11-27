@@ -25,6 +25,7 @@ module Mstr = Map.Make (String)
 
 type namespace = {
   ns_ts : tysymbol Mstr.t;
+  ns_sp : tysymbol Mstr.t;
   ns_ls : lsymbol Mstr.t;
   ns_fd : lsymbol Mstr.t;
   ns_xs : xsymbol Mstr.t;
@@ -35,6 +36,7 @@ type namespace = {
 let empty_ns =
   {
     ns_ts = Mstr.empty;
+    ns_sp = Mstr.empty;
     ns_ls = Mstr.empty;
     ns_fd = Mstr.empty;
     ns_xs = Mstr.empty;
@@ -54,6 +56,12 @@ let ns_add_ts ~allow_duplicate ns s ts =
     add ~allow_duplicate ~equal:ts_equal ~loc:ts.ts_ident.id_loc ns.ns_ts s ts
   in
   { ns with ns_ts }
+
+let ns_add_sp ~allow_duplicate ns s ts =
+  let ns_sp =
+    add ~allow_duplicate ~equal:ts_equal ~loc:ts.ts_ident.id_loc ns.ns_sp s ts
+  in
+  { ns with ns_sp }
 
 let ns_add_ls ~allow_duplicate:_ ns s ls =
   let ns_ls =
@@ -88,6 +96,7 @@ let merge_ns from_ns to_ns =
   let union m1 m2 = Mstr.union choose_fst m1 m2 in
   {
     ns_ts = union from_ns.ns_ts to_ns.ns_ts;
+    ns_sp = union from_ns.ns_sp to_ns.ns_sp;
     ns_ls = union from_ns.ns_ls to_ns.ns_ls;
     ns_fd = union from_ns.ns_fd to_ns.ns_fd;
     ns_xs = union from_ns.ns_xs to_ns.ns_xs;
@@ -124,10 +133,11 @@ let rec ns_replace_ts new_ts sl ns =
       let ns_ns = ns_replace_ts new_ts xs ns_ns in
       { ns with ns_ns = Mstr.add x ns_ns ns.ns_ns }
 
-let rec ns_subst_ts old_ns new_ts { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns }
-    =
+let rec ns_subst_ts old_ns new_ts
+    { ns_ts; ns_sp; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
   {
     ns_ts = Mstr.map (ts_subst_ts old_ns new_ts) ns_ts;
+    ns_sp = Mstr.map (ts_subst_ts old_ns new_ts) ns_sp;
     ns_ls = Mstr.map (ls_subst_ts old_ns new_ts) ns_ls;
     ns_fd = Mstr.map (ls_subst_ts old_ns new_ts) ns_fd;
     ns_xs = Mstr.map (xs_subst_ts old_ns new_ts) ns_xs;
@@ -136,9 +146,10 @@ let rec ns_subst_ts old_ns new_ts { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns }
   }
 
 let rec ns_subst_ty old_ts new_ts ty
-    { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
+    { ns_ts; ns_sp; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
   {
     ns_ts = Mstr.map (ts_subst_ty old_ts new_ts ty) ns_ts;
+    ns_sp = Mstr.map (ts_subst_ty old_ts new_ts ty) ns_sp;
     ns_ls = Mstr.map (ls_subst_ty old_ts new_ts ty) ns_ls;
     ns_fd = Mstr.map (ls_subst_ty old_ts new_ts ty) ns_fd;
     ns_xs = Mstr.map (xs_subst_ty old_ts new_ts ty) ns_xs;
@@ -320,6 +331,7 @@ let muc_add ?(export = false) add muc s x =
 
 let add_ts ?(export = false) = muc_add ~export ns_add_ts
 let add_ls ?(export = false) = muc_add ~export ns_add_ls
+let add_sp ?(export = false) = muc_add ~export ns_add_sp
 let add_fd ?(export = false) = muc_add ~export ns_add_fd
 let add_xs ?(export = false) = muc_add ~export ns_add_xs
 let add_ns ?(export = false) = muc_add ~export ns_add_ns
@@ -501,6 +513,7 @@ let add_sig_contents muc sig_ =
       let add_td muc td =
         let s = (ts_ident td.td_ts).id_str in
         let muc = add_ts ~export:true muc s td.td_ts in
+        let muc = add_sp ~export:true muc s td.td_ts in
         let csl = get_cs_pjs td.td_kind in
         let add muc x =
           match x with
@@ -588,10 +601,12 @@ let rec print_nested_ns fmt ns =
   let print_elem nm e = pp fmt "@[%a@]@\n" (print_ns nm) e in
   Mstr.iter (fun nm ns -> print_elem nm ns) ns
 
-and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
+and print_ns nm fmt { ns_ts; ns_sp; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
   pp fmt
     "@[@[<hv2>@[Namespace: %s@]@\n\
      @[<hv2>Type symbols@\n\
+     %a@]@\n\
+     @[<hv2>Lens Types@\n\
      %a@]@\n\
      @[<hv2>Logic Symbols@\n\
      %a@]@\n\
@@ -603,7 +618,7 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
      %a@]@\n\
      @[<hv2>Type Namespaces@\n\
      %a@]@]@]"
-    nm (print_mstr_vals print_ts) ns_ts
+    nm (print_mstr_vals print_ts) ns_ts (print_mstr_vals print_ts) ns_sp
     (print_mstr_vals print_ls_decl)
     ns_ls
     (print_mstr_vals print_ls_decl)

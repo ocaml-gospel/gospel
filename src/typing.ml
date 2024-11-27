@@ -1063,7 +1063,7 @@ let process_val_spec kid crcm ns id args ret vs =
     let d_typed = dterm Ownership kid crcm ns env t.Uast.s_term in
     let typed = term env d_typed in
     let ty = typed.t_ty in
-    let lens_ns = ns in
+    let lens_ns = { ns with ns_ts = ns.ns_sp } in
     let lens_type =
       match t.Uast.s_lens with None -> ty | Some t -> ty_of_pty lens_ns t
     in
