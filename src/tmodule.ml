@@ -273,6 +273,7 @@ let ns_with_primitives =
       ts_nativeint;
       ts_format6;
       ts_lazy;
+      ts_loc;
     ]
   in
 
@@ -294,12 +295,19 @@ let ns_with_primitives =
   let ns =
     List.fold_left
       (fun ns (s, ts) -> ns_add_ts ~allow_duplicate:true ns s ts)
-      empty_ns primitive_tys
+      empty_ns
+      (("loc", ts_loc) :: primitive_tys)
+  in
+  let ns =
+    List.fold_left
+      (fun ns (s, ls) -> ns_add_ls ~allow_duplicate:true ns s ls)
+      ns
+      (primitive_ls @ primitive_ps)
   in
   List.fold_left
-    (fun ns (s, ls) -> ns_add_ls ~allow_duplicate:true ns s ls)
+    (fun ns (s, ts) -> ns_add_sp ~allow_duplicate:true ns s ts)
     ns
-    (primitive_ls @ primitive_ps)
+    (("loc", ts_loc_sp) :: primitive_tys)
 
 (** Modules *)
 
