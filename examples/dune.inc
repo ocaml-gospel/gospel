@@ -65,6 +65,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Ref.gospel)
+ (action
+  (with-outputs-to Ref.mli.output
+   (run %{checker} %{dep:Ref.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff Ref.mli Ref.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Ref.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets Stack.gospel)
  (action
   (with-outputs-to Stack.mli.output
