@@ -2,6 +2,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets BitSet.gospel)
+ (action
+  (with-outputs-to BitSet.mli.output
+   (run %{checker} %{dep:BitSet.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff BitSet.mli BitSet.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:BitSet.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets Eq.gospel)
  (action
   (with-outputs-to Eq.mli.output
