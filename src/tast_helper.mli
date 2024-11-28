@@ -72,7 +72,7 @@ val type_declaration :
   private_flag ->
   ty option ->
   attributes ->
-  type_spec option ->
+  type_spec ->
   Location.t ->
   type_declaration
 

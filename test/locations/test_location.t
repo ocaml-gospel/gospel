@@ -64,62 +64,59 @@ First, create a test artifact:
             td_cstrs = ; td_kind = Tast.Pty_abstract; td_private = Tast.Public;
             td_manifest = None; td_attrs = <attributes>;
             td_spec =
-            (Some { Tast.ty_ephemeral = true;
-                    ty_model =
-                    (Tast.Fields
-                       [Symbols.Field_symbol {ls_name = size;
-                          ls_args =
+            { Tast.ty_ephemeral = true;
+              ty_model =
+              (Tast.Fields
+                 [Symbols.Field_symbol {ls_name = size;
+                    ls_args =
+                    [{ Ttypes.ty_node =
+                       (Ttypes.Tyapp (
+                          { Ttypes.ts_ident = t;
+                            ts_args = [{ Ttypes.tv_name = a }];
+                            ts_alias = None; ts_model = (true, Ttypes.Fields) },
                           [{ Ttypes.ty_node =
-                             (Ttypes.Tyapp (
-                                { Ttypes.ts_ident = t;
-                                  ts_args = [{ Ttypes.tv_name = a }];
-                                  ts_alias = None;
-                                  ts_model = (true, Ttypes.Fields) },
-                                [{ Ttypes.ty_node =
-                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                  ]
-                                ))
-                             }
-                            ];
-                          ls_value =
-                          { Ttypes.ty_node =
-                            (Ttypes.Tyapp (
-                               { Ttypes.ts_ident = int; ts_args = [];
-                                 ts_alias = None;
-                                 ts_model = (false, Ttypes.Self) },
-                               []))
-                            }};
-                         Symbols.Field_symbol {ls_name = contents;
-                           ls_args =
+                             (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                            ]
+                          ))
+                       }
+                      ];
+                    ls_value =
+                    { Ttypes.ty_node =
+                      (Ttypes.Tyapp (
+                         { Ttypes.ts_ident = int; ts_args = [];
+                           ts_alias = None; ts_model = (false, Ttypes.Self) },
+                         []))
+                      }};
+                   Symbols.Field_symbol {ls_name = contents;
+                     ls_args =
+                     [{ Ttypes.ty_node =
+                        (Ttypes.Tyapp (
+                           { Ttypes.ts_ident = t;
+                             ts_args = [{ Ttypes.tv_name = a }];
+                             ts_alias = None; ts_model = (true, Ttypes.Fields)
+                             },
                            [{ Ttypes.ty_node =
-                              (Ttypes.Tyapp (
-                                 { Ttypes.ts_ident = t;
-                                   ts_args = [{ Ttypes.tv_name = a }];
-                                   ts_alias = None;
-                                   ts_model = (true, Ttypes.Fields) },
-                                 [{ Ttypes.ty_node =
-                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                   ]
-                                 ))
-                              }
-                             ];
-                           ls_value =
-                           { Ttypes.ty_node =
-                             (Ttypes.Tyapp (
-                                { Ttypes.ts_ident = list;
-                                  ts_args = [{ Ttypes.tv_name = a_1 }];
-                                  ts_alias = None;
-                                  ts_model = (false, Ttypes.Self) },
-                                [{ Ttypes.ty_node =
-                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                  ]
-                                ))
-                             }}
-                         ]);
-                    ty_invariants = None;
-                    ty_text =
-                    " ephemeral\n    model contents : 'a list\n    model size : int ";
-                    ty_loc = foo.mli:5:3 });
+                              (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                             ]
+                           ))
+                        }
+                       ];
+                     ls_value =
+                     { Ttypes.ty_node =
+                       (Ttypes.Tyapp (
+                          { Ttypes.ts_ident = list;
+                            ts_args = [{ Ttypes.tv_name = a_1 }];
+                            ts_alias = None; ts_model = (false, Ttypes.Self) },
+                          [{ Ttypes.ty_node =
+                             (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                            ]
+                          ))
+                       }}
+                   ]);
+              ty_invariants = None;
+              ty_text =
+              " ephemeral\n    model contents : 'a list\n    model size : int ";
+              ty_loc = foo.mli:5:3 };
             td_loc = foo.mli:3:0 }
            ],
          Tast.Nonghost));
@@ -2759,7 +2756,7 @@ A smaller example, focused on locations after a directive:
   >     model size : int *)
   > EOF
   $ gospel dumpast foo.mli | grep '_loc.*:'
-                    ty_loc = bar.mli:7:3 });
+              ty_loc = bar.mli:7:3 };
             td_loc = bar.mli:5:0 }
       sig_loc = bar.mli:5:0 }
 

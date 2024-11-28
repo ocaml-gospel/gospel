@@ -922,12 +922,16 @@ let type_type_declaration path kid crcm ns r tdl =
        replace it with the real one afterwards. *)
     let inv_td =
       type_declaration td_ts params [] kind (private_flag td.tprivate) manifest
-        td.tattributes None td.tloc
+        td.tattributes default_ty_spec td.tloc
     in
     Hts.add type_declarations td_ts inv_td;
 
     let eph = fst td_model in
-    let spec = Option.map (process_type_spec kid eph crcm ns ty) td.tspec in
+    let spec =
+      Option.fold
+        ~some:(process_type_spec kid eph crcm ns ty)
+        ~none:default_ty_spec td.tspec
+    in
 
     if td.tcstrs != [] then
       W.error ~loc:td.tloc (W.Unsupported "type constraints");

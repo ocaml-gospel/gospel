@@ -130,7 +130,7 @@ type type_declaration = {
   td_private : private_flag;
   td_manifest : ty option;
   td_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
-  td_spec : type_spec option;
+  td_spec : type_spec;
   td_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]

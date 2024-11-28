@@ -157,6 +157,15 @@ let rec ns_subst_ty old_ts new_ts ty
     ns_tns = Mstr.map (ns_subst_ty old_ts new_ts ty) ns_tns;
   }
 
+let default_ty_spec =
+  {
+    ty_ephemeral = false;
+    ty_model = Self;
+    ty_invariants = None;
+    ty_text = "";
+    ty_loc = Location.none;
+  }
+
 (** Primitives types and functions *)
 let mk_td ts kind =
   {
@@ -167,7 +176,7 @@ let mk_td ts kind =
     td_private = Tast.Public;
     td_manifest = None;
     td_attrs = [];
-    td_spec = None;
+    td_spec = default_ty_spec;
     td_loc = Location.none;
   }
 
@@ -533,11 +542,8 @@ let add_sig_contents muc sig_ =
         in
         let muc = List.fold_left add muc csl in
         let get_fields = function Self | Default _ -> [] | Fields l -> l in
-        let fields =
-          Option.fold ~none:[]
-            ~some:(fun spec -> get_fields spec.ty_model)
-            td.td_spec
-        in
+        let spec = td.td_spec in
+        let fields = get_fields spec.ty_model in
         let muc = List.fold_left add muc fields in
         add_kid muc td.td_ts.ts_ident sig_
       in

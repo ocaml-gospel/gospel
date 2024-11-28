@@ -92,7 +92,7 @@ let print_type_declaration fmt td =
     (ts_ident td.td_ts) print_manifest td.td_manifest print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
     (list ~sep:(const string " constraint ") print_constraint)
-    td.td_cstrs (option print_type_spec) td.td_spec
+    td.td_cstrs print_type_spec td.td_spec
 
 let print_lb_arg fmt arg =
   let vs = arg.lb_vs in
