@@ -35,7 +35,7 @@ jobs:
           mv build ../documentation/gospel
 
       - name: Upload documentation artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: documentation
           name: documentation
