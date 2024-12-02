@@ -3,3 +3,12 @@ _build/
 _opam/
 *.install
 *.merlin
+*.d
+.lia.cache
+*.conf
+*.vo
+*.vok
+*.vos
+*.aux
+*.glob
+*.gospel
