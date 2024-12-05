@@ -75,7 +75,6 @@ and term_desc =
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term) list
-  | Tupdate of term * (qualid * term) list
   | Tscope of qualid * term
   | Told of term
 
