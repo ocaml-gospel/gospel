@@ -149,27 +149,6 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
- (targets pattern_inlined_record.gospel)
- (action
-  (with-outputs-to pattern_inlined_record.mli.output
-   (run %{checker} %{dep:pattern_inlined_record.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff pattern_inlined_record.mli pattern_inlined_record.mli.output)))
-
-(rule
- (alias test-cmis)
- (action
-  (chdir %{project_root}
-   ; Syntax sanity check
-   (run ocamlc -c %{dep:pattern_inlined_record.mli}))))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets record_with_partially_same_fields.gospel)
  (action
   (with-outputs-to record_with_partially_same_fields.mli.output
