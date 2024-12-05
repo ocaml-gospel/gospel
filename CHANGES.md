@@ -7,6 +7,8 @@
 
 ## Improved
 
+- Fix typing of pattern with inlined record
+  [\#429](https://github.com/ocaml-gospel/gospel/pull/429)
 - Fix typing of expression with inlined record
   [\#420](https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields
