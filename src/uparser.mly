@@ -409,7 +409,6 @@ term_block_:
 | LEFTSQRIGHTSQ
     { Tpreid (Qpreid (mk_pid "[]"  $loc)) }
 | LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
-| LEFTBRC term_arg WITH field_list1(term) RIGHTBRC  { Tupdate ($2,$4) }
 | LEFTBRCRIGHTBRC
     { Tpreid (Qpreid (mk_pid (mixfix "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC

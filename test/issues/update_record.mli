@@ -9,8 +9,8 @@ val f : t -> t
 *)
 
 (* {gospel_expected|
-   [125] File "update_record.mli", line 8, characters 20-23:
+   [125] File "update_record.mli", line 8, characters 21-22:
          8 |     ensures y.r = { x.r with b = 42 }
-                                 ^^^
-         Error: The record field a cannot be applied.
+                                  ^
+         Error: Syntax error.
    |gospel_expected} *)
