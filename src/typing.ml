@@ -210,6 +210,72 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       mk_dpattern ~loc (DPvar pid) dty vars
   | Ptrue -> mk_papp ~loc fs_bool_true []
   | Pfalse -> mk_papp ~loc fs_bool_false []
+  | Papp (q, ([ { pat_desc = Prec defined; _ } ] as pl)) -> (
+      match find_q_ls ns q with
+      | Constructor_symbol { ls_name; ls_args = Cstr_record expected; ls_value }
+        as ls -> (
+          let get_pid_str = function Qpreid pid | Qdot (_, pid) -> pid.pid_str
+          and get_pid_loc = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
+          and constr_str =
+            Fmt.(str "%a.%a" print_ty ls_value Ident.pp_simpl ls_name)
+          in
+          let _, dty =
+            (* we already know that it is a constructor symbol *)
+            specialize_ls ls
+          in
+          (* normalise order of the fields as the user can provide them in any
+             order *)
+          let expected =
+            let cmp l r =
+              String.compare (get_name l).Ident.id_str (get_name r).Ident.id_str
+            in
+            List.sort cmp expected
+          and defined =
+            let cmp (l, _) (r, _) =
+              String.compare (get_pid_str l) (get_pid_str r)
+            in
+            List.sort cmp defined
+          in
+          (* specialised fold_right2 that handle list with different length *)
+          let rec aux expected defined =
+            match (expected, defined) with
+            | [], [] -> ([], [])
+            | xs, [] ->
+                let missing =
+                  List.map (fun ls -> (get_name ls).Ident.id_str) xs
+                in
+                ([], missing)
+            | [], (q, _) :: _ ->
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                W.error ~loc (W.Wrong_name (field_str, constr_str))
+            | x :: xs, ((q, p) as y) :: ys -> (
+                let field_str = get_pid_str q and loc = get_pid_loc q in
+                match String.compare (get_name x).Ident.id_str field_str with
+                | 0 ->
+                    let patterns, missing = aux xs ys
+                    and p = dpattern kid ns p in
+                    (p :: patterns, missing)
+                | n when n < 0 ->
+                    let patterns, missing = aux xs (y :: ys) in
+                    (patterns, (get_name x).Ident.id_str :: missing)
+                | _ -> W.error ~loc (W.Wrong_name (field_str, constr_str)))
+          in
+          match aux expected defined with
+          | patterns, [] ->
+              let check_duplicate s _ _ =
+                W.error ~loc (W.Duplicated_variable s)
+              in
+              let vars =
+                List.fold_left
+                  (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
+                  Mstr.empty patterns
+              in
+              mk_dpattern ~loc (DPapp (ls, patterns)) dty vars
+          | _, missing -> W.(error ~loc (Label_missing missing)))
+      | _ ->
+          let cs = find_q_ls ns q in
+          let dpl = List.map (dpattern kid ns) pl in
+          mk_papp ~loc cs dpl)
   | Papp (q, pl) ->
       let cs = find_q_ls ns q in
       let dpl = List.map (dpattern kid ns) pl in
