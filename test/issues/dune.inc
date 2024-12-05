@@ -170,6 +170,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets record_with_partially_same_fields.gospel)
+ (action
+  (with-outputs-to record_with_partially_same_fields.mli.output
+   (run %{checker} %{dep:record_with_partially_same_fields.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff record_with_partially_same_fields.mli record_with_partially_same_fields.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:record_with_partially_same_fields.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets return_unit_and_ghost.gospel)
  (action
   (with-outputs-to return_unit_and_ghost.mli.output
