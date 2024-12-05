@@ -317,6 +317,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets nonexhaustive_inlined_record.gospel)
+ (action
+  (with-outputs-to nonexhaustive_inlined_record.mli.output
+   (run %{checker} %{dep:nonexhaustive_inlined_record.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff nonexhaustive_inlined_record.mli nonexhaustive_inlined_record.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:nonexhaustive_inlined_record.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets nonexhaustive_inner_char.gospel)
  (action
   (with-outputs-to nonexhaustive_inner_char.mli.output
