@@ -6,7 +6,9 @@
   [\#403](https://github.com/ocaml-gospel/gospel/pull/403)
 
 ## Improved
-
+- Rewrote the Gospel standard library to focus on the definition of 
+  mathematical objects.
+  [\#423] (https://github.com/ocaml-gospel/gospel/pull/423)
 - Fix typing of expression with inlined record
   [\#420](https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields
@@ -20,7 +22,6 @@
   [\#404](https://github.com/ocaml-gospel/gospel/pull/404)
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
-
 # 0.3
 
 ## Added
