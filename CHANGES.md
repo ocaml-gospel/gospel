@@ -7,6 +7,8 @@
 
 ## Improved
 
+- Remove support for the record update syntax
+  [\#428](https://github.com/ocaml-gospel/gospel/pull/428)
 - Fix typing of expression with inlined record
   [\#420](https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields

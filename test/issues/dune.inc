@@ -250,24 +250,3 @@
    ; Syntax sanity check
    (run ocamlc -c %{dep:stdlib_float_array_t_not_found.mli}))))
 
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe))
- (targets update_record.gospel)
- (action
-  (with-outputs-to update_record.mli.output
-   (run %{checker} %{dep:update_record.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff update_record.mli update_record.mli.output)))
-
-(rule
- (alias test-cmis)
- (action
-  (chdir %{project_root}
-   ; Syntax sanity check
-   (run ocamlc -c %{dep:update_record.mli}))))
-

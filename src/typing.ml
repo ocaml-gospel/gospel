@@ -292,11 +292,6 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   in
   (* CHECK location *)
   let map_apply dt tl = List.fold_left apply dt tl in
-  let mk_app ~loc ls dtl =
-    let dtyl, dty = specialize_ls ls in
-    let dtl = app_unify_map ~loc ls (dterm_expected crcm) dtl dtyl in
-    mk_dterm ~loc (DTapp (ls, dtl)) dty
-  in
   let gen_app ~loc ls tl =
     let nls = List.length (get_args ls) and ntl = List.length tl in
     let args, extra = split_at_i nls tl in
@@ -625,13 +620,6 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       match List.fold_right2 aux fields_name dtyl ([], []) with
       | fields, [] -> mk_dterm ~loc (DTapp (cs, fields)) dty
       | _, missing -> W.error ~loc (W.Label_missing missing))
-  | Uast.Tupdate (t, qtl) ->
-      let cs, pjl, fll = parse_record ~loc kid ns qtl in
-      let get_term pj =
-        try dterm whereami kid crcm ns denv (Mls.find pj fll)
-        with Not_found -> fun_app ~loc:t.term_loc pj [ t ]
-      in
-      mk_app ~loc:t.term_loc cs (List.map get_term pjl)
 
 let dterm whereami kid crcm ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
