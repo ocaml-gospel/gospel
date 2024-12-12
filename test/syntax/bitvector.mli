@@ -1,3 +1,5 @@
+(*@ function logand (x : integer) (y : integer) : integer *)
+
 type t = private { size : int; mutable mask : int }
 (*@ with self
     invariant 0 <= self.size <= 63

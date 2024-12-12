@@ -2,7 +2,7 @@ val x : int ref
 val incr_x : unit -> unit
 (*@ incr_x ()
     modifies x
-    ensures !x = old !x + 1 *)
+    ensures x.contents = old x.contents + 1 *)
 
 type t
 

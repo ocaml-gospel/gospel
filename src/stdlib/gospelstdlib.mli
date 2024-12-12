@@ -789,30 +789,3 @@ module Map : sig
         m x <> default ->
         Set.mem x (domain default m) *)
 end
-
-(* The following modules are deprecated and only exist to ensure the tests pass. In the future, assuming this branch is merged, they should be removed and the tests changed*)
-
-module Array : sig
-  (*@ function get (a : 'a array) (i : integer) : 'a *)
-
-  (*@ function length (a : 'a array) : integer *)
-  (*@ predicate permut (a1 : 'a array) (b1 : 'a array) *)
-  (*@ predicate permut_sub (a1 : 'a array) (a2 : 'a array) (i : integer) (j : integer) *)
-
-end
-
-module List : sig
-  (*@ function fold_left (f : 'b -> 'a -> 'b) (acc : 'b) (l : 'a list) : 'b *)
-  (*@ predicate _exists (f : 'a -> bool) (l : 'a list) *)
-  (*@ function length (l : 'a list) : integer *)
-  (*@ function nth (l : 'a list) (i : integer) : 'a *)
-  (*@ predicate mem (x : 'a) (l : 'a list) *)
-  (*@ function map (f : 'a -> 'b) (l : 'a list) : 'b list *)
-end
-
-module Order : sig
-  (*@ predicate is_pre_order (f: 'a -> 'a -> int) *)
-end
-(*@ type 'a ref *)
-(*@ function (!_) (r : 'a ref) : 'a *)
-(*@ function logand (n1 : integer) (n2: integer) : integer *)
