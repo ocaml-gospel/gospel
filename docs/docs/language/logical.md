@@ -12,8 +12,8 @@ comments. Here is a typical example:
 
 ```ocaml
 (*@ predicate is_sorted (a: int array) =
-      forall i j. 0 <= i <= j < Array.length a
-                  -> a.(i) <= a.(j) *)
+      forall i j. 0 <= i <= j < Sequence.length a
+                  -> a[i] <= a[j] *)
 ```
 
 We can then reuse the predicate `is_sorted` inside any Gospel annotations such

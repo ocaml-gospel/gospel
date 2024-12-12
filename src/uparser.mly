@@ -31,9 +31,6 @@
 
   let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
-  let array_get l =
-    Qdot (Qpreid (mk_pid "Array" l), mk_pid "get" l)
-
   let empty_vspec = {
     sp_header = None;
     sp_pre = [];
@@ -434,8 +431,6 @@ term_sub_:
 | term_arg LEFTSQ DOTDOT term RIGHTSQ
     { Tidapp (below_op $loc($2), [$1;$4]) }
 | LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
-| term_dot DOT LEFTPAR term RIGHTPAR
-    { Tidapp (array_get $loc($2), [$1; $4]) }
 ;
 
 %inline bin_op:
