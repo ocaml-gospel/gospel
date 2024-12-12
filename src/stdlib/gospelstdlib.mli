@@ -79,6 +79,12 @@
 (*@ function integer_of_int (x: int) : integer *)
 (*@ coercion *)
 
+(*@ function to_seq (a : 'a array) : 'a sequence *)
+(*@ coercion *)
+
+(*@ function of_list (s : 'a list) : 'a sequence *)
+(*@ coercion *)
+
 (*@ function max_int : integer *)
 (*@ function min_int : integer *)
 
@@ -361,9 +367,6 @@ module Sequence : sig
         forall acc f x l.
         fold_right f (cons x l) acc = f x (fold_right f l acc) *)
 
-  (* <---- to be removed *)
-  (*@ function of_list (s : 'a list) : 'a sequence *)
-  (*@ coercion *)
   (*@ predicate permut (s1 : 'a t) (s2 : 'a t) *)
   (** [permut a b] is true iff [a] and [b] contain the same elements with the
       same number of occurrences *)
@@ -793,8 +796,6 @@ module Array : sig
   (*@ function get (a : 'a array) (i : integer) : 'a *)
 
   (*@ function length (a : 'a array) : integer *)
-  (*@ function to_seq (a : 'a array) : 'a sequence *)
-  (*@ coercion *)
   (*@ predicate permut (a1 : 'a array) (b1 : 'a array) *)
   (*@ predicate permut_sub (a1 : 'a array) (a2 : 'a array) (i : integer) (j : integer) *)
 
