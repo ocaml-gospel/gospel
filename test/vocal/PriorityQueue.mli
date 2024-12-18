@@ -30,7 +30,7 @@ end) : sig
       with self
       invariant Bag.cardinal self.bag <= Sys.max_array_length *)
 
-  (*@ predicate mem (x: elt) (h: heap) = Bag.occurrences x h.bag > 0 *)
+  (*@ predicate mem (x: elt) (h: heap) = Bag.multiplicity x h.bag > 0 *)
 
   val create : unit -> heap
   (*@ h = create ()
@@ -38,7 +38,7 @@ end) : sig
 
   val is_empty : heap -> bool
   (*@ b = is_empty h
-      ensures b <-> Bag.is_empty h.bag *)
+      ensures b <-> Bag.empty = h.bag *)
 
   val size : heap -> int
   (*@ x = size h

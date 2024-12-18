@@ -128,6 +128,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets Order.gospel)
+ (action
+  (with-outputs-to Order.mli.output
+   (run %{checker} %{dep:Order.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff Order.mli Order.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:Order.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets PairingHeap.gospel)
  (action
   (with-outputs-to PairingHeap.mli.output

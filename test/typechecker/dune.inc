@@ -822,27 +822,6 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
- (targets partial_application.gospel)
- (action
-  (with-outputs-to partial_application.mli.output
-   (run %{checker} %{dep:partial_application.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff partial_application.mli partial_application.mli.output)))
-
-(rule
- (alias test-cmis)
- (action
-  (chdir %{project_root}
-   ; Syntax sanity check
-   (run ocamlc -c %{dep:partial_application.mli}))))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets raises_float_not_integer.gospel)
  (action
   (with-outputs-to raises_float_not_integer.mli.output

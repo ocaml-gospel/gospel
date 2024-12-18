@@ -1,8 +1,8 @@
 (*@ function powm (x y m: integer) : integer = mod (pow x y) m *)
 
 (*@ predicate is_sorted (a: int array) =
-      forall i j. 0 <= i <= j < Array.length a
-                  -> a.(i) <= a.(j) *)
+      forall i j. 0 <= i <= j < Sequence.length a
+                  -> a[i] <= a[j] *)
 
 val merge : int array -> int array -> int array
 (*@ c = merge a b

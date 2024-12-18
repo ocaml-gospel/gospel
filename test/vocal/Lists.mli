@@ -8,19 +8,20 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(** Stack-safe and fast implementation of [List.map]
+(** Stack-safe and fast implementation of [Sequence.map]
 
     following antron's post
     https://discuss.ocaml.org/t/a-new-list-map-that-is-both-stack-safe-and-fast/865
 
     Important note: the function is applied to the elements starting from the
-    end of the list, thus not in the same order as with [List.map]. So if your
-    functions has side-effects, this is not equivalent to [List.map] but rather
-    to a combination of [List.rev] and [List.map] as stated below. *)
+    end of the list, thus not in the same order as with [Sequence.map]. So if
+    your functions has side-effects, this is not equivalent to [Sequence.map]
+    but rather to a combination of [Sequence.rev] and [Sequence.map] as stated
+    below. *)
 
 val map : ('a -> 'b) -> 'a list -> 'b list
 (*@ r = map f l
-      ensures List.length r = List.length l
-      ensures forall i. 0 <= i < List.length l ->
-                List.nth r i = f (List.nth l i)
-      equivalent "List.rev (List.map f (List.rev l))" *)
+      ensures Sequence.length r = Sequence.length l
+      ensures forall i. 0 <= i < Sequence.length l ->
+                r[i] = f (l[i])
+      equivalent "Sequence.rev (Sequence.map f (Sequence.rev l))" *)

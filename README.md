@@ -116,9 +116,9 @@ starting with the `@` symbol:
 ```ocaml
 val max_array: int array -> int
 (*@ m = max_array a
-    requires Array.length a > 0
-    ensures forall i. 0 <= i < Array.length a -> a.(i) <= m
-    ensures exists i. 0 <= i < Array.length a /\ a.(i) = m *)
+    requires Sequence.length a > 0
+    ensures forall i. 0 <= i < Sequence.length a -> a[i] <= m
+    ensures exists i. 0 <= i < Sequence.length a /\ a[i] = m *)
 ```
 
 Gospel provides a type-checker that ensures that your specifications are

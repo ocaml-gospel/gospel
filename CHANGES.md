@@ -9,6 +9,9 @@
 
 - Remove support for the record update syntax
   [\#428](https://github.com/ocaml-gospel/gospel/pull/428)
+- Rewrote the Gospel standard library to focus on the definition of
+  mathematical objects.
+  [\#423] (https://github.com/ocaml-gospel/gospel/pull/423)
 - Fix typing of expression with inlined record
   [\#420](https://github.com/ocaml-gospel/gospel/pull/420)
 - Improve error message for unbound record fields

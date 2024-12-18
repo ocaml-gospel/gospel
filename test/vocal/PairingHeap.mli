@@ -27,24 +27,24 @@ end) : sig
   val empty : unit -> t
   (*@ h = empty ()
         ensures Bag.cardinal h.bag = 0
-        ensures forall x. Bag.occurrences x h.bag = 0 *)
+        ensures forall x. Bag.multiplicity x h.bag = 0 *)
 
   val is_empty : t -> bool
   (*@ b = is_empty h
-        ensures b <-> Bag.is_empty h.bag *)
+        ensures b <-> Bag.empty = h.bag *)
 
   val merge : t -> t -> t
   (*@ h = merge h1 h2
         ensures Bag.cardinal h.bag = Bag.cardinal h1.bag + Bag.cardinal h2.bag
-        ensures forall x. Bag.occurrences x h.bag = Bag.occurrences x h1.bag + Bag.occurrences x h2.bag *)
+        ensures forall x. Bag.multiplicity x h.bag = Bag.multiplicity x h1.bag + Bag.multiplicity x h2.bag *)
 
   val insert : elt -> t -> t
   (*@ h' = insert x h
-        ensures Bag.occurrences x h'.bag = Bag.occurrences x h.bag + 1
-        ensures forall y. y <> x -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures Bag.multiplicity x h'.bag = Bag.multiplicity x h.bag + 1
+        ensures forall y. y <> x -> Bag.multiplicity y h'.bag = Bag.multiplicity y h.bag
         ensures Bag.cardinal h'.bag = Bag.cardinal h.bag + 1 *)
 
-  (*@ predicate mem        (x: elt) (h: t) = Bag.occurrences x h.bag > 0 *)
+  (*@ predicate mem        (x: elt) (h: t) = Bag.multiplicity x h.bag > 0 *)
   (*@ predicate is_minimum (x: elt) (h: t) =
         mem x h /\ forall e. mem e h -> X.cmp x e <= 0 *)
 
@@ -59,7 +59,7 @@ end) : sig
   val delete_min : t -> t
   (*@ h' = delete_min h
         requires Bag.cardinal h.bag > 0
-        ensures  let x = minimum h in Bag.occurrences x h'.bag = Bag.occurrences x h.bag - 1
-        ensures  forall y. y <> minimum h -> Bag.occurrences y h'.bag = Bag.occurrences y h.bag
+        ensures  let x = minimum h in Bag.multiplicity x h'.bag = Bag.multiplicity x h.bag - 1
+        ensures  forall y. y <> minimum h -> Bag.multiplicity y h'.bag = Bag.multiplicity y h.bag
         ensures  Bag.cardinal h'.bag = Bag.cardinal h.bag - 1 *)
 end

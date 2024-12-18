@@ -15,7 +15,7 @@ Here is an example:
 
 ```ocaml
 val argv : string array
-(*@ ensures Array.length argv >= 1 *)
+(*@ ensures Sequence.length argv >= 1 *)
 ```
 
 These clauses hold at the end of the surrounding module evaluation.

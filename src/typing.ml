@@ -1232,7 +1232,11 @@ let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;
   try add_ns ~export:true muc nm (get_file muc nm).fl_export
   with Not_found ->
-    let file_nm = String.uncapitalize_ascii nm ^ ".mli" in
+    let file_nm = nm ^ ".mli" in
+    let file_nm =
+      if Sys.file_exists file_nm then file_nm
+      else String.uncapitalize_ascii file_nm
+    in
     let sl =
       let file = Parser_frontend.with_loadpath penv.lpaths file_nm in
       Parser_frontend.parse_ocaml_gospel file
