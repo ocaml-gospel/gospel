@@ -7,6 +7,8 @@
 
 ## Improved
 
+- Fix typing of pattern with inlined record
+  [\#429](https://github.com/ocaml-gospel/gospel/pull/429)
 - Remove support for the record update syntax
   [\#428](https://github.com/ocaml-gospel/gospel/pull/428)
 - Rewrote the Gospel standard library to focus on the definition of
