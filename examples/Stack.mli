@@ -8,7 +8,7 @@ module type S = sig
 
   val size : 'a t -> int
   (*@ n = size s
-        ensures n = Sequence.length s.view *)
+        ensures n.v = Sequence.length s.view *)
 
   val is_empty : 'a t -> bool
   (*@ b = is_empty s

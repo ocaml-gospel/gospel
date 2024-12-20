@@ -36,7 +36,7 @@ attribute, following OCaml's attachment rules:
 
 ```ocaml
 val f: int -> int
-[@@gospel "y = f x ensures x > 0"]
+[@@gospel "y = f x ensures x.v > 0"]
 ```
 
 ## Specification of Ghost and Logical Declarations
@@ -46,7 +46,7 @@ contract should reside in an attribute attached to the string containing the
 declaration:
 
 ```ocaml
-[@@@gospel "val f : int -> int"
+[@@@gospel "val f : integer -> integer"
   [@@gospel "y = f x ensures x > 0"]]
 ```
 

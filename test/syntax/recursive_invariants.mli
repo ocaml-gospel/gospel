@@ -7,8 +7,8 @@ type t = private A | B of t | C of { x : t }
 
 type u = private { tag : int; next : u }
 (*@ with self
-    invariant self.tag = self.next.tag = self.next.next.tag *)
+    invariant self.tag.v = self.next.tag.v = self.next.next.tag.v *)
 
 val f : u -> u
 (*@ y = f x
-    requires x.tag = 0 *)
+    requires x.tag.v = 0 *)

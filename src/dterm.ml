@@ -227,14 +227,6 @@ let denv_add_var_quant denv vl =
 
 (** coercions *)
 
-let apply_coercion l dt =
-  let apply dt ls =
-    let dtyl, dty = specialize_ls ls in
-    dterm_unify dt (List.hd dtyl);
-    { dt_node = DTapp (ls, [ dt ]); dt_dty = Some dty; dt_loc = dt.dt_loc }
-  in
-  List.fold_left apply dt l
-
 (* coercions using just head tysymbols without type arguments: *)
 (* TODO: this can be improved *)
 let rec ts_of_dty = function
@@ -257,16 +249,11 @@ let ty_of_dty_raw = function
   | Some dt_dty -> ty_of_dty_raw dt_dty
   | None -> ty_bool
 
-let max_dty crcmap dtl =
+let max_dty dtl =
   let rec aux = function
-    | (dty1, ts1, ty1) :: l ->
+    | (dty1, ts1, _ty1) :: l ->
         (* find a type that cannot be coerced to another type *)
-        let check (_, ts2, ty2) =
-          try
-            if not (ts_equal ts1 ts2) then ignore (Coercion.find crcmap ty1 ty2);
-            true
-          with Not_found -> false
-        in
+        let check (_, ts2, _ty2) = ts_equal ts1 ts2 in
         (* by transitivity, we never have to look back *)
         if List.exists check l then aux l else dty1
     | [] -> assert false
@@ -280,23 +267,12 @@ let max_dty crcmap dtl =
   in
   if l = [] then (List.hd dtl).dt_dty else aux l
 
-let dterm_expected crcmap dt dty =
-  try
-    let ts1, ts2 = (ts_of_dty dt.dt_dty, ts_of_dty dty) in
-    if ts_equal ts1 ts2 then dt
-    else
-      let ty1, ty2 = (ty_of_dty_raw dt.dt_dty, ty_of_dty_raw dty) in
-      let crc = Coercion.find crcmap ty1 ty2 in
-      apply_coercion crc dt
-  with Not_found | Exit -> dt
-
-let dterm_expected_op crcmap dt dty =
-  let dt = dterm_expected crcmap dt dty in
+let dterm_expected_op dt dty =
   unify dt dty;
   dt
 
-let dfmla_expected crcmap dt = dterm_expected_op crcmap dt (Some dty_bool)
-let dterm_expected crcmap dt dty = dterm_expected_op crcmap dt (Some dty)
+let dfmla_expected dt = dterm_expected_op dt (Some dty_bool)
+let dterm_expected dt dty = dterm_expected_op dt (Some dty)
 
 (** dterm to tterm *)
 

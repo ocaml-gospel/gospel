@@ -14,8 +14,11 @@ constant_specification = ("ensures" expr)*
 Here is an example:
 
 ```ocaml
+type 'a array
+(*@ mutable model contents : 'a sequence *)
+
 val argv : string array
-(*@ ensures Sequence.length argv >= 1 *)
+(*@ ensures Sequence.length argv.contents >= 1 *)
 ```
 
 These clauses hold at the end of the surrounding module evaluation.

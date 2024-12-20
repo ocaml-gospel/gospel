@@ -2,7 +2,7 @@
 
 val f : int -> float
 (*@ y = f x
-    requires x = 0
+    requires x.v = 0
     ensures y = 0. *)
 
 val g : char -> string

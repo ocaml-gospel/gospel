@@ -14,17 +14,17 @@ type 'a buffer
 (*@ mutable model sequence: 'a sequence
             model capacity: integer
     with self
-    invariant length self.sequence <= self.capacity <= Sys.max_array_length *)
+    invariant length self.sequence <= self.capacity <= Sys.max_array_length.v *)
 
 val create : int -> 'a -> 'a buffer
 (*@ b = create n dummy
-      requires 0 < n <= Sys.max_array_length
-      ensures  b.capacity = n
+      requires 0 < n.v <= Sys.max_array_length.v
+      ensures  b.capacity = n.v
       ensures  b.sequence = empty *)
 
 val length : 'a buffer -> int
 (*@ n = length b
-      ensures n = length b.sequence *)
+      ensures n.v = length b.sequence *)
 
 val clear : 'a buffer -> unit
 (*@ clear b
@@ -53,8 +53,8 @@ val pop : 'a buffer -> 'a
 
 val get : 'a buffer -> int -> 'a
 (*@ r = get b i
-      requires 0 <= i < length b.sequence
-      ensures  r = b.sequence[i] *)
+      requires 0 <= i.v < length b.sequence
+      ensures  r = b.sequence[i.v] *)
 
 val copy : 'a buffer -> 'a buffer
 (*@ r = copy b

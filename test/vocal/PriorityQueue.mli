@@ -16,19 +16,19 @@ module Make (X : sig
 
   val dummy : t
 
-  (*@ function cmp : t -> t -> int *)
+  (*@ function cmp : t -> t -> integer *)
 
   (*@ axiom is_pre_order: Order.is_pre_order cmp *)
 
   val compare : t -> t -> int
   (*@ r = compare x y
-        ensures r = cmp x y *)
+        ensures r.v = cmp x y *)
 end) : sig
   type elt = X.t
   type heap
   (*@ mutable model bag : elt bag
       with self
-      invariant Bag.cardinal self.bag <= Sys.max_array_length *)
+      invariant Bag.cardinal self.bag <= Sys.max_array_length.v *)
 
   (*@ predicate mem (x: elt) (h: heap) = Bag.multiplicity x h.bag > 0 *)
 
@@ -42,7 +42,7 @@ end) : sig
 
   val size : heap -> int
   (*@ x = size h
-      ensures x = Bag.cardinal h.bag *)
+      ensures x.v = Bag.cardinal h.bag *)
 
   (*@ function minimum (h: heap) : elt *)
 
@@ -80,7 +80,7 @@ end) : sig
 
   val insert : elt -> heap -> unit
   (*@ insert x h
-      checks   Bag.cardinal h.bag < Sys.max_array_length
+      checks   Bag.cardinal h.bag < Sys.max_array_length.v
       modifies h
       ensures  h.bag = Bag.add x (old h).bag *)
 end

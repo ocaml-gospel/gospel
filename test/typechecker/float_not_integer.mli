@@ -8,13 +8,13 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(*@ function int_of_float (x:float): int *)
+(*@ function integer_of_float (x:float): integer *)
 (*@ function to_float (i: integer): float *)
 
 (*@ function i (a:float):float =
-      to_float (int_of_float a + 1) *)
-(*@ requires int_of_float a > 0
-    ensures let old_a [@ athing] = int_of_float (old a) in
+      to_float (integer_of_float a + 1) *)
+(*@ requires integer_of_float a > 0
+    ensures let old_a [@ athing] = integer_of_float (old a) in
             a = old_a + 1
 *)
 

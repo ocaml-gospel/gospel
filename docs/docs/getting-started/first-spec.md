@@ -46,7 +46,7 @@ the container directly translates into Gospel:
 ```ocaml
 type 'a t
 (** The type for containers. *)
-(*@ model capacity: int
+(*@ model capacity: integer
     mutable model contents: 'a set *)
 ```
 
@@ -59,7 +59,7 @@ in the `contents` set may not exceed `capacity`. Those are type invariants:
 
 ```ocaml
 type 'a t
-(*@ model capacity: int
+(*@ model capacity: integer
     mutable model contents: 'a set
     with t
     invariant t.capacity > 0
@@ -93,8 +93,8 @@ keyword is `ensures`):
 ```ocaml
 val create: int -> 'a t
 (*@ t = create c
-    requires c > 0
-    ensures t.capacity = c
+    requires c.v > 0
+    ensures t.capacity = c.v
     ensures t.contents = Set.empty *)
 ```
 
