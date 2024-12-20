@@ -117,6 +117,7 @@ let rec ty_of_core ns cty =
   | Ptyp_package _ -> W.(error ~loc (Unsupported "first class module"))
   | Ptyp_poly _ -> W.(error ~loc (Unsupported "polymorphic type"))
   | Ptyp_variant _ -> W.(error ~loc (Unsupported "polymorphic variant"))
+  | Ptyp_open _ -> W.(error ~loc (Unsupported "local open on type"))
 
 (** Typing terms *)
 
@@ -148,7 +149,7 @@ let parse_record ~loc kid ns fll =
   let fll = List.map (fun (q, v) -> (find q, v)) fll in
   let fs =
     match fll with
-    | [] -> assert false (* foridden at parsing *)
+    | [] -> assert false (* forbidden at parsing *)
     | (fs, _) :: _ -> fs
   in
   let ts =
@@ -777,6 +778,7 @@ let type_type_declaration path kid crcm ns r tdl =
     | Ptyp_object _ -> W.(error ~loc (Unsupported "object type"))
     | Ptyp_package _ -> W.(error ~loc (Unsupported "first class module"))
     | Ptyp_poly _ -> W.(error ~loc (Unsupported "polymorphic type"))
+    | Ptyp_open _ -> W.(error ~loc (Unsupported "local open on type")) 
     | Ptyp_variant _ -> W.(error ~loc (Unsupported "polymorphic variant"))
   and visit ~alias s td =
     let parse_params (ct, vi) (tvl, params, vs) =
