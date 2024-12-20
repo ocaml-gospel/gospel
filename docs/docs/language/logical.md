@@ -11,7 +11,7 @@ repetitions. *Predicates* let you write named formulae definitions in Gospel
 comments. Here is a typical example:
 
 ```ocaml
-(*@ predicate is_sorted (a: int array) =
+(*@ predicate is_sorted (a: int sequence) =
       forall i j. 0 <= i <= j < Sequence.length a
                   -> a[i].v <= a[j].v *)
 ```
@@ -20,11 +20,14 @@ We can then reuse the predicate `is_sorted` inside any Gospel annotations such
 as function contracts:
 
 ```ocaml
+type 'a array
+(*@ mutable model contents : 'a sequence *)
+
 val merge: int array -> int array -> int array
 (*@ c = merge a b
-    requires is_sorted a
-    requires is_sorted b
-    ensures is_sorted c *)
+    requires is_sorted a.contents
+    requires is_sorted b.contents
+    ensures is_sorted c.contents *)
 ```
 
 Similarly, one can define a shortcut for terms using Gospel's *functions*.

@@ -114,11 +114,14 @@ Gospel contracts live in OCaml interface files (`.mli`), as special comments
 starting with the `@` symbol:
 
 ```ocaml
+type 'a array
+(*@ mutable model contents : 'a sequence *)
+
 val max_array: int array -> int
 (*@ m = max_array a
-    requires Sequence.length a > 0
-    ensures forall i. 0 <= i < Sequence.length a -> (a[i]).v <= m.v
-    ensures exists i. 0 <= i < Sequence.length a /\ a[i] = m *)
+    requires Sequence.length a.contents > 0
+    ensures forall i. 0 <= i < Sequence.length a.contents -> (a.contents[i]).v <= m.v
+    ensures exists i. 0 <= i < Sequence.length a.contents /\ a.contents[i] = m *)
 ```
 
 Gospel provides a type-checker that ensures that your specifications are
