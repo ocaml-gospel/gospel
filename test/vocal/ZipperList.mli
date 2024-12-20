@@ -32,11 +32,11 @@ val length : 'a t -> int
 
 val to_list : 'a t -> 'a list
 (*@ l = to_list z
-    ensures z.seq = l *)
+    ensures z.seq = l.list_content *)
 
 val make : 'a list -> 'a t
 (*@ z = make l
-    ensures z.seq = l
+    ensures z.seq = l.list_content
     ensures z.idx = 0 *)
 
 val move_left : 'a t -> 'a t

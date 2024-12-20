@@ -37,7 +37,7 @@ every possible array:
 val total_weight : weight:('a array -> int) -> ('a array) list -> int
 (*@ y = total_weight ~weight l
     requires forall a. (weight a).v >= 0
-    ensures y.v = Sequence.fold_left (fun acc a -> acc + (weight a).v) 0 l *)
+    ensures y.v = Sequence.fold_left (fun acc a -> acc + (weight a).v) 0 l.list_content *)
 ```
 
 <hr />
