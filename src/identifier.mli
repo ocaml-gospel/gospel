@@ -31,7 +31,8 @@ module Preid : sig
       default location is [Location.none]. *)
 
   val add_attr : t -> string -> t
-  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
+  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes.
+  *)
 end
 
 (** {1 Identifiers}
@@ -73,7 +74,8 @@ module Ident : sig
   (** [set_loc t loc] is [t] with [loc] as its location. *)
 
   val add_attr : t -> string -> t
-  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes. *)
+  (** [add_attr t attr] is [t] with [attr] added to the list of its attributes.
+  *)
 end
 
 (** {2 Hard-coded identifiers} *)
