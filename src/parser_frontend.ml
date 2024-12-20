@@ -13,7 +13,9 @@ open Ppxlib
 
 let stdlib = "Stdlib"
 let gospelstdlib = "Gospelstdlib"
+let annotated_stdlib = "Annotated_stdlib"
 let gospelstdlib_file = "gospelstdlib.mli"
+let annotated_stdlib_file = "annotated_stdlib.mli"
 
 let with_loadpath load_path file =
   let exception Break of string in
@@ -23,7 +25,10 @@ let with_loadpath load_path file =
       if Sys.file_exists f then raise (Break f)
     with Sys_error _ -> ()
   in
-  if file = gospelstdlib_file then file
+  if
+    String.equal file gospelstdlib_file
+    || String.equal file annotated_stdlib_file
+  then file
   else if Filename.is_relative file then
     try
       List.iter try_open load_path;
@@ -45,6 +50,8 @@ let parse_ocaml file =
   let lb =
     if String.equal file gospelstdlib_file then
       Lexing.from_string Gospellib.contents
+    else if String.equal file annotated_stdlib_file then
+      Lexing.from_string Annotated_stdlib.contents
     else open_in file |> Lexing.from_channel
   in
   Location.init lb file;
@@ -65,13 +72,20 @@ let parse_gospel ~filename signature name =
     let name = { txt = "gospel"; loc = Location.none } in
     B.attribute ~name ~payload |> B.psig_attribute
   in
+  let open_annotated_stdlib =
+    let payload = PStr [ B.(pstr_eval (estring "open Annotated_stdlib")) [] ] in
+    let name = { txt = "gospel"; loc = Location.none } in
+    B.attribute ~name ~payload |> B.psig_attribute
+  in
   let s =
     if
       String.equal name gospelstdlib
       || String.equal name stdlib
       || String.equal name "CamlinternalFormatBasics"
     then signature
-    else open_stdlib :: open_gospelstdlib :: signature
+    else if String.equal name annotated_stdlib then
+      open_gospelstdlib :: signature
+    else open_stdlib :: open_gospelstdlib :: open_annotated_stdlib :: signature
   in
   Uattr2spec.signature ~filename s
 

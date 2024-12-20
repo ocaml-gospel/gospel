@@ -55,6 +55,13 @@ First, create a test artifact:
          Tast.Ghost));
       sig_loc = none };
     { Tast.sig_desc =
+      (Tast.Sig_open (
+         { Tast.opn_id = ["Annotated_stdlib"];
+           opn_override = <Asttypes.override_flag>; opn_loc = none;
+           opn_attrs = <attributes> },
+         Tast.Ghost));
+      sig_loc = none };
+    { Tast.sig_desc =
       (Tast.Sig_type (Tast.Recursive,
          [{ Tast.td_ts =
             { Ttypes.ts_ident = t; ts_args = [{ Ttypes.tv_name = a }];

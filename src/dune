@@ -20,6 +20,12 @@
   (run stdlib/file_to_string.exe %{deps} %{targets})))
 
 (rule
+ (targets annotated_stdlib.ml)
+ (deps stdlib/annotated_stdlib.mli)
+ (action
+  (run stdlib/file_to_string.exe %{deps} %{targets})))
+
+(rule
  (alias fmt)
  (enabled_if %{bin-available:ex})
  (action
