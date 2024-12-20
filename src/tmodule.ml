@@ -302,7 +302,6 @@ type module_uc = {
   muc_export : namespace list;
   muc_files : file Mstr.t;
   muc_kid : known_ids;
-  muc_crcm : Coercion.t;
 }
 
 let muc_add ?(export = false) add muc s x =
@@ -327,8 +326,6 @@ let add_sig muc sig_ =
   match muc.muc_sigs with
   | s0 :: sl -> { muc with muc_sigs = (sig_ :: s0) :: sl }
   | _ -> assert false
-
-let add_coer muc ls = { muc with muc_crcm = Coercion.add muc.muc_crcm ls }
 
 let add_ns_top ?(export = false) muc ns =
   let add f muc map = Mstr.fold (fun s v muc -> f muc s v) map muc in
@@ -486,11 +483,6 @@ let add_sig_contents muc sig_ =
       add_kid muc (get_name ls) sig_
   | Sig_function f ->
       let muc = add_ls ~export:true muc (get_name f.fun_ls).id_str f.fun_ls in
-      let muc =
-        match f.fun_spec with
-        | Some spec when spec.fun_coer -> add_coer muc f.fun_ls
-        | _ -> muc
-      in
       add_kid muc (get_name f.fun_ls) sig_
   | Sig_type (_, tdl, _) ->
       let add_td muc td =
@@ -549,7 +541,6 @@ let init_muc file =
     muc_export = [ empty_ns ];
     muc_files = Mstr.empty;
     muc_kid = Mid.empty;
-    muc_crcm = Coercion.empty;
   }
 
 let wrap_up_muc (muc : module_uc) =
