@@ -28,7 +28,7 @@ val is_empty : 'a t -> bool
 
 val length : 'a t -> int
 (*@ r = length z
-    ensures r = Sequence.length z.seq *)
+    ensures r.v = Sequence.length z.seq *)
 
 val to_list : 'a t -> 'a list
 (*@ l = to_list z

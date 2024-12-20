@@ -3,7 +3,7 @@
 val fib : int -> int -> int -> int
 (*@ r = fib [i: integer] n a b
     requires i >= 0
-    checks n >= 0
-    requires a = fibonacci i
-    requires b = fibonacci (i+1)
-    ensures r = fibonacci (i+n) *)
+    checks n.v >= 0
+    requires a.v = fibonacci i
+    requires b.v = fibonacci (i+1)
+    ensures r.v = fibonacci (i+n.v) *)

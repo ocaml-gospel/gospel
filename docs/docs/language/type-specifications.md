@@ -10,7 +10,7 @@ data-structure.
 
 ```ocaml
 type 'a t
-(*@ model capacity: int
+(*@ model capacity: integer
     mutable model contents: 'a Set.t
     with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
@@ -47,7 +47,7 @@ name for that model in a fashion similar to OCaml's record fields.
 
 ```ocaml {2,3}
 type 'a t
-(*@ model capacity: int
+(*@ model capacity: integer
     mutable model contents: 'a Set.t
     with t invariant Set.cardinal t.contents <= t.capacity *)
 ```
@@ -60,7 +60,7 @@ keyword `ephemeral` in its annotation:
 ```ocaml {2}
 type t
 (*@ ephemeral
-    model capacity: int *)
+    model capacity: integer *)
 ```
 
 Of course, a type that has a mutable model is considered mutable, so the
@@ -81,7 +81,7 @@ a name for a value of the type being specified:
 
 ```ocaml {4}
 type 'a t
-(*@ model capacity: int
+(*@ model capacity: integer
     mutable model contents: 'a Set.t
     with t invariant Set.cardinal t.contents <= t.capacity *)
 ```

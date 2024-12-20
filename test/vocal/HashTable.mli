@@ -23,7 +23,7 @@ module type HashedType = sig
   (*@ axiom compatibility: forall x y: t. equiv x y -> hash_f x = hash_f y *)
   val hash : t -> int
   (*@ h = hash x
-      ensures h = hash_f x *)
+      ensures h.v = hash_f x *)
 end
 
 module Make (K : HashedType) : sig
@@ -40,7 +40,7 @@ module Make (K : HashedType) : sig
 
   val create : int -> 'a t
   (*@ h = create n
-    requires n >= 0
+    requires n.v >= 0
     ensures  forall k: key. h.view k = [] *)
 
   val clear : 'a t -> unit
@@ -64,11 +64,11 @@ module Make (K : HashedType) : sig
 
   val population : 'a t -> int
   (*@ n = population h
-    ensures n = pop h *)
+    ensures n.v = pop h *)
 
   val length : 'a t -> int
   (*@ n = length h
-    ensures n = pop h *)
+    ensures n.v = pop h *)
 
   val iter : (key -> 'a -> unit) -> 'a t -> unit
   val fold : (key -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b

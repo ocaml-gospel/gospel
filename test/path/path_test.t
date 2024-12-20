@@ -19,7 +19,7 @@ First, create a test artifact:
   >   val x : int
   >   val y : int ->  int
   > 
-  >  (*@ function f (n : int) : int *)
+  >  (*@ function f (n : integer) : integer *)
   >  (*@ axiom a : forall n. f n = n + 1 *)
   > 
   >   module Nested : sig
@@ -66,11 +66,9 @@ First, create a test artifact:
   infix =
   a_1
   a_1
-  Gospelstdlib.integer_of_int
   Path_test.M.f
   n_1
   Gospelstdlib.infix +
-  Gospelstdlib.integer_of_int
   n_1
   Path_test.M.Nested
   Path_test.M.Nested.x_4

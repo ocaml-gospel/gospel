@@ -57,8 +57,8 @@ val map : ('a -> 'b) -> 'a t -> 'b t
 
 val power_2_below : int -> int
 (*@ r, [k: integer] = power_2_below n
-    requires n >= 1
-    ensures  r = power 2 k && r <= n < 2 * r *)
+    requires n.v >= 1
+    ensures  r.v = power 2 k && r.v <= n.v < 2 * r.v *)
 
 type rand_state
 (*@ mutable model internal: unit *)
@@ -66,7 +66,7 @@ type rand_state
 val random_init : int -> rand_state
 val random_int : rand_state -> int -> int
 (*@ n = random_int s m
-    requires m > 0  modifies s  ensures  0 <= n < m *)
+    requires m.v > 0  modifies s  ensures  0 <= n.v < m.v *)
 
 type elem
 

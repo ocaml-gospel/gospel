@@ -1,4 +1,4 @@
-(*@ predicate is_pre_order (cmp: 'a -> 'a -> int) =
+(*@ predicate is_pre_order (cmp: 'a -> 'a -> integer) =
       (forall x. cmp x x = 0) /\
       (forall x y. cmp x y <= 0 <-> cmp y x >= 0) /\
       (forall x y z.

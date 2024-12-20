@@ -71,7 +71,7 @@ val f5 : bool -> int
 
 (*@ r = f5 x
     ensures match x with
-      | false -> r <> 1
+      | false -> r.v <> 1
       | true -> true
     ensures match true with _ -> true
     ensures match true with x -> true
@@ -99,8 +99,8 @@ val f7 : char t7 -> int
 val f8 : 'a option -> int
 (*@ r = f8 o
     ensures match o with
-    | None -> r = 2
-    | Some x -> r <> 2 *)
+    | None -> r.v = 2
+    | Some x -> r.v <> 2 *)
 
 val f9 : char -> int
 (*@ r = f9 a
@@ -120,7 +120,7 @@ val f10 : bool -> int
 (*@ r = f10 x
     ensures
       match x with
-      | true -> r <> 1
+      | true -> r.v <> 1
       | false -> true
     ensures
       match true with

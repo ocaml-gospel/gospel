@@ -13,7 +13,7 @@ comments. Here is a typical example:
 ```ocaml
 (*@ predicate is_sorted (a: int array) =
       forall i j. 0 <= i <= j < Sequence.length a
-                  -> a[i] <= a[j] *)
+                  -> a[i].v <= a[j].v *)
 ```
 
 We can then reuse the predicate `is_sorted` inside any Gospel annotations such
@@ -39,7 +39,7 @@ recursive. A recursive definition requires the `rec` keyword like in OCaml:
 ```ocaml
 (*@ predicate rec is_sorted_list (l: int list) = match l with
       | [] | _ :: [] -> true
-      | h :: (y :: _ as t) -> h <= y /\ is_sorted_list t *)
+      | h :: (y :: _ as t) -> h.v <= y.v /\ is_sorted_list t *)
 ```
 
 Logical functions and predicates can be left uninterpreted, ie without declaring

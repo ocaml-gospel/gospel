@@ -10,9 +10,9 @@ of an OCaml function in an interface. Here is an example:
 ```ocaml
 val euclidean_division: int -> int -> int * int
 (*@ q, r = euclidean_division x y
-    requires y > 0
-    ensures  x = q * y + r
-    ensures  0 <= r < y *)
+    requires y.v > 0
+    ensures  x.v = q.v * y.v + r.v
+    ensures  0 <= r.v < y.v *)
 ```
 
 A function contract is composed of two parts:
@@ -110,9 +110,9 @@ For example, the following function requires `y` to be positive to behave correc
 ```ocaml {3}
 val eucl_division: int -> int -> int * int
 (*@ q, r = eucl_division x y
-    requires y > 0
-    ensures  x = q * y + r
-    ensures  0 <= r < y *)
+    requires y.v > 0
+    ensures  x.v = q.v * y.v + r.v
+    ensures  0 <= r.v < y.v *)
 ```
 
 ### `checks`
@@ -428,8 +428,8 @@ Consider the following `log2` function:
 val log2: int -> int
 (*@ r = log2 [i: integer] x
     requires i >= 0
-    requires x = pow 2 i
-    ensures r = i *)
+    requires x.v = pow 2 i
+    ensures r.v = i *)
 ```
 
 In this contract, the ghost parameter `i` is used in both the preconditions and

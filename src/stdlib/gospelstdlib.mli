@@ -76,9 +76,6 @@
 (*@ predicate (<) (x y: integer) *)
 (*@ predicate (<=) (x y: integer) *)
 
-(*@ function integer_of_int (x: int) : integer *)
-(*@ coercion *)
-
 (*@ function to_seq (a : 'a array) : 'a sequence *)
 (*@ coercion *)
 

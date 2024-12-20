@@ -5,4 +5,4 @@ val f : int -> int
 
 val g : int -> int
 (*@ y = g x
-    requires f x > 0 *)
+    requires (f x).v > 0 *)

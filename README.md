@@ -35,8 +35,8 @@ exception Empty
 
 val create : int -> 'a t
 (*@ s = create n
-    requires n > 0
-    ensures s.capacity = n
+    requires n.v > 0
+    ensures s.capacity = n.v
     ensures s.contents = Sequence.empty *)
 
 val is_empty : 'a t -> bool
@@ -117,7 +117,7 @@ starting with the `@` symbol:
 val max_array: int array -> int
 (*@ m = max_array a
     requires Sequence.length a > 0
-    ensures forall i. 0 <= i < Sequence.length a -> a[i] <= m
+    ensures forall i. 0 <= i < Sequence.length a -> (a[i]).v <= m.v
     ensures exists i. 0 <= i < Sequence.length a /\ a[i] = m *)
 ```
 
