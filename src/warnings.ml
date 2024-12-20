@@ -131,17 +131,20 @@ let pp_kind ppf = function
       pf ppf
         "This pattern-matching may not be exhaustive because of the guard.@\n\
          Here is an example of a case that may not be matched:@\n\
-        \  %s" p
+        \  %s"
+        p
   | Pattern_not_exhaustive p ->
       pf ppf
         "This pattern-matching is not exhaustive.@\n\
          Here is an example of a case that is not matched:@\n\
-        \  %s" p
+        \  %s"
+        p
   | Pattern_redundant p ->
       pf ppf
         "The pattern-matching is redundant.@\n\
          Here is a case that is unused:@\n\
-        \  %s" p
+        \  %s"
+        p
   | Predicate_symbol_expected s -> pf ppf "Not a predicate symbol: %s" s
   | Public_type_invariant t -> pf ppf "Invariant on public type %s" t
   | Return_unit_without_modifies f ->
