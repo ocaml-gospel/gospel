@@ -249,7 +249,7 @@ let ts_of_dty = function Some dt_dty -> ts_of_dty dt_dty | None -> ts_bool
 let rec ty_of_dty_raw = function
   | Tvar { dtv_def = Some (Tty ty); _ } -> ty
   | Tvar { dtv_def = Some dty; _ } -> ty_of_dty_raw dty
-  | Tvar _ -> fresh_ty_var ~loc:Location.none "xi"
+  | Tvar _ as ty -> ty_of_dty ty
   | Tapp (ts, dl) -> ty_app ts (List.map ty_of_dty_raw dl)
   | Tty ty -> ty
 
