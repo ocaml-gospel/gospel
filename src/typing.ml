@@ -26,6 +26,7 @@ type whereami =
   | Consumes
   | Ensures
   | Function_or_predicate
+  | Fun_spec
   | Invariant
   | Modifies
   | Raises
@@ -668,6 +669,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       match whereami with
       | Requires -> W.(error ~loc (Old_in_precond "requires"))
       | Checks -> W.(error ~loc (Old_in_precond "checks"))
+      | Fun_spec -> W.(error ~loc Old_in_fun_spec)
       | _ ->
           let dt = dterm whereami kid crcm ns denv t in
           mk_dterm ~loc (DTold dt) (Option.get dt.dt_dty))
@@ -1253,8 +1255,8 @@ let process_function path kid crcm ns f =
   let spec =
     Option.map
       (fun (spec : Uast.fun_spec) ->
-        let req = List.map (fmla Requires kid crcm ns env) spec.fun_req in
-        let ens = List.map (fmla Ensures kid crcm ns env) spec.fun_ens in
+        let req = List.map (fmla Fun_spec kid crcm ns env) spec.fun_req in
+        let ens = List.map (fmla Fun_spec kid crcm ns env) spec.fun_ens in
         let variant =
           List.map
             (term_with_unify Variant kid crcm ty_integer ns env)

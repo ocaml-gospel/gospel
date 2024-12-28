@@ -64,7 +64,7 @@
 (*@ function i (a:int):int =
       int_of_integer (to_integer a + 1) *)
 (*@ requires to_integer a > 0
-    ensures let old_a [@ athing] = to_integer (old a) in
+    ensures let old_a [@ athing] = to_integer a in
             to_integer a = old_a + 1 *)
 
 type 'a t1 = C of 'a * int

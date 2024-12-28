@@ -799,6 +799,27 @@
 (rule
  (deps
   %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets old_in_fun.gospel)
+ (action
+  (with-outputs-to old_in_fun.mli.output
+   (run %{checker} %{dep:old_in_fun.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff old_in_fun.mli old_in_fun.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:old_in_fun.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe)
   int_not_bool1.mli)
  (targets open.gospel)

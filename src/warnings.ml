@@ -29,6 +29,7 @@ type kind =
   | Name_clash of string
   | Not_a_constructor of string
   | Old_in_precond of string
+  | Old_in_fun_spec
   | Partial_application of string
   | Pattern_bad_type of string * string
   | Pattern_fully_guarded
@@ -118,6 +119,8 @@ let pp_kind ppf = function
   | Not_a_constructor f -> pf ppf "The symbol %s is not a constructor" f
   | Old_in_precond precond ->
       pf ppf "old operator is not allowed in %s clauses" precond
+  | Old_in_fun_spec ->
+      pf ppf "old operator is not allowed in specifications for pure functions"
   | Partial_application s ->
       pf ppf "The symbol %s cannot be partially applied" s
   | Pattern_bad_type (t1, t2) ->
