@@ -182,7 +182,7 @@ First, create a test artifact:
                    sp_pre = [];
                    sp_checks =
                    [{ Tterm.t_node =
-                      (Tterm.Tapp (
+                      (Tterm.Tidapp (
                          Symbols.Function_symbol {
                            ls_name = Gospelstdlib.infix >=;
                            ls_args =
@@ -207,7 +207,7 @@ First, create a test artifact:
                                 []))
                              }},
                          [{ Tterm.t_node =
-                            (Tterm.Tapp (
+                            (Tterm.Tidapp (
                                Symbols.Function_symbol {
                                  ls_name = Gospelstdlib.integer_of_int;
                                  ls_args =
@@ -276,7 +276,7 @@ First, create a test artifact:
                      ];
                    sp_post =
                    [{ Tterm.t_node =
-                      (Tterm.Tapp (
+                      (Tterm.Tidapp (
                          Symbols.Function_symbol {ls_name = infix =;
                            ls_args =
                            [{ Ttypes.ty_node =
@@ -363,7 +363,7 @@ First, create a test artifact:
                               };
                             t_attrs = []; t_loc = foo.mli:11:12 };
                            { Tterm.t_node =
-                             (Tterm.Tapp (
+                             (Tterm.Tidapp (
                                 Symbols.Constructor_symbol {ls_name = [];
                                   ls_args = (Symbols.Cstr_tuple []);
                                   ls_value =
@@ -403,7 +403,7 @@ First, create a test artifact:
                         };
                       t_attrs = []; t_loc = foo.mli:11:12 };
                      { Tterm.t_node =
-                       (Tterm.Tapp (
+                       (Tterm.Tidapp (
                           Symbols.Function_symbol {ls_name = infix =;
                             ls_args =
                             [{ Ttypes.ty_node =
@@ -582,7 +582,7 @@ First, create a test artifact:
              ];
            fun_def =
            (Some { Tterm.t_node =
-                   (Tterm.Tapp (
+                   (Tterm.Tidapp (
                       Symbols.Function_symbol {ls_name = infix =;
                         ls_args =
                         [{ Ttypes.ty_node =
@@ -598,7 +598,7 @@ First, create a test artifact:
                              []))
                           }},
                       [{ Tterm.t_node =
-                         (Tterm.Tapp (
+                         (Tterm.Tidapp (
                             Symbols.Function_symbol {
                               ls_name = Gospelstdlib.Sequence.length;
                               ls_args =
@@ -621,7 +621,7 @@ First, create a test artifact:
                                    []))
                                 }},
                             [{ Tterm.t_node =
-                               (Tterm.Tapp (
+                               (Tterm.Tidapp (
                                   Symbols.Function_symbol {
                                     ls_name = Gospelstdlib.of_list;
                                     ls_args =
@@ -814,7 +814,7 @@ First, create a test artifact:
                    [{ Tterm.t_node =
                       (Tterm.Tnot
                          { Tterm.t_node =
-                           (Tterm.Tapp (
+                           (Tterm.Tidapp (
                               Symbols.Function_symbol {
                                 ls_name = Gospelstdlib.Sequence.mem;
                                 ls_args =
@@ -859,7 +859,7 @@ First, create a test artifact:
                                    };
                                  t_attrs = []; t_loc = foo.mli:21:31 };
                                 { Tterm.t_node =
-                                  (Tterm.Tapp (
+                                  (Tterm.Tidapp (
                                      Symbols.Function_symbol {
                                        ls_name = Gospelstdlib.of_list;
                                        ls_args =
@@ -1447,7 +1447,7 @@ First, create a test artifact:
                          { Tterm.t_node =
                            (Tterm.Tbinop (Tterm.Tand,
                               { Tterm.t_node =
-                                (Tterm.Tapp (
+                                (Tterm.Tidapp (
                                    Symbols.Function_symbol {
                                      ls_name = Gospelstdlib.infix <=;
                                      ls_args =
@@ -1472,7 +1472,7 @@ First, create a test artifact:
                                           []))
                                        }},
                                    [{ Tterm.t_node =
-                                      (Tterm.Tapp (
+                                      (Tterm.Tidapp (
                                          Symbols.Function_symbol {
                                            ls_name =
                                            Gospelstdlib.integer_of_int;
@@ -1526,7 +1526,7 @@ First, create a test artifact:
                                         };
                                       t_attrs = []; t_loc = foo.mli:26:30 };
                                      { Tterm.t_node =
-                                       (Tterm.Tapp (
+                                       (Tterm.Tidapp (
                                           Symbols.Function_symbol {
                                             ls_name =
                                             Gospelstdlib.integer_of_int;
@@ -1590,7 +1590,7 @@ First, create a test artifact:
                                   };
                                 t_attrs = []; t_loc = foo.mli:26:30 },
                               { Tterm.t_node =
-                                (Tterm.Tapp (
+                                (Tterm.Tidapp (
                                    Symbols.Function_symbol {
                                      ls_name = Foo.is_sorted_list;
                                      ls_args =
@@ -1741,7 +1741,7 @@ First, create a test artifact:
                    sp_ret = []; sp_pre = []; sp_checks = [];
                    sp_post =
                    [{ Tterm.t_node =
-                      (Tterm.Tapp (
+                      (Tterm.Tidapp (
                          Symbols.Function_symbol {ls_name = infix =;
                            ls_args =
                            [{ Ttypes.ty_node =
@@ -1830,7 +1830,7 @@ First, create a test artifact:
                            { Tterm.t_node =
                              (Tterm.Tif (
                                 { Tterm.t_node =
-                                  (Tterm.Tapp (
+                                  (Tterm.Tidapp (
                                      Symbols.Function_symbol {
                                        ls_name = Foo.is_full;
                                        ls_args =
@@ -1948,7 +1948,7 @@ First, create a test artifact:
                                           };
                                         t_attrs = []; t_loc = foo.mli:32:36 };
                                        { Tterm.t_node =
-                                         (Tterm.Tapp (
+                                         (Tterm.Tidapp (
                                             Symbols.Function_symbol {
                                               ls_name =
                                               Gospelstdlib.integer_of_int;
@@ -2173,7 +2173,7 @@ First, create a test artifact:
                                     };
                                   t_attrs = []; t_loc = foo.mli:33:30 },
                                 { Tterm.t_node =
-                                  (Tterm.Tapp (
+                                  (Tterm.Tidapp (
                                      Symbols.Constructor_symbol {
                                        ls_name = infix ::;
                                        ls_args =

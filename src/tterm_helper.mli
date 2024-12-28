@@ -15,8 +15,8 @@ open Ttypes
 open Symbols
 
 val t_free_vars : Tterm.term -> Svs.t
-val ls_arg_inst : lsymbol -> term list -> ty Mtv.t
-val ls_app_inst : lsymbol -> term list -> ty -> ty Mtv.t
+val arg_inst : ty list -> term list -> ty Mtv.t
+val app_inst : ty list -> ty -> term list -> ty -> ty Mtv.t
 val mk_pattern : pattern_node -> ty -> Location.t -> pattern
 val p_wild : ty -> Location.t -> pattern
 val p_var : vsymbol -> Location.t -> pattern
@@ -28,7 +28,8 @@ val p_const : Parsetree.constant -> Location.t -> pattern
 val mk_term : term_node -> ty -> Location.t -> term
 val t_var : vsymbol -> Location.t -> term
 val t_const : constant -> ty -> Location.t -> term
-val t_app : lsymbol -> term list -> ty -> Location.t -> term
+val t_app : term -> term list -> ty -> Location.t -> term
+val t_ls : lsymbol -> term list -> ty -> Location.t -> term
 val t_field : term -> lsymbol -> ty -> Location.t -> term
 val t_if : term -> term -> term -> Location.t -> term
 val t_let : vsymbol -> term -> term -> Location.t -> term

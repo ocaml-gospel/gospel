@@ -346,7 +346,7 @@ and term_node ~loc env dty dterm_node =
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
         loc
   | DTapp (ls, dtl) ->
-      t_app ls
+      t_ls ls
         (List.map (term env) dtl)
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
         loc
