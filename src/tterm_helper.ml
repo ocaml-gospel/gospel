@@ -126,7 +126,7 @@ let t_var vs = mk_term (Tvar vs) vs.vs_ty
 let t_const c ty = mk_term (Tconst c) ty
 
 let t_app t tl ty loc =
-  let args, v = args_value ty in
+  let args, v = args_value t.t_ty in
   ignore (app_inst args v tl ty : ty Mtv.t);
   mk_term (Tapply (t, tl)) ty loc
 

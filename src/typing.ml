@@ -349,15 +349,16 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   let mk_dterm ~loc dt_node dty =
     { dt_node; dt_dty = Some dty; dt_loc = loc }
   in
-  let apply dt1 t2 =
+  let apply loc (fdty, l) t2 =
     let dt2 = dterm whereami kid crcm ns denv t2 in
     let dty = dty_fresh () in
-    unify dt1 (Some (Tapp (ts_arrow, [ dty_of_dterm dt2; dty ])));
-    let dt_app = DTapp (fs_apply, [ dt1; dt2 ]) in
-    mk_dterm ~loc:dt2.dt_loc dt_app dty
+    dty_unify ~loc fdty (Tapp (ts_arrow, [ dty_of_dterm dt2; dty ]));
+    (dty, dt2 :: l)
   in
-  (* CHECK location *)
-  let map_apply dt tl = List.fold_left apply dt tl in
+  let map_apply dt tl =
+    let dty, l = List.fold_left (apply dt.dt_loc) (dty_of_dterm dt, []) tl in
+    mk_dterm ~loc (DTapply (dt, List.rev l)) dty
+  in
   let gen_app ~loc ls tl =
     let nls = List.length (get_args ls) and ntl = List.length tl in
     let args, extra = split_at_i nls tl in
@@ -371,10 +372,10 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
           (fun t1 t2 -> Dterm.Tapp (ts_arrow, [ t1; t2 ]))
           dtyl2 dty
       in
-      mk_dterm ~loc (DTapp (ls, dtl)) dty
+      mk_dterm ~loc (DTidapp (ls, dtl)) dty
     else
       let dtl = List.map2 (dterm_expected crcm) dtl dtyl in
-      let dt = mk_dterm ~loc (DTapp (ls, dtl)) dty in
+      let dt = mk_dterm ~loc (DTidapp (ls, dtl)) dty in
       if extra = [] then dt else map_apply dt extra
   in
   let gen_app ~loc ls tl =
@@ -511,7 +512,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
                 | _ -> W.error ~loc (W.Wrong_name (field_str, constr_str)))
           in
           match aux sorted_left sorted_right with
-          | fields, [] -> mk_dterm ~loc (DTapp (ls, fields)) dty
+          | fields, [] -> mk_dterm ~loc (DTidapp (ls, fields)) dty
           | _, missing -> W.(error ~loc (Label_missing missing)))
       | Constructor_symbol { ls_name = _; ls_args = Cstr_tuple _; _ } ->
           unfold_app t1 t2 []
@@ -564,8 +565,8 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
           app_unify_map ~loc ls (dterm_expected crcm) [ de1; de2 ] dtyl
         in
         if op.pid_str = neq.id_str then
-          mk_dterm ~loc (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) dty)) dty_bool
-        else mk_dterm ~loc (DTapp (ls, dtl)) dty_bool
+          mk_dterm ~loc (DTnot (mk_dterm ~loc (DTidapp (ls, dtl)) dty)) dty_bool
+        else mk_dterm ~loc (DTidapp (ls, dtl)) dty_bool
       in
       let rec chain _ de1 op1 t23 =
         match t23 with
@@ -684,7 +685,7 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       (* Uses [List.fold_right2] to keep fields in their order as records are
          transformed into applications. *)
       match List.fold_right2 aux fields_name dtyl ([], []) with
-      | fields, [] -> mk_dterm ~loc (DTapp (cs, fields)) dty
+      | fields, [] -> mk_dterm ~loc (DTidapp (cs, fields)) dty
       | _, missing -> W.error ~loc (W.Label_missing missing))
 
 let dterm whereami kid crcm ns env t =
