@@ -13,9 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: git diff
       env:
         BASE_REF: ${{ github.event.pull_request.base.ref }}
       run: |
-        ! git diff --exit-code origin/$BASE_REF -- CHANGES.md
+        ! git diff --exit-code remotes/origin/$BASE_REF -- CHANGES.md
