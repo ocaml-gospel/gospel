@@ -159,7 +159,8 @@ module Sequence : sig
   (*@ axiom empty_length : length empty = 0 *)
 
   (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
-  (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f (n - 1)]. *)
+  (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f (n - 1)].
+  *)
 
   (*@ axiom init_length :
         forall n f.
@@ -179,14 +180,16 @@ module Sequence : sig
         singleton x = init 1 f *)
 
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
-  (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
+  (** [cons x s] is the sequence containing [x] followed by the elements of [s].
+  *)
 
   (*@ axiom cons_def :
         forall x s.
         cons x s = (singleton x) ++ s *)
 
   (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
-  (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
+  (** [snoc s x] is the sequence containing the elements of [s] followed by [x].
+  *)
 
   (*@ axiom snoc_def :
         forall s x.
@@ -456,8 +459,7 @@ module Bag : sig
 
   (*@ function union (b b': 'a t) : 'a t *)
   (** [union b b'] is a bag [br] where for all element [x],
-      [occurences x br = max
-      (occurences x b) (occurences x b')]. *)
+      [occurences x br = max (occurences x b) (occurences x b')]. *)
 
   (*@ axiom union_all :
         forall b b' x.
@@ -466,8 +468,7 @@ module Bag : sig
 
   (*@ function sum (b b': 'a t) : 'a t *)
   (** [sum b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      (occurences x b) + (occurences x b')]. *)
+      [occurences x br = (occurences x b) + (occurences x b')]. *)
 
   (*@ axiom sum_all :
         forall b b' x.
@@ -476,8 +477,7 @@ module Bag : sig
 
   (*@ function inter (b b': 'a t) : 'a t *)
   (** [inter b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      min (occurences x b) (occurences x b')]. *)
+      [occurences x br = min (occurences x b) (occurences x b')]. *)
 
   (*@ axiom inter_all :
         forall b b' x.
@@ -494,8 +494,7 @@ module Bag : sig
 
   (*@ function diff (b b': 'a t) : 'a t *)
   (** [diff b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      max 0 (occurences x b - occurences x b')]. *)
+      [occurences x br = max 0 (occurences x b - occurences x b')]. *)
 
   (*@ axiom diff_all :
         forall b b' x.
@@ -782,7 +781,8 @@ module Map : sig
   (*@ type ('a, 'b) t = ('a, 'b) map *)
 
   (*@ function domain (default : 'b) (m : ('a, 'b) t) : 'a Set.t *)
-  (** [domain default m] returns the set of values [x] where [m x <> default]. *)
+  (** [domain default m] returns the set of values [x] where [m x <> default].
+  *)
 
   (*@ axiom domain_mem :
         forall x m default.
