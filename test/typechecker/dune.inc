@@ -1056,6 +1056,27 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets type_vars.gospel)
+ (action
+  (with-outputs-to type_vars.mli.output
+   (run %{checker} %{dep:type_vars.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff type_vars.mli type_vars.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (run ocamlc -c %{dep:type_vars.mli}))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets value_incomplete_record.gospel)
  (action
   (with-outputs-to value_incomplete_record.mli.output
