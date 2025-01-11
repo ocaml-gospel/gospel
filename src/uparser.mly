@@ -268,7 +268,7 @@ val_spec_header:
 ;
 
 val_spec_own:
-| l=separated_nonempty_list(COMMA, term)
+| l=separated_nonempty_list(COMMA, term_dot)
    { l }
 
 val_spec_body:
