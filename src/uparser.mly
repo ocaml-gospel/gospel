@@ -267,15 +267,19 @@ val_spec_header:
   { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
 ;
 
+val_spec_own:
+| l=separated_nonempty_list(COMMA, term)
+   { l }
+
 val_spec_body:
 | (* Empty spec *) { empty_vspec }
 | PURE bd=val_spec_body
   { {bd with sp_pure = true} }
 | DIVERGES bd=val_spec_body
   { {bd with sp_diverge = true} }
-| MODIFIES wr=separated_list(COMMA, term) bd=val_spec_body
+| MODIFIES wr=val_spec_own bd=val_spec_body
   { { bd with sp_writes = wr @ bd.sp_writes } }
-| CONSUMES cs=separated_list(COMMA, term) bd=val_spec_body
+| CONSUMES cs=val_spec_own bd=val_spec_body
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
 | REQUIRES t=term bd=val_spec_body
   { { bd with sp_pre = t :: bd.sp_pre } }
