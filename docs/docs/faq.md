@@ -35,8 +35,8 @@ every possible array:
 
 ```ocaml {3}
 val total_weight : weight:('a array -> int) -> ('a array) list -> int
-(*@ y = total_weight ~weight l
-    requires forall a. weight a >= 0
+(*@ requires forall a. weight a >= 0
+	let y = total_weight ~weight l in
     ensures y = Sequence.fold_left (fun acc a -> acc + weight a) 0 l *)
 ```
 
@@ -123,9 +123,9 @@ argument by some of your OCaml functions:
 (*@ type t *)
 
 val f : int -> int
-(*@ y = f [t : t] x
-    pure
-    (* ... *) *)
+(*@ pure
+	let y = f [t : t] x
+    (* .. *) *)
 ```
 
 Now, every specification that refers to `f` needs to pass the `t` argument to
@@ -136,7 +136,7 @@ to actually instantiate such a value and pass it directly:
 (*@ function make : unit -> t *)
 
 val g : int -> int
-(*@ y = g x
+(*@ let y = g x in
     ensures let t = make () in
             f t x = y *)
 ```

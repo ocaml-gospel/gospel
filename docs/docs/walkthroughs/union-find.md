@@ -69,15 +69,14 @@ universe.
 
 ```ocaml
 val make : 'a -> 'a element
-(*@ e = make [u: 'a universe] v
-    modifies u *)
+(*@ modifies u
+	let e = make [u: 'a universe] v *)
 
 val find : 'a element -> 'a element
-(*@ e = find [u: 'a universe] x *)
 
 val union : 'a element -> 'a element -> unit
-(*@ union [u: 'a universe] x y
-    modifies u *)
+(*@ modifies u
+	let _ = union [u: 'a universe] x y *)
 ```
 
 Since we now have a type for universes, and functions that take values of such
@@ -125,8 +124,8 @@ constructor should ensure two things:
 
 ```ocaml {4,5}
 val make : 'a -> 'a element
-(*@ e = make [u: 'a universe] v
-    modifies u.dom
+(*@ modifies u.dom
+	let e = make [u: 'a universe] v in 
     ensures not (Set.mem e (old u.dom))
     ensures u.dom = Set.add e (old u.dom) *)
 ```
@@ -136,8 +135,8 @@ returns an element that's part of the universe:
 
 ```ocaml {3,4}
 val find : 'a element -> 'a element
-(*@ e = find [u: 'a universe] x
-    requires Set.mem x u.dom
+(*@ requires Set.mem x u.dom
+	let e = find [u: 'a universe] x in
     ensures Set.mem e u.dom *)
 ```
 
@@ -149,10 +148,10 @@ unspecified way).
 
 ```ocaml {3-4,6}
 val union : 'a element -> 'a element -> unit
-(*@ union [u: 'a universe] x y
-    requires Set.mem x u.dom
+(*@ requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
+	let _ = union [u: 'a universe] x y in
     ensures u.dom = old u.dom *)
 ```
 
@@ -192,8 +191,8 @@ representative, and all other representatives are left unchanged:
 
 ```ocaml {6}
 val make : 'a -> 'a element
-(*@ e = make [u: 'a universe] v
-    modifies u.dom
+(*@ modifies u.dom
+	let e = make [u: 'a universe] v in
     ensures not (Set.mem e (old u.dom))
     ensures u.dom = Set.add e (old u.dom)
     ensures u.rep = (old u.rep)[e -> e] *)
@@ -212,8 +211,8 @@ input element's representative:
 
 ```ocaml {5}
 val find : 'a element -> 'a element
-(*@ e = find [u: 'a universe] x
-    requires Set.mem x u.dom
+(*@ requires Set.mem x u.dom
+	let e = find [u: 'a universe] x in
     ensures Set.mem e u.dom
     ensures e = u.rep x *)
 ```
@@ -237,10 +236,10 @@ have the same representative:
 
 ```ocaml {7-9}
 val union : 'a element -> 'a element -> unit
-(*@ union [u: 'a universe] x y
-    requires Set.mem x u.dom
+(*@ requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
+	let _ = union [u: 'a universe] x y in
     ensures u.dom = old u.dom
     ensures forall e.
       not (old (equiv u x e \/ equiv u y e))
@@ -253,10 +252,10 @@ the old `y` representative.
 
 ```ocaml {9-13}
 val union : 'a element -> 'a element -> unit
-(*@ union [u: 'a universe] x y
-    requires Set.mem x u.dom
+(*@ requires Set.mem x u.dom
     requires Set.mem y u.dom
     modifies u
+	let _ = union [u: 'a universe] x y in
     ensures u.dom = old u.dom
     ensures forall e. not (old (equiv u x e \/ equiv u y e))
                       -> u.rep e = old (u.rep e)

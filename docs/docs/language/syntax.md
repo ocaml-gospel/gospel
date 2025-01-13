@@ -14,7 +14,7 @@ in special comments, starting with the `@` character[^1]:
 
 ```ocaml
 val f: int -> int           (* An OCaml value declaration *)
-(*@ y = f x
+(*@ let y = f x in
     ensures x > 0 *)        (* Its Gospel specification   *)
 
 (*@ type t *)               (* A ghost type declaration   *)

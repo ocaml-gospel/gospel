@@ -59,10 +59,10 @@ Let's write a first contract for this interface.
 
 ```ocaml
 val fib : int -> int -> int -> int
-(*@ r = fib n a b
-    checks n >= 0
+(*@ checks n >= 0
     requires exists i.
                i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
+	let r = fib n a b in
     ensures forall i.
                i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
                -> r = fibonacci (i+n) *)
@@ -92,9 +92,9 @@ like:
 
 ```ocaml
 val fib : i:int -> int -> int -> int -> int
-(*@ r = fib ~i n a b
-    checks n >= 0
+(*@ checks n >= 0
     requires i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
+	let r = fib ~i n a b in
     ensures r = fibonacci (i+n) *)
 ```
 
@@ -120,9 +120,9 @@ implementation.
 
 ```ocaml
 val fib : int -> int -> int -> int
-(*@ r = fib [i: integer] n a b
-    checks n >= 0
+(*@ checks n >= 0
     requires i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
+	let r = fib [i: integer] n a b in
     ensures r = fibonacci (i+n) *)
 ```
 

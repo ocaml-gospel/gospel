@@ -53,6 +53,13 @@
   let loc_of_qualid = function Qid pid | Qdot (_, pid) -> pid.pid_loc
 
   let qualid_preid = function Qid p | Qdot (_, p) -> p
+
+  let combine_spec s1 s2 =
+    {
+      s1 with sp_post = s2.sp_post;
+              sp_xpost = s2.sp_xpost;
+	      sp_equiv = s2.sp_equiv
+    }
 %}
 
 (* Tokens *)
@@ -98,8 +105,6 @@
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
 %token WHEN
-
-
 (* priorities *)
 
 %nonassoc IN
@@ -181,8 +186,14 @@ type_decl:
   } }
 
 val_spec:
-| hd=val_spec_header? bd=val_spec_body EOF
-  { { bd with sp_header = hd } }
+| h=val_spec_header IN s=val_spec_post EOF
+  { { s with sp_header= Some h } }
+| s1=val_spec_pre h=val_spec_header IN s2=val_spec_post EOF
+  { { (combine_spec s1 s2) with sp_header = Some h } }
+| s=val_spec_pre h=val_spec_header? EOF
+  { { s with sp_header = h } }
+| s=val_spec_post_empty EOF
+  { s }
 ;
 
 axiom:
@@ -257,42 +268,51 @@ type_spec_model:
       f_loc = mk_loc $loc } }
 ;
 
-val_spec_header:
-| ret=ret_name nm=lident_rich args=fun_arg*
-  { { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
-| ret=ret_name arg1=fun_arg nm=op_symbol arg2=fun_arg
-  { let sp_hd_nm = Preid.create ~loc:(mk_loc $loc(nm)) nm in
-    { sp_hd_nm; sp_hd_ret = ret; sp_hd_args = [ arg1; arg2 ] } }
-| nm=lident_rich args=fun_arg*
-  { { sp_hd_nm = nm; sp_hd_ret = []; sp_hd_args = args } }
-;
-
 val_spec_own:
 | l=separated_nonempty_list(COMMA, term_dot)
    { l }
 
-val_spec_body:
-| (* Empty spec *) { empty_vspec }
-| PURE bd=val_spec_body
-  { {bd with sp_pure = true} }
-| DIVERGES bd=val_spec_body
-  { {bd with sp_diverge = true} }
-| MODIFIES wr=val_spec_own bd=val_spec_body
+val_spec_pre:
+| MODIFIES wr=val_spec_own bd=val_spec_pre_empty
   { { bd with sp_writes = wr @ bd.sp_writes } }
-| CONSUMES cs=val_spec_own bd=val_spec_body
+| CONSUMES cs=val_spec_own bd=val_spec_pre_empty
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
-| REQUIRES t=term bd=val_spec_body
+| REQUIRES t=term bd=val_spec_pre_empty
   { { bd with sp_pre = t :: bd.sp_pre } }
-| CHECKS t=term bd=val_spec_body
+| CHECKS t=term bd=val_spec_pre_empty
   { { bd with sp_checks = t :: bd.sp_checks } }
-| ENSURES t=term bd=val_spec_body
+| PURE bd=val_spec_pre_empty
+  { { bd with sp_pure = true } }
+| DIVERGES bd=val_spec_pre_empty
+  { { bd with sp_diverge = true } }
+;
+
+val_spec_pre_empty:
+| (* epsilon *)
+  { empty_vspec }
+| bd=val_spec_pre
+  { bd }
+
+val_spec_header:
+| LET ret=ret_name nm=lident_rich args=fun_arg+
+  { { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
+| LET ret=ret_name arg1=fun_arg nm=op_symbol arg2=fun_arg
+  { let sp_hd_nm = Preid.create ~loc:(mk_loc $loc(nm)) nm in
+    { sp_hd_nm; sp_hd_ret = ret; sp_hd_args = [ arg1; arg2 ] } }
+;
+
+val_spec_post:
+| ENSURES t=term bd=val_spec_post_empty
   { { bd with sp_post = t :: bd.sp_post} }
-| RAISES r=bar_list1(raises) bd=val_spec_body
+| RAISES r=bar_list1(raises) bd=val_spec_post_empty
   { let xp = mk_loc $loc(r), r in
     { bd with sp_xpost = xp :: bd.sp_xpost } }
-| EQUIVALENT e=STRING bd=val_spec_body
-  { { bd with sp_equiv = e :: bd.sp_equiv} }
-;
+| EQUIVALENT e=STRING bd=val_spec_post_empty
+  { { bd with sp_equiv = e :: bd.sp_equiv } }
+
+val_spec_post_empty:
+| (* epsilon *) { empty_vspec }
+| bd=val_spec_post { bd }
 
 fun_arg:
 | LEFTPAR RIGHTPAR
@@ -315,9 +335,10 @@ ret_value:
 ;
 
 ret_name:
-| LEFTPAR l = separated_list(COMMA, ret_value) RIGHTPAR EQUAL
+| LEFTPAR l=comma_list(ret_value) RIGHTPAR EQUAL
   { l }
-| l = comma_list(ret_value) EQUAL { l } ;
+| l=comma_list(ret_value) EQUAL { l }
+| UNDERSCORE EQUAL { [] };
 
 raises:
 | q=uqualid ARROW t=term

@@ -47,8 +47,8 @@ Now let's declare and specify a `push` operation for these queues:
 
 ```ocaml
 val push: 'a -> 'a t -> unit
-(*@ push v q
-    modifies q
+(*@ modifies q
+	let _ = push v q in
     ensures  q.view = Sequence.cons v (old q.view) *)
 ```
 
@@ -80,8 +80,8 @@ this behaviour as follows:
 exception Empty
 
 val pop: 'a t -> 'a
-(*@ v = pop q
-    modifies q
+(*@ modifies q
+	let v = pop q in
     ensures  old q.view = q.view ++ Sequence.cons v Sequence.empty
     raises   Empty -> q.view = old q.view = Sequence.empty *)
 ```
@@ -107,9 +107,9 @@ keyword `requires`:
 
 ```ocaml {3}
 val unsafe_pop: 'a t -> 'a
-(*@ v = unsafe_pop q
-    requires q.view <> Sequence.empty
+(*@ requires q.view <> Sequence.empty
     modifies q
+	let v = unsafe_pop q in
     ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
 ```
 
@@ -122,10 +122,10 @@ behavior, using `checks` instead of `requires`:
 
 ```ocaml {3}
 val pop: 'a t -> 'a
-(*@ v = pop q
-      checks   q.view <> Sequence.empty
-      modifies q
-      ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
+(*@ checks q.view <> Sequence.empty
+    modifies q
+	let v = pop q in
+    ensures  old q.view = q.view ++ (Sequence.cons v Sequence.empty) *)
 ```
 
 The `checks` keyword means that function itself checks the pre-condition
@@ -141,7 +141,7 @@ declaration for an emptiness test, together with its contract:
 
 ```ocaml
 val is_empty: 'a t -> bool
-(*@ b = is_empty q
+(*@ let b = is_empty q in
       ensures b <-> q.view = Sequence.empty *)
 ```
 
@@ -159,7 +159,7 @@ specification are as follows:
 
 ```ocaml
 val create: unit -> 'a t
-(*@ q = create ()
+(*@ let q = create () in
       ensures q.view = Sequence.empty *)
 ```
 
@@ -183,8 +183,8 @@ another:
 
 ```ocaml
 val transfer: 'a t -> 'a t -> unit
-(*@ transfer src dst
-    modifies src, dst
+(*@ modifies src, dst
+	let _ = transfer src dst in
     ensures  src.view = Sequence.empty
     ensures  dst.view = old dst.view ++ old src.view *)
 ```
@@ -205,9 +205,9 @@ provides `consumes` clauses to capture this semantic:
 
 ```ocaml {3}
 val destructive_transfer: 'a t -> 'a t -> unit
-(*@ destructive_transfer src dst
-    consumes src
+(*@ consumes src
     modifies dst
+	let _ = destructive_transfer src dst in
     ensures  dst.view = old dst.view ++ old src.view *)
 ```
 
@@ -221,7 +221,7 @@ creates a fresh queue with the elements of the queues passed as arguments:
 
 ```ocaml
 val concat: 'a t -> 'a t -> 'a t
-(*@ new = concat q1 q2
+(*@ let new = concat q1 q2 in
     ensures new.view = q1.view ++ q2.view *)
 ```
 
