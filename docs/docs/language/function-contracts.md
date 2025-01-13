@@ -9,8 +9,8 @@ of an OCaml function in an interface. Here is an example:
 
 ```ocaml
 val euclidean_division: int -> int -> int * int
-(*@ q, r = euclidean_division x y
-    requires y > 0
+(*@ requires y > 0
+	let q, r = euclidean_division x y in
     ensures  x = q * y + r
     ensures  0 <= r < y *)
 ```
@@ -69,21 +69,6 @@ following properties:
   words, if it mutates some data, this has no observable influence on the values
   in the rest of the program.
 
-:::caution
-
-   In the absence of a contract attached to a function declaration, you cannot
-   make any assumptions about its behaviour: the function may diverge, raise
-   unlisted exceptions, or modify mutable states. However, **it still cannot
-   break any type invariant.**
-
-   You can still enable the default implicit properties about exceptions, mutability,
-   non-termination, etc., by creating an empty contract:
-
-   ```ocaml
-   val euclidean_division: int -> int -> int * int
-   (*@ q, r = euclidean_division x y *)
-   ```
-
 :::
 
 ## Preconditions
@@ -109,8 +94,8 @@ For example, the following function requires `y` to be positive to behave correc
 
 ```ocaml {3}
 val eucl_division: int -> int -> int * int
-(*@ q, r = eucl_division x y
-    requires y > 0
+(*@ requires y > 0
+	let q, r = eucl_division x y in
     ensures  x = q * y + r
     ensures  0 <= r < y *)
 ```
@@ -348,8 +333,8 @@ type 'a t
 (*@ mutable model contents: int *)
 
 val inplace_map : ('a -> 'a) -> 'a t -> unit
-(*@ inplace_map f a
-    modifies a.contents *)
+(*@ modifies a.contents
+	let _ = inplace_map f a *)
 ```
 
 If the function only modifies a few models of a value, these may be explicitly
@@ -360,8 +345,8 @@ models are potentially mutated.
 
 ```ocaml {3}
 val inplace_map : ('a -> 'a) -> 'a t -> unit
-(*@ inplace_map f a
-    modifies a *)
+(*@ modifies a
+	let _ = inplace_map f a *)
 ```
 
 In this example, all the mutable models of `a` can be mutated by `inplace_map`.
@@ -379,8 +364,8 @@ manually specify it:
 ```ocaml {4}
 exception E
 val inplace_map : ('a -> 'a) -> 'a t -> unit
-(*@ inplace_map f a
-    modifies a.contents
+(*@ modifies a.contents
+	let _ = inplace_map f a in
     raises E -> a.contents = old (a.contents) *)
 ```
 
@@ -426,9 +411,9 @@ Consider the following `log2` function:
 
 ```ocaml
 val log2: int -> int
-(*@ r = log2 [i: integer] x
-    requires i >= 0
+(*@ requires i >= 0
     requires x = pow 2 i
+	let r = log2 [i: integer] x in
     ensures r = i *)
 ```
 

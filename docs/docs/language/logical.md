@@ -21,9 +21,9 @@ as function contracts:
 
 ```ocaml
 val merge: int array -> int array -> int array
-(*@ c = merge a b
-    requires is_sorted a
+(*@ requires is_sorted a
     requires is_sorted b
+	let c = merge a b in
     ensures is_sorted c *)
 ```
 

@@ -92,8 +92,8 @@ keyword is `ensures`):
 
 ```ocaml
 val create: int -> 'a t
-(*@ t = create c
-    requires c > 0
+(*@ requires c > 0
+	let t = create c in
     ensures t.capacity = c
     ensures t.contents = Set.empty *)
 ```
@@ -109,8 +109,8 @@ language, this function is *pure*.
 
 ```ocaml
 val is_empty: 'a t -> bool
-(*@ b = is_empty t
-    pure
+(*@ pure
+	let b = is_empty t in
     ensures b <-> t.contents = Set.empty *)
 ```
 
@@ -118,8 +118,8 @@ The specification for `mem` is similar:
 
 ```ocaml
 val mem: 'a t -> 'a -> bool
-(*@ b = mem t x
-    pure
+(*@ pure
+	let b = mem t x in
     ensures b <-> Set.mem x t.contents *)
 ```
 
@@ -137,8 +137,8 @@ result in a Gospel error.
 
 ```ocaml
 val clear: 'a t -> unit
-(*@ clear t
-    modifies t.contents
+(*@ modifies t.contents
+	let _ = clear t in
     ensures is_empty t *)
 ```
 
@@ -148,8 +148,8 @@ function execution:
 
 ```ocaml
 val add: 'a t -> 'a -> unit
-(*@ add t x
-    modifies t.contents
+(*@ modifies t.contents
+	let _ = add t x in
     ensures t.contents = Set.add x (old t.contents) *)
 ```
 
@@ -161,8 +161,8 @@ already contains `t.capacity` elements.
 ```ocaml
 exception Full
 val add: 'a t -> 'a -> unit
-(*@ add t x
-    modifies t.contents
+(*@ modifies t.contents
+	let _ = add t x in
     ensures t.contents = Set.add x (old t.contents)
     raises Full -> Set.cardinal (old t.contents) = t.capacity
                 /\ t.contents = old t.contents *)

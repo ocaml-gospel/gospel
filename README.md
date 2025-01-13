@@ -34,44 +34,44 @@ exception Full
 exception Empty
 
 val create : int -> 'a t
-(*@ s = create n
-    requires n > 0
+(*@ requires n > 0
+	let s = create n in
     ensures s.capacity = n
     ensures s.contents = Sequence.empty *)
 
 val is_empty : 'a t -> bool
-(*@ b = is_empty s
-    pure
+(*@ pure
+	let b = is_empty s in
     ensures b <-> s.contents = Sequence.empty *)
 
 val clear : 'a t -> unit
-(*@ clear s
-    modifies s.contents
+(*@ modifies s.contents
+	let _ = clear s in
     ensures s.contents = Sequence.empty *)
 
 val push : 'a -> 'a t -> unit
-(*@ push a s
-    modifies s.contents
+(*@ modifies s.contents
+	let _ = push a s in
     ensures s.contents = Sequence.cons a (old s.contents)
     raises Full -> Sequence.length (old s.contents) = s.capacity
                 /\ s.contents = old s.contents *)
 
 val pop : 'a t -> 'a
-(*@ a = pop s
-    modifies s.contents
+(*@ modifies s.contents
+	let a = pop s in
     ensures a = Sequence.hd (old s.contents)
     ensures s.contents = Sequence.tl (old s.contents)
     raises Empty -> old s.contents = Sequence.empty = s.contents *)
 
 val pop_opt : 'a t -> 'a option
-(*@ o = pop_opt s
-    modifies s.contents
+(*@ modifies s.contents
+	let o = pop_opt s in
     ensures match o with
                 | None -> old s.contents = Sequence.empty = s.contents
                 | Some a -> old s.contents = Sequence.cons a s.contents *)
 
 val top : 'a t -> 'a
-(*@ a = top s
+(*@ let a = top s in
     ensures a = Sequence.hd s.contents
     raises Empty -> s.contents = Sequence.empty *)
 ```
@@ -115,8 +115,8 @@ starting with the `@` symbol:
 
 ```ocaml
 val max_array: int array -> int
-(*@ m = max_array a
-    requires Sequence.length a > 0
+(*@ requires Sequence.length a > 0
+	let m = max_array a in
     ensures forall i. 0 <= i < Sequence.length a -> a[i] <= m
     ensures exists i. 0 <= i < Sequence.length a /\ a[i] = m *)
 ```

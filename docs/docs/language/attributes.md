@@ -36,7 +36,7 @@ attribute, following OCaml's attachment rules:
 
 ```ocaml
 val f: int -> int
-[@@gospel "y = f x ensures x > 0"]
+[@@gospel "let y = f x in ensures x > 0"]
 ```
 
 ## Specification of Ghost and Logical Declarations
@@ -47,7 +47,7 @@ declaration:
 
 ```ocaml
 [@@@gospel "val f : int -> int"
-  [@@gospel "y = f x ensures x > 0"]]
+  [@@gospel "let y = f x in ensures x > 0"]]
 ```
 
 ## Gospel Preprocessor
