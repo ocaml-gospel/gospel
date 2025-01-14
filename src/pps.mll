@@ -51,14 +51,14 @@
 
   (* ...(*@ foo *)...
 
-     ~>
+         ~>
 
-     ...[@@@gospel
-     # linenb
-         {| foo |}
-     # linenb
-                 ]...
-  *)
+         ...[@@@gospel
+         # linenb
+             {| foo |}
+         # linenb
+                     ]...
+      *)
   let print_gospel (lvl : [ `TwoAt | `ThreeAt ]) start_p end_p s ppf =
     Fmt.pf ppf "[%sgospel%t {|%s|}%t]"
       (match lvl with `TwoAt -> "@@" | `ThreeAt -> "@@@")
@@ -66,18 +66,18 @@
       s
       (print_directive `Close end_p)
   (* ...(*@ foo *)
-     (*@ bar *)...
+         (*@ bar *)...
 
-     ~>
+         ~>
 
-     ...[@@@gospel
-     # linenb(foo_start)
-         {| foo |}[@@gospel
-     # linenb(bar_start)
-      {| bar |}]
-     # linenb(bar_end)
-              ]...
-  *)
+         ...[@@@gospel
+         # linenb(foo_start)
+             {| foo |}[@@gospel
+         # linenb(bar_start)
+          {| bar |}]
+         # linenb(bar_end)
+                  ]...
+      *)
 
   let print_nested_gospel start_p inner_start_p end_p outer_s inner_s ppf =
     Fmt.pf ppf "[@@@@@@gospel%t {|%s|}[@@@@gospel%t {|%s|}]%t]"
