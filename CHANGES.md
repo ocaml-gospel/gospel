@@ -7,6 +7,8 @@
 
 ## Improved
 
+- Check for repeated name of module and module types
+  [\#444](https://github.com/ocaml-gospel/gospel/pull/444)
 - Fix typing of pattern with inlined record
   [\#429](https://github.com/ocaml-gospel/gospel/pull/429)
 - Remove support for the record update syntax
