@@ -75,8 +75,6 @@ let ns_add_xs ~allow_duplicate ns s xs =
   in
   { ns with ns_xs }
 
-(* FIXME: Adding multiple modules with the same name to the export should not be
-   allowed either. *)
 let ns_add_ns ~allow_duplicate:_ ns s new_ns =
   { ns with ns_ns = Mstr.add s new_ns ns.ns_ns }
 
