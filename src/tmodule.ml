@@ -107,6 +107,7 @@ let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
 let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
 let ns_find_tns ns s = ns_find (fun ns -> ns.ns_tns) ns s
 let ns_exists_ns ns s = Mstr.mem s ns.ns_ns
+let ns_exists_tns ns s = Mstr.mem s ns.ns_tns
 
 let rec ns_rm_ts ns = function
   | [] -> assert false
