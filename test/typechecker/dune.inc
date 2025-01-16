@@ -779,6 +779,50 @@
  (deps
   %{bin:gospel}
   (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets multiple_module_definition.gospel)
+ (action
+  (with-outputs-to multiple_module_definition.mli.output
+   (run %{checker} %{dep:multiple_module_definition.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff multiple_module_definition.mli multiple_module_definition.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (with-accepted-exit-codes 2
+    (run ocamlc -c %{dep:multiple_module_definition.mli})))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
+ (targets multiple_module_type.gospel)
+ (action
+  (with-outputs-to multiple_module_type.mli.output
+   (run %{checker} %{dep:multiple_module_type.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff multiple_module_type.mli multiple_module_type.mli.output)))
+
+(rule
+ (alias test-cmis)
+ (action
+  (chdir %{project_root}
+   ; Syntax sanity check
+   (with-accepted-exit-codes 2
+    (run ocamlc -c %{dep:multiple_module_type.mli})))))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe))
  (targets mutually_recursive_ghost_type.gospel)
  (action
   (with-outputs-to mutually_recursive_ghost_type.mli.output

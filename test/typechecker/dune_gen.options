@@ -7,3 +7,7 @@ type_arity3.mli
 2
 type_arity5.mli
 2
+multiple_module_definition.mli
+2
+multiple_module_type.mli
+2
