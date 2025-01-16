@@ -81,18 +81,6 @@ let ns_add_ns ~allow_duplicate:_ ns s new_ns =
 let ns_add_tns ~allow_duplicate:_ ns s tns =
   { ns with ns_tns = Mstr.add s tns ns.ns_tns }
 
-let merge_ns from_ns to_ns =
-  let choose_fst _ x _ = Some x in
-  let union m1 m2 = Mstr.union choose_fst m1 m2 in
-  {
-    ns_ts = union from_ns.ns_ts to_ns.ns_ts;
-    ns_ls = union from_ns.ns_ls to_ns.ns_ls;
-    ns_fd = union from_ns.ns_fd to_ns.ns_fd;
-    ns_xs = union from_ns.ns_xs to_ns.ns_xs;
-    ns_ns = union from_ns.ns_ns to_ns.ns_ns;
-    ns_tns = union from_ns.ns_tns to_ns.ns_tns;
-  }
-
 let rec ns_find get_map ns = function
   | [] -> assert false
   | [ x ] -> Mstr.find x (get_map ns)
@@ -318,7 +306,6 @@ let add_fd ?(export = false) = muc_add ~export ns_add_fd
 let add_xs ?(export = false) = muc_add ~export ns_add_xs
 let add_ns ?(export = false) = muc_add ~export ns_add_ns
 let add_tns ?(export = false) = muc_add ~export ns_add_tns
-let add_file muc s file = { muc with muc_files = Mstr.add s file muc.muc_files }
 let get_file muc s = Mstr.find s muc.muc_files
 let add_kid muc id s = { muc with muc_kid = Mid.add id s muc.muc_kid }
 
@@ -465,9 +452,6 @@ let get_top_sigs muc =
 let get_top_import muc =
   match muc.muc_import with i0 :: _ -> i0 | _ -> assert false
 
-let get_top_export muc =
-  match muc.muc_export with e0 :: _ -> e0 | _ -> assert false
-
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in
   let get_cs_pjs = function
@@ -560,15 +544,6 @@ let wrap_up_muc (muc : module_uc) =
 
 open Utils.Fmt
 open Tast_printer
-
-let rec tree_ns f fmt ns =
-  Mstr.iter
-    (fun s ns ->
-      if f ns = Mstr.empty then pp fmt "@[%s@\n@]" s
-      else pp fmt "@[%s:@\n@ @[%a@]@\n@]" s (tree_ns f) (f ns))
-    ns
-
-let ns_names nsm = List.map fst (Mstr.bindings nsm)
 
 let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
