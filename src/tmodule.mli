@@ -4,7 +4,7 @@ module Mstr : Map.S with type key = string
 
 type namespace
 type known_ids = signature_item Mid.t
-type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
+type file
 type module_uc
 
 val empty_ns : namespace
@@ -46,6 +46,8 @@ val muc_subst_ts : module_uc -> Ttypes.tysymbol -> Ttypes.tysymbol -> module_uc
 val muc_subst_ty :
   module_uc -> Ttypes.tysymbol -> Ttypes.tysymbol -> Ttypes.ty -> module_uc
 
+val get_file_export : file -> namespace
+val get_file_signature : file -> Tast.signature
 val get_file : module_uc -> string -> file
 val wrap_up_muc : module_uc -> file
 val read_gospel_file : string -> module_uc

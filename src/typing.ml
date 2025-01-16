@@ -1296,7 +1296,7 @@ let penv lpaths parsing =
 
 let rec open_file ~loc penv muc nm =
   if Sstr.mem nm penv.parsing then W.error ~loc W.Circular_open;
-  try add_ns ~export:true muc nm (get_file muc nm).fl_export
+  try add_ns ~export:true muc nm (get_file muc nm |> get_file_export)
   with Not_found ->
     let file_nm = nm ^ ".mli" in
     let file_nm =

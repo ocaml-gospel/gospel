@@ -279,6 +279,9 @@ module Mid = Map.Make (Ident)
 type known_ids = signature_item Mid.t
 type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
 
+let get_file_export file = file.fl_export
+let get_file_signature file = file.fl_sigs
+
 type module_uc = {
   muc_nm : Ident.t;
   muc_file : string;
