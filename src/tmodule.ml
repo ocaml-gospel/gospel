@@ -386,7 +386,7 @@ let open_empty_module muc s =
 
 let close_module_file muc =
   match (muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs) with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, s0 :: sl ->
+  | _ :: i1 :: il, e0 :: el, p0 :: pl, s0 :: sl ->
       let file =
         {
           fl_nm = Ident.create ~loc:Location.none p0;
@@ -398,7 +398,7 @@ let close_module_file muc =
         muc with
         muc_prefix = pl;
         muc_import = ns_add_ns ~allow_duplicate:true i1 p0 e0 :: il;
-        muc_export = e1 :: el;
+        muc_export = el;
         muc_sigs = sl;
         muc_files = Mstr.add p0 file muc.muc_files;
       }
@@ -432,12 +432,12 @@ let close_module muc =
 (* for functor arguments *)
 let close_module_functor muc =
   match (muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs) with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+  | _ :: i1 :: il, e0 :: el, p0 :: pl, _ :: sl ->
       {
         muc with
         muc_prefix = pl;
         muc_import = ns_add_ns ~allow_duplicate:true i1 p0 e0 :: il;
-        muc_export = e1 :: el;
+        muc_export = el;
         muc_sigs = sl;
       }
   | _ -> assert false
@@ -583,8 +583,6 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
     (print_mstr_vals print_ls_decl)
     ns_fd (print_mstr_vals print_xs) ns_xs print_nested_ns ns_ns print_nested_ns
     ns_tns
-(* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
- * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."
