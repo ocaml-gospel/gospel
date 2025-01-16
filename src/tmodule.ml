@@ -24,12 +24,14 @@ let type_declarations : type_declaration Hts.t = Hts.create 0
 module Mstr = Map.Make (String)
 
 type namespace = {
-  ns_ts : tysymbol Mstr.t;
+  ns_ts : tysymbol Mstr.t; (* type symbol namespace *)
   ns_ls : lsymbol Mstr.t;
+      (* logical symbol - data constructors and functions - namespace *)
   ns_fd : lsymbol Mstr.t;
-  ns_xs : xsymbol Mstr.t;
-  ns_ns : namespace Mstr.t;
-  ns_tns : namespace Mstr.t;
+      (* logical symbal - records fields and logical model - namespace *)
+  ns_xs : xsymbol Mstr.t; (* exception symbols namespace *)
+  ns_ns : namespace Mstr.t; (* module declaration namespace *)
+  ns_tns : namespace Mstr.t; (* module type namespace *)
 }
 
 let empty_ns =
