@@ -37,6 +37,7 @@ type kind =
   | Pattern_redundant of string
   | Predicate_symbol_expected of string
   | Public_type_invariant of string
+  | Repeated_name of ([ `Module_def | `Module_type ] * string)
   | Return_unit_without_modifies of string
   | Symbol_not_found of string list
   | Syntax_error
@@ -147,6 +148,12 @@ let pp_kind ppf = function
         p
   | Predicate_symbol_expected s -> pf ppf "Not a predicate symbol: %s" s
   | Public_type_invariant t -> pf ppf "Invariant on public type %s" t
+  | Repeated_name (k, m) ->
+      pf ppf
+        "Multiple definition of the %s name %s.@\n\
+         Names must be unique in a given signature"
+        (match k with `Module_def -> "module" | `Module_type -> "module type")
+        m
   | Return_unit_without_modifies f ->
       pf ppf
         "The function %s returns unit@ but its specifications does not contain \
