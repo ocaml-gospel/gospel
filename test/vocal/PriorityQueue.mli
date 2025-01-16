@@ -26,7 +26,8 @@ module Make (X : sig
 end) : sig
   type elt = X.t
   type heap
-  (*@ mutable model bag : elt bag
+  (*@ ephemeral
+      model bag : elt bag
       with self
       invariant Bag.cardinal self.bag <= Sys.max_array_length *)
 

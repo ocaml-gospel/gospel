@@ -1,5 +1,6 @@
 type 'a t = 'a list
-(*@ mutable model contents: 'a list *)
+(*@ ephemeral
+    model contents: 'a list *)
 
 val f : 'a t -> unit
 (*@ f xs

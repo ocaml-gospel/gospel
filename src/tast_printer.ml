@@ -50,20 +50,12 @@ let print_type_spec fmt { ty_ephemeral; ty_model; ty_invariants; _ } =
   else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
     let print_term f t = pp f "@[%a@]" print_term t in
-    let print_default f (mut, ty) =
-      pp f "@[%s : %a@]"
-        (if mut then "mutable model " else "model ")
-        print_ty ty
-    in
-    let print_field f (mut, ls) =
-      pp f "@[%s %a@]"
-        (if mut then "mutable model " else "model ")
-        print_ls_decl ls
-    in
+    let print_default f ty = pp f "@[model : %a@]" print_ty ty in
+    let print_field f ls = pp f "@[model : %a@]" print_ls_decl ls in
     let print_model f model =
       match model with
       | Tast.Self -> ()
-      | Default (m, ty) -> print_default f (m, ty)
+      | Default ty -> print_default f ty
       | Fields l -> list ~sep:newline print_field f l
     in
     let print_invariants ppf i =

@@ -37,17 +37,18 @@ provide a specification for the signature item they are attached to.
 
 ## Models and Invariants for `'a t`
 
-Let's start by specifying the abstract type `'a t`. As a container with fixed
-capacity, we can model it with two pieces of information: a fixed integer
-capacity and a set of `'a` values, representing its contents. Note that the
-capacity is not mutable even though the contents are. This logical model of
-the container directly translates into Gospel:
+Let's start by specifying the abstract type `'a t`. As a container
+with fixed capacity, we can model it with two pieces of information: a
+fixed integer capacity and a set of `'a` values, representing its
+contents. . This logical model of the container directly translates
+into Gospel:
 
 ```ocaml
 type 'a t
 (** The type for containers. *)
-(*@ model capacity: int
-    mutable model contents: 'a set *)
+(*@ ephemeral
+	model capacity: int
+    model contents: 'a set *)
 ```
 
 Notice that documentation comments and Gospel specifications can coexist and
@@ -60,7 +61,7 @@ in the `contents` set may not exceed `capacity`. Those are type invariants:
 ```ocaml
 type 'a t
 (*@ model capacity: int
-    mutable model contents: 'a set
+    model contents: 'a set
     with t
     invariant t.capacity > 0
     invariant Set.cardinal t.contents <= t.capacity *)

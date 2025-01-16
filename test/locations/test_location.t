@@ -9,7 +9,8 @@ First, create a test artifact:
   > 
   > type 'a t
   > (** documentation *)
-  > (*@ mutable model contents : 'a list
+  > (*@ ephemeral
+  >     model contents : 'a list
   >     model size : int *)
   > 
   > val create : int -> 'a t
@@ -66,8 +67,29 @@ First, create a test artifact:
             (Some { Tast.ty_ephemeral = true;
                     ty_model =
                     (Tast.Fields
-                       [(false,
-                         Symbols.Field_symbol {ls_name = size;
+                       [Symbols.Field_symbol {ls_name = size;
+                          ls_args =
+                          [{ Ttypes.ty_node =
+                             (Ttypes.Tyapp (
+                                { Ttypes.ts_ident = t;
+                                  ts_args = [{ Ttypes.tv_name = a }];
+                                  ts_alias = None;
+                                  ts_model = (true, Ttypes.Fields) },
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                  ]
+                                ))
+                             }
+                            ];
+                          ls_value =
+                          { Ttypes.ty_node =
+                            (Ttypes.Tyapp (
+                               { Ttypes.ts_ident = int; ts_args = [];
+                                 ts_alias = None;
+                                 ts_model = (false, Ttypes.Self) },
+                               []))
+                            }};
+                         Symbols.Field_symbol {ls_name = contents;
                            ls_args =
                            [{ Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -84,42 +106,19 @@ First, create a test artifact:
                            ls_value =
                            { Ttypes.ty_node =
                              (Ttypes.Tyapp (
-                                { Ttypes.ts_ident = int; ts_args = [];
+                                { Ttypes.ts_ident = list;
+                                  ts_args = [{ Ttypes.tv_name = a_1 }];
                                   ts_alias = None;
                                   ts_model = (false, Ttypes.Self) },
-                                []))
-                             }});
-                         (true,
-                          Symbols.Field_symbol {ls_name = contents;
-                            ls_args =
-                            [{ Ttypes.ty_node =
-                               (Ttypes.Tyapp (
-                                  { Ttypes.ts_ident = t;
-                                    ts_args = [{ Ttypes.tv_name = a }];
-                                    ts_alias = None;
-                                    ts_model = (true, Ttypes.Fields) },
-                                  [{ Ttypes.ty_node =
-                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                    ]
-                                  ))
-                               }
-                              ];
-                            ls_value =
-                            { Ttypes.ty_node =
-                              (Ttypes.Tyapp (
-                                 { Ttypes.ts_ident = list;
-                                   ts_args = [{ Ttypes.tv_name = a_1 }];
-                                   ts_alias = None;
-                                   ts_model = (false, Ttypes.Self) },
-                                 [{ Ttypes.ty_node =
-                                    (Ttypes.Tyvar { Ttypes.tv_name = a }) }
-                                   ]
-                                 ))
-                              }})
+                                [{ Ttypes.ty_node =
+                                   (Ttypes.Tyvar { Ttypes.tv_name = a }) }
+                                  ]
+                                ))
+                             }}
                          ]);
                     ty_invariants = None;
                     ty_text =
-                    " mutable model contents : 'a list\n    model size : int ";
+                    " ephemeral\n    model contents : 'a list\n    model size : int ";
                     ty_loc = foo.mli:5:3 });
             td_loc = foo.mli:3:0 }
            ],
@@ -361,7 +360,7 @@ First, create a test artifact:
                                    ts_model = (false, Ttypes.Self) },
                                  []))
                               };
-                            t_attrs = []; t_loc = foo.mli:10:11 }
+                            t_attrs = []; t_loc = foo.mli:11:11 }
                            ]
                          ));
                       t_ty =
@@ -371,7 +370,7 @@ First, create a test artifact:
                              ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
-                      t_attrs = []; t_loc = foo.mli:10:11 };
+                      t_attrs = []; t_loc = foo.mli:11:11 };
                      { Tterm.t_node = <constant>;
                        t_ty =
                        { Ttypes.ty_node =
@@ -381,7 +380,7 @@ First, create a test artifact:
                               },
                             []))
                          };
-                       t_attrs = []; t_loc = foo.mli:10:16 }
+                       t_attrs = []; t_loc = foo.mli:11:16 }
                      ]
                    ));
                 t_ty =
@@ -391,7 +390,7 @@ First, create a test artifact:
                        ts_model = (false, Ttypes.Self) },
                      []))
                   };
-                t_attrs = []; t_loc = foo.mli:10:11 }
+                t_attrs = []; t_loc = foo.mli:11:11 }
                ];
              sp_post =
              [{ Tterm.t_node =
@@ -440,7 +439,7 @@ First, create a test artifact:
                                   ]
                                 ))
                              };
-                           t_attrs = []; t_loc = foo.mli:11:12 },
+                           t_attrs = []; t_loc = foo.mli:12:12 },
                          Symbols.Field_symbol {ls_name = contents;
                            ls_args =
                            [{ Ttypes.ty_node =
@@ -479,7 +478,7 @@ First, create a test artifact:
                              ]
                            ))
                         };
-                      t_attrs = []; t_loc = foo.mli:11:12 };
+                      t_attrs = []; t_loc = foo.mli:12:12 };
                      { Tterm.t_node =
                        (Tterm.Tapp (
                           Symbols.Constructor_symbol {ls_name = [];
@@ -509,7 +508,7 @@ First, create a test artifact:
                               ]
                             ))
                          };
-                       t_attrs = []; t_loc = foo.mli:11:25 }
+                       t_attrs = []; t_loc = foo.mli:12:25 }
                      ]
                    ));
                 t_ty =
@@ -519,7 +518,7 @@ First, create a test artifact:
                        ts_model = (false, Ttypes.Self) },
                      []))
                   };
-                t_attrs = []; t_loc = foo.mli:11:12 };
+                t_attrs = []; t_loc = foo.mli:12:12 };
                { Tterm.t_node =
                  (Tterm.Tapp (
                     Symbols.Function_symbol {ls_name = infix =;
@@ -567,7 +566,7 @@ First, create a test artifact:
                                    ]
                                  ))
                               };
-                            t_attrs = []; t_loc = foo.mli:12:12 },
+                            t_attrs = []; t_loc = foo.mli:13:12 },
                           Symbols.Field_symbol {ls_name = size;
                             ls_args =
                             [{ Ttypes.ty_node =
@@ -599,7 +598,7 @@ First, create a test artifact:
                               },
                             []))
                          };
-                       t_attrs = []; t_loc = foo.mli:12:12 };
+                       t_attrs = []; t_loc = foo.mli:13:12 };
                       { Tterm.t_node =
                         (Tterm.Tvar
                            { Symbols.vs_name = i;
@@ -620,7 +619,7 @@ First, create a test artifact:
                                },
                              []))
                           };
-                        t_attrs = []; t_loc = foo.mli:12:21 }
+                        t_attrs = []; t_loc = foo.mli:13:21 }
                       ]
                     ));
                  t_ty =
@@ -630,15 +629,15 @@ First, create a test artifact:
                         ts_model = (false, Ttypes.Self) },
                       []))
                    };
-                 t_attrs = []; t_loc = foo.mli:12:12 }
+                 t_attrs = []; t_loc = foo.mli:13:12 }
                ];
              sp_xpost = []; sp_diverge = false; sp_pure = false; sp_equiv = [];
              sp_text =
              " t = create i\n    checks i >= 0\n    ensures t.contents = []\n    ensures t.size = i ";
-             sp_loc = foo.mli:9:3 };
-           vd_loc = foo.mli:8:0 },
+             sp_loc = foo.mli:10:3 };
+           vd_loc = foo.mli:9:0 },
          Tast.Nonghost));
-      sig_loc = foo.mli:8:0 };
+      sig_loc = foo.mli:9:0 };
     { Tast.sig_desc =
       (Tast.Sig_axiom
          { Tast.ax_name = Foo.a_3;
@@ -651,9 +650,9 @@ First, create a test artifact:
                     ts_model = (false, Ttypes.Self) },
                   []))
                };
-             t_attrs = []; t_loc = foo.mli:16:14 };
-           ax_loc = foo.mli:16:3; ax_text = " axiom a : true " });
-      sig_loc = foo.mli:16:0 };
+             t_attrs = []; t_loc = foo.mli:17:14 };
+           ax_loc = foo.mli:17:3; ax_text = " axiom a : true " });
+      sig_loc = foo.mli:17:0 };
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
@@ -816,7 +815,7 @@ First, create a test artifact:
                                             ]
                                           ))
                                        };
-                                     t_attrs = []; t_loc = foo.mli:18:75 }
+                                     t_attrs = []; t_loc = foo.mli:19:75 }
                                     ]
                                   ));
                                t_ty =
@@ -831,7 +830,7 @@ First, create a test artifact:
                                       ]
                                     ))
                                  };
-                               t_attrs = []; t_loc = foo.mli:18:75 }
+                               t_attrs = []; t_loc = foo.mli:19:75 }
                               ]
                             ));
                          t_ty =
@@ -842,7 +841,7 @@ First, create a test artifact:
                                 ts_model = (false, Ttypes.Self) },
                               []))
                            };
-                         t_attrs = []; t_loc = foo.mli:18:59 };
+                         t_attrs = []; t_loc = foo.mli:19:59 };
                         { Tterm.t_node =
                           (Tterm.Tvar
                              { Symbols.vs_name = x;
@@ -863,7 +862,7 @@ First, create a test artifact:
                                  ts_model = (false, Ttypes.Self) },
                                []))
                             };
-                          t_attrs = []; t_loc = foo.mli:18:80 }
+                          t_attrs = []; t_loc = foo.mli:19:80 }
                         ]
                       ));
                    t_ty =
@@ -873,12 +872,12 @@ First, create a test artifact:
                           ts_alias = None; ts_model = (false, Ttypes.Self) },
                         []))
                      };
-                   t_attrs = []; t_loc = foo.mli:18:59 });
+                   t_attrs = []; t_loc = foo.mli:19:59 });
            fun_spec = None;
            fun_text =
            " function is_full (xs : 'a list) (x : integer) : bool = Sequence.length xs = x ";
-           fun_loc = foo.mli:18:4 });
-      sig_loc = foo.mli:18:4 };
+           fun_loc = foo.mli:19:4 });
+      sig_loc = foo.mli:19:4 };
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
@@ -1002,7 +1001,7 @@ First, create a test artifact:
                                         ts_model = (false, Ttypes.Self) },
                                       []))
                                    };
-                                 t_attrs = []; t_loc = foo.mli:21:31 };
+                                 t_attrs = []; t_loc = foo.mli:22:31 };
                                 { Tterm.t_node =
                                   (Tterm.Tapp (
                                      Symbols.Function_symbol {
@@ -1087,7 +1086,7 @@ First, create a test artifact:
                                                ]
                                              ))
                                           };
-                                        t_attrs = []; t_loc = foo.mli:21:33 }
+                                        t_attrs = []; t_loc = foo.mli:22:33 }
                                        ]
                                      ));
                                   t_ty =
@@ -1108,7 +1107,7 @@ First, create a test artifact:
                                          ]
                                        ))
                                     };
-                                  t_attrs = []; t_loc = foo.mli:21:33 }
+                                  t_attrs = []; t_loc = foo.mli:22:33 }
                                 ]
                               ));
                            t_ty =
@@ -1119,7 +1118,7 @@ First, create a test artifact:
                                   ts_model = (false, Ttypes.Self) },
                                 []))
                              };
-                           t_attrs = []; t_loc = foo.mli:21:17 });
+                           t_attrs = []; t_loc = foo.mli:22:17 });
                       t_ty =
                       { Ttypes.ty_node =
                         (Ttypes.Tyapp (
@@ -1127,7 +1126,7 @@ First, create a test artifact:
                              ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
-                      t_attrs = []; t_loc = foo.mli:21:13 }
+                      t_attrs = []; t_loc = foo.mli:22:13 }
                      ];
                    fun_ens =
                    [{ Tterm.t_node = Tterm.Ttrue;
@@ -1138,16 +1137,16 @@ First, create a test artifact:
                              ts_alias = None; ts_model = (false, Ttypes.Self) },
                            []))
                         };
-                      t_attrs = []; t_loc = foo.mli:22:12 }
+                      t_attrs = []; t_loc = foo.mli:23:12 }
                      ];
                    fun_variant = []; fun_coer = false;
                    fun_text =
                    " requires not (Sequence.mem x xs)\n    ensures true ";
-                   fun_loc = foo.mli:20:3 });
+                   fun_loc = foo.mli:21:3 });
            fun_text =
            " function with_spec (x : integer) (xs : integer list) : integer list ";
-           fun_loc = foo.mli:20:4 });
-      sig_loc = foo.mli:20:4 };
+           fun_loc = foo.mli:21:4 });
+      sig_loc = foo.mli:21:4 };
     { Tast.sig_desc =
       (Tast.Sig_function
          { Tast.fun_ls =
@@ -1236,7 +1235,7 @@ First, create a test artifact:
                                ]
                              ))
                           };
-                        t_attrs = []; t_loc = foo.mli:24:55 },
+                        t_attrs = []; t_loc = foo.mli:25:55 },
                       [({ Tterm.p_node =
                           (Tterm.Por (
                              { Tterm.p_node =
@@ -1275,7 +1274,7 @@ First, create a test artifact:
                                       ]
                                     ))
                                  };
-                               p_loc = foo.mli:25:8 },
+                               p_loc = foo.mli:26:8 },
                              { Tterm.p_node =
                                (Tterm.Papp (
                                   Symbols.Constructor_symbol {
@@ -1325,7 +1324,7 @@ First, create a test artifact:
                                             ts_model = (false, Ttypes.Self) },
                                           []))
                                        };
-                                     p_loc = foo.mli:25:13 };
+                                     p_loc = foo.mli:26:13 };
                                     { Tterm.p_node =
                                       (Tterm.Papp (
                                          Symbols.Constructor_symbol {
@@ -1368,7 +1367,7 @@ First, create a test artifact:
                                              ]
                                            ))
                                         };
-                                      p_loc = foo.mli:25:18 }
+                                      p_loc = foo.mli:26:18 }
                                     ]
                                   ));
                                p_ty =
@@ -1388,7 +1387,7 @@ First, create a test artifact:
                                       ]
                                     ))
                                  };
-                               p_loc = foo.mli:25:13 }
+                               p_loc = foo.mli:26:13 }
                              ));
                           p_ty =
                           { Ttypes.ty_node =
@@ -1407,7 +1406,7 @@ First, create a test artifact:
                                  ]
                                ))
                             };
-                          p_loc = foo.mli:25:8 },
+                          p_loc = foo.mli:26:8 },
                         None,
                         { Tterm.t_node = Tterm.Ttrue;
                           t_ty =
@@ -1418,7 +1417,7 @@ First, create a test artifact:
                                  ts_model = (false, Ttypes.Self) },
                                []))
                             };
-                          t_attrs = []; t_loc = foo.mli:25:24 });
+                          t_attrs = []; t_loc = foo.mli:26:24 });
                         ({ Tterm.p_node =
                            (Tterm.Papp (
                               Symbols.Constructor_symbol {ls_name = infix ::;
@@ -1474,7 +1473,7 @@ First, create a test artifact:
                                         ts_model = (false, Ttypes.Self) },
                                       []))
                                    };
-                                 p_loc = foo.mli:26:8 };
+                                 p_loc = foo.mli:27:8 };
                                 { Tterm.p_node =
                                   (Tterm.Pas (
                                      { Tterm.p_node =
@@ -1546,7 +1545,7 @@ First, create a test artifact:
                                                     (false, Ttypes.Self) },
                                                   []))
                                                };
-                                             p_loc = foo.mli:26:14 };
+                                             p_loc = foo.mli:27:14 };
                                             { Tterm.p_node = Tterm.Pwild;
                                               p_ty =
                                               { Ttypes.ty_node =
@@ -1570,7 +1569,7 @@ First, create a test artifact:
                                                      ]
                                                    ))
                                                 };
-                                              p_loc = foo.mli:26:19 }
+                                              p_loc = foo.mli:27:19 }
                                             ]
                                           ));
                                        p_ty =
@@ -1593,7 +1592,7 @@ First, create a test artifact:
                                               ]
                                             ))
                                          };
-                                       p_loc = foo.mli:26:14 },
+                                       p_loc = foo.mli:27:14 },
                                      { Symbols.vs_name = t_2;
                                        vs_ty =
                                        { Ttypes.ty_node =
@@ -1635,7 +1634,7 @@ First, create a test artifact:
                                          ]
                                        ))
                                     };
-                                  p_loc = foo.mli:26:13 }
+                                  p_loc = foo.mli:27:13 }
                                 ]
                               ));
                            p_ty =
@@ -1655,7 +1654,7 @@ First, create a test artifact:
                                   ]
                                 ))
                              };
-                           p_loc = foo.mli:26:8 },
+                           p_loc = foo.mli:27:8 },
                          None,
                          { Tterm.t_node =
                            (Tterm.Tbinop (Tterm.Tand,
@@ -1737,7 +1736,7 @@ First, create a test artifact:
                                                    (false, Ttypes.Self) },
                                                  []))
                                               };
-                                            t_attrs = []; t_loc = foo.mli:26:30
+                                            t_attrs = []; t_loc = foo.mli:27:30
                                             }
                                            ]
                                          ));
@@ -1749,7 +1748,7 @@ First, create a test artifact:
                                              ts_model = (false, Ttypes.Self) },
                                            []))
                                         };
-                                      t_attrs = []; t_loc = foo.mli:26:30 };
+                                      t_attrs = []; t_loc = foo.mli:27:30 };
                                      { Tterm.t_node =
                                        (Tterm.Tapp (
                                           Symbols.Function_symbol {
@@ -1801,7 +1800,7 @@ First, create a test artifact:
                                                   []))
                                                };
                                              t_attrs = [];
-                                             t_loc = foo.mli:26:35 }
+                                             t_loc = foo.mli:27:35 }
                                             ]
                                           ));
                                        t_ty =
@@ -1812,7 +1811,7 @@ First, create a test artifact:
                                               ts_model = (false, Ttypes.Self) },
                                             []))
                                          };
-                                       t_attrs = []; t_loc = foo.mli:26:35 }
+                                       t_attrs = []; t_loc = foo.mli:27:35 }
                                      ]
                                    ));
                                 t_ty =
@@ -1823,7 +1822,7 @@ First, create a test artifact:
                                        ts_model = (false, Ttypes.Self) },
                                      []))
                                   };
-                                t_attrs = []; t_loc = foo.mli:26:30 },
+                                t_attrs = []; t_loc = foo.mli:27:30 },
                               { Tterm.t_node =
                                 (Tterm.Tapp (
                                    Symbols.Function_symbol {
@@ -1902,7 +1901,7 @@ First, create a test artifact:
                                              ]
                                            ))
                                         };
-                                      t_attrs = []; t_loc = foo.mli:26:55 }
+                                      t_attrs = []; t_loc = foo.mli:27:55 }
                                      ]
                                    ));
                                 t_ty =
@@ -1913,7 +1912,7 @@ First, create a test artifact:
                                        ts_model = (false, Ttypes.Self) },
                                      []))
                                   };
-                                t_attrs = []; t_loc = foo.mli:26:40 }
+                                t_attrs = []; t_loc = foo.mli:27:40 }
                               ));
                            t_ty =
                            { Ttypes.ty_node =
@@ -1923,7 +1922,7 @@ First, create a test artifact:
                                   ts_model = (false, Ttypes.Self) },
                                 []))
                              };
-                           t_attrs = []; t_loc = foo.mli:26:30 })
+                           t_attrs = []; t_loc = foo.mli:27:30 })
                         ]
                       ));
                    t_ty =
@@ -1933,12 +1932,12 @@ First, create a test artifact:
                           ts_alias = None; ts_model = (false, Ttypes.Self) },
                         []))
                      };
-                   t_attrs = []; t_loc = foo.mli:24:49 });
+                   t_attrs = []; t_loc = foo.mli:25:49 });
            fun_spec = None;
            fun_text =
            " predicate rec is_sorted_list (l: int list) = match l with\n      | [] | _ :: [] -> true\n      | h :: (y :: _ as t) -> h <= y /\\ is_sorted_list t ";
-           fun_loc = foo.mli:24:4 });
-      sig_loc = foo.mli:24:4 };
+           fun_loc = foo.mli:25:4 });
+      sig_loc = foo.mli:25:4 };
     { Tast.sig_desc =
       (Tast.Sig_val (
          { Tast.vd_name = Foo.add; vd_type = 'a -> 'a t -> unit; vd_prim = [];
@@ -2149,7 +2148,7 @@ First, create a test artifact:
                                   ]
                                 ))
                              };
-                           t_attrs = []; t_loc = foo.mli:32:12 },
+                           t_attrs = []; t_loc = foo.mli:33:12 },
                          Symbols.Field_symbol {ls_name = contents;
                            ls_args =
                            [{ Ttypes.ty_node =
@@ -2188,7 +2187,7 @@ First, create a test artifact:
                              ]
                            ))
                         };
-                      t_attrs = []; t_loc = foo.mli:32:12 };
+                      t_attrs = []; t_loc = foo.mli:33:12 };
                      { Tterm.t_node =
                        (Tterm.Tif (
                           { Tterm.t_node =
@@ -2261,7 +2260,7 @@ First, create a test artifact:
                                               ]
                                             ))
                                          };
-                                       t_attrs = []; t_loc = foo.mli:32:36 },
+                                       t_attrs = []; t_loc = foo.mli:33:36 },
                                      Symbols.Field_symbol {ls_name = contents;
                                        ls_args =
                                        [{ Ttypes.ty_node =
@@ -2309,7 +2308,7 @@ First, create a test artifact:
                                          ]
                                        ))
                                     };
-                                  t_attrs = []; t_loc = foo.mli:32:36 };
+                                  t_attrs = []; t_loc = foo.mli:33:36 };
                                  { Tterm.t_node =
                                    (Tterm.Tapp (
                                       Symbols.Function_symbol {
@@ -2376,7 +2375,7 @@ First, create a test artifact:
                                                    ))
                                                 };
                                               t_attrs = [];
-                                              t_loc = foo.mli:32:47 },
+                                              t_loc = foo.mli:33:47 },
                                             Symbols.Field_symbol {
                                               ls_name = size;
                                               ls_args =
@@ -2417,7 +2416,7 @@ First, create a test artifact:
                                                 },
                                               []))
                                            };
-                                         t_attrs = []; t_loc = foo.mli:32:47 }
+                                         t_attrs = []; t_loc = foo.mli:33:47 }
                                         ]
                                       ));
                                    t_ty =
@@ -2428,7 +2427,7 @@ First, create a test artifact:
                                           ts_model = (false, Ttypes.Self) },
                                         []))
                                      };
-                                   t_attrs = []; t_loc = foo.mli:32:47 }
+                                   t_attrs = []; t_loc = foo.mli:33:47 }
                                  ]
                                ));
                             t_ty =
@@ -2439,7 +2438,7 @@ First, create a test artifact:
                                    ts_model = (false, Ttypes.Self) },
                                  []))
                               };
-                            t_attrs = []; t_loc = foo.mli:32:28 },
+                            t_attrs = []; t_loc = foo.mli:33:28 },
                           { Tterm.t_node =
                             (Tterm.Told
                                { Tterm.t_node =
@@ -2478,7 +2477,7 @@ First, create a test artifact:
                                              ]
                                            ))
                                         };
-                                      t_attrs = []; t_loc = foo.mli:33:34 },
+                                      t_attrs = []; t_loc = foo.mli:34:34 },
                                     Symbols.Field_symbol {ls_name = contents;
                                       ls_args =
                                       [{ Ttypes.ty_node =
@@ -2526,7 +2525,7 @@ First, create a test artifact:
                                         ]
                                       ))
                                    };
-                                 t_attrs = []; t_loc = foo.mli:33:34 });
+                                 t_attrs = []; t_loc = foo.mli:34:34 });
                             t_ty =
                             { Ttypes.ty_node =
                               (Ttypes.Tyapp (
@@ -2539,7 +2538,7 @@ First, create a test artifact:
                                    ]
                                  ))
                               };
-                            t_attrs = []; t_loc = foo.mli:33:30 },
+                            t_attrs = []; t_loc = foo.mli:34:30 },
                           { Tterm.t_node =
                             (Tterm.Tapp (
                                Symbols.Constructor_symbol {ls_name = infix ::;
@@ -2587,7 +2586,7 @@ First, create a test artifact:
                                   t_ty =
                                   { Ttypes.ty_node =
                                     (Ttypes.Tyvar { Ttypes.tv_name = a }) };
-                                  t_attrs = []; t_loc = foo.mli:34:30 };
+                                  t_attrs = []; t_loc = foo.mli:35:30 };
                                  { Tterm.t_node =
                                    (Tterm.Told
                                       { Tterm.t_node =
@@ -2633,7 +2632,7 @@ First, create a test artifact:
                                                   ))
                                                };
                                              t_attrs = [];
-                                             t_loc = foo.mli:34:40 },
+                                             t_loc = foo.mli:35:40 },
                                            Symbols.Field_symbol {
                                              ls_name = contents;
                                              ls_args =
@@ -2686,7 +2685,7 @@ First, create a test artifact:
                                                ]
                                              ))
                                           };
-                                        t_attrs = []; t_loc = foo.mli:34:40 });
+                                        t_attrs = []; t_loc = foo.mli:35:40 });
                                    t_ty =
                                    { Ttypes.ty_node =
                                      (Ttypes.Tyapp (
@@ -2700,7 +2699,7 @@ First, create a test artifact:
                                           ]
                                         ))
                                      };
-                                   t_attrs = []; t_loc = foo.mli:34:35 }
+                                   t_attrs = []; t_loc = foo.mli:35:35 }
                                  ]
                                ));
                             t_ty =
@@ -2715,7 +2714,7 @@ First, create a test artifact:
                                    ]
                                  ))
                               };
-                            t_attrs = []; t_loc = foo.mli:34:30 }
+                            t_attrs = []; t_loc = foo.mli:35:30 }
                           ));
                        t_ty =
                        { Ttypes.ty_node =
@@ -2729,7 +2728,7 @@ First, create a test artifact:
                               ]
                             ))
                          };
-                       t_attrs = []; t_loc = foo.mli:32:25 }
+                       t_attrs = []; t_loc = foo.mli:33:25 }
                      ]
                    ));
                 t_ty =
@@ -2739,34 +2738,16 @@ First, create a test artifact:
                        ts_model = (false, Ttypes.Self) },
                      []))
                   };
-                t_attrs = []; t_loc = foo.mli:32:12 }
+                t_attrs = []; t_loc = foo.mli:33:12 }
                ];
              sp_xpost = []; sp_diverge = false; sp_pure = false; sp_equiv = [];
              sp_text =
              " add a t\n    modifies t.contents\n    (* comments *)\n    ensures t.contents = if is_full t.contents t.size\n                         then old t.contents\n                         else a :: (old t.contents) ";
-             sp_loc = foo.mli:29:3 };
-           vd_loc = foo.mli:28:0 },
+             sp_loc = foo.mli:30:3 };
+           vd_loc = foo.mli:29:0 },
          Tast.Nonghost));
-      sig_loc = foo.mli:28:0 }
+      sig_loc = foo.mli:29:0 }
     ]
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
-<<<<<<< HEAD
-=======
->>>>>>> 2de243f (Type symbols store the logical model of the type)
 
 A smaller example, focused on locations after a directive:
 
@@ -2774,7 +2755,7 @@ A smaller example, focused on locations after a directive:
   > # 5 "bar.mli"
   > type 'a t
   > (** documentation *)
-  > (*@ mutable model contents : 'a list
+  > (*@ model contents : 'a list
   >     model size : int *)
   > EOF
   $ gospel dumpast foo.mli | grep '_loc.*:'

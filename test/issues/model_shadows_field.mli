@@ -1,5 +1,5 @@
 type 'a t = { contents : 'a list }
-(*@ mutable model contents: 'a list *)
+(*@ model contents: 'a list *)
 
 val f : 'a t -> unit
 (*@ f xs

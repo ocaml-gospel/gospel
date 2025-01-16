@@ -532,10 +532,7 @@ let add_sig_contents muc sig_ =
               add_ls ~export:true muc ls_name.id_str x
         in
         let muc = List.fold_left add muc csl in
-        let get_fields = function
-          | Self | Default _ -> []
-          | Fields l -> List.map snd l
-        in
+        let get_fields = function Self | Default _ -> [] | Fields l -> l in
         let fields =
           Option.fold ~none:[]
             ~some:(fun spec -> get_fields spec.ty_model)

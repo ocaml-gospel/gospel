@@ -24,8 +24,9 @@ more](https://ocaml-gospel.github.io/gospel/)!
 
 ```ocaml
 type 'a t
-(*@ model capacity : integer
-    mutable model contents : 'a sequence
+(*@ ephemeral
+	model capacity : integer
+	model contents : 'a sequence
     with s
     invariant s.capacity > 0
     invariant Sequence.length s.contents <= s.capacity *)

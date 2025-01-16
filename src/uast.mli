@@ -110,8 +110,7 @@ type val_spec = {
   sp_loc : Location.t;
 }
 
-type field = { f_preid : Preid.t; f_pty : pty; f_mutable : bool }
-type model = Self | Default of bool * pty | Fields of field list
+type model = Self | Default of pty | Fields of (Preid.t * pty) list
 
 type type_spec = {
   ty_ephemeral : bool;

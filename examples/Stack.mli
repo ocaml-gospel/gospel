@@ -1,6 +1,7 @@
 module type S = sig
   type 'a t
-  (*@ mutable model view : 'a sequence *)
+  (*@ ephemeral
+      model view : 'a sequence *)
 
   val create : unit -> 'a t
   (*@ s = create ()

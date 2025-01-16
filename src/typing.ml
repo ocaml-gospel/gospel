@@ -723,17 +723,16 @@ let mutable_flag = function
   | Asttypes.Immutable -> Immutable
 
 let process_type_spec kid eph crcm ns ty spec =
-  let field (ns, fields) f =
-    let f_ty = ty_of_pty ns f.f_pty in
-    let ls = field_symbol (Ident.of_preid f.f_preid) [ ty ] f_ty in
-    ( ns_add_fd ~allow_duplicate:true ns f.f_preid.pid_str ls,
-      (f.f_mutable, ls) :: fields )
+  let field (ns, fields) (id, pty) =
+    let f_ty = ty_of_pty ns pty in
+    let ls = field_symbol (Ident.of_preid id) [ ty ] f_ty in
+    (ns_add_fd ~allow_duplicate:true ns id.pid_str ls, ls :: fields)
   in
   let model = spec.Uast.ty_model in
   let ns, model =
     match model with
     | Uast.Self -> (ns, Self)
-    | Uast.Default (mut, pty) -> (ns, Default (mut, ty_of_pty ns pty))
+    | Uast.Default pty -> (ns, Default (ty_of_pty ns pty))
     | Uast.Fields l ->
         let ns, l = List.fold_left field (ns, []) l in
         (ns, Fields l)
@@ -741,7 +740,7 @@ let process_type_spec kid eph crcm ns ty spec =
 
   let aux = function
     | vs, xs ->
-        let ty = match model with Default (_, d) -> d | _ -> ty in
+        let ty = match model with Default d -> d | _ -> ty in
         let self_vs = create_vsymbol vs ty in
         let env = Mstr.singleton self_vs.vs_name.id_str self_vs in
         let env = { env; old_env = Mstr.empty } in
@@ -819,13 +818,15 @@ let type_type_declaration path kid crcm ns r tdl =
       in
       Option.map (parse_core alias tvl) td.tmanifest
     in
+
     let td_model =
       Option.fold ~none:(false, Ttypes.Self)
         ~some:(fun spec ->
-          match spec.Uast.ty_model with
-          | Self -> (spec.ty_ephemeral, Ttypes.Self)
-          | Default (m, pty) -> (m, Ttypes.Model (ty_of_pty ns pty))
-          | Fields l -> (List.exists (fun x -> x.f_mutable) l, Ttypes.Fields))
+          ( spec.Uast.ty_ephemeral,
+            match spec.Uast.ty_model with
+            | Self -> Ttypes.Self
+            | Default pty -> Ttypes.Model (ty_of_pty ns pty)
+            | Fields _ -> Ttypes.Fields ))
         td.tspec
     in
 

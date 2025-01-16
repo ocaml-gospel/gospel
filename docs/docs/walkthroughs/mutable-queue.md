@@ -25,18 +25,19 @@ elements of a queue, we attach one model to its type declaration:
 
 ```ocaml
 type 'a t
-(*@ mutable model view: 'a sequence *)
+(*@ ephemeral
+	model view: 'a sequence *)
 ```
 
 The model `view` represents the mathematical sequence of elements stored in
 the queue. The type `'a sequence` is the type of logical sequences defined in the
-Gospel standard library and is for specifications only. The `mutable`
+Gospel standard library and is for specifications only. The `ephemeral`
 keyword states that the `view` field can change over time.
 
 :::tip
 
 This shows how Gospel annotations provide extra insight and are also relevant
-for documentation. The `mutable` keyword states that the type `'a t` is mutable,
+for documentation. The `ephemeral` keyword states that the type `'a t` is mutable,
 which cannot be deduced from its OCaml declaration alone.
 
 :::

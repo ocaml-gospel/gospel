@@ -37,7 +37,6 @@
         "then", THEN;
         "true", TRUE;
         "with", WITH;
-        "mutable", MUTABLE;
         "ensures", ENSURES;
         "consumes", CONSUMES;
 	"produces", PRODUCES;

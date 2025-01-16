@@ -100,7 +100,7 @@
 %token LENS
 %token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
-%token MUTABLE MODEL
+%token MODEL
 %token LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
@@ -213,19 +213,19 @@ type_spec_model:
   | (* epsilon *)
     { Self }
   | model = type_spec_model_default
-    { let f_mutable, f_pty = model in Default (f_mutable, f_pty) }
+    { Default model }
   |  mod_fields=nonempty_list(type_spec_model_field)
     { Fields mod_fields }
 ;
 
 type_spec_model_default:
-|f_mutable=boption(MUTABLE) MODEL COLON f_pty=typ
-  { f_mutable, f_pty }
+| MODEL COLON f_pty=typ
+  { f_pty }
 ;
 
 type_spec_model_field:
-| f_mutable=boption(MUTABLE) MODEL f_preid=lident COLON f_pty=typ
-  { {f_mutable; f_preid; f_pty} }
+| MODEL f_preid=lident COLON f_pty=typ
+  { f_preid, f_pty }
 ;
 
 val_spec_header:

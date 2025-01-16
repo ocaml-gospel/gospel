@@ -1,7 +1,7 @@
 (*@ type m = A of unit | B of (unit * unit) *)
 
 type t
-(*@ mutable model m : m *)
+(*@ model m : m *)
 
 val f : t -> bool
 (*@ b = f t

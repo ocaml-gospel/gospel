@@ -105,17 +105,9 @@ our `universe` type:
 
 ```ocaml
 (*@ type 'a universe *)
-(*@ mutable model dom : 'a element set *)
+(*@ ephemeral
+	model dom : 'a element set *)
 ```
-
-:::tip
-
-Since at least one model is mutable, we may now omit the `ephemeral` keyword
-(although it's also valid to keep it if you prefer). For instance, you may keep
-it if you want to indicate that the type is also mutable in a way that is not
-visible in the models.
-
-:::
 
 Now let's add more information on how the functions interact with it. The
 constructor should ensure two things:
@@ -170,8 +162,9 @@ element` function. We can also add two invariants:
 
 ```ocaml {3-5}
 (*@ type 'a universe *)
-(*@ mutable model dom : 'a element set
-    mutable model rep : 'a element -> 'a element
+(*@ ephemeral
+	model dom : 'a element set
+    model rep : 'a element -> 'a element
     with u
     invariant forall e. Set.mem e u.dom -> Set.mem (u.rep e) u.dom
     invariant forall e. Set.mem e u.dom -> u.rep (u.rep e) = u.rep e *)
