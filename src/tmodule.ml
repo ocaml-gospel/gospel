@@ -292,6 +292,10 @@ type module_uc = {
   muc_crcm : Coercion.t;
 }
 
+let get_module_name muc = muc.muc_nm
+let get_known_ids muc = muc.muc_kid
+let get_coercions muc = muc.muc_crcm
+
 let muc_add ?(export = false) add muc s x =
   match (muc.muc_import, muc.muc_export) with
   | i0 :: il, e0 :: el ->

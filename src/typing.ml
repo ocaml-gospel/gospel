@@ -1377,8 +1377,8 @@ and process_modtype path penv muc umty =
         match c with
         | Wtype (lid, tyd) ->
             let tdl =
-              type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
-                Nonrecursive [ tyd ]
+              type_type_declaration path (get_known_ids muc) (get_coercions muc)
+                ns_init Nonrecursive [ tyd ]
             in
             let td = match tdl with [ td ] -> td | _ -> assert false in
             let q = flatten_exn lid in
@@ -1402,8 +1402,8 @@ and process_modtype path penv muc umty =
             (muc, Wty (ts.ts_ident, td) :: cl)
         | Wtypesubst (lid, tyd) ->
             let tdl =
-              type_type_declaration path muc.muc_kid muc.muc_crcm ns_init
-                Nonrecursive [ tyd ]
+              type_type_declaration path (get_known_ids muc) (get_coercions muc)
+                ns_init Nonrecursive [ tyd ]
             in
             let td = match tdl with [ td ] -> td | _ -> assert false in
             let ty =
@@ -1504,7 +1504,9 @@ and process_modtype_decl path penv loc decl muc =
 
 and process_sig_item path penv muc { sdesc; sloc } =
   let process_sig_item si muc =
-    let kid, ns, crcm = (muc.muc_kid, get_top_import muc, muc.muc_crcm) in
+    let kid, ns, crcm =
+      (get_known_ids muc, get_top_import muc, get_coercions muc)
+    in
     match si with
     | Uast.Sig_type (r, tdl) ->
         (muc, process_sig_type path ~loc:sloc kid crcm ns r tdl)
@@ -1550,4 +1552,4 @@ and type_sig_item path penv muc sig_item =
   muc
 
 let type_sig_item penv muc sig_item =
-  type_sig_item [ muc.muc_nm.id_str ] penv muc sig_item
+  type_sig_item [ (get_module_name muc).id_str ] penv muc sig_item

@@ -5,19 +5,7 @@ module Mstr : Map.S with type key = string
 type namespace
 type known_ids = signature_item Mid.t
 type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
-
-type module_uc = {
-  muc_nm : Ident.t;
-  muc_file : string;
-  muc_sigs : signature list;
-  muc_prefix : string list;
-  (* essential when closing namespaces *)
-  muc_import : namespace list;
-  muc_export : namespace list;
-  muc_files : file Mstr.t;
-  muc_kid : known_ids;
-  muc_crcm : Coercion.t;
-}
+type module_uc
 
 val empty_ns : namespace
 val type_declarations : type_declaration Ttypes.Hts.t
@@ -48,6 +36,9 @@ val close_module_type : module_uc -> module_uc
 val add_sig_contents : module_uc -> Tast.signature_item -> module_uc
 val get_top_import : module_uc -> namespace
 val get_top_sigs : module_uc -> signature
+val get_module_name : module_uc -> Ident.t
+val get_known_ids : module_uc -> known_ids
+val get_coercions : module_uc -> Coercion.t
 val muc_replace_ts : module_uc -> Ttypes.tysymbol -> string list -> module_uc
 val muc_rm_ts : module_uc -> string list -> module_uc
 val muc_subst_ts : module_uc -> Ttypes.tysymbol -> Ttypes.tysymbol -> module_uc
