@@ -4,7 +4,7 @@ val f : bool -> int
       match x with
       | true
       | true
-      | true -> r <> 1
+      | true -> r.v <> 1
       | true -> true
     ensures
       match true with
@@ -15,11 +15,11 @@ val f : bool -> int
 *)
 
 (* {gospel_expected|
-   [125] File "nonexhaustive_bool.mli", line 4, characters 6-88:
+   [125] File "nonexhaustive_bool.mli", line 4, characters 6-90:
          4 | ......match x with
          5 |       | true
          6 |       | true
-         7 |       | true -> r <> 1
+         7 |       | true -> r.v <> 1
          8 |       | true -> true
          Error: This pattern-matching is not exhaustive.
                 Here is an example of a case that is not matched:

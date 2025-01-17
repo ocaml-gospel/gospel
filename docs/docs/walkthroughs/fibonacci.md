@@ -60,12 +60,12 @@ Let's write a first contract for this interface.
 ```ocaml
 val fib : int -> int -> int -> int
 (*@ r = fib n a b
-    checks n >= 0
+    checks n.v >= 0
     requires exists i.
-               i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
+               i >= 0 /\ a.v = fibonacci i /\ b.v = fibonacci (i+1)
     ensures forall i.
-               i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
-               -> r = fibonacci (i+n) *)
+               i >= 0 /\ a.v = fibonacci i /\ b.v = fibonacci (i+1)
+               -> r.v = fibonacci (i+n.v) *)
 ```
 
 The contract is pretty straightforward:
@@ -93,9 +93,9 @@ like:
 ```ocaml
 val fib : i:int -> int -> int -> int -> int
 (*@ r = fib ~i n a b
-    checks n >= 0
-    requires i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
-    ensures r = fibonacci (i+n) *)
+    checks n.v >= 0
+    requires i.v >= 0 /\ a.v = fibonacci i.v /\ b.v = fibonacci (i.v+1)
+    ensures r.v = fibonacci (i.v+n.v) *)
 ```
 
 We don't need to quantify over `i` anymore, since it's provided to the
@@ -121,9 +121,9 @@ implementation.
 ```ocaml
 val fib : int -> int -> int -> int
 (*@ r = fib [i: integer] n a b
-    checks n >= 0
-    requires i >= 0 /\ a = fibonacci i /\ b = fibonacci (i+1)
-    ensures r = fibonacci (i+n) *)
+    checks n.v >= 0
+    requires i >= 0 /\ a.v = fibonacci i /\ b.v = fibonacci (i+1)
+    ensures r.v = fibonacci (i+n.v) *)
 ```
 
 We're done! Using ghost parameters allows you to write elegant and concise

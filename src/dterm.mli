@@ -57,7 +57,7 @@ val dty_int : dty
 val dty_of_dterm : dterm -> dty
 val dty_of_ty : Ttypes.ty -> dty
 val dty_fresh : unit -> dty
-val max_dty : Coercion.t -> dterm list -> dty option
+val max_dty : dterm list -> dty option
 val specialize_ls : lsymbol -> dty list * dty
 val specialize_cs : loc:Location.t -> lsymbol -> dty list * dty
 val dty_unify : loc:Location.t -> dty -> dty -> unit
@@ -72,9 +72,9 @@ val app_unify_map :
 val dfmla_unify : dterm -> unit
 val dpattern_unify : dpattern -> dty -> unit
 val unify : dterm -> dty option -> unit
-val dterm_expected : Coercion.t -> dterm -> dty -> dterm
-val dfmla_expected : Coercion.t -> dterm -> dterm
-val dterm_expected_op : Coercion.t -> dterm -> dty option -> dterm
+val dterm_expected : dterm -> dty -> dterm
+val dfmla_expected : dterm -> dterm
+val dterm_expected_op : dterm -> dty option -> dterm
 val denv_get_opt : 'a Mstr.t -> string -> 'a option
 val denv_find : loc:Location.t -> string -> denv -> dty
 val is_in_denv : denv -> string -> bool

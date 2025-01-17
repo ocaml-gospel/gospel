@@ -12,13 +12,13 @@ module Make (X : sig
   (* FIXME: use ComparableType.S instead *)
   type t
 
-  (*@ function cmp: t -> t -> int *)
+  (*@ function cmp: t -> t -> integer *)
 
   (*@ axiom is_pre_order: Order.is_pre_order cmp *)
 
   val compare : t -> t -> int
   (*@ r = compare x y
-        ensures r = cmp x y *)
+        ensures r.v = cmp x y *)
 end) : sig
   type elt = X.t
   type t

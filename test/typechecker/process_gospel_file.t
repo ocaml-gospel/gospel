@@ -11,8 +11,8 @@ the `.gospel` file.
   > 
   > val create : int -> 'a -> 'a t
   > (*@ t = create n a
-  >     checks n > 0
-  >     ensures t.contents = Sequence.init n (fun _ -> a) *)
+  >     checks n.v > 0
+  >     ensures t.contents = Sequence.init n.v (fun _ -> a) *)
   > EOF
   $ gospel check --verbose foo.mli > foo
   $ gospel check --verbose foo.gospel > bar

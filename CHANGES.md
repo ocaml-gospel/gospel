@@ -28,6 +28,11 @@
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
 
+## Internals
+
+- Remove and replace the coercion mechanism
+  [\#433](https://github.com/ocaml-gospel/gospel/pull/433)
+
 # 0.3
 
 ## Added

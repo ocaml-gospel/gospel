@@ -90,9 +90,9 @@ type 'a t2 = C2 of 'a | C3 of bool | C4 of int * 'a
 
 val f : int -> int -> int
 (*@ r = f x y
-    requires x > 0
-    requires y + 2 < 0
-    ensures r = x + y *)
+    requires x.v > 0
+    requires y.v + 2 < 0
+    ensures r.v = x.v + y.v *)
 
 type 'a t3 = A
 
@@ -105,8 +105,8 @@ type 'a t5 = { x : int; y : 'a }
 
 (* @ function f (x: t4 t5) : integer =
    match x with
-   | {x;y=A} -> integer_of_int x + 1
-   | {x;y=B} -> integer_of_int x + 2 *)
+   | {x;y=A} -> x.v + 1
+   | {x;y=B} -> x.v + 2 *)
 
 type 'a t6 = { xx : 'a; yy : int }
 

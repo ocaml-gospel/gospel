@@ -21,7 +21,7 @@
 
 val map : ('a -> 'b) -> 'a list -> 'b list
 (*@ r = map f l
-      ensures Sequence.length r = Sequence.length l
-      ensures forall i. 0 <= i < Sequence.length l ->
-                r[i] = f (l[i])
-      equivalent "Sequence.rev (Sequence.map f (Sequence.rev l))" *)
+      ensures Sequence.length r.list_content = Sequence.length l.list_content
+      ensures forall i. 0 <= i < Sequence.length l.list_content ->
+                r.list_content[i] = f (l.list_content[i])
+      equivalent "Sequence.rev (Sequence.map f (Sequence.rev l.list_content))" *)

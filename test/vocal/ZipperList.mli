@@ -28,15 +28,15 @@ val is_empty : 'a t -> bool
 
 val length : 'a t -> int
 (*@ r = length z
-    ensures r = Sequence.length z.seq *)
+    ensures r.v = Sequence.length z.seq *)
 
 val to_list : 'a t -> 'a list
 (*@ l = to_list z
-    ensures z.seq = l *)
+    ensures z.seq = l.list_content *)
 
 val make : 'a list -> 'a t
 (*@ z = make l
-    ensures z.seq = l
+    ensures z.seq = l.list_content
     ensures z.idx = 0 *)
 
 val move_left : 'a t -> 'a t
