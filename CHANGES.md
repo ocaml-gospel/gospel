@@ -46,6 +46,8 @@
 
 ## Internals
 
+- Fix bug in creation of fresh type variables
+  [\#435](https://github.com/ocaml-gospel/gospel/pull/435)
 - Fix premature parsing of specification keywords in the preprocessor.
   [\#394](https://github.com/ocaml-gospel/gospel/pull/394)
 - Fix `ls_name` of `unit` logical symbol to be `()`
