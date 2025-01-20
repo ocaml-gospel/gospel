@@ -75,8 +75,6 @@ let ns_add_xs ~allow_duplicate ns s xs =
   in
   { ns with ns_xs }
 
-(* FIXME: Adding multiple modules with the same name to the export should not be
-   allowed either. *)
 let ns_add_ns ~allow_duplicate:_ ns s new_ns =
   { ns with ns_ns = Mstr.add s new_ns ns.ns_ns }
 
@@ -107,6 +105,7 @@ let ns_find_xs ns s = ns_find (fun ns -> ns.ns_xs) ns s
 let ns_find_ns ns s = ns_find (fun ns -> ns.ns_ns) ns s
 let ns_find_tns ns s = ns_find (fun ns -> ns.ns_tns) ns s
 let ns_exists_ns ns s = Mstr.mem s ns.ns_ns
+let ns_exists_tns ns s = Mstr.mem s ns.ns_tns
 
 let rec ns_rm_ts ns = function
   | [] -> assert false

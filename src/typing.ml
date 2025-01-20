@@ -1469,6 +1469,8 @@ and process_modtype path penv muc umty =
 
 and process_mod path penv loc m muc =
   let nm = Option.value ~default:"_" m.mdname.txt in
+  (if ns_exists_ns (get_top_import muc) nm then
+     W.(error ~loc (Repeated_name (`Module_def, nm))));
   let muc = open_module muc nm in
   let muc, mty = process_modtype (path @ [ nm ]) penv muc m.mdtype in
   let decl =
@@ -1483,6 +1485,8 @@ and process_mod path penv loc m muc =
 
 and process_modtype_decl path penv loc decl muc =
   let nm = decl.mtdname.txt in
+  (if ns_exists_tns (get_top_import muc) nm then
+     W.(error ~loc (Repeated_name (`Module_type, nm))));
   let muc = open_module muc nm in
   let md_mty = Option.map (process_modtype path penv muc) decl.mtdtype in
   let muc, mty =
