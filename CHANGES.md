@@ -9,6 +9,8 @@
 
 - Check for repeated name of module and module types
   [\#444](https://github.com/ocaml-gospel/gospel/pull/444)
+- Fix bug in creation of fresh type variables
+  [\#435](https://github.com/ocaml-gospel/gospel/pull/435)
 - Fix typing of pattern with inlined record
   [\#429](https://github.com/ocaml-gospel/gospel/pull/429)
 - Remove support for the record update syntax
@@ -48,8 +50,6 @@
 
 ## Internals
 
-- Fix bug in creation of fresh type variables
-  [\#435](https://github.com/ocaml-gospel/gospel/pull/435)
 - Fix premature parsing of specification keywords in the preprocessor.
   [\#394](https://github.com/ocaml-gospel/gospel/pull/394)
 - Fix `ls_name` of `unit` logical symbol to be `()`
