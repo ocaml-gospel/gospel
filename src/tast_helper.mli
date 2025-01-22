@@ -4,12 +4,12 @@ open Tterm
 open Symbols
 open Ttypes
 
+val spec_arg : arg_label -> vsymbol -> bool -> lb_arg
 val ty_of_lb_arg : lb_arg -> ty
-val vs_of_lb_arg : lb_arg -> vsymbol
 
 val type_spec :
   bool ->
-  (lsymbol * bool) list ->
+  Tast.model ->
   (vsymbol * term list) option ->
   string ->
   Location.t ->
@@ -25,8 +25,6 @@ val mk_val_spec :
   term list ->
   term list ->
   (xsymbol * (pattern * term) list) list ->
-  term list ->
-  term list ->
   bool ->
   bool ->
   string list ->
@@ -62,7 +60,7 @@ val mk_val_description :
   attributes ->
   lb_arg list ->
   lb_arg list ->
-  val_spec option ->
+  val_spec ->
   Location.t ->
   val_description
 
@@ -74,7 +72,7 @@ val type_declaration :
   private_flag ->
   ty option ->
   attributes ->
-  type_spec option ->
+  type_spec ->
   Location.t ->
   type_declaration
 

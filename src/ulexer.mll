@@ -37,16 +37,17 @@
         "then", THEN;
         "true", TRUE;
         "with", WITH;
-        "mutable", MUTABLE;
         "ensures", ENSURES;
         "consumes", CONSUMES;
+	"produces", PRODUCES;
+        "modifies", MODIFIES;
+	"preserves", PRESERVES;
         "fun", FUN;
         "old", OLD;
         "raises", RAISES;
         "rec", REC;
         "requires", REQUIRES;
         "variant", VARIANT;
-        "modifies", MODIFIES;
         "equivalent", EQUIVALENT;
         "checks", CHECKS;
         "diverges", DIVERGES;
@@ -213,6 +214,8 @@ rule token = parse
       { DOTDOT }
   | "|"
       { BAR }
+  | "@"
+      { LENS }
   | "="
       { EQUAL }
   | "<>"

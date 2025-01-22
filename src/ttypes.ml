@@ -55,8 +55,11 @@ and tysymbol = {
   (* we need to keep variables to do things like
      type ('a,'b) t1  type ('a,'b) t2 = ('b,'a) t1 *)
   ts_alias : ty option;
+  ts_model : bool * model;
 }
 [@@deriving show]
+
+and model = Fields | Self | Model of ty [@@deriving show]
 
 let ts_equal x y = Ident.equal x.ts_ident y.ts_ident
 
@@ -78,8 +81,12 @@ end
 module Mts = Map.Make (Ts)
 module Hts = Hashtbl.Make (Ts)
 
-let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
-let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }
+let ts id args =
+  { ts_ident = id; ts_args = args; ts_alias = None; ts_model = (false, Self) }
+
+let mk_ts id args alias model =
+  { ts_ident = id; ts_args = args; ts_alias = alias; ts_model = model }
+
 let ts_ident ts = ts.ts_ident
 let ts_args ts = ts.ts_args
 let ts_alias ts = ts.ts_alias
@@ -99,6 +106,26 @@ let ty_app ?loc ts tyl =
     W.error ~loc
       (W.Bad_type_arity (ts.ts_ident.id_str, ts_arity ts, List.length tyl))
 
+let ts_loc_sp = ts (Ident.create ~loc:Location.none "loc") []
+let ty_loc_sp = ty_app ts_loc_sp []
+
+let ts_loc =
+  ts (Ident.create ~loc:Location.none "loc") [ fresh_tv ~loc:Location.none "a" ]
+
+let ty_loc ty = ty_app ts_loc [ ty ]
+
+let rec ty_apply_lens ty lens =
+  match (ty.ty_node, lens.ty_node) with
+  | Tyvar v1, Tyvar v2 when tv_equal v1 v2 -> ty
+  | Tyapp (ts1, l1), Tyapp (ts2, l2) when ts_equal ts1 ts2 -> (
+      match ts1.ts_model with
+      | _, Model ty -> ty
+      | _ -> { ty_node = Tyapp (ts1, List.map2 ty_apply_lens l1 l2) })
+  | Tyapp (ts1, _), Tyapp (ts2, _) when ts_equal ts2 ts_loc_sp ->
+      if fst ts1.ts_model then ty_loc ty
+      else assert false (*TODO: replace with W.error *)
+  | _ -> assert false (*TODO: replace with W.error *)
+
 let rec ty_full_inst ?loc m ty =
   match ty.ty_node with
   | Tyvar tv -> Mtv.find tv m
@@ -116,11 +143,12 @@ let ty_app ?loc ts tyl =
   | None -> ty_app ?loc ts tyl
   | Some ty -> ty_full_inst ?loc (ts_match_args ?loc ts tyl) ty
 
-let rec ts_subst_ts old_ts new_ts ({ ts_ident; ts_args; ts_alias } as ts) =
+let rec ts_subst_ts old_ts new_ts
+    ({ ts_ident; ts_args; ts_alias; ts_model } as ts) =
   if ts_equal old_ts ts then new_ts
   else
     let ts_alias = Option.map (ty_subst_ts old_ts new_ts) ts_alias in
-    mk_ts ts_ident ts_args ts_alias
+    mk_ts ts_ident ts_args ts_alias ts_model
 
 and ty_subst_ts old_ts new_ts ty =
   match ty.ty_node with
@@ -142,7 +170,7 @@ let rec ty_subst_ty old_ts new_ts new_ty ty =
 and ts_subst_ty old_ts new_ts new_ty ts =
   let subst ty = ty_subst_ty old_ts new_ts new_ty ty in
   let ts_alias = Option.map subst ts.ts_alias in
-  mk_ts ts.ts_ident ts.ts_args ts_alias
+  mk_ts ts.ts_ident ts.ts_args ts_alias new_ts.ts_model
 
 (** type matching *)
 

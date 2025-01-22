@@ -5,7 +5,7 @@ the `.gospel` file.
   $ cat > foo.mli << EOF
   > type 'a t
   > (*@ ephemeral
-  >     mutable model contents : 'a sequence
+  >     model contents : 'a sequence
   >     with x
   >     invariant Sequence.length x.contents > 0 *)
   > 

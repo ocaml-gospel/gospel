@@ -46,6 +46,9 @@ type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
 
 type quant = Tforall | Texists [@@deriving show]
 
+type tbinder = { bind_vs : vsymbol; bind_lens : ty; bind_prog : ty }
+[@@deriving show]
+
 type term = {
   t_node : term_node;
   t_ty : ty;
@@ -62,7 +65,7 @@ and term_node =
   | Tif of term * term * term
   | Tlet of vsymbol * term * term
   | Tcase of term * (pattern * term option * term) list
-  | Tquant of quant * vsymbol list * term
+  | Tquant of quant * tbinder list * term
   | Tlambda of pattern list * term
   | Tbinop of binop * term * term
   | Tnot of term

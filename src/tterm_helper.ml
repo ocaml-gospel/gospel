@@ -82,7 +82,8 @@ let rec t_free_vars t =
   | Tlambda (ps, t) ->
       let t_fvs = t_free_vars t in
       List.fold_right (fun p fvs -> Svs.diff fvs (p_vars p)) ps t_fvs
-  | Tquant (_, vl, t) -> Svs.diff (t_free_vars t) (Svs.of_list vl)
+  | Tquant (_, vl, t) ->
+      Svs.diff (t_free_vars t) (Svs.of_list (List.map (fun x -> x.bind_vs) vl))
   | Tbinop (_, t1, t2) -> Svs.union (t_free_vars t1) (t_free_vars t2)
   | Tnot t -> t_free_vars t
   | Told t -> t_free_vars t

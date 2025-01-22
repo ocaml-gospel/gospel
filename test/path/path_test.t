@@ -38,10 +38,14 @@ First, create a test artifact:
   $ gospel dumpast path_test.mli | tr '\n' ' ' | tr ';}' '\n' | grep -Eo '_name = .*'  | awk '{$1=$1};1' | sed 's/_name = \(\)/\1/'
   Path_test.x
   x_1
+  x_1
   Path_test.y
   __arg0
   result
+  __arg0
+  result
   Path_test.w
+  w_1
   w_1
   Path_test.z
   arg
@@ -56,7 +60,10 @@ First, create a test artifact:
   Path_test.M
   Path_test.M.x_2
   x_3
+  x_3
   Path_test.M.y_1
+  __arg0_1
+  result_1
   __arg0_1
   result_1
   Path_test.M.f
@@ -75,13 +82,19 @@ First, create a test artifact:
   Path_test.M.Nested
   Path_test.M.Nested.x_4
   x_5
+  x_5
   Path_test.M.Nested.y_2
+  __arg0_2
+  result_2
   __arg0_2
   result_2
   Path_test.N
   Path_test.N.x_6
   x_7
+  x_7
   Path_test.N.y_3
+  __arg0_3
+  result_3
   __arg0_3
   result_3
 Clean up:

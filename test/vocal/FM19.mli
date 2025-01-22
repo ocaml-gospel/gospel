@@ -11,7 +11,8 @@
 (* Examples from the Formal Methods 19 paper *)
 
 type 'a t
-(*@ mutable model view: 'a sequence *)
+(*@ ephemeral
+    model view: 'a sequence *)
 
 val push : 'a -> 'a t -> unit
 (*@ push v q
@@ -61,7 +62,7 @@ val power_2_below : int -> int
     ensures  r = power 2 k && r <= n < 2 * r *)
 
 type rand_state
-(*@ mutable model internal: unit *)
+(*@ ephemeral *)
 
 val random_init : int -> rand_state
 val random_int : rand_state -> int -> int
@@ -71,9 +72,10 @@ val random_int : rand_state -> int -> int
 type elem
 
 (*@ type uf_instance *)
-(*@ mutable model dom: elem set
-    mutable model rep: elem -> elem
-    mutable model internal: unit
+(*@ ephemeral
+    model dom: elem set
+    model rep: elem -> elem
+    model internal: unit
     with self
     invariant forall x. Set.mem x self.dom -> Set.mem (self.rep x) self.dom
     invariant forall x. Set.mem x self.dom -> self.rep (self.rep x) = self.rep x *)
@@ -102,8 +104,9 @@ type type2
    this scope. *)
 
 type tt
-(*@ mutable model left:  type1
-    mutable model right: type2 *)
+(*@ ephemeral
+    model left:  type1
+    model right: type2 *)
 
 val f : tt -> tt -> tt -> tt -> int -> tt * tt * int
 (*@ p5, p6, m, [h: integer] = f p1 p2 p3 p4 n [g: integer]

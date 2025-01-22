@@ -48,7 +48,8 @@ and pat_desc =
 
 (* Logical terms and formulas *)
 
-type binder = Preid.t * pty option
+type binder_pty = Infer | Pty of pty | Lens of pty * pty
+type binder = Preid.t * binder_pty
 type param = Location.t * Preid.t * pty
 type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
 type quant = Tforall | Texists
@@ -81,6 +82,8 @@ and term_desc =
 (* Specification *)
 
 type xpost = Location.t * (qualid * (pattern * term) option) list
+type lens = pty
+type lens_term = { s_term : term; s_lens : lens option }
 
 type spec_header = {
   sp_hd_nm : Preid.t;
@@ -96,8 +99,10 @@ type val_spec = {
   sp_checks : term list;
   sp_post : term list;
   sp_xpost : xpost list;
-  sp_writes : term list;
-  sp_consumes : term list;
+  sp_consumes : lens_term list;
+  sp_produces : lens_term list;
+  sp_writes : lens_term list;
+  sp_preserves : lens_term list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_equiv : string list;
@@ -105,16 +110,11 @@ type val_spec = {
   sp_loc : Location.t;
 }
 
-type field = {
-  f_loc : Location.t;
-  f_preid : Preid.t;
-  f_pty : pty;
-  f_mutable : bool;
-}
+type model = Self | Default of pty | Fields of (Preid.t * pty) list
 
 type type_spec = {
   ty_ephemeral : bool;
-  ty_field : field list;
+  ty_model : model;
   ty_invariant : (Preid.t * term list) option;
   ty_text : string;
   ty_loc : Location.t;

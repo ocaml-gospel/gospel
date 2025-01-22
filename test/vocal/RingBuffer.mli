@@ -11,8 +11,9 @@
 (*@ open Sequence *)
 
 type 'a buffer
-(*@ mutable model sequence: 'a sequence
-            model capacity: integer
+(*@ ephemeral
+    model sequence: 'a sequence
+    model capacity: integer
     with self
     invariant length self.sequence <= self.capacity <= Sys.max_array_length *)
 
@@ -28,13 +29,13 @@ val length : 'a buffer -> int
 
 val clear : 'a buffer -> unit
 (*@ clear b
-      modifies b
+      modifies b.sequence
       ensures  b.sequence = empty *)
 
 val push : 'a buffer -> 'a -> unit
 (*@ push b elt
       requires length b.sequence < b.capacity
-      modifies b
+      modifies b.sequence
       ensures  length b.sequence = length (old b.sequence) + 1
       ensures  b.sequence = old b.sequence ++ (cons elt empty) *)
 
@@ -46,7 +47,7 @@ val peek : 'a buffer -> 'a
 val pop : 'a buffer -> 'a
 (*@ r = pop b
       requires length b.sequence > 0
-      modifies b
+      modifies b.sequence
       ensures  length b.sequence = length (old b.sequence) - 1
       ensures  r = (old b.sequence)[0]
       ensures  old b.sequence = cons r b.sequence *)

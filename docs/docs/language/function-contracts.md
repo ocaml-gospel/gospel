@@ -345,7 +345,8 @@ the keyword `modifies`, followed by an identifier. In the following, the
 
 ```ocaml {3}
 type 'a t
-(*@ mutable model contents: int *)
+(*@ ephemeral
+	model contents: int *)
 
 val inplace_map : ('a -> 'a) -> 'a t -> unit
 (*@ inplace_map f a
@@ -364,7 +365,7 @@ val inplace_map : ('a -> 'a) -> 'a t -> unit
     modifies a *)
 ```
 
-In this example, all the mutable models of `a` can be mutated by `inplace_map`.
+In this example, the model of `a` can be mutated by `inplace_map`.
 
 :::note
 

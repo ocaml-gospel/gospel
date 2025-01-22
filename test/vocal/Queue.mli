@@ -9,7 +9,8 @@
 (**************************************************************************)
 
 type 'a t
-(*@ mutable model view: 'a sequence *)
+(*@ ephemeral
+    model view: 'a sequence *)
 
 val create : unit -> 'a t
 (** Return a new queue, initially empty. *)

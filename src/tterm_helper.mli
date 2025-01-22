@@ -46,7 +46,7 @@ val t_equ : term -> term -> Location.t -> term
 val t_neq : term -> term -> Location.t -> Location.t -> term
 val f_binop : binop -> term -> term -> Location.t -> term
 val f_not : term -> Location.t -> term
-val t_quant : quant -> vsymbol list -> term -> ty -> Location.t -> term
+val t_quant : quant -> tbinder list -> term -> ty -> Location.t -> term
 val f_and : term -> term -> Location.t -> term
 val f_and_asym : term -> term -> Location.t -> term
 val f_or : term -> term -> Location.t -> term

@@ -44,16 +44,19 @@ let print_type_kind fmt = function
         (list ~sep:newline print_ls_decl)
         (rd.rd_cs :: pjs)
 
-let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
-  if (not ty_ephemeral) && ty_fields = [] && Option.is_none ty_invariants then
+let print_type_spec fmt { ty_ephemeral; ty_model; ty_invariants; _ } =
+  if (not ty_ephemeral) && ty_model <> Self && Option.is_none ty_invariants then
     ()
   else
     let print_ephemeral f e = if e then pp f "@[ephemeral@]" in
     let print_term f t = pp f "@[%a@]" print_term t in
-    let print_field f (ls, mut) =
-      pp f "@[%s%a : %a@]"
-        (if mut then "mutable model " else "model ")
-        print_ls_nm ls print_ty (get_value ls)
+    let print_default f ty = pp f "@[model : %a@]" print_ty ty in
+    let print_field f ls = pp f "@[model : %a@]" print_ls_decl ls in
+    let print_model f model =
+      match model with
+      | Tast.Self -> ()
+      | Default ty -> print_default f ty
+      | Fields l -> list ~sep:newline print_field f l
     in
     let print_invariants ppf i =
       pf ppf "with %a@;%a" print_vs (fst i)
@@ -63,9 +66,8 @@ let print_type_spec fmt { ty_ephemeral; ty_fields; ty_invariants; _ } =
            print_term)
         (snd i)
     in
-    pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral
-      (list ~first:newline ~sep:newline print_field)
-      ty_fields
+    pp fmt "(*@@ @[%a%a%a@] *)" print_ephemeral ty_ephemeral print_model
+      ty_model
       (* (option print_invariant_vs) *)
       (* ty_invariants *)
       (option print_invariants)
@@ -90,14 +92,16 @@ let print_type_declaration fmt td =
     (ts_ident td.td_ts) print_manifest td.td_manifest print_type_kind td.td_kind
     (if td.td_cstrs = [] then "" else " constraint ")
     (list ~sep:(const string " constraint ") print_constraint)
-    td.td_cstrs (option print_type_spec) td.td_spec
+    td.td_cstrs print_type_spec td.td_spec
 
-let print_lb_arg fmt = function
-  | Lunit -> pp fmt "()"
-  | Lnone vs -> print_vs fmt vs
-  | Loptional vs -> pp fmt "?%a" print_vs vs
-  | Lnamed vs -> pp fmt "~%a" print_vs vs
-  | Lghost vs -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
+let print_lb_arg fmt arg =
+  let vs = arg.lb_vs in
+  match arg.lb_label with
+  | Lnone -> print_vs fmt vs
+  | Loptional -> pp fmt "?%a" print_vs vs
+  | Lnamed -> pp fmt "~%a" print_vs vs
+  | Lghost -> pp fmt "[%a: %a]" print_vs vs print_ty vs.vs_ty
+  | Lunit -> pp fmt "%s" "()"
 
 let print_xposts f xposts =
   if xposts = [] then ()
@@ -116,49 +120,36 @@ let print_xposts f xposts =
     in
     List.iter print_xpost xposts
 
-let print_vd_spec val_id fmt spec =
+let print_vd_spec val_id fmt vs =
   let print_term f t = pp f "@[%a@]" print_term t in
   let print_diverges f d = if not d then () else pp f "@\n@[diverges@]" in
-  match spec with
-  | None -> ()
-  | Some vs ->
-      pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a%a%a*)"
-        (list ~sep:comma print_lb_arg)
-        vs.sp_ret
-        (if vs.sp_ret = [] then "" else " =")
-        Ident.pp_simpl val_id
-        (list ~sep:sp print_lb_arg)
-        vs.sp_args print_diverges vs.sp_diverge
-        (list
-           ~first:(newline ++ const string "requires ")
-           ~sep:(newline ++ const string "requires ")
-           print_term)
-        vs.sp_pre
-        (list
-           ~first:(newline ++ const string "checks ")
-           ~sep:(newline ++ const string "checks ")
-           print_term)
-        vs.sp_checks
-        (list
-           ~first:(newline ++ const string "ensures ")
-           ~sep:(newline ++ const string "ensures ")
-           print_term)
-        vs.sp_post print_xposts vs.sp_xpost
-        (list
-           ~first:(newline ++ const string "writes ")
-           ~sep:(newline ++ const string "writes ")
-           print_term)
-        vs.sp_wr
-        (list
-           ~first:(newline ++ const string "consumes ")
-           ~sep:(newline ++ const string "consumes ")
-           print_term)
-        vs.sp_cs
-        (list
-           ~first:(newline ++ const string "equivalent ")
-           ~sep:(newline ++ const string "equivalent ")
-           constant_string)
-        vs.sp_equiv
+  pp fmt "(*@@ @[%a%s@ %a@ %a@]%a%a%a%a%a%a*)"
+    (list ~sep:comma print_lb_arg)
+    vs.sp_ret
+    (if vs.sp_ret = [] then "" else " =")
+    Ident.pp_simpl val_id
+    (list ~sep:sp print_lb_arg)
+    vs.sp_args print_diverges vs.sp_diverge
+    (list
+       ~first:(newline ++ const string "requires ")
+       ~sep:(newline ++ const string "requires ")
+       print_term)
+    vs.sp_pre
+    (list
+       ~first:(newline ++ const string "checks ")
+       ~sep:(newline ++ const string "checks ")
+       print_term)
+    vs.sp_checks
+    (list
+       ~first:(newline ++ const string "ensures ")
+       ~sep:(newline ++ const string "ensures ")
+       print_term)
+    vs.sp_post print_xposts vs.sp_xpost
+    (list
+       ~first:(newline ++ const string "equivalent ")
+       ~sep:(newline ++ const string "equivalent ")
+       constant_string)
+    vs.sp_equiv
 
 let print_param f p = pp f "(%a:%a)" Ident.pp_simpl p.vs_name print_ty p.vs_ty
 

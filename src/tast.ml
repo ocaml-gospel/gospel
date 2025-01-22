@@ -14,16 +14,22 @@ open Tterm
 open Symbols
 module Ident = Identifier.Ident
 
-type lb_arg =
-  | Lunit  (** () *)
-  | Lnone of vsymbol  (** x *)
-  | Loptional of vsymbol  (** ?x *)
-  | Lnamed of vsymbol  (** ~x *)
-  | Lghost of vsymbol  (** \[x: t\] *)
+type arg_label = Lnone | Loptional | Lnamed | Lghost | Lunit [@@deriving show]
+type lens = ty [@@deriving show]
+
+type lb_arg = {
+  lb_vs : vsymbol;  (** the name and OCaml type of the argument. *)
+  lb_label : arg_label;
+  lb_consumes : (lens * ty) option;
+      (** Lens and logical type of the argument when the function is called *)
+  lb_produces : (lens * ty) option;
+      (** Lens and logical type of the argument when the function is exited *)
+  lb_modified : bool;  (** read only flag *)
+}
 [@@deriving show]
 
 type val_spec = {
-  sp_args : lb_arg list;  (** Arguments *)
+  sp_args : lb_arg list;
   sp_ret : lb_arg list;
       (** Return values. This is a list because of tuple destruction. *)
   sp_pre : term list;  (** Preconditions *)
@@ -31,13 +37,11 @@ type val_spec = {
   sp_post : term list;  (** Postconditions *)
   sp_xpost : (xsymbol * (pattern * term) list) list;
       (** Exceptional postconditions. *)
-  sp_wr : term list;  (** Writes *)
-  sp_cs : term list;  (** Consumes *)
   sp_diverge : bool;  (** Diverges *)
   sp_pure : bool;  (** Pure *)
   sp_equiv : string list;  (** Equivalent *)
   sp_text : string;
-      (** String containing the original specificaion as written by the user *)
+      (** String containing the original specification as written by the user *)
   sp_loc : Location.t; [@printer Utils.Fmt.pp_loc]  (** Specification location *)
 }
 [@@deriving show]
@@ -49,14 +53,16 @@ type val_description = {
   vd_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
   vd_args : lb_arg list;
   vd_ret : lb_arg list;
-  vd_spec : val_spec option;
+  vd_spec : val_spec;
   vd_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
 
+type model = Self | Default of ty | Fields of lsymbol list [@@deriving show]
+
 type type_spec = {
   ty_ephemeral : bool;  (** Ephemeral *)
-  ty_fields : (lsymbol * bool) list;  (** Models (field symbol * mutable) *)
+  ty_model : model;  (** Model *)
   ty_invariants : (vsymbol * term list) option;  (** Invariants *)
   ty_text : string;
       (** String containing the original specificaion as written by the user *)
@@ -124,7 +130,7 @@ type type_declaration = {
   td_private : private_flag;
   td_manifest : ty option;
   td_attrs : attributes; [@printer fun fmt _ -> fprintf fmt "<attributes>"]
-  td_spec : type_spec option;
+  td_spec : type_spec;
   td_loc : Location.t; [@printer Utils.Fmt.pp_loc]
 }
 [@@deriving show]
