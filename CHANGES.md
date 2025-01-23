@@ -9,8 +9,6 @@
 
 - Check for repeated name of module and module types
   [\#444](https://github.com/ocaml-gospel/gospel/pull/444)
-- Add documentation and refactor Tmodule
-  [\#442](https://github.com/ocaml-gospel/gospel/pull/442)
 - Fix bug in creation of fresh type variables
   [\#435](https://github.com/ocaml-gospel/gospel/pull/435)
 - Fix typing of pattern with inlined record
@@ -33,6 +31,13 @@
   [\#404](https://github.com/ocaml-gospel/gospel/pull/404)
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
+
+## Internals
+
+- Add documentation to Symbols and Ttypes modules
+  [\#445](https://github.com/ocaml-gospel/gospel/pull/445)
+- Add documentation and refactor Tmodule
+  [\#442](https://github.com/ocaml-gospel/gospel/pull/442)
 
 # 0.3
 
