@@ -24,12 +24,14 @@ let type_declarations : type_declaration Hts.t = Hts.create 0
 module Mstr = Map.Make (String)
 
 type namespace = {
-  ns_ts : tysymbol Mstr.t;
+  ns_ts : tysymbol Mstr.t; (* type symbol namespace *)
   ns_ls : lsymbol Mstr.t;
+      (* logical symbol - data constructors and functions - namespace *)
   ns_fd : lsymbol Mstr.t;
-  ns_xs : xsymbol Mstr.t;
-  ns_ns : namespace Mstr.t;
-  ns_tns : namespace Mstr.t;
+      (* logical symbal - records fields and logical model - namespace *)
+  ns_xs : xsymbol Mstr.t; (* exception symbols namespace *)
+  ns_ns : namespace Mstr.t; (* module declaration namespace *)
+  ns_tns : namespace Mstr.t; (* module type namespace *)
 }
 
 let empty_ns =
@@ -80,18 +82,6 @@ let ns_add_ns ~allow_duplicate:_ ns s new_ns =
 
 let ns_add_tns ~allow_duplicate:_ ns s tns =
   { ns with ns_tns = Mstr.add s tns ns.ns_tns }
-
-let merge_ns from_ns to_ns =
-  let choose_fst _ x _ = Some x in
-  let union m1 m2 = Mstr.union choose_fst m1 m2 in
-  {
-    ns_ts = union from_ns.ns_ts to_ns.ns_ts;
-    ns_ls = union from_ns.ns_ls to_ns.ns_ls;
-    ns_fd = union from_ns.ns_fd to_ns.ns_fd;
-    ns_xs = union from_ns.ns_xs to_ns.ns_xs;
-    ns_ns = union from_ns.ns_ns to_ns.ns_ns;
-    ns_tns = union from_ns.ns_tns to_ns.ns_tns;
-  }
 
 let rec ns_find get_map ns = function
   | [] -> assert false
@@ -291,6 +281,9 @@ module Mid = Map.Make (Ident)
 type known_ids = signature_item Mid.t
 type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
 
+let get_file_export file = file.fl_export
+let get_file_signature file = file.fl_sigs
+
 type module_uc = {
   muc_nm : Ident.t;
   muc_file : string;
@@ -303,6 +296,10 @@ type module_uc = {
   muc_kid : known_ids;
   muc_crcm : Coercion.t;
 }
+
+let get_module_name muc = muc.muc_nm
+let get_known_ids muc = muc.muc_kid
+let get_coercions muc = muc.muc_crcm
 
 let muc_add ?(export = false) add muc s x =
   match (muc.muc_import, muc.muc_export) with
@@ -318,7 +315,6 @@ let add_fd ?(export = false) = muc_add ~export ns_add_fd
 let add_xs ?(export = false) = muc_add ~export ns_add_xs
 let add_ns ?(export = false) = muc_add ~export ns_add_ns
 let add_tns ?(export = false) = muc_add ~export ns_add_tns
-let add_file muc s file = { muc with muc_files = Mstr.add s file muc.muc_files }
 let get_file muc s = Mstr.find s muc.muc_files
 let add_kid muc id s = { muc with muc_kid = Mid.add id s muc.muc_kid }
 
@@ -390,7 +386,7 @@ let open_empty_module muc s =
 
 let close_module_file muc =
   match (muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs) with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, s0 :: sl ->
+  | _ :: i1 :: il, e0 :: el, p0 :: pl, s0 :: sl ->
       let file =
         {
           fl_nm = Ident.create ~loc:Location.none p0;
@@ -402,7 +398,7 @@ let close_module_file muc =
         muc with
         muc_prefix = pl;
         muc_import = ns_add_ns ~allow_duplicate:true i1 p0 e0 :: il;
-        muc_export = e1 :: el;
+        muc_export = el;
         muc_sigs = sl;
         muc_files = Mstr.add p0 file muc.muc_files;
       }
@@ -436,12 +432,12 @@ let close_module muc =
 (* for functor arguments *)
 let close_module_functor muc =
   match (muc.muc_import, muc.muc_export, muc.muc_prefix, muc.muc_sigs) with
-  | _ :: i1 :: il, e0 :: e1 :: el, p0 :: pl, _ :: sl ->
+  | _ :: i1 :: il, e0 :: el, p0 :: pl, _ :: sl ->
       {
         muc with
         muc_prefix = pl;
         muc_import = ns_add_ns ~allow_duplicate:true i1 p0 e0 :: il;
-        muc_export = e1 :: el;
+        muc_export = el;
         muc_sigs = sl;
       }
   | _ -> assert false
@@ -464,9 +460,6 @@ let get_top_sigs muc =
 
 let get_top_import muc =
   match muc.muc_import with i0 :: _ -> i0 | _ -> assert false
-
-let get_top_export muc =
-  match muc.muc_export with e0 :: _ -> e0 | _ -> assert false
 
 let add_sig_contents muc sig_ =
   let muc = add_sig muc sig_ in
@@ -561,15 +554,6 @@ let wrap_up_muc (muc : module_uc) =
 open Utils.Fmt
 open Tast_printer
 
-let rec tree_ns f fmt ns =
-  Mstr.iter
-    (fun s ns ->
-      if f ns = Mstr.empty then pp fmt "@[%s@\n@]" s
-      else pp fmt "@[%s:@\n@ @[%a@]@\n@]" s (tree_ns f) (f ns))
-    ns
-
-let ns_names nsm = List.map fst (Mstr.bindings nsm)
-
 let print_mstr_vals printer fmt m =
   let print_elem e = pp fmt "@[%a@]@\n" printer e in
   Mstr.iter (fun _ -> print_elem) m
@@ -599,8 +583,6 @@ and print_ns nm fmt { ns_ts; ns_ls; ns_fd; ns_xs; ns_ns; ns_tns } =
     (print_mstr_vals print_ls_decl)
     ns_fd (print_mstr_vals print_xs) ns_xs print_nested_ns ns_ns print_nested_ns
     ns_tns
-(* (tree_ns (fun ns -> ns.ns_ns)) ns_ns
- * (tree_ns (fun ns -> ns.ns_tns)) ns_tns *)
 
 let print_file fmt { fl_nm; fl_sigs; fl_export } =
   pp fmt "@[module %a@\n@[<h2>@\n%a@\n@[<hv2>Signatures@\n%a@]@]@]@."

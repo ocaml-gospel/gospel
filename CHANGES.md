@@ -9,6 +9,8 @@
 
 - Check for repeated name of module and module types
   [\#444](https://github.com/ocaml-gospel/gospel/pull/444)
+- Add documentation and refactor Tmodule
+  [\#442](https://github.com/ocaml-gospel/gospel/pull/442)
 - Fix bug in creation of fresh type variables
   [\#435](https://github.com/ocaml-gospel/gospel/pull/435)
 - Fix typing of pattern with inlined record
