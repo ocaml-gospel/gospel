@@ -82,7 +82,6 @@ let ts id args = { ts_ident = id; ts_args = args; ts_alias = None }
 let mk_ts id args alias = { ts_ident = id; ts_args = args; ts_alias = alias }
 let ts_ident ts = ts.ts_ident
 let ts_args ts = ts.ts_args
-let ts_alias ts = ts.ts_alias
 let ts_arity ts = List.length ts.ts_args
 
 let fresh_ty_var ?(loc = Location.none) s =
@@ -169,9 +168,6 @@ let ty_match mtv ty1 ty2 =
   in
   try ty_match mtv ty1 ty2
   with Exit -> raise (TypeMismatch (ty_inst mtv ty1, ty2))
-
-let ty_equal_check ty1 ty2 =
-  if not (ty_equal ty1 ty2) then raise (TypeMismatch (ty1, ty2))
 
 (** Built-in symbols *)
 
@@ -282,7 +278,6 @@ let xs_equal x y = Ident.equal x.xs_ident y.xs_ident
 module Xs = struct
   type t = xsymbol
 
-  let equal = xs_equal
   let compare x y = Ident.compare x.xs_ident y.xs_ident
 end
 
@@ -339,11 +334,5 @@ let print_ts fmt ts =
     (fun fmt alias ->
       match alias with None -> () | Some ty -> pp fmt " [=%a]" print_ty ty)
     ts.ts_alias
-
-let print_exn_type f = function
-  | Exn_tuple tyl -> list ~sep:star print_ty f tyl
-  | Exn_record args ->
-      let print_arg f (id, ty) = pp f "%a:%a" Ident.pp_simpl id print_ty ty in
-      list ~sep:semi ~first:rbrace ~last:lbrace print_arg f args
 
 let print_xs f x = pp f "%a" Ident.pp_simpl x.xs_ident
