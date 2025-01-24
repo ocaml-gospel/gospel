@@ -319,80 +319,6 @@ let binop = function
   | Uast.Tiff -> Tiff
 
 let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
-  let mk_dterm ~loc dt_node dty =
-    { dt_node; dt_dty = Some dty; dt_loc = loc }
-  in
-  let apply dt1 t2 =
-    let dt2 = dterm whereami kid crcm ns denv t2 in
-    let dty = dty_fresh () in
-    unify dt1 (Some (Tapp (ts_arrow, [ dty_of_dterm dt2; dty ])));
-    let dt_app = DTapp (fs_apply, [ dt1; dt2 ]) in
-    mk_dterm ~loc:dt2.dt_loc dt_app dty
-  in
-  (* CHECK location *)
-  let map_apply dt tl = List.fold_left apply dt tl in
-  let gen_app ~loc ls tl =
-    let nls = List.length (get_args ls) and ntl = List.length tl in
-    let args, extra = split_at_i nls tl in
-    let dtl = List.map (dterm whereami kid crcm ns denv) args in
-    let dtyl, dty = specialize_ls ls in
-    if ntl < nls then
-      let dtyl1, dtyl2 = split_at_i ntl dtyl in
-      let dtl = List.map2 (dterm_expected crcm) dtl dtyl1 in
-      let dty =
-        List.fold_right
-          (fun t1 t2 -> Dterm.Tapp (ts_arrow, [ t1; t2 ]))
-          dtyl2 dty
-      in
-      mk_dterm ~loc (DTapp (ls, dtl)) dty
-    else
-      let dtl = List.map2 (dterm_expected crcm) dtl dtyl in
-      let dt = mk_dterm ~loc (DTapp (ls, dtl)) dty in
-      if extra = [] then dt else map_apply dt extra
-  in
-  let gen_app ~loc ls tl =
-    (* gen_app in two layers, to check that constructors are fully
-       applied (and with the usual syntax) without enforcing this on
-       functions *)
-    match ls with
-    | Constructor_symbol { ls_name; _ } -> (
-        let n = List.length (get_args ls) in
-        match tl with
-        | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
-            gen_app ~loc ls tl
-        | [ { term_desc = Ttuple tl; _ } ] when n > 1 ->
-            W.error ~loc (W.Bad_arity (ls_name.id_str, n, List.length tl))
-        | _ when List.length tl < n ->
-            W.error ~loc (W.Partial_application ls_name.id_str)
-        | _ :: _ :: _ when not (is_fs_tuple ls || ls_equal ls fs_list_cons) ->
-            W.error ~loc W.Syntax_error
-        | _ -> gen_app ~loc ls tl)
-    | _ -> gen_app ~loc ls tl
-  in
-  let fun_app ~loc ls tl =
-    match ls with
-    | Field_symbol { ls_name; _ } ->
-        W.error ~loc (W.Field_application ls_name.id_str)
-    | _ -> gen_app ~loc ls tl
-  in
-  let qualid_app q tl =
-    match q with
-    | Qpreid ({ pid_loc = loc; pid_str = s; _ } as pid) -> (
-        match denv_get_opt denv s with
-        | Some dty ->
-            let dtv = mk_dterm ~loc (DTvar pid) dty in
-            map_apply dtv tl
-        | None -> fun_app ~loc (find_q_ls ns q) tl)
-    | _ -> fun_app ~loc (find_q_ls ns q) tl
-  in
-  let rec unfold_app t1 t2 tl =
-    match t1.term_desc with
-    | Uast.Tpreid q -> qualid_app q (t2 :: tl)
-    | Uast.Tapply (t11, t12) -> unfold_app t11 t12 (t2 :: tl)
-    | _ ->
-        let dt1 = dterm whereami kid crcm ns denv t1 in
-        map_apply dt1 (t2 :: tl)
-  in
   match term_desc with
   | Uast.Ttrue -> mk_dterm ~loc DTtrue dty_bool
   | Uast.Tfalse -> mk_dterm ~loc DTfalse dty_bool
@@ -419,18 +345,22 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       match find_q_ls ns q with
       | Field_symbol _ ->
           W.error ~loc (W.Symbol_not_found (string_list_of_qualid q))
-      | _ as ls -> gen_app ~loc ls [])
+      | Constructor_symbol _ as ls ->
+          gen_constructor_dtapp ~loc whereami kid crcm ns denv ls []
+      | Function_symbol _ as ls ->
+          gen_dtapp ~loc whereami kid crcm ns denv ls [])
   | Uast.Tfield (t, q) -> (
       match find_q_fd ns q with
-      | Field_symbol _ as ls -> gen_app ~loc ls [ t ]
+      | Field_symbol _ as ls ->
+          gen_dtapp ~loc whereami kid crcm ns denv ls [ t ]
       | Constructor_symbol { ls_name; _ } | Function_symbol { ls_name; _ } ->
           W.error ~loc (W.Bad_record_field ls_name.id_str))
-  | Uast.Tidapp (q, tl) -> qualid_app q tl
+  | Uast.Tidapp (q, tl) -> qualid_app ~loc whereami kid crcm ns denv q tl
   (* Inlined records are not supposed to escape the scope of the constructor,
      so here the left term should be the constructor and the right term a
      record *)
   | Uast.Tapply
-      ( ({ term_desc = Tpreid q; _ } as t1),
+      ( { term_desc = Tpreid q; _ },
         ({ term_desc = Trecord fields_right; _ } as t2) ) -> (
       match find_q_ls ns q with
       | Constructor_symbol
@@ -487,20 +417,33 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
           | fields, [] -> mk_dterm ~loc (DTapp (ls, fields)) dty
           | _, missing -> W.(error ~loc (Label_missing missing)))
       | Constructor_symbol { ls_name = _; ls_args = Cstr_tuple _; _ } ->
-          unfold_app t1 t2 []
-      | Function_symbol _ -> unfold_app t1 t2 []
+          qualid_app ~loc whereami kid crcm ns denv q [ t2 ]
+      | Function_symbol _ -> qualid_app ~loc whereami kid crcm ns denv q [ t2 ]
       | Field_symbol { ls_name; _ } ->
           W.error ~loc (W.Field_application ls_name.id_str))
-  | Uast.Tapply (({ term_desc = Tpreid q; _ } as t1), t2) -> (
+  | Uast.Tapply ({ term_desc = Tpreid q; _ }, t2) -> (
       try
         (* [find_ls_q] might raise an exception if we are not looking in the
            right place but the term is however legal *)
         match find_q_ls ns q with
         | Constructor_symbol { ls_args = Cstr_record _; _ } ->
             W.(error ~loc Inlined_record_expected)
-        | _ -> unfold_app t1 t2 []
-      with W.(Error (_, Symbol_not_found _)) -> unfold_app t1 t2 [])
-  | Uast.Tapply (t1, t2) -> unfold_app t1 t2 []
+        | _ -> qualid_app ~loc whereami kid crcm ns denv q [ t2 ]
+      with W.(Error (_, Symbol_not_found _)) ->
+        qualid_app ~loc whereami kid crcm ns denv q [ t2 ])
+  | Uast.Tapply (t1, t2) ->
+      (* typed ast requires that in an application node, the function is a
+         lsymbol *)
+      let rec loop t1 t2 tl =
+        match t1.term_desc with
+        | Uast.Tpreid q -> qualid_app ~loc whereami kid crcm ns denv q (t2 :: tl)
+        | Uast.Tapply (t11, t12) -> loop t11 t12 (t2 :: tl)
+        | _ ->
+            let dt1 = dterm whereami kid crcm ns denv t1 in
+            (* apply will inject the fs_apply symbol where required *)
+            map_apply ~loc whereami kid crcm ns denv dt1 (t2 :: tl)
+      in
+      loop t1 t2 []
   | Uast.Tnot t ->
       let dt = dterm whereami kid crcm ns denv t in
       dfmla_unify dt;
@@ -514,8 +457,12 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       let dt2 = dterm_expected_op crcm dt2 dty in
       let dt3 = dterm_expected_op crcm dt3 dty in
       mk_dterm ~loc (DTif (dt1, dt2, dt3)) (Option.get dt2.dt_dty)
-  | Uast.Ttuple [] -> fun_app ~loc fs_unit []
-  | Uast.Ttuple tl -> fun_app ~loc (fs_tuple (List.length tl)) tl
+  | Uast.Ttuple [] ->
+      gen_constructor_dtapp ~loc whereami kid crcm ns denv fs_unit []
+  | Uast.Ttuple tl ->
+      gen_constructor_dtapp ~loc whereami kid crcm ns denv
+        (fs_tuple (List.length tl))
+        tl
   | Uast.Tlet (pid, t1, t2) ->
       let dt1 = dterm whereami kid crcm ns denv t1 in
       let denv = denv_add_var denv pid.pid_str (dty_of_dterm dt1) in
@@ -659,6 +606,70 @@ let rec dterm whereami kid crcm ns denv { term_desc; term_loc = loc } : dterm =
       match List.fold_right2 aux fields_name dtyl ([], []) with
       | fields, [] -> mk_dterm ~loc (DTapp (cs, fields)) dty
       | _, missing -> W.error ~loc (W.Label_missing missing))
+
+and gen_constructor_dtapp ~loc whereami kid crcm ns denv ls tl =
+  (* Builds the application of a constructor to its arguments. Makes sure that
+     the constructor is fully applied (and with the usual syntax *)
+  match ls with
+  | Constructor_symbol { ls_name; _ } -> (
+      let n = List.length (get_args ls) in
+      match tl with
+      | [ { term_desc = Ttuple tl; _ } ] when List.length tl = n ->
+          gen_dtapp ~loc whereami kid crcm ns denv ls tl
+      | [ { term_desc = Ttuple tl; _ } ] when n > 1 ->
+          W.error ~loc (W.Bad_arity (ls_name.id_str, n, List.length tl))
+      | _ when List.length tl < n ->
+          W.error ~loc (W.Partial_application ls_name.id_str)
+      | _ :: _ :: _ when not (is_fs_tuple ls || ls_equal ls fs_list_cons) ->
+          W.error ~loc W.Syntax_error
+      | _ -> gen_dtapp ~loc whereami kid crcm ns denv ls tl)
+  | _ -> assert false
+
+and gen_dtapp ~loc whereami kid crcm ns denv ls tl =
+  let nls = List.length (get_args ls) and ntl = List.length tl in
+  let args, extra = split_at_i nls tl in
+  let dtl = List.map (dterm whereami kid crcm ns denv) args in
+  let dtyl, dty = specialize_ls ls in
+  if ntl < nls then
+    (* partial application *)
+    let dtyl1, dtyl2 = split_at_i ntl dtyl in
+    let dtl = List.map2 (dterm_expected crcm) dtl dtyl1 in
+    let dty =
+      List.fold_right (fun t1 t2 -> Dterm.Tapp (ts_arrow, [ t1; t2 ])) dtyl2 dty
+    in
+    mk_dterm ~loc (DTapp (ls, dtl)) dty
+  else
+    let dtl = List.map2 (dterm_expected crcm) dtl dtyl in
+    let dt = mk_dterm ~loc (DTapp (ls, dtl)) dty in
+    if extra = [] then dt else map_apply ~loc whereami kid crcm ns denv dt extra
+
+and qualid_app ~loc whereami kid crcm ns denv q tl =
+  let choose ~loc ls tl =
+    match ls with
+    | Field_symbol { ls_name; _ } ->
+        W.error ~loc (W.Field_application ls_name.id_str)
+    | Function_symbol _ -> gen_dtapp ~loc whereami kid crcm ns denv ls tl
+    | Constructor_symbol _ ->
+        gen_constructor_dtapp ~loc whereami kid crcm ns denv ls tl
+  in
+  match q with
+  | Qpreid ({ pid_loc = loc; pid_str = s; _ } as pid) -> (
+      match denv_get_opt denv s with
+      | Some dty ->
+          let dtv = mk_dterm ~loc (DTvar pid) dty in
+          map_apply ~loc whereami kid crcm ns denv dtv tl
+      | None -> choose ~loc (find_q_ls ns q) tl)
+  | _ -> choose ~loc (find_q_ls ns q) tl
+
+and apply ~loc whereami kid crcm ns denv dt1 t2 =
+  let dt2 = dterm whereami kid crcm ns denv t2 in
+  let dty = dty_fresh () in
+  unify dt1 (Some (Tapp (ts_arrow, [ dty_of_dterm dt2; dty ])));
+  let dt_app = DTapp (fs_apply, [ dt1; dt2 ]) in
+  mk_dterm ~loc:dt2.dt_loc dt_app dty
+
+and map_apply ~loc whereami kid crcm ns denv dt tl =
+  List.fold_left (apply ~loc whereami kid crcm ns denv) dt tl
 
 let dterm whereami kid crcm ns env t =
   let denv = Mstr.map (fun vs -> dty_of_ty vs.vs_ty) env in
