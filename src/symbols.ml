@@ -104,8 +104,6 @@ module LS = struct
   type t = lsymbol
 
   let compare = Stdlib.compare
-  let equal = ls_equal
-  let hash = (Hashtbl.hash : lsymbol -> int)
 end
 
 module Sls = Set.Make (LS)
