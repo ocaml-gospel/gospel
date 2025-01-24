@@ -171,45 +171,18 @@ let parse_record ~loc kid ns fll =
   (cs, pjl, fll)
 
 let rec dpattern kid ns { pat_desc; pat_loc = loc } =
-  let mk_dpattern ~loc dp_node dp_dty dp_vars =
-    { dp_node; dp_dty; dp_vars; dp_loc = loc }
-  in
-  let mk_pwild loc dty = mk_dpattern ~loc DPwild dty Mstr.empty in
-  let rec mk_papp ~loc cs dpl =
-    let dtyl, dty = specialize_cs ~loc cs in
-    match (dpl, get_args cs) with
-    (* allow pattern C (x,y) when the constructor C expects only one
-       argument, which can be a tuple (such as ('a * 'b) option) *)
-    | _ :: _ :: _, [ _ ] ->
-        let n = List.length dpl in
-        let p = mk_papp ~loc (fs_tuple n) dpl in
-        mk_papp ~loc cs [ p ]
-    (* allow C _ with type t = C of int * int *)
-    | [ { dp_node = DPwild; _ } ], _ :: _ :: _ ->
-        let dpl = List.map (mk_pwild loc) dtyl in
-        mk_papp ~loc cs dpl
-    | _ ->
-        app_unify ~loc cs dpattern_unify dpl dtyl;
-        let check_duplicate s _ _ = W.error ~loc (W.Duplicated_variable s) in
-        let vars =
-          List.fold_left
-            (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
-            Mstr.empty dpl
-        in
-        mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
-  in
   match pat_desc with
   | Pwild ->
       let dty = dty_fresh () in
-      mk_pwild loc dty
+      mk_pwild ~loc dty
   | Pinterval (c1, c2) ->
       mk_dpattern ~loc (DPinterval (c1, c2)) dty_char Mstr.empty
   | Pvar pid ->
       let dty = dty_fresh () in
       let vars = Mstr.singleton pid.pid_str dty in
       mk_dpattern ~loc (DPvar pid) dty vars
-  | Ptrue -> mk_papp ~loc fs_bool_true []
-  | Pfalse -> mk_papp ~loc fs_bool_false []
+  | Ptrue -> mk_dpapp ~loc fs_bool_true []
+  | Pfalse -> mk_dpapp ~loc fs_bool_false []
   | Papp (q, ([ { pat_desc = Prec defined; _ } ] as pl)) -> (
       match find_q_ls ns q with
       | Constructor_symbol { ls_name; ls_args = Cstr_record expected; ls_value }
@@ -275,15 +248,15 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
       | _ ->
           let cs = find_q_ls ns q in
           let dpl = List.map (dpattern kid ns) pl in
-          mk_papp ~loc cs dpl)
+          mk_dpapp ~loc cs dpl)
   | Papp (q, pl) ->
       let cs = find_q_ls ns q in
       let dpl = List.map (dpattern kid ns) pl in
-      mk_papp ~loc cs dpl
+      mk_dpapp ~loc cs dpl
   | Ptuple pl ->
       let cs = fs_tuple (List.length pl) in
       let dpl = List.map (dpattern kid ns) pl in
-      mk_papp ~loc cs dpl
+      mk_dpapp ~loc cs dpl
   | Pas (p, pid) ->
       let dp = dpattern kid ns p in
       if Mstr.mem pid.pid_str dp.dp_vars then
@@ -318,7 +291,7 @@ let rec dpattern kid ns { pat_desc; pat_loc = loc } =
         | None -> (patterns, (get_name ls).id_str :: missing)
       in
       match List.fold_right aux fields_name ([], []) with
-      | patterns, [] -> mk_papp ~loc cs patterns
+      | patterns, [] -> mk_dpapp ~loc cs patterns
       | _, missing -> W.error ~loc (W.Label_missing missing))
   | Pconst c ->
       let dty =

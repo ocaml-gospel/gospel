@@ -202,6 +202,38 @@ let dfmla_unify dt =
 let unify dt dty =
   match dty with None -> assert false | Some dt_dty -> dterm_unify dt dt_dty
 
+(* Smart constructors *)
+
+let mk_dpattern ~loc dp_node dp_dty dp_vars =
+  { dp_node; dp_dty; dp_vars; dp_loc = loc }
+
+let mk_pwild ~loc dty = mk_dpattern ~loc DPwild dty Mstr.empty
+
+let rec mk_dpapp ~loc cs dpl =
+  let dtyl, dty = specialize_cs ~loc cs in
+  match (dpl, get_args cs) with
+  (* allow pattern C (x,y) when the constructor C expects only one
+       argument, which can be a tuple (such as ('a * 'b) option) *)
+  | _ :: _ :: _, [ _ ] ->
+      let n = List.length dpl in
+      let p = mk_dpapp ~loc (fs_tuple n) dpl in
+      mk_dpapp ~loc cs [ p ]
+  (* allow C _ with type t = C of int * int *)
+  | [ { dp_node = DPwild; _ } ], _ :: _ :: _ ->
+      let dpl = List.map (mk_pwild ~loc) dtyl in
+      mk_dpapp ~loc cs dpl
+  | _ ->
+      app_unify ~loc cs dpattern_unify dpl dtyl;
+      let check_duplicate s _ _ = W.error ~loc (W.Duplicated_variable s) in
+      let vars =
+        List.fold_left
+          (fun acc dp -> Mstr.union check_duplicate acc dp.dp_vars)
+          Mstr.empty dpl
+      in
+      mk_dpattern ~loc (DPapp (cs, dpl)) dty vars
+
+let mk_dterm ~loc dt_node dty = { dt_node; dt_dty = Some dty; dt_loc = loc }
+
 (* environment *)
 
 type denv = dty Mstr.t
