@@ -76,15 +76,19 @@ let rec print_term fmt { t_node; t_ty; t_attrs; _ } =
     | Tvar vs ->
         pp fmt "%a" print_vs vs;
         assert (vs.vs_ty = t_ty) (* TODO remove this *)
-    | Tapp (ls, [ x1; x2 ]) when Identifier.is_infix (get_name ls).id_str ->
+    | Tidapp (ls, [ x1; x2 ]) when Identifier.is_infix (get_name ls).id_str ->
         let op_nm =
           match String.split_on_char ' ' (get_name ls).id_str with
           | [ x ] | [ _; x ] -> x
           | _ -> assert false
         in
         pp fmt "(%a %s %a)%a" print_term x1 op_nm print_term x2 print_ty t_ty
-    | Tapp (ls, tl) ->
+    | Tidapp (ls, tl) ->
         pp fmt "(%a %a)%a" Ident.pp_simpl (get_name ls)
+          (list ~first:sp ~sep:sp print_term)
+          tl print_ty t_ty
+    | Tapply (t, tl) ->
+        pp fmt "(%a %a)%a" print_term t
           (list ~first:sp ~sep:sp print_term)
           tl print_ty t_ty
     | Tfield (t, ls) ->

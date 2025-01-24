@@ -113,7 +113,8 @@ and dterm_node =
   | DTattr of dterm * string list
   | DTvar of Preid.t
   | DTconst of constant
-  | DTapp of lsymbol * dterm list
+  | DTapply of dterm * dterm list
+  | DTidapp of lsymbol * dterm list
   | DTif of dterm * dterm * dterm
   | DTlet of Preid.t * dterm * dterm
   | DTcase of dterm * (dpattern * dterm option * dterm) list
@@ -231,7 +232,7 @@ let apply_coercion l dt =
   let apply dt ls =
     let dtyl, dty = specialize_ls ls in
     dterm_unify dt (List.hd dtyl);
-    { dt_node = DTapp (ls, [ dt ]); dt_dty = Some dty; dt_loc = dt.dt_loc }
+    { dt_node = DTidapp (ls, [ dt ]); dt_dty = Some dty; dt_loc = dt.dt_loc }
   in
   List.fold_left apply dt l
 
@@ -339,15 +340,20 @@ and term_node ~loc env dty dterm_node =
       (* TODO should I match vs.vs_ty with dty? *)
       t_var vs loc
   | DTconst c -> t_const c (ty_of_dty (Option.get dty)) loc
-  | DTapp (ls, []) when ls_equal ls fs_bool_true -> t_true loc
-  | DTapp (ls, []) when ls_equal ls fs_bool_false -> t_false loc
-  | DTapp ((Field_symbol _ as ls), [ dt1 ]) ->
+  | DTidapp (ls, []) when ls_equal ls fs_bool_true -> t_true loc
+  | DTidapp (ls, []) when ls_equal ls fs_bool_false -> t_false loc
+  | DTidapp ((Field_symbol _ as ls), [ dt1 ]) ->
       t_field (term env dt1) ls
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
         loc
-  | DTapp (ls, dtl) ->
-      t_app ls
+  | DTidapp (ls, dtl) ->
+      t_ls ls
         (List.map (term env) dtl)
+        (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
+        loc
+  | DTapply (t, tl) ->
+      t_app (term env t)
+        (List.map (term env) tl)
         (Option.fold ~some:ty_of_dty ~none:ty_bool dty)
         loc
   | DTif (dt1, dt2, dt3) ->

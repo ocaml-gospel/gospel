@@ -16,15 +16,13 @@ open Symbols
 module Ident = Identifier.Ident
 
 (** type checking *)
-let ls_arg_inst ls tl =
+let arg_inst args tl =
   let rec short_fold_left2 f accu l1 l2 =
     match (l1, l2) with
     | a1 :: l1, a2 :: l2 -> short_fold_left2 f (f accu a1 a2) l1 l2
     | _, _ -> accu
   in
-  short_fold_left2
-    (fun tvm ty t -> ty_match tvm ty t.t_ty)
-    Mtv.empty (get_args ls) tl
+  short_fold_left2 (fun tvm ty t -> ty_match tvm ty t.t_ty) Mtv.empty args tl
 
 let drop n xs =
   let rec aux n xs =
@@ -35,18 +33,23 @@ let drop n xs =
   in
   if n < 0 then invalid_arg "drop" else aux n xs
 
-let ls_app_inst ls tl ty =
-  let s = ls_arg_inst ls tl in
-  let vty = get_value ls in
+let rec args_value ty =
+  match ty.ty_node with
+  | Tyapp (ts, [ arg; t ]) when ts_equal ts ts_arrow ->
+      let args, v = args_value t in
+      (arg :: args, v)
+  | _ -> ([], ty)
+
+let app_inst args vty tl ty =
+  let s = arg_inst args tl in
   let vty =
     let ntl = List.length tl in
-    if ntl >= List.length (get_args ls) then vty
+    if ntl >= List.length args then vty
     else
       (* build the result type in case of a partial application *)
       List.fold_right
         (fun t1 t2 -> { ty_node = Tyapp (ts_arrow, [ t1; t2 ]) })
-        (drop ntl (get_args ls))
-        vty
+        (drop ntl args) vty
   in
   ty_match s vty ty
 
@@ -63,7 +66,11 @@ let rec t_free_vars t =
   match t.t_node with
   | Tvar vs -> Svs.singleton vs
   | Tconst _ -> Svs.empty
-  | Tapp (_, tl) ->
+  | Tapply (t, tl) ->
+      List.fold_left
+        (fun fvs t -> Svs.union (t_free_vars t) fvs)
+        (t_free_vars t) tl
+  | Tidapp (_, tl) ->
       List.fold_left (fun fvs t -> Svs.union (t_free_vars t) fvs) Svs.empty tl
   | Tfield (t, _) -> t_free_vars t
   | Tif (t1, t2, t3) ->
@@ -118,12 +125,17 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_attrs = []; t_loc }
 let t_var vs = mk_term (Tvar vs) vs.vs_ty
 let t_const c ty = mk_term (Tconst c) ty
 
-let t_app ls tl ty loc =
-  ignore (ls_app_inst ls tl ty : ty Mtv.t);
-  mk_term (Tapp (ls, tl)) ty loc
+let t_app t tl ty loc =
+  let args, v = args_value t.t_ty in
+  ignore (app_inst args v tl ty : ty Mtv.t);
+  mk_term (Tapply (t, tl)) ty loc
+
+let t_ls ls tl ty loc =
+  ignore (app_inst (get_args ls) (get_value ls) tl ty : ty Mtv.t);
+  mk_term (Tidapp (ls, tl)) ty loc
 
 let t_field t ls ty loc =
-  ignore (ls_app_inst ls [ t ] ty : ty Mtv.t);
+  ignore (app_inst (get_args ls) (get_value ls) [ t ] ty : ty Mtv.t);
   mk_term (Tfield (t, ls)) ty loc
 
 let t_if t1 t2 t3 = mk_term (Tif (t1, t2, t3)) t2.t_ty
@@ -142,9 +154,9 @@ let t_old t = mk_term (Told t) t.t_ty
 let t_true = mk_term Ttrue ty_bool
 let t_false = mk_term Tfalse ty_bool
 let t_attr_set attr t = { t with t_attrs = attr }
-let t_bool_true = mk_term (Tapp (fs_bool_true, [])) ty_bool
-let t_bool_false = mk_term (Tapp (fs_bool_false, [])) ty_bool
-let t_equ t1 t2 = t_app ps_equ [ t1; t2 ] ty_bool
+let t_bool_true = mk_term (Tidapp (fs_bool_true, [])) ty_bool
+let t_bool_false = mk_term (Tidapp (fs_bool_false, [])) ty_bool
+let t_equ t1 t2 = t_ls ps_equ [ t1; t2 ] ty_bool
 let t_neq t1 t2 loc = t_not (t_equ t1 t2 loc)
 let f_binop op f1 f2 = t_binop op f1 f2
 let f_not f = t_not f
