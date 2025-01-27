@@ -16,12 +16,11 @@ open Symbols
 open Tterm_printer
 open Tast
 open Tast_helper
+open Utils
 
 let type_declarations : type_declaration Hts.t = Hts.create 0
 
 (** Namespace *)
-
-module Mstr = Map.Make (String)
 
 type namespace = {
   ns_ts : tysymbol Mstr.t; (* type symbol namespace *)
@@ -275,8 +274,6 @@ let ns_with_primitives =
     (primitive_ls @ primitive_ps)
 
 (** Modules *)
-
-module Mid = Map.Make (Ident)
 
 type known_ids = signature_item Mid.t
 type file = { fl_nm : Ident.t; fl_sigs : signature; fl_export : namespace }
