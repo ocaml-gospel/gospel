@@ -34,6 +34,8 @@
 
 ## Internals
 
+- Extract and document typing environment
+  [\#447](https://github.com/ocaml-gospel/gospel/pull/447)
 - Add documentation to Symbols and Ttypes modules
   [\#445](https://github.com/ocaml-gospel/gospel/pull/445)
 - Add documentation and refactor Tmodule
