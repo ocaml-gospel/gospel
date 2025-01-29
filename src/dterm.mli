@@ -40,7 +40,6 @@ and dterm_node =
   | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
   | DTlambda of dpattern list * dterm
-  | DTbinop of binop * dterm * dterm
   | DTnot of dterm
   | DTold of dterm
   | DTtrue
