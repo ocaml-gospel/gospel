@@ -12,5 +12,5 @@ val f : int -> int
    [125] File "match_guard.mli", line 4, characters 35-36:
          4 |            | _ when false->true -> 1
                                                 ^
-         Error: A formula was expected.
+         Error: This term has type integer but a term was expected of type bool.
    |gospel_expected} *)

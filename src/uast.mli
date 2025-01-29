@@ -50,7 +50,6 @@ and pat_desc =
 
 type binder = Preid.t * pty option
 type param = Location.t * Preid.t * pty
-type binop = Tand | Tand_asym | Tor | Tor_asym | Timplies | Tiff
 type quant = Tforall | Texists
 
 type term = { term_desc : term_desc; term_loc : Location.t }
@@ -64,7 +63,6 @@ and term_desc =
   | Tfield of term * qualid
   | Tapply of term * term
   | Tinfix of term * Preid.t * term
-  | Tbinop of term * binop * term
   | Tnot of term
   | Tif of term * term * term
   | Tquant of quant * binder list * term

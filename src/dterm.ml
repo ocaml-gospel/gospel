@@ -119,7 +119,6 @@ and dterm_node =
   | DTcase of dterm * (dpattern * dterm option * dterm) list
   | DTquant of quant * dbinder list * dterm
   | DTlambda of dpattern list * dterm
-  | DTbinop of binop * dterm * dterm
   | DTnot of dterm
   | DTold of dterm
   | DTtrue
@@ -390,9 +389,6 @@ and term_node ~loc env dty dterm_node =
       let env = Mstr.add pid.pid_str vs env in
       let t2 = term env dt2 in
       t_let vs t1 t2 loc
-  | DTbinop (b, dt1, dt2) ->
-      let t1, t2 = (term env dt1, term env dt2) in
-      t_binop b t1 t2 loc
   | DTnot dt -> t_not (term env dt) loc
   | DTtrue -> t_true loc
   | DTfalse -> t_false loc

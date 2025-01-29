@@ -35,6 +35,49 @@
     [Gospelstdlib]. This module is automatically opened in Gospel
     specifications. *)
 
+(** Logical symbols *)
+
+(*@ predicate (->) (p : bool) (q : bool) *)
+
+(*@ axiom imp_refl :
+      forall p. p -> p *)
+
+(*@ axiom imp_false :
+      forall p. false -> p *)
+
+(*@ axiom imp_true :
+      forall p. p -> true *)
+
+(*@ predicate (/\) (p : bool) (q : bool) *)
+
+(*@ axiom conj_def :
+      forall p q. p -> q -> p /\ q *)
+
+(*@ predicate (\/) (p : bool) (q : bool) *)
+
+(*@ axiom disj_left :
+      forall p q. p -> p \/ q *)
+
+(*@ axiom disj_right :
+      forall p q. p -> q \/ p *)
+
+(*@ predicate (<->) (p : bool) (q : bool) *)
+
+(*@ axiom iff_def :
+      forall p q. (p <-> q) -> (p -> q /\ q -> p)  *)
+
+(*@ function (&&) (b1 : bool) (b2 : bool) : bool *)
+
+(*@ axiom andb_def :
+      forall b1 b2.
+      b1 && b2 -> b1 = true /\ b2 = true *)
+
+(*@ function (||) (b1 : bool) (b2 : bool) : bool *)
+
+(*@ axiom orb_def :
+      forall b1 b2.
+      b1 || b2 -> b1 = true \/ b2 = true *)
+
 (*@ type 'a sequence *)
 (** The type for finite sequences. *)
 

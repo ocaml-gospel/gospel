@@ -254,14 +254,6 @@ let rec dpattern env { pat_desc; pat_loc = loc } =
       in
       mk_dpattern ~loc (DPconst c) dty Mstr.empty
 
-let binop = function
-  | Uast.Tand -> Tand
-  | Uast.Tand_asym -> Tand_asym
-  | Uast.Tor -> Tor
-  | Uast.Tor_asym -> Tor_asym
-  | Uast.Timplies -> Timplies
-  | Uast.Tiff -> Tiff
-
 let rec dterm env { term_desc; term_loc = loc } =
   match term_desc with
   | Uast.Ttrue -> mk_dterm ~loc DTtrue dty_bool
@@ -438,16 +430,11 @@ let rec dterm env { term_desc; term_loc = loc } =
             let de23 = chain loc23 de2 op2 t3 in
             dfmla_unify de12;
             dfmla_unify de23;
-            mk_dterm ~loc (DTbinop (Tand, de12, de23)) dty_bool
+            let ls = find_ls env [ "infix /\\" ] ~loc:Location.none in
+            mk_dterm ~loc (DTapp (ls, [ de12; de23 ])) dty_bool
         | _ -> apply de1 op1 (dterm env t23)
       in
       chain loc (dterm env t1) op1 t23
-  | Uast.Tbinop (t1, op, t2) ->
-      let dt1 = dterm env t1 in
-      let dt2 = dterm env t2 in
-      dfmla_unify dt1;
-      dfmla_unify dt2;
-      mk_dterm ~loc (DTbinop (binop op, dt1, dt2)) dty_bool
   | Uast.Tquant (q, vl, t) ->
       let get_dty pty =
         match pty with None -> dty_fresh () | Some pty -> dty_of_pty env pty
