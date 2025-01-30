@@ -288,10 +288,6 @@ let rec dterm env ({ term_desc; term_loc = loc } as t) =
       | Field_symbol _ as ls -> gen_dtapp ~loc env ls [ t ]
       | Constructor_symbol { ls_name; _ } | Function_symbol { ls_name; _ } ->
           W.error ~loc (W.Bad_record_field ls_name.id_str))
-  | Uast.Tidapp (q, tl) -> qualid_app ~loc env q tl
-  (* Inlined records are not supposed to escape the scope of the constructor,
-     so here the left term should be the constructor and the right term a
-     record *)
   | Uast.Tapply
       ( { term_desc = Tpreid q; _ },
         ({ term_desc = Trecord fields_right; _ } as t2) ) -> (

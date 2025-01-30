@@ -24,11 +24,11 @@
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
-  let get_op l = Qpreid (mk_pid (mixfix "[_]") l)
-  let set_op l = Qpreid (mk_pid (mixfix "[->]") l)
-  let sub_op l = Qpreid (mk_pid (mixfix "[_.._]") l)
-  let above_op l = Qpreid (mk_pid (mixfix "[_..]") l)
-  let below_op l = Qpreid (mk_pid (mixfix "[.._]") l)
+  let get_op l = mk_pid (mixfix "[_]") l
+  let set_op l = mk_pid (mixfix "[->]") l
+  let sub_op l = mk_pid (mixfix "[_.._]") l
+  let above_op l = mk_pid (mixfix "[_..]") l
+  let below_op l = mk_pid (mixfix "[.._]") l
 
   let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
@@ -307,16 +307,15 @@ term_:
 | OLD term
     { Told $2 }
 | prefix_op term %prec prec_prefix_op
-    { Tidapp (Qpreid $1, [$2]) }
+    { mk_op_apply $1 [$2] }
 | l = term ; o = infix_op_1 ; r = term
     { Tinfix (l, o, r) }
 | l = term ; o = infix_op_234 ; r = term
-    { Tidapp (Qpreid o, [l; r]) }
+    { mk_op_apply o [l; r] }
 | l = term ; COLONCOLON ; r = term
-    { Tidapp (Qpreid (mk_pid (infix "::") $loc), [l; r]) }
+    { mk_op_apply (mk_pid (infix "::") $loc) [l; r] }
 | l = term ; o = BACKQUOTE_LIDENT ; r = term
-    { let id = mk_pid o $loc in
-      Tidapp (Qpreid id, [l; r]) }
+    { mk_op_apply (mk_pid o $loc) [l; r] }
 | term_arg located(term_arg)+
     { let join f (a, e) = mk_term (Tapply (f, a)) ($startpos, e) in
       (List.fold_left join $1 $2).term_desc }
@@ -390,13 +389,13 @@ term_arg_:
 | constant                  { Tconst $1 }
 | TRUE                      { Ttrue }
 | FALSE                     { Tfalse }
-| o = oppref ; a = term_arg { Tidapp (Qpreid o, [a]) }
+| o = oppref ; a = term_arg { mk_op_apply o [a] }
 | term_sub_                 { $1 }
 ;
 
 term_dot_:
 | lqualid                   { Tpreid $1 }
-| o = oppref ; a = term_dot { Tidapp (Qpreid o, [a]) }
+| o = oppref ; a = term_dot { mk_op_apply o [a] }
 | term_sub_                 { $1 }
 ;
 
@@ -409,8 +408,8 @@ term_block_:
 | LEFTBRCRIGHTBRC
     { Tpreid (Qpreid (mk_pid (mixfix "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = Qpreid (mk_pid (mixfix "{:_:}") $loc) in
-      Tidapp (id, [t]) }
+    { let id = mk_pid (mixfix "{:_:}") $loc in
+      mk_op_apply id [t] }
 ;
 
 term_sub_:
@@ -421,15 +420,15 @@ term_sub_:
 | term_dot DOT lqualid_rich
     { Tfield ($1, $3) }
 | term_arg LEFTSQ term RIGHTSQ
-    { Tidapp (get_op $loc($2), [$1;$3]) }
+    { mk_op_apply (get_op $loc($2)) [$1;$3] }
 | term_arg LEFTSQ term ARROW term RIGHTSQ
-    { Tidapp (set_op $loc($2), [$1;$3;$5]) }
+    { mk_op_apply (set_op $loc($2)) [$1;$3;$5] }
 | term_arg LEFTSQ term DOTDOT term RIGHTSQ
-    { Tidapp (sub_op $loc($2), [$1;$3;$5]) }
+    { mk_op_apply (sub_op $loc($2)) [$1;$3;$5] }
 | term_arg LEFTSQ term DOTDOT RIGHTSQ
-    { Tidapp (above_op $loc($2), [$1;$3]) }
+    { mk_op_apply (above_op $loc($2)) [$1;$3] }
 | term_arg LEFTSQ DOTDOT term RIGHTSQ
-    { Tidapp (below_op $loc($2), [$1;$4]) }
+    { mk_op_apply (below_op $loc($2)) [$1;$4] }
 | LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
 ;
 
