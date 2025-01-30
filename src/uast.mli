@@ -59,7 +59,6 @@ and term_desc =
   | Tfalse
   | Tconst of constant
   | Tpreid of qualid
-  | Tidapp of qualid * term list
   | Tfield of term * qualid
   | Tapply of term * term
   | Tinfix of term * Preid.t * term

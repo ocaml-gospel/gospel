@@ -9,6 +9,19 @@
 (**************************************************************************)
 open Uast
 
+let mk_term t l = { term_desc = t; term_loc = l }
+
+(** [mk_op_apply op arg1 arg2] Creates a term for the application of the
+    operator [op] to the list of arguments [args]. Although this function could
+    be used for any function application, the locations of the subterms would
+    not correspond to what would be expected. *)
+let mk_op_apply op args =
+  let f = mk_term (Tpreid (Qpreid op)) op.pid_loc in
+  let t =
+    List.fold_left (fun f arg -> mk_term (Tapply (f, arg)) arg.term_loc) f args
+  in
+  t.term_desc
+
 (** If [t] is an application of an infix operation using the [Tinfix]
     constructor, then [chain t] desugars it so that it uses the [Tidapp]
     constructor. If [t] is a chain of infix operators (e.g. 3 < 4 <= 5 > ...)
@@ -26,7 +39,6 @@ let rec chain t =
   let mk_term t loc = { term_desc = t; term_loc = loc } in
   match t.term_desc with
   | Tinfix (t1, o, t2) -> (
-      let qop = Qpreid o in
       match t2.term_desc with
       (* We match on the right subtree due to the associativity of
          infix operators. *)
@@ -37,13 +49,13 @@ let rec chain t =
              t2] *)
           let t = chain t2 in
           let mk_pid = Preid.create ~attrs:[] ~loc:Location.none in
-          let qconj = Qpreid (mk_pid "infix /\\") in
-          let infix = mk_term (Tidapp (qop, [ t1; t3 ])) t.term_loc in
-          mk_term (Tidapp (qconj, [ infix; t ])) Location.none
+          let qconj = mk_pid "infix /\\" in
+          let infix = mk_term (mk_op_apply o [ t1; t3 ]) t.term_loc in
+          mk_term (mk_op_apply qconj [ infix; t ]) Location.none
       | _ ->
           (* If the right subtree is not another infix operation, we
             translate the term naturally*)
-          mk_term (Tidapp (qop, [ t1; t2 ])) t.term_loc)
+          mk_term (mk_op_apply o [ t1; t2 ]) t.term_loc)
   | _ -> t
 
 (** Same behaviour as [chain] but receives and retruns a [term_desc] *)
