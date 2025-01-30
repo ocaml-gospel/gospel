@@ -318,7 +318,7 @@ term_:
     { let id = mk_pid o $loc in
       Tidapp (Qpreid id, [l; r]) }
 | term_arg located(term_arg)+
-    { let join f (a, _ ,e) = mk_term (Tapply (f, a)) ($startpos, e) in
+    { let join f (a, e) = mk_term (Tapply (f, a)) ($startpos, e) in
       (List.fold_left join $1 $2).term_desc }
 | IF term THEN term ELSE term
     { Tif ($2, $4, $6) }
@@ -700,5 +700,5 @@ star_list2(X):
 | X STAR separated_nonempty_list(STAR, X) { $1 :: $3 }
 ;
 
-located(X): X { $1, $startpos, $endpos }
+located(X): X { $1, $endpos }
 ;
