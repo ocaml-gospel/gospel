@@ -50,5 +50,6 @@ val fs_list_cons : lsymbol
 val fs_tuple : int -> lsymbol
 val fs_apply : lsymbol
 val ps_equ : lsymbol
+val ps_nequ : lsymbol
 val pp_vsymbol : vsymbol Fmt.t
 val pp_lsymbol : lsymbol Fmt.t

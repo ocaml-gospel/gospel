@@ -9,9 +9,9 @@
 (**************************************************************************)
 
 module W = Warnings
+module I = Identifier.Ident
 open Ppxlib
 open Utils
-open Identifier
 open Uast
 open Ttypes
 open Tmodule
@@ -53,7 +53,7 @@ let dty_of_pty env dty = Dterm.dty_of_ty (ty_of_pty env dty)
 let rec ty_of_core env cty =
   let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
-  | Ptyp_any -> { ty_node = Tyvar (create_tv (Ident.create ~loc "_")) }
+  | Ptyp_any -> { ty_node = Tyvar (create_tv (I.create ~loc "_")) }
   | Ptyp_var s -> { ty_node = Tyvar (tv_of_string ~loc s) }
   | Ptyp_tuple ctl ->
       let tyl = List.map (ty_of_core env) ctl in
@@ -254,7 +254,7 @@ let rec dpattern env { pat_desc; pat_loc = loc } =
       in
       mk_dpattern ~loc (DPconst c) dty Mstr.empty
 
-let rec dterm env { term_desc; term_loc = loc } =
+let rec dterm env ({ term_desc; term_loc = loc } as t) =
   match term_desc with
   | Uast.Ttrue -> mk_dterm ~loc DTtrue dty_bool
   | Uast.Tfalse -> mk_dterm ~loc DTfalse dty_bool
@@ -398,43 +398,7 @@ let rec dterm env { term_desc; term_loc = loc } =
       let env = add_local_var env pid.pid_str (dty_of_dterm dt1) in
       let dt2 = dterm env t2 in
       mk_dterm ~loc (DTlet (pid, dt1, dt2)) (Option.get dt2.dt_dty)
-  | Uast.Tinfix (t1, op1, t23) ->
-      let apply de1 op de2 =
-        let symbol =
-          if op.Preid.pid_str = neq.id_str then eq.id_str else op.pid_str
-        in
-        let ls = find_ls ~loc:op1.pid_loc env [ symbol ] in
-        let dtyl, dty = specialize_ls ls in
-        (if ls_equal ls ps_equ then
-           let max = max_dty (get_coercions env) [ de1; de2 ] in
-           try
-             dty_unify ~loc (Option.value max ~default:dty_bool) (List.hd dtyl)
-           with Exit -> ());
-        let dtl =
-          app_unify_map ~loc ls
-            (dterm_expected (get_coercions env))
-            [ de1; de2 ] dtyl
-        in
-        if op.pid_str = neq.id_str then
-          mk_dterm ~loc (DTnot (mk_dterm ~loc (DTapp (ls, dtl)) dty)) dty_bool
-        else mk_dterm ~loc (DTapp (ls, dtl)) dty_bool
-      in
-      let rec chain _ de1 op1 t23 =
-        match t23 with
-        | { term_desc = Uast.Tinfix (t2, op2, t3); term_loc = loc23 } ->
-            let de2 = dterm env t2 in
-            (* TODO: improve locations of subterms.
-               See loc_cutoff function in why3 typing.ml *)
-            (* let loc12 = loc_cutoff loc loc23 t2.term_loc in *)
-            let de12 = apply de1 op1 de2 in
-            let de23 = chain loc23 de2 op2 t3 in
-            dfmla_unify de12;
-            dfmla_unify de23;
-            let ls = find_ls env [ "infix /\\" ] ~loc:Location.none in
-            mk_dterm ~loc (DTapp (ls, [ de12; de23 ])) dty_bool
-        | _ -> apply de1 op1 (dterm env t23)
-      in
-      chain loc (dterm env t1) op1 t23
+  | Uast.Tinfix _ -> dterm env (Uast_utils.chain t)
   | Uast.Tquant (q, vl, t) ->
       let get_dty pty =
         match pty with None -> dty_fresh () | Some pty -> dty_of_pty env pty
