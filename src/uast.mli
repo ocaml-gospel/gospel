@@ -63,7 +63,14 @@ and term_desc =
   | Tfield of term * qualid
   | Tapply of term * term
   | Tinfix of term * Preid.t * term
+  (* [Tinfix] represents a chain of infix operations such as [e1 <
+     e2 < ...]. This node is necessary during parsing so that there
+     exists a distinction between chains of infix operators such
+     as (x < y < z) and (x < (y < z)). During typing, this node is
+     desugared into a normal function application and handled the
+     same way as [Tapply] *)
   | Tnot of term
+  (* TODO remove not *)
   | Tif of term * term * term
   | Tquant of quant * binder list * term
   | Tlambda of pattern list * term * pty option

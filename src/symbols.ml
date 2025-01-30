@@ -115,6 +115,10 @@ let ps_equ =
   let tv = fresh_ty_var "a" in
   function_symbol Identifier.eq [ tv; tv ] ty_bool
 
+let ps_nequ =
+  let tv = fresh_ty_var "a" in
+  function_symbol Identifier.neq [ tv; tv ] ty_bool
+
 let fs_unit =
   constructor_symbol
     (Ident.create ~loc:Location.none "()")

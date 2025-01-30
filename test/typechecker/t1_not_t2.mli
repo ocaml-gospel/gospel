@@ -26,6 +26,6 @@ type 'a t2 = T of 'a * int
    [125] File "t1_not_t2.mli", line 16, characters 8-15:
          16 |       | T (_,y) -> y
                       ^^^^^^^
-         Error: This pattern matches values of type 'a676 t2
+         Error: This pattern matches values of type 'a679 t2
                 but a pattern was expected which matches values of type 'a t1.
    |gospel_expected} *)

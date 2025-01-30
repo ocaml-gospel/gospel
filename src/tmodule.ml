@@ -254,7 +254,9 @@ let ns_with_primitives =
   Hts.add type_declarations ts_option td_option;
   Hts.add type_declarations ts_list td_list;
 
-  let primitive_ps = [ ((get_name ps_equ).id_str, ps_equ) ] in
+  let primitive_ps =
+    [ ((get_name ps_equ).id_str, ps_equ); ((get_name ps_nequ).id_str, ps_nequ) ]
+  in
   let primitive_ls =
     [
       (none.id_str, fs_option_none);

@@ -1699,7 +1699,7 @@ First, create a test artifact:
                                   ts_alias = None },
                                 []))
                              };
-                           t_attrs = []; t_loc = foo.mli:26:37 })
+                           t_attrs = []; t_loc = foo.mli:26:30 })
                         ]
                       ));
                    t_ty =

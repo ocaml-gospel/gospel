@@ -22,8 +22,8 @@
 *)
 
 (* {gospel_expected|
-   [125] File "float_not_int.mli", line 21, characters 11-12:
+   [125] File "float_not_int.mli", line 21, characters 11-31:
          21 |       else g (int_of_integer 4) = (int_of_integer 5)
-                         ^
+                         ^^^^^^^^^^^^^^^^^^^^
          Error: This term has type float but a term was expected of type int.
    |gospel_expected} *)
