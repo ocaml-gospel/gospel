@@ -45,4 +45,5 @@ depends: [
   "ppx_deriving" {>= "5.2.1"}
   "pp_loc" {>= "2.1.0"}
   "odoc" {with-test}
+  "inferno" {>= "20220603"}
 ]

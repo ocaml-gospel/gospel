@@ -10,7 +10,14 @@
  (public_name gospel)
  (preprocess
   (pps ppx_deriving.show))
- (libraries ocaml-compiler-libs.shadow fmt findlib ppxlib ppxlib.ast pp_loc)
+ (libraries
+  ocaml-compiler-libs.shadow
+  fmt
+  findlib
+  ppxlib
+  ppxlib.ast
+  pp_loc
+  inferno)
  (modules_without_implementation uast))
 
 (rule

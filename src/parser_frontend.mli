@@ -24,7 +24,8 @@ val parse_ocaml : string -> signature
     Raise Not_found if file does not exist. Raise Syntax_error if there is an
     OCaml syntax error. *)
 
-val parse_gospel : filename:string -> signature -> string -> Uast.s_signature
+val parse_gospel :
+  ?add_std:bool -> filename:string -> signature -> string -> Uast.s_signature
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 
