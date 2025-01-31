@@ -2,6 +2,7 @@ open Ppxlib
 open Utils
 
 type kind =
+  | Bad_type of string * string
   | Illegal_character of char
   | Illegal_escape of string * string option
   | Syntax_error
@@ -20,6 +21,8 @@ open Fmt
 let function_ ppf (f, t1, t2) = pf ppf "%s: %s -> %s" f t1 t2
 
 let pp_kind ppf = function
+  | Bad_type (t1, t2) ->
+      pf ppf "Type error: mismatch between the type %s@ and the type@ %s" t1 t2
   | Illegal_character c -> pf ppf "Illegal character %c" c
   | Illegal_escape (s, explanation) ->
       pf ppf "Illegal backslash escape in string or character (%s)%a" s

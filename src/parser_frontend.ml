@@ -50,7 +50,7 @@ module B = Ast_builder.Make (struct
   let loc = Location.none
 end)
 
-let parse_gospel ~filename signature name =
+let parse_gospel ?(add_std = true) ~filename signature name =
   let open_gospelstdlib =
     let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
     let name = { txt = "gospel"; loc = Location.none } in
@@ -66,6 +66,7 @@ let parse_gospel ~filename signature name =
       String.equal name gospelstdlib
       || String.equal name stdlib
       || String.equal name "CamlinternalFormatBasics"
+      || not add_std
     then signature
     else open_stdlib :: open_gospelstdlib :: signature
   in

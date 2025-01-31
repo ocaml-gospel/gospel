@@ -34,6 +34,14 @@ let files =
   let doc = "File to be processed, expect a .mli or a .ml file" in
   Arg.(non_empty & pos_all test_file [] & info [] ~doc ~docv:"FILE")
 
+let run_check file = List.iter Check.run file
+
+let tc =
+  let doc = "Gospel type-checker (Experimental)." in
+  let info = Cmd.info "check" ~doc in
+  let term = Term.(const run_check $ intfs) in
+  Cmd.v info term
+
 let pps =
   let doc = "Gospel preprocessor." in
   let info = Cmd.info "pps" ~doc in
@@ -55,5 +63,5 @@ let () =
       | Some v -> Build_info.V1.Version.to_string v)
   in
   let info = Cmd.info "gospel" ~doc ~version in
-  let commands = Cmd.group info [ wc; pps ] in
+  let commands = Cmd.group info [ tc; wc; pps ] in
   Stdlib.exit (Cmd.eval commands)
