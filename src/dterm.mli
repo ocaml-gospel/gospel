@@ -48,6 +48,10 @@ and dterm_node =
 
 type denv = dty Mstr.t
 
+val mk_dpattern : loc:Location.t -> dpattern_node -> dty -> denv -> dpattern
+val mk_dpapp : loc:Location.t -> lsymbol -> dpattern list -> dpattern
+val mk_pwild : loc:Location.t -> dty -> dpattern
+val mk_dterm : loc:Location.t -> dterm_node -> dty -> dterm
 val dty_bool : dty
 val dty_char : dty
 val dty_float : dty

@@ -1,6 +1,5 @@
 open Tast
-module Mid : Map.S with type key = Ident.t
-module Mstr : Map.S with type key = string
+open Identifier
 
 type namespace
 type known_ids = signature_item Mid.t

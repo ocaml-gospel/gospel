@@ -78,6 +78,8 @@ module Ident : sig
   *)
 end
 
+module Mid : Map.S with type key = Ident.t
+
 (** {2 Hard-coded identifiers} *)
 
 val eq : Ident.t

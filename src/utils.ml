@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+module Mstr = Map.Make (String)
+
 let rec split_at_f f = function
   | [] -> ([], [])
   | x :: xs when f x ->

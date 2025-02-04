@@ -1,3 +1,5 @@
+module Mstr : Map.S with type key = string
+
 val split_at_f : ('a -> bool) -> 'a list -> 'a list * 'a list
 (** [split_at_f f l] is the partition [(l1, l2)] such that [l1] is the longest
     prefix where the predicate [f] holds. The order of the elements is not

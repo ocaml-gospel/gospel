@@ -84,6 +84,8 @@ module Ident = struct
   let hash x = x.id_tag
 end
 
+module Mid = Map.Make (Ident)
+
 let prefix s = "prefix " ^ s
 let infix s = "infix " ^ s
 let mixfix s = "mixfix " ^ s
