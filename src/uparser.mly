@@ -14,12 +14,6 @@
   open Uast
   open Uast_utils
 
-  let mk_loc (s, e) = {
-    Location.loc_start = s;
-    Location.loc_end = e;
-    Location.loc_ghost = false;
-  }
-
   let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
   let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }

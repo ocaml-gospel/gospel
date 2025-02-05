@@ -20,6 +20,7 @@ let mk_ts ts_id ts_ty = { ts_id; ts_ty }
 type term_node =
   | Ttrue
   | Tfalse
+  | Tnot of term
   | Tvar of Preid.t
   | Tlet of Preid.t * term * term
   | Tconst of Ppxlib.constant

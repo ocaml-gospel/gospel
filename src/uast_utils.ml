@@ -64,3 +64,7 @@ let chain_desc t = (chain { term_desc = t; term_loc = Location.none }).term_desc
 let prefix s = "prefix " ^ s
 let infix s = "infix " ^ s
 let mixfix s = "mixfix " ^ s
+
+(** Location smart constructor *)
+let mk_loc (s, e) =
+  { Location.loc_start = s; Location.loc_end = e; Location.loc_ghost = false }

@@ -6,6 +6,7 @@ type kind =
   | Illegal_character of char
   | Illegal_escape of string * string option
   | Syntax_error
+  | Unbound_variable of string
   | Unsupported of string
   | Unterminated_comment
 
@@ -29,6 +30,7 @@ let pp_kind ppf = function
         (option (fmt ": %s"))
         explanation
   | Syntax_error -> pf ppf "Syntax error"
+  | Unbound_variable s -> pf ppf "Unbound value %s" s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
 
