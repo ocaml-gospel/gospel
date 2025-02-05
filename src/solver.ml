@@ -19,6 +19,7 @@ open Uast
 open Tast
 module Solver = Solver.Make (X) (S) (Types)
 open Solver
+module W = Warnings
 
 module Ns = Map.Make (String)
 (** Environment to store type declarations **)
@@ -106,6 +107,10 @@ let rec hastype ts (t : Uast.term) (r : variable) =
      logical terms, the environemnt will remain the same in all
      recursive calls.*)
   let hastype = hastype ts in
+  (* This line ensures that Inferno errors refer to the correct code
+     fragment. *)
+  Solver.correlate (t.term_loc.loc_start, t.term_loc.loc_end)
+  @@
   let+ t_node =
     match t.term_desc with
     | Uast.Ttrue ->
@@ -315,4 +320,12 @@ let signatures l =
   in
   (* Build a constraint for the entire Gospel file and solve it. *)
   let c = List.fold_right (signature ts) l (pure []) in
-  typecheck (let0 c)
+  let loc loc = Uast_utils.mk_loc loc in
+  let error r = W.error ~loc:(loc r) in
+  try typecheck (let0 c) with
+  | Solver.Unbound (r, t) -> error r (W.Unbound_variable t.pid_str)
+  | Solver.Unify (r, ty1, ty2) ->
+      let ty1s = Fmt.str "%a" Types.print_ty ty1 in
+      let ty2s = Fmt.str "%a" Types.print_ty ty2 in
+      error r (Bad_type (ty1s, ty2s))
+  | _ -> assert false
