@@ -101,6 +101,7 @@ let is_mixfix = is_somefix "mixfix"
 let is_chain = is_somefix "chain"
 let eq = Ident.create ~loc:Location.none (infix "=")
 let neq = Ident.create ~loc:Location.none (infix "<>")
+let not_id = Ident.create ~loc:Location.none "not"
 let none = Ident.create ~loc:Location.none "None"
 let some = Ident.create ~loc:Location.none "Some"
 let nil = Ident.create ~loc:Location.none "[]"

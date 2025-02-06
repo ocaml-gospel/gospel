@@ -84,6 +84,7 @@ module Mid : Map.S with type key = Ident.t
 
 val eq : Ident.t
 val neq : Ident.t
+val not_id : Ident.t
 val none : Ident.t
 val some : Ident.t
 val nil : Ident.t

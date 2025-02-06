@@ -302,8 +302,8 @@ term: t = mk_term(term_) { t }
 term_:
 | term_arg_
     { chain_desc $1 }
-| NOT term
-    { Tnot $2 }
+| NOT t=term
+    { mk_op_apply (mk_pid "not" $loc($1)) [t] }
 | OLD term
     { Told $2 }
 | prefix_op term %prec prec_prefix_op
