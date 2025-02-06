@@ -350,32 +350,16 @@ let rec dterm env ({ term_desc; term_loc = loc } as t) =
       | Function_symbol _ -> qualid_app ~loc env q [ t2 ]
       | Field_symbol { ls_name; _ } ->
           W.error ~loc (W.Field_application ls_name.id_str))
-  | Uast.Tapply ({ term_desc = Tpreid q; _ }, t2) -> (
+  | Uast.Tapply ({ term_desc = Tpreid q; _ }, _) -> (
       try
         (* [find_ls_q] might raise an exception if we are not looking in the
            right place but the term is however legal *)
         match find_q_ls env q with
         | Constructor_symbol { ls_args = Cstr_record _; _ } ->
             W.(error ~loc Inlined_record_expected)
-        | _ -> qualid_app ~loc env q [ t2 ]
-      with W.(Error (_, Symbol_not_found _)) -> qualid_app ~loc env q [ t2 ])
-  | Uast.Tapply (t1, t2) ->
-      (* typed ast requires that in an application node, the function is a
-         lsymbol *)
-      let rec loop t1 t2 tl =
-        match t1.term_desc with
-        | Uast.Tpreid q -> qualid_app ~loc env q (t2 :: tl)
-        | Uast.Tapply (t11, t12) -> loop t11 t12 (t2 :: tl)
-        | _ ->
-            let dt1 = dterm env t1 in
-            (* apply will inject the fs_apply symbol where required *)
-            map_apply env dt1 (t2 :: tl)
-      in
-      loop t1 t2 []
-  | Uast.Tnot t ->
-      let dt = dterm env t in
-      dfmla_unify dt;
-      mk_dterm ~loc (DTnot dt) (Option.get dt.dt_dty)
+        | _ -> assert false
+      with W.(Error (_, Symbol_not_found _)) -> assert false)
+  | Uast.Tapply (_, _) -> assert false
   | Uast.Tif (t1, t2, t3) ->
       let coercions = get_coercions env in
       let dt1 = dterm env t1 in

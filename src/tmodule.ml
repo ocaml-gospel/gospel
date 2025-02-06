@@ -255,7 +255,11 @@ let ns_with_primitives =
   Hts.add type_declarations ts_list td_list;
 
   let primitive_ps =
-    [ ((get_name ps_equ).id_str, ps_equ); ((get_name ps_nequ).id_str, ps_nequ) ]
+    [
+      ((get_name ps_equ).id_str, ps_equ);
+      ((get_name ps_nequ).id_str, ps_nequ);
+      ((get_name ps_not).id_str, ps_not);
+    ]
   in
   let primitive_ls =
     [

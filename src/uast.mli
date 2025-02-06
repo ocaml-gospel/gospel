@@ -68,8 +68,6 @@ and term_desc =
      as (x < y < z) and (x < (y < z)). During typing, this node is
      desugared into a normal function application and handled the
      same way as [Tapply] *)
-  | Tnot of term
-  (* TODO remove not *)
   | Tif of term * term * term
   | Tquant of quant * binder list * term
   | Tlambda of pattern list * term * pty option
