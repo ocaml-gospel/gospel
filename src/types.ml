@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Itypes
+module S = Structure
 
 type tyvar = int
 

@@ -1,3 +1,21 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
+val duplicate : ('a -> 'a -> bool) -> ('a -> unit) -> 'a list -> unit
+(** [has_duplicates p error l] calls [error x], where [x] is an element of [l],
+    if there exists some [y] that also belongs to [l] and is not physically
+    equal to [x] where [p x y] holds. This function always call [error] with the
+    value that occurs later in the list. Has no visible effect if no two
+    elements in the list satisfy [p]. This function has quadratic time
+    complexity and therefore should only be used on very small lists.*)
+
 module Fmt : sig
   include module type of struct
     include Fmt

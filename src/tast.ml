@@ -10,7 +10,7 @@
 
 open Types
 
-type tsymbol = { ts_id : Preid.t; ts_ty : ty }
+type tsymbol = { ts_id : Ident.t; ts_ty : Types.ty }
 (** Typed variables *)
 
 (** Typed variables *)
@@ -20,9 +20,8 @@ let mk_ts ts_id ts_ty = { ts_id; ts_ty }
 type term_node =
   | Ttrue
   | Tfalse
-  | Tnot of term
-  | Tvar of Preid.t
-  | Tlet of Preid.t * term * term
+  | Tvar of Id_uast.qualid
+  | Tlet of Ident.t * term * term
   | Tconst of Ppxlib.constant
   | Tapply of term * term
   | Tquant of Parse_uast.quant * tsymbol list * term
@@ -35,7 +34,7 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_loc }
 (* Typed Signatures *)
 
 type axiom = {
-  ax_name : Preid.t;  (** Name *)
+  ax_name : Ident.t;  (** Name *)
   ax_term : term;  (** Definition *)
   ax_loc : Location.t;  (** Location *)
   ax_text : string;
@@ -52,7 +51,7 @@ type fun_spec = {
 }
 
 type function_ = {
-  fun_name : Preid.t;  (** Function symbol *)
+  fun_name : Ident.t;  (** Function symbol *)
   fun_rec : bool;  (** Recursive *)
   fun_params : tsymbol list;  (** Arguments *)
   fun_ret : ty;
@@ -63,13 +62,35 @@ type function_ = {
   fun_loc : Location.t;  (** Location *)
 }
 
-type signature = Sig_function of function_ | Sig_axiom of axiom
+and s_module_type_desc = Mod_signature of s_signature
+
+and s_module_declaration = {
+  mdname : Ident.t option;
+  mdtype : s_module_type;
+  mdattributes : Ppxlib.attributes;
+  (* ... [@@id1] [@@id2] *)
+  mdloc : Location.t;
+}
+
+and s_module_type = {
+  mdesc : s_module_type_desc;
+  mloc : Location.t;
+  mattributes : Ppxlib.attributes; (* ... [@id1] [@id2] *)
+}
+
+and s_signature_item_desc =
+  | Sig_function of function_
+  | Sig_axiom of axiom
+  | Sig_module of s_module_declaration
+
+and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
+and s_signature = s_signature_item list
 
 (* Helper functions *)
 
 let mk_function f fun_params fun_def fun_ret fun_spec =
   {
-    fun_name = f.Parse_uast.fun_name;
+    fun_name = f.Id_uast.fun_name;
     fun_rec = f.fun_rec;
     fun_params;
     fun_def;

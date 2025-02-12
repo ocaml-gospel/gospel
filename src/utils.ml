@@ -8,6 +8,13 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+let rec duplicate p error = function
+  | [] -> ()
+  | x :: t -> (
+      match List.find_opt (p x) t with
+      | Some x -> error x
+      | None -> duplicate p error t)
+
 module Fmt = struct
   include Fmt
 
