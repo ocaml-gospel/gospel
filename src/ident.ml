@@ -41,6 +41,9 @@ let gen_tag =
 
 let mk_id id_str id_loc = { id_str; id_attrs = []; id_loc; id_tag = gen_tag () }
 
+let tvar () =
+  { id_str = "a"; id_attrs = []; id_loc = Location.none; id_tag = gen_tag () }
+
 let from_preid p =
   {
     id_str = p.Preid.pid_str;
