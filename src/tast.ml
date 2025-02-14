@@ -100,5 +100,8 @@ let mk_function f fun_params fun_def fun_ret fun_spec =
     fun_loc = f.fun_loc;
   }
 
+let fun_to_arrow args ret =
+  List.fold_right (fun arg ret -> Types.ty_arrow arg.ts_ty ret) args ret
+
 let mk_axiom ax_name ax_term ax_loc ax_text =
   { ax_name; ax_term; ax_loc; ax_text }
