@@ -67,3 +67,4 @@ let from_preid p =
   }
 
 let to_local (id : t) = { id with id_local = true }
+let clone (id : t) = { id with id_tag = gen_tag () }
