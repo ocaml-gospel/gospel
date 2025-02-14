@@ -38,18 +38,31 @@ let deep_arrow arg ret =
   let f = S.ty_arrow arg ret in
   DeepStructure f
 
-let deep_bool = DeepStructure S.ty_bool
+(** [pty_to_deep l t] receives an associative list [l] which maps variable
+    identifiers to Inferno variables and builds a deep type for the Gospel type
+    [pty] *)
+let rec pty_to_deep pty =
+  match pty with
+  | PTtyvar _ -> assert false
+  | PTtyapp (id, l) ->
+      DeepStructure (S.Tyapp (Types.leaf id, List.map pty_to_deep l))
+  | PTarrow (arg, ret) -> deep_arrow (pty_to_deep arg) (pty_to_deep ret)
+  | PTtuple _ -> assert false
 
-(** [pty_to_deep ts pty] Transforms the type annotation [pty] into a deep type.
-    Also checks if the identifiers within the type are valid i.e. have been
-    defined. *)
-let rec pty_to_deep = function
-  | PTtyapp (Qid id, l) -> DeepStructure (S.Tyapp (id, List.map pty_to_deep l))
-  | PTarrow (pty1, pty2) ->
-      let dty1 = pty_to_deep pty1 in
-      let dty2 = pty_to_deep pty2 in
-      DeepStructure (S.ty_arrow dty1 dty2)
-  | _ -> assert false
+(** Maps a top level definition's unique identifier to its decoded type.
+
+    One might wonder why we do this bookkeeping here instead of in
+    [Inferno_prep] since function types are explicit in their definitions. The
+    reason is that sometimes we have definitions such as
+
+    [function n : 'a = 0]
+
+    Where the type annotation is valid but some type variables need to be
+    instantiated with a concrete type (in this case, ['a] must be instantiated
+    with [integer]). This means that we can only record the type of a function
+    once the Inferno constraint has been solved and the decoded type has been
+    resolved. *)
+let fun_types : (int, Types.ty) Hashtbl.t = Hashtbl.create 100
 
 (* The following functions are used to turn Gospel signatures into Inferno
    constraints that, when solved, will produce typed signatures. If the
@@ -66,8 +79,7 @@ let rec pty_to_deep = function
 (** [build_def l c] Returns a constraint where the variables in [l] have been
     added to the scope of constraint [c] by means of a chain of [def]
     constraints. Each element of [l] is a pair consisting of an identifier [x]
-    and an Inferno binder which introduces the type of [x] into a constraint.
-    @raise _ if there are duplicate arguments in [l]. *)
+    and an Inferno binder which introduces the type of [x] into a constraint. *)
 let build_def l c =
   (* [loop (id, ty) c] wraps the constraint [c] in a [def] constraint
      where the variable [id] has the type associated with the binder
@@ -89,9 +101,7 @@ let build_def l c =
 
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
-    [ts] is used to ensure that all type annotations are valid. No environment
-    is used to keep track of what variables are in scope since that is done by
-    Inferno. *)
+    [ts] is used to ensure that all type annotations are valid. *)
 let rec hastype (t : Id_uast.term) (r : variable) =
   (* This line ensures that Inferno errors refer to the correct code
      fragment. *)
@@ -119,17 +129,32 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         in
         Tconst constant
     | Tvar q ->
+        (* We ignore any module accesses since all variables have been
+          uniquely tagged. *)
         let id = Types.leaf q in
-        (* The identifier must be a variable of type [r]. We do not
-           perform any lookups directly as the bookkeeping for
-           variable types is done by Inferno. We ignore the return
-           value of [instance] since we are working with a monomorphic
-           type scheme. *)
-        let+ _ = instance id r in
-        (* We can ignore the return value of [instance] since it will always
+        if id.id_local then
+          (* If the variable is defined within the scope of this term,
+             we create a constraint stating that the variable [id]
+             must be an instance of type [r]. No lookup is performed
+             on this branch as the bookkeeping is done by Inferno. *)
+          let+ _ = instance id r in
+          (* We can ignore the return value of [instance] since it will always
              return the empty list since all local variables are bound with
              [def], which creates a monomorphic scheme. *)
-        Tvar q
+          Tvar q
+        else
+          (* In the case of a top level definition outside the scope
+             of this term, we lookup its type in the [fun_types] table
+             and create a constraint stating that the type [r] must be
+             equal to the function's type *)
+          let ty = Hashtbl.find fun_types id.id_tag in
+          (* Binds the polymorphic type variables to Inferno type
+             variables.*)
+          (* Creates a deep type for the function type *)
+          let@ f = deep (pty_to_deep ty) in
+          (* The type of the function must be equal to [r]. *)
+          let+ () = f -- r in
+          Tvar q
     | Tlet (id, t1, t2) ->
         (* let id = t1 in t2 *)
         (* The term [t1] has some arbitrary type [v_type]. *)
@@ -169,7 +194,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
            and create a binder for it. *)
         let binder_to_deep = function
           | None -> exist
-          | Some t -> deep (pty_to_deep t)
+          | Some ty -> deep (pty_to_deep ty)
         in
         (* Transform the list of Gospel type annotation into a list of
            Inferno binders *)
@@ -196,20 +221,20 @@ let typecheck c = Solver.solve ~rectypes:false c
 let process_fun_spec f =
   Option.fold ~some:(fun _ -> assert false) ~none:(pure None) f
 
-let fun_type = Option.value ~default:(PTtyapp (Qid S.bool_id, []))
-
-(** [function_cstr ts f cstr] Creates a constraint whose semantic value is a
-    list of signatures whose head is the declaration of the function described
-    by [f]. This is the conjunction of three constraints: one that adds the
-    function we are processing to the scope of [cstr], another that checks if
-    the body of the function is well typed and another that checks if the
-    function's specification is well typed. *)
-let function_cstr (f : Id_uast.function_)
-    (cstr : (s_signature * s_signature list) co) :
-    (s_signature_item_desc * s_signature * s_signature list) co =
+(** [function_cstr ts f] Creates a constraint whose semantic value is a list of
+    signatures whose head is the declaration of the function described by [f].
+    This is the conjunction of two constraints: one that checks if the body of
+    the function is well typed and another that checks if the function's
+    specification is well typed. *)
+let function_cstr (f : Id_uast.function_) : Tast.function_ co =
   (* Turn the return type into a deep type *)
-  let deep_ret = Option.fold ~some:pty_to_deep ~none:deep_bool f.fun_type in
-  let@ ret_ty = deep deep_ret in
+  let ret_pty = Option.value ~default:Types.ty_bool f.fun_type in
+  let arrow_ty =
+    List.fold_right
+      (fun (_, pty) acc -> PTarrow (pty, acc))
+      f.fun_params ret_pty
+  in
+  let@ ret_ty = deep (pty_to_deep ret_pty) in
 
   (* Map each type annotation of a parameter to a deep type. *)
   let to_deep (arg, pty) =
@@ -219,18 +244,8 @@ let function_cstr (f : Id_uast.function_)
   let deep_params = List.map to_deep f.fun_params in
 
   (* The function type encoded as a deep type *)
-  let deep_fun_type =
-    List.fold_right
-      (fun (_, arg) ret -> deep_arrow arg ret)
-      deep_params deep_ret
-  in
+  let deep_fun_type = pty_to_deep arrow_ty in
   let@ fun_ty = deep deep_fun_type in
-
-  (* This constraint adds the function to the scope of the constraint
-     [cstr] and has the same semantic value. In other words, it
-     produces the list of typed signatures that have been
-     processed up this point. *)
-  let c1 = def f.fun_name fun_ty cstr in
 
   (* Typecheck the body of the function. Must have the same return
      type that the user indicated. *)
@@ -252,16 +267,14 @@ let function_cstr (f : Id_uast.function_)
   (* Each variable is now associated with a binder. *)
   let deep_params = List.map (fun (x, dty) -> (x, deep dty)) deep_params in
 
-  (* List of typed signatures*)
-  let+ l, stack = c1
   (* Typed term and function parameters *)
-  and+ params, tt = build_def deep_params body_c
+  let+ params, tt = build_def deep_params body_c
   (* Typed function specification *)
-  and+ fun_spec = process_fun_spec f.fun_spec in
-  let fun_ty =
-    Option.fold ~some:(fun t -> t.t_ty) ~none:(fun_type f.fun_type) tt
-  in
-  (Sig_function (mk_function f params tt fun_ty fun_spec), l, stack)
+  and+ fun_spec = process_fun_spec f.fun_spec
+  (* Decoded return type *)
+  and+ ret = decode ret_ty in
+  let fun_ty = Option.fold ~some:(fun t -> t.t_ty) ~none:ret tt in
+  mk_function f params tt fun_ty fun_spec
 
 (** Creates a constraint ensuring the term within an axiom has type [bool]. *)
 let axiom_cstr ax =
@@ -269,23 +282,13 @@ let axiom_cstr ax =
   let+ t = hastype ax.Id_uast.ax_term ty in
   Sig_axiom (mk_axiom ax.ax_name t ax.ax_loc ax.ax_text)
 
-(** Auxiliary function for signatures that do not define any symbols in the top
-    level (which is all except [Sig_function]) *)
-let rec sig_rest cstr s =
-  let+ s =
-    match s.Id_uast.sdesc with
-    | Sig_axiom ax -> axiom_cstr ax
-    | _ -> assert false
-  and+ l, stack = cstr in
-  (s, l, stack)
-
-(** [module_cstr] creates a constraint whose semantic value is a list of
-    signatures whose head is the declaration of [m]. Since the work to make the
-    Gospel specification compatible with Inferno (which does not support
-    modules) has been done at this point (see module [Inferno_prep]), the
-    constraint we create assumes that the definitions in this module are in the
-    same scope as the ones defined in [cstr].*)
-and module_cstr (m : Id_uast.s_module_declaration) cstr =
+(** [module_cstr] creates a constraint whose semantic value is the typed
+    declaration of [m]. Since the work to make the Gospel specification
+    compatible with Inferno (which does not support modules) has been done at
+    this point (see module [Inferno_prep]), the constraint we create assumes
+    that the definitions in this module are in the same scope as all the
+    definitions we have already processed (i. e. the definitions in [fun_types].*)
+let rec module_cstr (m : Id_uast.s_module_declaration) =
   let mdname = m.mdname in
   let mdloc = m.mdloc in
   let mdattributes = m.mdattributes in
@@ -293,66 +296,53 @@ and module_cstr (m : Id_uast.s_module_declaration) cstr =
   let mloc = mtype.mloc in
   let mattributes = mtype.mattributes in
 
-  let+ mdesc, l, stack =
+  let mdesc =
     match mtype.mdesc with
     | Id_uast.Mod_signature s ->
-        let cstr =
-          (* Since we need to build the typed submodule, we need to clear the
-             current list of definitions from the semantic value of the
-             constraint so that the call to [signature] returns only the
-             definitions within the submodule. Naturally, we cannot simply drop
-             the list of definitions as we will need these later to build the
-             module we were previously processing, so we add it to the stack and
-             pop it once we are done. *)
-          let+ l, stack = cstr in
-          ([], l :: stack)
-        in
-        let+ l, stack = signature s cstr in
-        (* The call to [List.hd] and [List.tl] reset list of definitions and the
-           stack to the state, respectively, before processing the submodule. *)
-        (Mod_signature l, List.hd stack, List.tl stack)
+        let l = signature s in
+        Mod_signature l
     | _ -> assert false
   in
   let mdtype = { mdesc; mloc; mattributes } in
-  (Sig_module { mdname; mdloc; mdattributes; mdtype }, l, stack)
+  { mdname; mdloc; mdattributes; mdtype }
 
-(** [signature ts cstr s] Transforms the signature [s] into an typed signature.
-    Since signatures are handled from the bottom up, [cstr] represents all the
-    constraints we have already built up to this point. The sematic value of
-    [cstr] is the list of signatures that have already been processed coupled
-    with a list of lists of signatures. The latter list contain lists of
-    definitions of parent modules of the module we are currently processing.
-    Since this list does not concern the current call of [signature_item], it is
-    ignored.
-
-    The returned constraint will either be [cstr] unchanged or series of [def]
-    constraints where we define either a function or a predicate (or multiple in
-    case of a module). Its semantic value will be the semantic value of
-    constraint of [cstr] where the first list is modified by adding the typed
-    signature to its head. The second list is unchanged. *)
-and signature_item s cstr =
-  let+ sdesc, l, stack =
+(** [signature s] Creates a constraint that transforms the signature [s] into
+    typed signature. *)
+and signature_item s =
+  let+ sdesc =
     match s.Id_uast.sdesc with
-    | Sig_function f -> function_cstr f cstr
-    | Sig_module m -> module_cstr m cstr
-    | _ -> sig_rest cstr s
+    | Sig_function f ->
+        let+ f = function_cstr f in
+        let ty = Tast.fun_to_arrow f.fun_params f.fun_ret in
+        Hashtbl.add fun_types f.fun_name.id_tag ty;
+        Sig_function f
+    | Sig_axiom ax -> axiom_cstr ax
+    | Sig_module m ->
+        (* Returns a typed module. *)
+        let m = module_cstr m in
+        (* Since we handle modules and namespaces in [Inferno_prep], we don't
+           create any Inferno constraints for this branch. *)
+        pure (Sig_module m)
+    | _ -> assert false
   in
-  ({ sdesc; sloc = s.sloc } :: l, stack)
+  { sdesc; sloc = s.sloc }
 
-and signature l cstr = List.fold_right signature_item l cstr
+and signature l =
+  List.map
+    (fun s ->
+      let _, s = typecheck (let0 (signature_item s)) in
+      s)
+    l
 
 let signatures l =
   let l = Typing.signatures l in
-  (* Build a constraint for the entire Gospel file and solve it. *)
-  let c = signature l (pure ([], [])) in
+  (* Build constraints for the entire Gospel file and solve them it. *)
   let loc loc = Uast_utils.mk_loc loc in
   let error r = W.error ~loc:(loc r) in
-  try typecheck (let0 c) with
-  | Solver.Unbound _ ->
-      assert
-        false (* Unbound variables are caught in the [Inferno_prep] module *)
+  try signature l with
+  | Solver.Unbound _ -> assert false
+  (* Unbound variables are caught in the [Inferno_prep] module *)
   | Solver.Unify (r, ty1, ty2) ->
       let ty1s = Fmt.str "%a" Types.print_ty ty1 in
       let ty2s = Fmt.str "%a" Types.print_ty ty2 in
       error r (Bad_type (ty1s, ty2s))
-  | _ -> assert false

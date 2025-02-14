@@ -105,6 +105,7 @@ let empty_local_env = { term_var = Env.empty; type_var = Env.empty }
 (** [add_term_var var id env] maps the term variable [var] to the tagged
     identifier [id] *)
 let add_term_var var id env =
+  let id = Ident.to_local id in
   { env with term_var = Env.add var id env.term_var }
 
 (** [add_type_var var id env] maps the type variable [var] to the tagged
