@@ -52,7 +52,7 @@ and print_ty fmt = function
       pp fmt "@[%a@]@[%a@]@[%a@]" (parens print_ty) ty1 arrow () print_ty ty2
   | PTarrow (ty1, ty2) -> print_arrow_ty fmt [ ty1; ty2 ]
   | PTtyapp (ts, []) -> pp fmt "@[%s@]" (leaf ts).id_str
-  | PTtyapp (ts, [ ty ]) -> pp fmt "%a %s" print_ty ty (leaf ts).id_str
+  | PTtyapp (ts, [ ty ]) -> pp fmt "@[%a@] %s" print_ty ty (leaf ts).id_str
   | PTtyapp (ts, tyl) ->
-      pp fmt "(%a) %s" (list ~sep:comma print_ty) tyl (leaf ts).id_str
+      pp fmt "@[%a@] %s" (list ~sep:comma print_ty) tyl (leaf ts).id_str
   | PTtuple _ -> assert false
