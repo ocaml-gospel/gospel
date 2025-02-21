@@ -125,13 +125,18 @@
 
 %left BAR
 
-%start <Parse_uast.function_> func
-%start <Parse_uast.axiom> axiom
+%start <Parse_uast.gospel_signature> top
 %start <Parse_uast.val_spec> val_spec
 %start <Parse_uast.type_spec> type_spec
-%start <Parse_uast.fun_spec> func_spec
-
 %%
+
+top: | s = top_ EOF { s }
+
+top_:
+| f = func
+  { Sig_function f }
+| ax = axiom
+  { Sig_axiom ax }
 
 val_spec:
 | hd=val_spec_header? bd=val_spec_body EOF
@@ -139,20 +144,23 @@ val_spec:
 ;
 
 axiom:
-| AXIOM id=lident COLON t=term EOF
+| AXIOM id=lident COLON t=term
   { {ax_name = id; ax_term = t; ax_loc = mk_loc $loc; ax_text = ""} }
 ;
 
+func_(X, PTY):
+| X fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
+    ty=PTY fun_def=preceded(EQUAL, term)? spec=func_spec
+  { { fun_name; fun_rec; fun_type = ty; fun_params; fun_def; fun_spec = Some spec;
+      fun_loc = mk_loc $loc; } }
+
+ftyp: COLON t=typ { Some t }
+
+epsilon: { None }
+
 func:
-| FUNCTION fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
-    COLON ty=typ fun_def=preceded(EQUAL, term)? EOF
-  { { fun_name; fun_rec; fun_type = Some ty; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc; fun_text = "" } }
-| PREDICATE fun_rec=boption(REC) fun_name=func_name fun_params=params
-    fun_def=preceded(EQUAL, term)? EOF
-  { { fun_name; fun_rec; fun_type = None; fun_params; fun_def; fun_spec = None;
-      fun_loc = mk_loc $loc; fun_text = "" } }
-;
+| f=func_(FUNCTION, ftyp) { f }
+| f=func_(PREDICATE, epsilon) { f }
 
 func_name:
 | ident_rich {$1}
@@ -163,8 +171,8 @@ func_name:
   { mk_pid (mixfix "{:_:}") $loc }
 
 func_spec:
-| EOF { empty_fspec }
-| nonempty_func_spec EOF { $1 }
+| (* epsilon*)       { empty_fspec }
+| nonempty_func_spec { $1 }
 
 nonempty_func_spec:
 | REQUIRES t=term bd=func_spec

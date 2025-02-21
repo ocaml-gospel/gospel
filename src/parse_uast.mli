@@ -135,7 +135,6 @@ type function_ = {
   fun_def : term option;
   fun_spec : fun_spec option;
   fun_loc : Location.t;
-  fun_text : string;
 }
 
 type axiom = {
@@ -189,6 +188,12 @@ type s_with_constraint =
   | Wmodsubst of Longident.t loc * Longident.t loc
 (* with module X.Y := Z *)
 
+type gospel_signature =
+  | Sig_function of function_
+  | Sig_axiom of axiom
+  | Sig_ghost_type of s_type_declaration
+  | Sig_ghost_open of open_description
+
 type s_signature_item_desc =
   | Sig_val of s_val_description
   (*
@@ -227,12 +232,7 @@ type s_signature_item_desc =
   (* [@@@id] *)
   | Sig_extension of extension * attributes
   (* [%%id] *)
-  (* Specific to specification *)
-  | Sig_function of function_
-  | Sig_axiom of axiom
-  | Sig_ghost_type of rec_flag * s_type_declaration list
-  | Sig_ghost_val of s_val_description
-  | Sig_ghost_open of open_description
+  | Sig_gospel of gospel_signature * string
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list

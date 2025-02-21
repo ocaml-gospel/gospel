@@ -235,19 +235,12 @@ let function_ f defs =
     else ()
   in
   let fun_def = Option.map (unique_term defs !env) f.fun_def in
-  let fun_spec = Option.map (fun _ -> assert false) f.fun_spec in
+  let fun_spec =
+    ignore f.fun_spec;
+    None
+  in
   let fun_loc = f.fun_loc in
-  let fun_text = f.fun_text in
-  {
-    fun_name;
-    fun_rec;
-    fun_type;
-    fun_params;
-    fun_def;
-    fun_spec;
-    fun_loc;
-    fun_text;
-  }
+  { fun_name; fun_rec; fun_type; fun_params; fun_def; fun_spec; fun_loc }
 
 let axiom defs ax =
   let ax_name = Ident.from_preid ax.Parse_uast.ax_name in
@@ -311,21 +304,27 @@ let rec process_module env m =
 and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
-    | Parse_uast.Sig_function f ->
-        let f = function_ f env.scope in
-        (* Adds [f] to the set of variables defined and to the
-          scope *)
-        let env = add_def (add_fun f.fun_name) env in
-        (Sig_function f, env)
-    | Sig_axiom ax ->
-        (* Since axioms cannot be referenced, the environment is not
-          modified.*)
-        let ax = axiom env.scope ax in
-        (Sig_axiom ax, env)
+    | Sig_gospel (s, txt) ->
+        let ts, env = gospel_sig env s in
+        (Sig_gospel (ts, txt), env)
     | Sig_module m -> process_module env m
     | _ -> assert false
   in
   ({ sdesc; sloc = s.sloc }, env)
+
+and gospel_sig env = function
+  | Parse_uast.Sig_function f ->
+      let f = function_ f env.scope in
+      (* Adds [f] to the set of variables defined and to the
+        scope *)
+      let env = add_def (add_fun f.fun_name) env in
+      (Sig_function f, env)
+  | Sig_axiom ax ->
+      (* Since axioms cannot be referenced, the environment is not
+        modified.*)
+      let ax = axiom env.scope ax in
+      (Sig_axiom ax, env)
+  | _ -> assert false
 
 (** [signatures l env] Processes a list of top level signatures along with the
     current environment. *)
