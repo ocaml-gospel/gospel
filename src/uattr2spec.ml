@@ -41,11 +41,6 @@ let get_spec_content attr =
 
 let get_spec_loc attr = snd (get_spec_content attr)
 
-let get_inner_spec attr =
-  match attr.attr_payload with
-  | PStr [ { pstr_desc = Pstr_eval (_, attrs); _ } ] -> get_spec_attr attrs
-  | _ -> assert false
-
 let parse_gospel ~filename parse attr =
   let spec, spec_loc = get_spec_content attr in
   let lb = Lexing.from_string spec in
@@ -116,70 +111,9 @@ let val_description ~filename v =
     vloc = v.pval_loc;
   }
 
-let ghost_type ~filename attr t =
-  let type_ = type_declaration ~filename t in
-  if type_.tspec = None then
-    let tspec =
-      get_inner_spec attr
-      |> fst
-      |> Option.map (parse_gospel ~filename Uparser.type_spec)
-      |> Option.map (fun (ty_text, spec) ->
-             let ty_loc = get_spec_loc attr in
-             { spec with ty_text; ty_loc })
-    in
-    let tloc = get_spec_loc attr in
-    { type_ with tspec; tloc }
-  else type_
-
-let ghost_spec ~filename attr =
-  let spec, loc = get_spec_content attr in
-  let lb = Lexing.from_string spec in
-  Lexing.set_position lb loc.loc_start;
-  Lexing.set_filename lb filename;
-  let sigs = try Parse.interface lb with _ -> W.error ~loc W.Syntax_error in
-  match sigs with
-  | [ { psig_desc = Psig_type (r, ts); _ } ] ->
-      Sig_ghost_type (r, List.map (ghost_type ~filename attr) ts)
-  | [ { psig_desc = Psig_value vd; _ } ] ->
-      let val_ = val_description ~filename vd in
-      if val_.vspec = None then
-        let vspec =
-          get_inner_spec attr
-          |> fst
-          |> Option.map (parse_gospel ~filename Uparser.val_spec)
-          |> Option.map (fun (sp_text, spec) ->
-                 let sp_loc = get_spec_loc attr in
-                 { spec with sp_text; sp_loc })
-        in
-        let vloc = get_spec_loc attr in
-        Sig_ghost_val { val_ with vspec; vloc }
-      else Sig_ghost_val val_
-  | [ { psig_desc = Psig_open od; _ } ] ->
-      let popen_loc = get_spec_loc attr in
-      Sig_ghost_open { od with popen_loc }
-  | _ -> assert false
-
 let floating_spec ~filename a =
-  try
-    let fun_text, fun_ = parse_gospel ~filename Uparser.func a in
-    let fun_ = { fun_ with fun_text } in
-    if fun_.fun_spec = None then
-      let fun_spec =
-        get_inner_spec a
-        |> fst
-        |> Option.map (parse_gospel ~filename Uparser.func_spec)
-        |> Option.map (fun (fun_text, (spec : fun_spec)) ->
-               let fun_loc = get_spec_loc a in
-               { spec with fun_text; fun_loc })
-      in
-      Sig_function { fun_ with fun_spec }
-    else Sig_function fun_
-  with W.Error (_, W.Syntax_error) -> (
-    try
-      let ax_text, axiom = parse_gospel ~filename Uparser.axiom a in
-      let ax_loc = get_spec_loc a in
-      Sig_axiom { axiom with ax_text; ax_loc }
-    with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a)
+  let txt, s = parse_gospel ~filename Uparser.top a in
+  Sig_gospel (s, txt)
 
 let with_constraint c =
   let no_spec_type_decl t = mk_tdecl t t.ptype_attributes None in

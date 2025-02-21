@@ -57,8 +57,6 @@ type function_ = {
   fun_ret : ty;
   fun_def : term option;  (** Definition *)
   fun_spec : fun_spec option;  (** Specification *)
-  fun_text : string;
-      (** String containing the original specificaion as written by the user *)
   fun_loc : Location.t;  (** Location *)
 }
 
@@ -96,7 +94,6 @@ let mk_function f fun_params fun_def fun_ret fun_spec =
     fun_def;
     fun_ret;
     fun_spec;
-    fun_text = f.fun_text;
     fun_loc = f.fun_loc;
   }
 
