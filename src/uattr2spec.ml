@@ -58,6 +58,37 @@ let parse_gospel ~filename parse attr =
     in
     W.error ~loc W.Syntax_error
 
+let ptype_kind = function
+  | Ptype_abstract -> PTtype_abstract
+  | _ -> assert false
+
+let params_to_id =
+  let param_to_id (core_type, _) =
+    let loc = core_type.ptyp_loc in
+    match core_type.ptyp_desc with
+    | Ptyp_var s -> Preid.create s ~loc
+    | Ptyp_any ->
+        W.error ~loc
+          (W.unsupported ~loc
+             "Wildcard type variables not supported in type declarations")
+    | _ -> assert false
+    (* There are no other possible values for type parameters in type declarations *)
+  in
+  List.map param_to_id
+
+let preid_of_loc s = Preid.create ~loc:s.loc s.txt
+
+let mk_tdecl t attrs spec =
+  {
+    tname = preid_of_loc t.ptype_name;
+    tparams = params_to_id t.ptype_params;
+    tkind = ptype_kind t.ptype_kind;
+    tprivate = t.ptype_private;
+    tattributes = attrs;
+    tspec = spec;
+    tloc = t.ptype_loc;
+  }
+
 let type_declaration ~filename t =
   let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
   let parse attr =
@@ -66,17 +97,7 @@ let type_declaration ~filename t =
     { spec with ty_text; ty_loc }
   in
   let spec = Option.map parse spec_attr in
-  {
-    tname = t.ptype_name;
-    tparams = t.ptype_params;
-    tcstrs = t.ptype_cstrs;
-    tkind = t.ptype_kind;
-    tprivate = t.ptype_private;
-    tmanifest = t.ptype_manifest;
-    tattributes = other_attrs;
-    tspec = spec;
-    tloc = t.ptype_loc;
-  }
+  mk_tdecl t other_attrs spec
 
 let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
@@ -161,19 +182,7 @@ let floating_spec ~filename a =
     with W.Error (_, W.Syntax_error) -> ghost_spec ~filename a)
 
 let with_constraint c =
-  let no_spec_type_decl t =
-    {
-      tname = t.ptype_name;
-      tparams = t.ptype_params;
-      tcstrs = t.ptype_cstrs;
-      tkind = t.ptype_kind;
-      tprivate = t.ptype_private;
-      tmanifest = t.ptype_manifest;
-      tattributes = t.ptype_attributes;
-      tspec = None;
-      tloc = t.ptype_loc;
-    }
-  in
+  let no_spec_type_decl t = mk_tdecl t t.ptype_attributes None in
   match c with
   | Pwith_type (l, t) -> Wtype (l, no_spec_type_decl t)
   | Pwith_module (l1, l2) -> Wmodule (l1, l2)
@@ -184,7 +193,7 @@ let with_constraint c =
 
 let rec signature_item_desc ~filename = function
   | Psig_value v -> Sig_val (val_description ~filename v)
-  | Psig_type (r, tl) -> Sig_type (r, List.map (type_declaration ~filename) tl)
+  | Psig_type (_, tl) -> Sig_type (List.map (type_declaration ~filename) tl)
   | Psig_attribute a ->
       if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
   | Psig_module m -> Sig_module (module_declaration ~filename m)
