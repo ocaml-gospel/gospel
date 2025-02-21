@@ -158,17 +158,13 @@ type s_val_description = {
   vloc : Location.t;
 }
 
+type type_kind = PTtype_abstract
+
 type s_type_declaration = {
-  tname : string loc;
-  tparams : (core_type * (variance * injectivity)) list;
-  (* ('a1,...'an) t; None represents  _*)
-  tcstrs : (core_type * core_type * Location.t) list;
-  (* ... constraint T1=T1'  ... constraint Tn=Tn' *)
+  tname : id;
+  tparams : id list;
   tkind : type_kind;
   tprivate : private_flag;
-  (* = private ... *)
-  tmanifest : core_type option;
-  (* = T *)
   tattributes : attributes;
   (* ... [@@id1] [@@id2] *)
   tspec : type_spec option;
@@ -199,7 +195,7 @@ type s_signature_item_desc =
           val x: T
           external x: T = "s1" ... "sn"
          *)
-  | Sig_type of rec_flag * s_type_declaration list
+  | Sig_type of s_type_declaration list
   (* type t1 = ... and ... and tn = ... *)
   | Sig_typesubst of s_type_declaration list
   (* type t1 := ... and ... and tn := ...  *)
