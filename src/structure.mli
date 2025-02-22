@@ -8,7 +8,10 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type 'a structure = Tyapp of Ident.t * 'a list | Tyarrow of 'a * 'a
+type 'a structure =
+  | Tyapp of Ident.t * 'a list
+  | Tyarrow of 'a * 'a
+  | Tvar of Ident.t
 
 val bool_id : Ident.t
 val integer_id : Ident.t
@@ -30,6 +33,6 @@ val map : ('a -> 'b) -> 'a structure -> 'b structure
 exception InconsistentConjunction
 
 val conjunction :
-  ('a -> 'b -> unit) -> 'a structure -> 'b structure -> 'a structure
+  ('a -> 'a -> unit) -> 'a structure -> 'a structure -> 'a structure
 
 val pprint : 'a -> 'b -> 'c

@@ -33,6 +33,7 @@ let structure t =
   match t with
   | S.Tyapp (id, l) -> PTtyapp (Qid id, l)
   | Tyarrow (t1, t2) -> PTarrow (t1, t2)
+  | Tvar v -> PTtyvar v
 
 (** Since Gospel types are not allowed to be cyclic, we do not need to define
     the mu function *)
