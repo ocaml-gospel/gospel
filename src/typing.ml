@@ -230,11 +230,7 @@ let function_ f defs =
   in
   let () =
     if fun_rec then
-      (* If the function is recursive, add it as a local variable: it
-         cannot be handled as a top level definition (i.e. a
-         definition within [defs]) because we need Inferno to infer
-         its type. For more details, please refer to the comment in
-         [Checker.fun_types]*)
+      (* If the function is recursive, add it as a local variable. *)
       env := add_term_var fun_name.id_str fun_name !env
     else ()
   in

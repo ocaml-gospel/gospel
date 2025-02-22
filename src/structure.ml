@@ -13,7 +13,10 @@
 
 (** Represents a Gospel type where unresolved type variables are represented by
     values of type ['a]. *)
-type 'a structure = Tyapp of Ident.t * 'a list | Tyarrow of 'a * 'a
+type 'a structure =
+  | Tyapp of Ident.t * 'a list
+  | Tyarrow of 'a * 'a
+  | Tvar of Ident.t
 
 let create_id s = Ident.mk_id s Location.none
 
@@ -48,15 +51,18 @@ let iter f = function
   | Tyarrow (t1, t2) ->
       f t1;
       f t2
+  | Tvar _ -> ()
 
 let fold f t accu =
   match t with
   | Tyapp (_, args) -> List.fold_left (fun x y -> f y x) accu args
   | Tyarrow (t1, t2) -> f t2 (f t1 accu)
+  | Tvar _ -> accu
 
 let map f = function
   | Tyapp (id, args) -> Tyapp (id, List.map f args)
   | Tyarrow (t1, t2) -> Tyarrow (f t1, f t2)
+  | Tvar v -> Tvar v
 
 (* -------------------------------------------------------------------------- *)
 
@@ -76,6 +82,7 @@ let iter2 f t1 t2 =
   | Tyarrow (arg1, res1), Tyarrow (arg2, res2) ->
       f arg1 arg2;
       f res1 res2
+  | Tvar v1, Tvar v2 -> if not (Ident.equal v1 v2) then raise Iter2
   | _ -> raise Iter2
 
 exception InconsistentConjunction = Iter2
@@ -84,7 +91,7 @@ exception InconsistentConjunction = Iter2
    [iter2], except it must return a structure, as opposed to a unit value. *)
 let conjunction f t u =
   iter2 f t u;
-  t
+  match t with Tvar _ -> u | _ -> t
 
 (* -------------------------------------------------------------------------- *)
 
