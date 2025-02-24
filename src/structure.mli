@@ -18,7 +18,6 @@ val integer_id : Ident.t
 val char_id : Ident.t
 val string_id : Ident.t
 val float_id : Ident.t
-val sequence_id : Ident.t
 val ty_bool : 'a structure
 val ty_integer : 'a structure
 val ty_char : 'a structure

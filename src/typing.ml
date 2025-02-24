@@ -13,7 +13,7 @@ module Env = Map.Make (String)
 module W = Warnings
 
 type fun_info = { fid : Ident.t }
-type ty_info = { tid : Ident.t }
+type ty_info = { tid : Ident.t; tarity : int }
 
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
@@ -55,6 +55,11 @@ let add_mod mid mdefs defs =
   let menv = defs.mod_env in
   let info = { mid; mdefs } in
   { defs with mod_env = Env.add mid.Ident.id_str info menv }
+
+let add_type tid tarity defs =
+  let tenv = defs.type_env in
+  let info = { tid; tarity } in
+  { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
 (** [access_mod defs q] returns a qualified identifer where the identifiers used
     in [q] have been replaced with uniquely tagged identifiers. This function
@@ -130,8 +135,13 @@ let unique_pty defs env =
         env := add_type_var pid.pid_str id !env;
         PTtyvar id
     | PTtyapp (q, l) ->
-        let q, info = unique_toplevel_qualid find_type defs q in
-        let q = mk_qid q info.tid in
+        let q, tinfo = unique_toplevel_qualid find_type defs q in
+        let id = tinfo.tid in
+        let q = mk_qid q id in
+        let expected = tinfo.tarity in
+        let arity = List.length l in
+        if arity <> expected then
+          W.error ~loc:id.id_loc (W.Bad_arity (id.id_str, expected, arity));
         PTtyapp (q, List.map unique_pty l)
     | PTtuple l -> PTtuple (List.map unique_pty l)
     | PTarrow (arg, res) ->
@@ -249,6 +259,28 @@ let axiom defs ax =
   let ax_text = ax.ax_text in
   { ax_name; ax_term; ax_loc; ax_text }
 
+let type_kind = function Parse_uast.PTtype_abstract -> PTtype_abstract
+
+let ghost_type_decl t =
+  let tname = Ident.from_preid t.Parse_uast.tname in
+  let () =
+    (* Raise an error if two type parameters have the same name *)
+    let error x =
+      W.error ~loc:x.Preid.pid_loc (W.Duplicated_parameter x.Preid.pid_str)
+    in
+    Utils.duplicate Preid.eq error t.tparams
+  in
+  let tparams = List.map Ident.from_preid t.tparams in
+  {
+    tname;
+    tparams;
+    tprivate = t.tprivate;
+    tkind = type_kind t.tkind;
+    tattributes = t.tattributes;
+    tspec = None;
+    tloc = t.tloc;
+  }
+
 type env = {
   defs : mod_defs;
   (* Contains the top level definitions in the current module *)
@@ -324,6 +356,11 @@ and gospel_sig env = function
         modified.*)
       let ax = axiom env.scope ax in
       (Sig_axiom ax, env)
+  | Sig_ghost_type t ->
+      let t = ghost_type_decl t in
+      let arity = List.length t.tparams in
+      let env = add_def (add_type t.tname arity) env in
+      (Sig_ghost_type t, env)
   | _ -> assert false
 
 (** [signatures l env] Processes a list of top level signatures along with the
@@ -339,7 +376,7 @@ and signatures (l : Parse_uast.s_signature) env =
 (** An environment with primitive type definitions. *)
 let type_env =
   List.fold_left
-    (fun tenv (x, y) -> Env.add x { tid = y } tenv)
+    (fun tenv (x, y) -> Env.add x { tid = y; tarity = 0 } tenv)
     Env.empty Structure.primitive_list
 
 (** The empty environment *)

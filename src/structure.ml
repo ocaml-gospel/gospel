@@ -26,7 +26,6 @@ let integer_id = create_id "integer"
 let char_id = create_id "char"
 let string_id = create_id "string"
 let float_id = create_id "float"
-let sequence_id = create_id "sequence"
 let ty_bool = Tyapp (bool_id, [])
 let ty_integer = Tyapp (integer_id, [])
 let ty_char = Tyapp (char_id, [])
@@ -40,7 +39,6 @@ let primitive_list =
     ("char", char_id);
     ("string", string_id);
     ("float", float_id);
-    ("sequence", sequence_id);
   ]
 
 let ty_arrow v1 v2 = Tyarrow (v1, v2)

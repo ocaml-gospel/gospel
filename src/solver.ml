@@ -401,6 +401,7 @@ and gospel_sig = function
       Hashtbl.add fun_types f.fun_name.id_tag ty;
       Sig_function f
   | Sig_axiom ax -> axiom_cstr ax
+  | Sig_ghost_type t -> pure (Sig_ghost_type t)
   | _ -> assert false
 
 and signature l =
