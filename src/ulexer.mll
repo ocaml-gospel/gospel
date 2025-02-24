@@ -36,6 +36,7 @@
         "predicate", PREDICATE;
         "then", THEN;
         "true", TRUE;
+	"type", TYPE;
         "with", WITH;
         "mutable", MUTABLE;
         "ensures", ENSURES;

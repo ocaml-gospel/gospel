@@ -86,6 +86,7 @@
 %token AS
 %token LET MATCH PREDICATE
 %token WITH
+%token TYPE
 
 (* symbols *)
 
@@ -137,6 +138,34 @@ top_:
   { Sig_function f }
 | ax = axiom
   { Sig_axiom ax }
+| tdecl = type_decl
+  { Sig_ghost_type tdecl }
+
+decl_params:
+| (* epsilon *)
+  { [] }
+| id=quote_lident
+  { [id] }
+| LEFTPAR l=separated_nonempty_list(COMMA, quote_lident) RIGHTPAR
+  { l }
+
+type_decl:
+| TYPE tparams=decl_params id=lident inv=ts_invariants
+  { {
+    tname = id;
+    tparams = tparams;
+    tkind = PTtype_abstract;
+    tprivate = Public;
+    tattributes = [];
+    tspec = Some {
+	ty_ephemeral = false;
+	ty_field = [];
+	ty_invariant = inv;
+	ty_text = "";
+	ty_loc = mk_loc $loc(inv);
+      };
+    tloc = mk_loc $loc;
+  } }
 
 val_spec:
 | hd=val_spec_header? bd=val_spec_body EOF

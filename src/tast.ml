@@ -80,6 +80,7 @@ and s_signature_item_desc =
   | Sig_function of function_
   | Sig_axiom of axiom
   | Sig_module of s_module_declaration
+  | Sig_ghost_type of Id_uast.s_type_declaration
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list
