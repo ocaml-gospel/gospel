@@ -86,8 +86,9 @@ let unique_toplevel_qualid g f defs q =
   let q, info = unique_toplevel f defs q in
   (mk_qid q (g info), info)
 
-let type_qualid = unique_toplevel_qualid (fun x -> x.tid) find_type
-let fun_qualid = unique_toplevel_qualid (fun x -> x.fid) find_fun
+let type_info = unique_toplevel_qualid (fun x -> x.tid) find_type
+let fun_info = unique_toplevel_qualid (fun x -> x.fid) find_fun
+let fun_qualid env q = fst (fun_info env q)
 
 (* Helper functions to add top level definitions into the environment. *)
 
