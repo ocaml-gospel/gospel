@@ -8,5 +8,5 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val run : string -> unit
+val run : string list -> unit
 (** Given the name of a file, runs the Inferno typechecker *)

@@ -34,12 +34,10 @@ let files =
   let doc = "File to be processed, expect a .mli or a .ml file" in
   Arg.(non_empty & pos_all test_file [] & info [] ~doc ~docv:"FILE")
 
-let run_check file = List.iter Check.run file
-
 let tc =
   let doc = "Gospel type-checker (Experimental)." in
   let info = Cmd.info "check" ~doc in
-  let term = Term.(const run_check $ intfs) in
+  let term = Term.(const Check.run $ intfs) in
   Cmd.v info term
 
 let pps =

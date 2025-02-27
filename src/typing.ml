@@ -263,7 +263,7 @@ and gospel_sig env = function
 
 (** [signatures l env] Processes a list of top level signatures along with the
     current environment. *)
-and signatures (l : Parse_uast.s_signature) env =
+and signatures l env =
   match l with
   | [] -> ([], env)
   | s :: t ->
@@ -271,4 +271,6 @@ and signatures (l : Parse_uast.s_signature) env =
       let t, env = signatures t env in
       (s :: t, env)
 
-let signatures l = fst (signatures l empty_env)
+let signatures l =
+  let l, env = signatures l Namespace.empty_env in
+  (l, Namespace.defs env)
