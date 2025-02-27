@@ -48,7 +48,7 @@ let unique_pty defs env =
         env := add_type_var pid.pid_str id !env;
         PTtyvar id
     | PTtyapp (q, l) ->
-        let q, tinfo = type_qualid defs q in
+        let q, tinfo = type_info defs q in
         let id = tinfo.tid in
         let expected = tinfo.tarity in
         let arity = List.length l in
@@ -74,7 +74,7 @@ let unique_var env defs q =
       Id_uast.Qid (Env.find pid.pid_str env)
   | _ ->
       (* If [q] is of the form [Qdot] it cannot be a local variable *)
-      fst (fun_qualid defs q)
+      fun_qualid defs q
 
 (** [unique_term defs env t] returns a term where every variable in [t] has been
     replaced with a uniquely tagged variable. When we find a free variable, we
@@ -206,7 +206,7 @@ let rec process_module env m =
         let s, env = signatures m sub_mod_env in
         (* We ignore the [scope] field in [env] as it is not relevant after
            processing the module. *)
-        (Mod_signature s, defs env)
+        (Tast.Mod_signature s, defs env)
     | _ -> assert false
   in
   (* If this module has an identifier, then this function adds it to the current
@@ -217,37 +217,35 @@ let rec process_module env m =
   (* Rebuild the module object *)
   let mloc = m.mdtype.mloc in
   let mattributes = m.mdtype.mattributes in
-  let mdtype = { mdesc; mloc; mattributes } in
+  let mdtype = { Tast.mdesc; mloc; mattributes } in
   let s =
-    Sig_module
+    Tast.Sig_module
       { mdname = id; mdtype; mdattributes = m.mdattributes; mdloc = m.mdloc }
   in
   (s, env)
 
-(** [signature s] processes [f] and changes the global variables [defs_mod] and
-    [defs_scope] whenever a new name is added to the top level. *)
+(** [signature s env] processes [s] and returns a new environment where the
+    names in [s] have been added to [env]. *)
 and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
-    | Sig_gospel (s, txt) ->
-        let ts, env = gospel_sig env s in
-        (Sig_gospel (ts, txt), env)
+    | Sig_gospel (s, _) -> gospel_sig env s
     | Sig_module m -> process_module env m
     | _ -> assert false
   in
-  ({ sdesc; sloc = s.sloc }, env)
+  ({ Tast.sdesc; sloc = s.sloc }, env)
 
 and gospel_sig env = function
   | Parse_uast.Sig_function f ->
       let f = function_ f (scope env) in
-      (* Adds [f] to the set of variables defined and to the
-        scope *)
+      let f = Solver.function_ f in
       let env = add_fun env f.fun_name in
-      (Sig_function f, env)
+      (Tast.Sig_function f, env)
   | Sig_axiom ax ->
       (* Since axioms cannot be referenced, the environment is not
         modified.*)
       let ax = axiom (scope env) ax in
+      let ax = Solver.axiom ax in
       (Sig_axiom ax, env)
   | Sig_ghost_type t ->
       let t = ghost_type_decl t in
@@ -265,7 +263,5 @@ and signatures (l : Parse_uast.s_signature) env =
       let s, env = signature s env in
       let t, env = signatures t env in
       (s :: t, env)
-
-(** An environment with primitive type definitions. *)
 
 let signatures l = fst (signatures l empty_env)

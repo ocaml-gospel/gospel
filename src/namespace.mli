@@ -38,8 +38,8 @@ val add_mod : env -> Ident.t -> mod_defs -> env
 
 (* These functions receive a qualified identifier and return a fully resolved
    identifier and the information associated with it. *)
-val type_qualid : mod_defs -> Parse_uast.qualid -> Id_uast.qualid * ty_info
-val fun_qualid : mod_defs -> Parse_uast.qualid -> Id_uast.qualid * fun_info
+val type_info : mod_defs -> Parse_uast.qualid -> Id_uast.qualid * ty_info
+val fun_qualid : mod_defs -> Parse_uast.qualid -> Id_uast.qualid
 
 val empty_env : env
 (** The empty environment. The only names in scope are Gospel primitive types *)

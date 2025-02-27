@@ -288,7 +288,15 @@ let rec hastype (t : Id_uast.term) (r : variable) =
 
 (** Solves an arbitrary constraint assuming types are not allowed to be
     recursive *)
-let typecheck c = Solver.solve ~rectypes:false c
+let typecheck c =
+  try snd (Solver.solve ~rectypes:false (let0 c)) with
+  | Solver.Unify (loc, ty1, ty2) ->
+      let ty1s = Fmt.str "%a" Types.print_ty ty1 in
+      let ty2s = Fmt.str "%a" Types.print_ty ty2 in
+      let loc = Uast_utils.mk_loc loc in
+      W.error ~loc (W.Bad_type (ty1s, ty2s))
+  | Solver.Unbound _ -> assert false
+(* Unbound variables are caught before we run the solver *)
 
 let process_fun_spec f =
   Option.fold ~some:(fun _ -> assert false) ~none:(pure None) f
@@ -352,74 +360,7 @@ let function_cstr (f : Id_uast.function_) : Tast.function_ co =
 let axiom_cstr ax =
   let@ ty = shallow S.ty_bool in
   let+ t = hastype ax.Id_uast.ax_term ty in
-  Sig_axiom (mk_axiom ax.ax_name t ax.ax_loc ax.ax_text)
+  mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 
-(** [module_cstr] creates a constraint whose semantic value is the typed
-    declaration of [m]. Since the work to make the Gospel specification
-    compatible with Inferno (which does not support modules) has been done at
-    this point (see module [Inferno_prep]), the constraint we create assumes
-    that the definitions in this module are in the same scope as all the
-    definitions we have already processed (i. e. the definitions in [fun_types].*)
-let rec module_cstr (m : Id_uast.s_module_declaration) =
-  let mdname = m.mdname in
-  let mdloc = m.mdloc in
-  let mdattributes = m.mdattributes in
-  let mtype = m.mdtype in
-  let mloc = mtype.mloc in
-  let mattributes = mtype.mattributes in
-
-  let mdesc =
-    match mtype.mdesc with
-    | Id_uast.Mod_signature s ->
-        let l = signature s in
-        Mod_signature l
-    | _ -> assert false
-  in
-  let mdtype = { mdesc; mloc; mattributes } in
-  { mdname; mdloc; mdattributes; mdtype }
-
-(** [signature s] Creates a constraint that transforms the signature [s] into
-    typed signature. *)
-and signature_item s =
-  let+ sdesc =
-    match s.Id_uast.sdesc with
-    | Sig_module m ->
-        (* Returns a typed module. *)
-        let m = module_cstr m in
-        (* Since we handle modules and namespaces in [Inferno_prep], we don't
-           create any Inferno constraints for this branch. *)
-        pure (Sig_module m)
-    | Sig_gospel (g, _) -> gospel_sig g
-    | _ -> assert false
-  in
-  { sdesc; sloc = s.sloc }
-
-and gospel_sig = function
-  | Id_uast.Sig_function f ->
-      let+ f = function_cstr f in
-      let ty = Tast.fun_to_arrow f.fun_params f.fun_ret in
-      Hashtbl.add fun_types f.fun_name.id_tag ty;
-      Sig_function f
-  | Sig_axiom ax -> axiom_cstr ax
-  | Sig_ghost_type t -> pure (Sig_ghost_type t)
-  | _ -> assert false
-
-and signature l =
-  List.map
-    (fun s ->
-      let _, s = typecheck (let0 (signature_item s)) in
-      s)
-    l
-
-let signatures l =
-  let l = Typing.signatures l in
-  (* Build constraints for the entire Gospel file and solve them it. *)
-  let loc loc = Uast_utils.mk_loc loc in
-  let error r = W.error ~loc:(loc r) in
-  try signature l with
-  | Solver.Unbound _ -> assert false
-  (* Unbound variables are caught in the [Inferno_prep] module *)
-  | Solver.Unify (r, ty1, ty2) ->
-      let ty1s = Fmt.str "%a" Types.print_ty ty1 in
-      let ty2s = Fmt.str "%a" Types.print_ty ty2 in
-      error r (Bad_type (ty1s, ty2s))
+let axiom ax = typecheck (axiom_cstr ax)
+let function_ f = typecheck (function_cstr f)

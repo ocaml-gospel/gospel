@@ -8,4 +8,5 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val signatures : Parse_uast.s_signature -> Tast.s_signature
+val axiom : Id_uast.axiom -> Tast.axiom
+val function_ : Id_uast.function_ -> Tast.function_

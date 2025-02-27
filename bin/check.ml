@@ -10,7 +10,7 @@
 
 open Gospel
 open Parser_frontend
-open Solver
+open Typing
 module W = Warnings
 
 let path2module p =

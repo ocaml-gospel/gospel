@@ -37,4 +37,4 @@
     arguments). Since Inferno has no way to track this natively, we must handle
     this manually. *)
 
-val signatures : Parse_uast.s_signature -> Id_uast.s_signature
+val signatures : Parse_uast.s_signature -> Tast.s_signature
