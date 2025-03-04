@@ -149,22 +149,31 @@ decl_params:
 | LEFTPAR l=separated_nonempty_list(COMMA, quote_lident) RIGHTPAR
   { l }
 
+type_def:
+| t=typ
+  { PTtype_abstract, Some t }
+
 type_decl:
-| TYPE tparams=decl_params id=lident inv=ts_invariants
-  { {
-    tname = id;
-    tparams = tparams;
-    tkind = PTtype_abstract;
-    tprivate = Public;
-    tattributes = [];
-    tspec = Some {
-	ty_ephemeral = false;
-	ty_field = [];
-	ty_invariant = inv;
-	ty_text = "";
-	ty_loc = mk_loc $loc(inv);
-      };
-    tloc = mk_loc $loc;
+| TYPE tparams=decl_params id=lident def=preceded(EQUAL, type_def)?
+       inv=ts_invariants
+  {
+    let kind, alias =
+      Option.value ~default:(PTtype_abstract, None) def in
+    {
+      tname = id;
+      tparams = tparams;
+      tkind = kind;
+      tmanifest = alias;
+      tprivate = Public;
+      tattributes = [];
+      tspec = Some {
+		  ty_ephemeral = false;
+		  ty_field = [];
+		  ty_invariant = inv;
+		  ty_text = "";
+		  ty_loc = mk_loc $loc(inv);
+		};
+      tloc = mk_loc $loc;
   } }
 
 val_spec:

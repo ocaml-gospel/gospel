@@ -9,7 +9,9 @@ type kind =
   | Illegal_character of char
   | Illegal_escape of string * string option
   | Syntax_error
-  | Unbound_variable of string
+  | Unbound_type of string list
+  | Unbound_type_variable of string
+  | Unbound_variable of string list
   | Unsupported of string
   | Unterminated_comment
 
@@ -43,7 +45,14 @@ let pp_kind ppf = function
         (option (fmt ": %s"))
         explanation
   | Syntax_error -> pf ppf "Syntax error"
-  | Unbound_variable s -> pf ppf "Unbound value %s" s
+  | Unbound_type s ->
+      pf ppf "Unbound type constructor %a"
+        (list ~sep:(const string ".") string)
+        s
+  | Unbound_type_variable s ->
+      pf ppf "The type variable '%s is unbound in this type declaration" s
+  | Unbound_variable s ->
+      pf ppf "Unbound value %a" (list ~sep:(const string ".") string) s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
 
