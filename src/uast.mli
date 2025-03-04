@@ -18,7 +18,7 @@ type pty =
   | PTtyvar of Preid.t
   | PTtyapp of qualid * pty list
   | PTtuple of pty list
-  | PTarrow of labelled_arg * pty * pty
+  | PTarrow of pty * pty
 
 and labelled_arg =
   | Lunit
