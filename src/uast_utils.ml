@@ -68,3 +68,10 @@ let mixfix s = "mixfix " ^ s
 (** Location smart constructor *)
 let mk_loc (s, e) =
   { Location.loc_start = s; Location.loc_end = e; Location.loc_ghost = false }
+
+let flatten q =
+  let rec flatten = function
+    | Qid id -> [ id.pid_str ]
+    | Qdot (q, id) -> id.pid_str :: flatten q
+  in
+  List.rev (flatten q)

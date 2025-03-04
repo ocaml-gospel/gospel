@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 module Env = Map.Make (String)
+module W = Warnings
 open Id_uast
 
 type fun_info = {
@@ -19,7 +20,28 @@ type fun_info = {
   fty : Id_uast.pty; (* The function's type. *)
 }
 
-type ty_info = { tid : Ident.t; tarity : int }
+type ty_info = {
+  tid : Ident.t; (* The unique identifier for the type *)
+  tparams : Ident.t list;
+  (* The type variables this type takes as argument. We need to know the names
+     of each parameter so that when we expand this type's alias, we know how to
+     replace its type variables. e.g:
+
+     [type ('a, 'b) t = 'a -> 'b]
+     [function x : (int, string) t].
+
+     When typechecking we replace [t] with its alias where every ['a]
+     is replaced with [int] and ['b] is replaced with [string],
+     resulting in the expanded type [int -> string]. *)
+  talias : Id_uast.pty option;
+      (* In case of a type declaration of the form [type t = alias] where alias is
+     some type expression, this value is [Some alias]. All applications of type
+     [tid] are replaced with [talias] during typechecking.
+
+     The [talias] field always points to the "top most" alias. This means if we
+     have the following program [type t1 type t2 = t1 type t3 = t2] the [talias]
+     field for [t3] will be [t1].*)
+}
 
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
@@ -89,12 +111,66 @@ let unique_toplevel f defs = function
 
 let mk_qid q id = match q with None -> Qid id | Some q -> Qdot (q, id)
 
-let unique_toplevel_qualid g f defs q =
-  let q, info = unique_toplevel f defs q in
-  (mk_qid q (g info), info)
+(** [unique_toplevel_qualid field env err defs q] returns the information
+    associated with identifier [q] in the environment [env defs] and returns [q]
+    as a fully resolved identifier. This identifier is built by applying [field]
+    to the [info] object associated with [q]. If no identifier is found with
+    this name, we call the [err] function to produce an appropriate error. *)
+let unique_toplevel_qualid field env err defs q =
+  try
+    let q, info = unique_toplevel env defs q in
+    let id = field info in
+    (mk_qid q id, info)
+  with Not_found ->
+    let id = Uast_utils.flatten q in
+    let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
+    W.error ~loc (err id)
 
-let type_info = unique_toplevel_qualid (fun x -> x.tid) find_type
-let fun_info = unique_toplevel_qualid (fun x -> x.fid) find_fun
+let type_info =
+  unique_toplevel_qualid
+    (fun x -> x.tid)
+    find_type
+    (fun id -> W.Unbound_type id)
+
+module M = Map.Make (Int)
+
+(** [build_alias var_map alias] returns a new type with the same structure as
+    [alias] where every type variable has been replaced with their binding in
+    [var_map]. *)
+let rec build_alias var_map alias =
+  let build_alias = build_alias var_map in
+  match alias with
+  | PTtyvar id -> M.find id.id_tag var_map
+  | PTarrow (t1, t2) -> PTarrow (build_alias t1, build_alias t2)
+  | PTtyapp (q, l) -> PTtyapp (q, List.map build_alias l)
+  | _ -> assert false
+
+let resolve_alias env q l =
+  let q, info = type_info env q in
+  let params = info.tparams in
+  let len1, len2 = (List.length params, List.length l) in
+  if len1 <> len2 then (* type arity check *)
+    W.error ~loc:Location.none (W.Bad_arity (info.tid.Ident.id_str, len1, len2));
+  match info.talias with
+  | None ->
+      (* If this type has no alias, apply the type identifier to the list of
+        arguments. *)
+      PTtyapp (q, l)
+  | Some alias ->
+      (* When there is an alias, we create a map that binds each type variable
+        identifier in [alias] to the corresponding type in [l]. *)
+      let var_map =
+        List.fold_left2
+          (fun acc avar tvar -> M.add avar.Ident.id_tag tvar acc)
+          M.empty params l
+      in
+      build_alias var_map alias
+
+let fun_info =
+  unique_toplevel_qualid
+    (fun x -> x.fid)
+    find_fun
+    (fun id -> W.Unbound_variable id)
 
 let fun_qualid env q =
   let q, info = fun_info env q in
@@ -113,8 +189,6 @@ let get_vars ty =
   in
   get_vars ty;
   Hashtbl.to_seq_values tbl |> List.of_seq
-
-(* Helper functions to add top level definitions into the environment. *)
 
 type env = {
   defs : mod_defs;
@@ -150,17 +224,17 @@ let add_mod mid mdefs defs =
 
 let add_mod env mid mdefs = add_def (add_mod mid mdefs) env
 
-let add_type tid tarity defs =
+let add_type tid tparams talias defs =
   let tenv = defs.type_env in
-  let info = { tid; tarity } in
+  let info = { tid; tparams; talias } in
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
-let add_type env tid tarity = add_def (add_type tid tarity) env
+let add_type env tid tparams talias = add_def (add_type tid tparams talias) env
 
 (** [type_env] contains every primitive Gospel type. *)
 let type_env =
   List.fold_left
-    (fun tenv (x, y) -> Env.add x { tid = y; tarity = 0 } tenv)
+    (fun tenv (x, y) -> Env.add x { tid = y; tparams = []; talias = None } tenv)
     Env.empty Structure.primitive_list
 
 (** The empty environment. The only names that it contains with are primitive

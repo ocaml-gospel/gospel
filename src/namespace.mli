@@ -27,14 +27,23 @@ val defs : env -> mod_defs
 
 (* Records containing the information necessary regarding each top level
     definitions *)
-type ty_info = { tid : Ident.t; tarity : int }
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 (* Functions to update the environment by adding a top level definition *)
 val add_fun : env -> Ident.t -> Types.ty -> env
-val add_type : env -> Ident.t -> int -> env
+val add_type : env -> Ident.t -> Ident.t list -> Types.ty option -> env
 val add_mod : env -> Ident.t -> mod_defs -> env
-val type_info : mod_defs -> Parse_uast.qualid -> Id_uast.qualid * ty_info
+
+val resolve_alias : mod_defs -> Parse_uast.qualid -> Types.ty list -> Types.ty
+(** If the type [q] in an alias such as
+
+    [type (tv_1, tv_2, ...) t = alias]
+
+    [resolve_alias env q l] returns the type expression [alias] where each
+    occurrence of [tv_i] has been replaced with [List.nth l i]. If [q] is not an
+    alias, return [q] applied to [l]. This function will raise a Gospel
+    exception if the size of list [l] is not equal to the amount of type
+    parameters this type receives. *)
 
 val fun_qualid :
   mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Ident.t list * Id_uast.pty

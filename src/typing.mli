@@ -35,6 +35,11 @@
     Duplicate names: There are some contexts in Gospel where we are not allowed
     to introduce the same variable twice into scope (e.g. duplicate function
     arguments). Since Inferno has no way to track this natively, we must handle
-    this manually. *)
+    this manually.
+
+    Type alias expansion: In the presence of some type annotation that uses some
+    type [t] that is an alias for the type expression [texp], [t] is coupled
+    with [texp]. This is necessary since Inferno has no way to natively type
+    aliases. *)
 
 val signatures : Parse_uast.s_signature -> Tast.s_signature * Namespace.mod_defs

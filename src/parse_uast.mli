@@ -165,6 +165,7 @@ type s_type_declaration = {
   tparams : id list;
   tkind : type_kind;
   tprivate : private_flag;
+  tmanifest : pty option;
   tattributes : attributes;
   (* ... [@@id1] [@@id2] *)
   tspec : type_spec option;

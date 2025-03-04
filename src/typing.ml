@@ -32,35 +32,46 @@ let add_term_var var id env =
 let add_type_var var id env =
   { env with type_var = Env.add var id env.type_var }
 
-(** [unique_pty defs env pty] Returns a type annotation where each type symbol
-    (including type variables) has been replaced with a unique identifier. Type
-    variables are searched in [env] and type names are search in [defs]. Type
-    annotations are allowed to introduce type variables into the local scope but
-    are not allowed to introduce fresh type names. When new type variables are
-    introduced, the [env] is modified in place. *)
-let unique_pty defs env =
+(** [unique_pty ~bind defs env pty] Returns a type annotation where each type
+    symbol (including type variables) has been replaced with a unique
+    identifier. Type variables are searched in [env] and type names are search
+    in [defs]. Type annotations are allowed to introduce type variables into the
+    local scope if the [bind] flag is [true] but are never allowed to introduce
+    fresh type names. When we encounter a type variable that is not in [env], we
+    either add it or raise an exception depending on the value of [bind]. *)
+let unique_pty ~bind defs env =
   let rec unique_pty = function
     | Parse_uast.PTtyvar pid when Env.mem pid.pid_str !env.type_var ->
         PTtyvar (Env.find pid.pid_str !env.type_var)
-    | PTtyvar pid ->
+    | PTtyvar pid when bind ->
+        (* If we are in a context where we can introduce fresh type variables
+           and [pid] is not in [env], we create a new identifier and add it. *)
         let id = Ident.from_preid pid in
         env := add_type_var pid.pid_str id !env;
         PTtyvar id
+    | PTtyvar pid ->
+        (* This case is only reached when the variable [pid] is unbound and we
+          cannot add new type variables to the environment. *)
+        W.error ~loc:pid.pid_loc (W.Unbound_type_variable pid.pid_str)
     | PTtyapp (q, l) ->
-        let q, tinfo = type_info defs q in
-        let id = tinfo.tid in
-        let expected = tinfo.tarity in
-        let arity = List.length l in
-        if arity <> expected then
-          W.error ~loc:id.id_loc (W.Bad_arity (id.id_str, expected, arity));
-        PTtyapp (q, List.map unique_pty l)
-    | PTtuple l -> PTtuple (List.map unique_pty l)
+        (* When we encounter a type identifier, we must check if it is an alias
+           for another type and if so replace it. *)
+        resolve_alias defs q (List.map unique_pty l)
     | PTarrow (arg, res) ->
         let arg = unique_pty arg in
         let res = unique_pty res in
         PTarrow (arg, res)
+    | PTtuple _ -> assert false
   in
   unique_pty
+
+(* Helper function to facilitate using [unique_pty] *)
+
+let unique_pty_bind = unique_pty ~bind:true
+
+(* Although [unique_pty] expects a reference to a local scope, if [bind] is
+   false, it is never modified since no type variables can be introduced. *)
+let unique_pty defs env pty = unique_pty ~bind:false defs (ref env) pty
 
 (** [unique_var env defs q] returns a qualified identifer where the identifiers
     used in [q] have been replaced with uniquely tagged identifiers. If [q] has
@@ -110,7 +121,7 @@ let rec unique_term defs env t =
         let binder (pid, pty) =
           let id = Ident.from_preid pid in
           env := add_term_var pid.pid_str id !env;
-          let pty = Option.map (unique_pty defs env) pty in
+          let pty = Option.map (unique_pty_bind defs env) pty in
           (id, pty)
         in
         let l = List.map binder l in
@@ -140,7 +151,7 @@ let function_ f defs =
   let fun_rec = f.fun_rec in
   let env = ref empty_local_env in
   let () = param_dups f.fun_params in
-  let fun_type = Option.map (unique_pty defs env) f.fun_type in
+  let fun_type = Option.map (unique_pty_bind defs env) f.fun_type in
   let fun_params =
     List.map
       (fun (pid, pty) ->
@@ -148,7 +159,7 @@ let function_ f defs =
         (* Add the function parameters to the local environment. *)
         env := add_term_var pid.pid_str id !env;
         (* Add the type variables in [pty] to the local environment. *)
-        let pty = unique_pty defs env pty in
+        let pty = unique_pty_bind defs env pty in
         (id, pty))
       f.fun_params
   in
@@ -178,7 +189,7 @@ let axiom defs ax =
 
 let type_kind = function Parse_uast.PTtype_abstract -> PTtype_abstract
 
-let ghost_type_decl t =
+let ghost_type_decl defs t =
   let tname = Ident.from_preid t.Parse_uast.tname in
   let () =
     (* Raise an error if two type parameters have the same name *)
@@ -188,11 +199,21 @@ let ghost_type_decl t =
     Utils.duplicate Preid.eq error t.tparams
   in
   let tparams = List.map Ident.from_preid t.tparams in
+  (* Create an environment with the type variables in *)
+  let env =
+    List.fold_left
+      (fun acc param -> add_type_var param.Ident.id_str param acc)
+      empty_local_env tparams
+  in
+  (* We call [unique_pty] with the [bind] flag to false so that an error is
+     raised if any type variables besides those defined in [tparams] are used. *)
+  let tmanifest = Option.map (unique_pty defs env) t.tmanifest in
   {
     tname;
     tparams;
     tprivate = t.tprivate;
     tkind = type_kind t.tkind;
+    tmanifest;
     tattributes = t.tattributes;
     tspec = None;
     tloc = t.tloc;
@@ -255,9 +276,9 @@ and gospel_sig env = function
       let ax = Solver.axiom ax in
       (Sig_axiom ax, env)
   | Sig_ghost_type t ->
-      let t = ghost_type_decl t in
-      let arity = List.length t.tparams in
-      let env = add_type env t.tname arity in
+      let t = ghost_type_decl (scope env) t in
+      let alias = t.tmanifest in
+      let env = add_type env t.tname t.tparams alias in
       (Sig_ghost_type t, env)
   | _ -> assert false
 
