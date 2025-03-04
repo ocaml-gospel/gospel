@@ -45,7 +45,7 @@ and term_desc =
   | Tapply of term * term
   | Tif of term * term * term
   | Tquant of Parse_uast.quant * binder list * term
-  | Tlambda of pattern list * term * pty option
+  | Tlambda of binder list * term * pty option
   | Tattr of string * term
   | Tlet of id * term * term
   | Tcase of term * (pattern * term option * term) list

@@ -87,6 +87,15 @@ let unique_var env defs q =
       let q, params, id = fun_qualid defs q in
       Tvar (q, params, id)
 
+(** [binder (pid, pty)] maps the string [pid.pid_str] to a fresh tagged
+    variable, adds all the type variables present in [pty] to the local scope
+    and turns [pty] into a tagged annotation. *)
+let binder defs env (pid, pty) =
+  let id = Ident.from_preid pid in
+  env := add_term_var pid.pid_str id !env;
+  let pty = Option.map (unique_pty_bind defs env) pty in
+  (id, pty)
+
 (** [unique_term top defs env t] returns a term where every variable in [t] has
     been replaced with a uniquely tagged variable. When we find a free variable,
     we first search the local scope. If it is not found then we search the top
@@ -114,17 +123,7 @@ let rec unique_term defs env t =
     | Tinfix _ -> (unique_term env (Uast_utils.chain t)).term_desc
     | Tquant (q, l, t) ->
         let env = ref env in
-        (* [binder (pid, pty)] maps the string [pid.pid_str] to a
-           fresh tagged variable, adds all the type variables present
-           in [pty] to the local scope and turns [pty] into a tagged
-           annotation. *)
-        let binder (pid, pty) =
-          let id = Ident.from_preid pid in
-          env := add_term_var pid.pid_str id !env;
-          let pty = Option.map (unique_pty_bind defs env) pty in
-          (id, pty)
-        in
-        let l = List.map binder l in
+        let l = List.map (binder defs env) l in
         let t = unique_term !env t in
         Tquant (q, l, t)
     | Tif (g, then_b, else_b) ->
@@ -133,6 +132,12 @@ let rec unique_term defs env t =
         let else_b = unique_term env else_b in
         Tif (g, then_b, else_b)
     | Ttuple l -> Ttuple (List.map (unique_term env) l)
+    | Tlambda (args, t, pty) ->
+        let env = ref env in
+        let pty = Option.map (unique_pty_bind defs env) pty in
+        let args = List.map (binder defs env) args in
+        let t = unique_term !env t in
+        Tlambda (args, t, pty)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }
