@@ -16,6 +16,7 @@
 type 'a structure =
   | Tyapp of Ident.t * 'a list
   | Tyarrow of 'a * 'a
+  | Tytuple of 'a list
   | Tvar of Ident.t
 
 let create_id s = Ident.mk_id s Location.none
@@ -49,17 +50,20 @@ let iter f = function
   | Tyarrow (t1, t2) ->
       f t1;
       f t2
+  | Tytuple l -> List.iter f l
   | Tvar _ -> ()
 
 let fold f t accu =
   match t with
   | Tyapp (_, args) -> List.fold_left (fun x y -> f y x) accu args
   | Tyarrow (t1, t2) -> f t2 (f t1 accu)
+  | Tytuple l -> List.fold_left (fun acc arg -> f arg acc) accu l
   | Tvar _ -> accu
 
 let map f = function
   | Tyapp (id, args) -> Tyapp (id, List.map f args)
   | Tyarrow (t1, t2) -> Tyarrow (f t1, f t2)
+  | Tytuple l -> Tytuple (List.map f l)
   | Tvar v -> Tvar v
 
 (* -------------------------------------------------------------------------- *)
@@ -81,6 +85,7 @@ let iter2 f t1 t2 =
       f arg1 arg2;
       f res1 res2
   | Tvar v1, Tvar v2 -> if not (Ident.equal v1 v2) then raise Iter2
+  | Tytuple l1, Tytuple l2 -> list_iter2 f l1 l2
   | _ -> raise Iter2
 
 exception InconsistentConjunction = Iter2

@@ -11,6 +11,7 @@
 type 'a structure =
   | Tyapp of Ident.t * 'a list
   | Tyarrow of 'a * 'a
+  | Tytuple of 'a list
   | Tvar of Ident.t
 
 val bool_id : Ident.t
