@@ -258,6 +258,7 @@ and signature s env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
     | Sig_module m -> process_module env m
+    | Sig_attribute att -> (Sig_attribute att, env)
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
