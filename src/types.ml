@@ -33,6 +33,7 @@ let structure t =
   match t with
   | S.Tyapp (id, l) -> PTtyapp (Qid id, l)
   | Tyarrow (t1, t2) -> PTarrow (t1, t2)
+  | Tytuple l -> PTtuple l
   | Tvar v -> PTtyvar v
 
 (** Since Gospel types are not allowed to be cyclic, we do not need to define
@@ -56,4 +57,9 @@ and print_ty fmt = function
   | PTtyapp (ts, [ ty ]) -> pp fmt "@[%a@] %s" print_ty ty (leaf ts).id_str
   | PTtyapp (ts, tyl) ->
       pp fmt "@[%a@] %s" (list ~sep:comma print_ty) tyl (leaf ts).id_str
-  | PTtuple _ -> assert false
+  | PTtuple l -> pp fmt "@[%a@]" (list ~sep:star print_tuple_par) l
+
+and print_tuple_par fmt ty =
+  match ty with
+  | PTtuple _ | PTarrow _ -> pp fmt "@[%a@]" (parens print_ty) ty
+  | _ -> print_ty fmt ty

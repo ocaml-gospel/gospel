@@ -143,7 +143,7 @@ let rec build_alias var_map alias =
   | PTtyvar id -> M.find id.id_tag var_map
   | PTarrow (t1, t2) -> PTarrow (build_alias t1, build_alias t2)
   | PTtyapp (q, l) -> PTtyapp (q, List.map build_alias l)
-  | _ -> assert false
+  | PTtuple l -> PTtuple (List.map build_alias l)
 
 let resolve_alias env q l =
   let q, info = type_info env q in

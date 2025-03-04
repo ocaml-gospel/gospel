@@ -61,7 +61,7 @@ let unique_pty ~bind defs env =
         let arg = unique_pty arg in
         let res = unique_pty res in
         PTarrow (arg, res)
-    | PTtuple _ -> assert false
+    | PTtuple l -> PTtuple (List.map unique_pty l)
   in
   unique_pty
 
@@ -132,6 +132,7 @@ let rec unique_term defs env t =
         let then_b = unique_term env then_b in
         let else_b = unique_term env else_b in
         Tif (g, then_b, else_b)
+    | Ttuple l -> Ttuple (List.map (unique_term env) l)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }
