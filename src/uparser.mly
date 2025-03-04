@@ -379,7 +379,7 @@ term_:
     { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
 | quant comma_list1(quant_vars) DOT term
     { Tquant ($1, List.concat $2, $4) }
-| FUN args = pat_arg+ ty = preceded(COLON,fun_typ)? ARROW t = term
+| FUN args = fun_vars+ ty = preceded(COLON,fun_typ)? ARROW t = term
     { Tlambda (args, t, ty) }
 | attr term %prec prec_named
     { Tattr ($1, $2) }
@@ -408,6 +408,10 @@ guarded_pattern:
 | pattern { $1, None }
 | pattern WHEN term { $1, Some $3 }
 ;
+
+fun_vars:
+| v=binder_var { v, None }
+| LEFTPAR v=binder_var t=cast RIGHTPAR { v, Some t }
 
 quant_vars:
 | binder_var+ cast? { List.map (fun id -> id, $2) $1 }

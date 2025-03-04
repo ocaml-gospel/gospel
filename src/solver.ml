@@ -138,6 +138,12 @@ let build_def l c =
   in
   List.fold_right loop l acc
 
+(** [binder_to_deep pty] If [pty] is not [Some t], creates an Inferno variable
+    that is equal to [t]. If not, create an unconstrained inferno variable *)
+let pty_opt_to_deep = function
+  | None -> exist
+  | Some ty -> fun k -> deep (pty_to_deep_rigid ty) k
+
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
     [ts] is used to ensure that all type annotations are valid. *)
@@ -218,15 +224,9 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* forall. x y z. t *)
         (* The term [t] must be a formula *)
         let c = lift hastype t S.ty_bool in
-        (* If there is a type annoation, transform it into a deep type
-           and create a binder for it. *)
-        let binder_to_deep = function
-          | None -> exist
-          | Some ty -> fun k -> deep (pty_to_deep_rigid ty) k
-        in
         (* Transform the list of Gospel type annotation into a list of
            Inferno binders *)
-        let l = List.map (fun (x, b) -> (x, binder_to_deep b)) l in
+        let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) l in
         let+ l, t = build_def l c in
         Tquant (q, l, t)
     | Tif (g, then_b, else_b) ->
@@ -255,6 +255,15 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* The return type must be equal to the type of the tuple *)
         and+ () = r --- Tytuple (List.map snd vars) in
         Ttuple l
+    | Tlambda (args, t, pty) ->
+        let@ r = pty_opt_to_deep pty in
+
+        let c = hastype t r in
+        (* Transform the list of Gospel type annotation into a list of
+           Inferno binders *)
+        let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) args in
+        let+ l, t = build_def l c in
+        Tlambda (l, t)
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in

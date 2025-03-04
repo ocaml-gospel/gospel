@@ -27,6 +27,7 @@ type term_node =
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
   | Ttuple of term list
+  | Tlambda of tsymbol list * term
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }
 
