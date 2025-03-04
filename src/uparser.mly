@@ -454,13 +454,12 @@ mk_expr(X): d = X { mk_expr d $loc }
 typ:
 | ty_arg
     { $1 }
-| id=lident COLON aty=typ ARROW rty=typ
-    { PTarrow (Lnamed id, aty, rty) }
-| QUESTION id=lident COLON aty=typ ARROW rty=typ
-    { PTarrow (Loptional id, aty, rty) }
+| lident COLON aty=typ ARROW rty=typ
+    { PTarrow (aty, rty) }
+| QUESTION lident COLON aty=typ ARROW rty=typ
+    { PTarrow (aty, rty) }
 | typ ARROW typ
-    { let l = mk_loc $loc in
-      PTarrow (Lnone (id_anonymous l), $1, $3) }
+    { PTarrow ($1, $3) }
 | ty_arg STAR ty_tuple
     { PTtuple ($1 :: $3) }
 ;
