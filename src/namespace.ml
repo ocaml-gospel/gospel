@@ -9,6 +9,31 @@
 (**************************************************************************)
 
 module Env = Map.Make (String)
+
+module String_list = struct
+  type t = string list
+
+  let compare l1 l2 = compare (List.sort compare l1) (List.sort compare l2)
+end
+
+module Record_env = Map.Make (String_list)
+(** This module is used to map lists of record field names to their respective
+    records. This list is used so that if there are multiple record labels with
+    the same name in scope, we can pinpoint what record the user is trying to
+    create. As an example:
+
+    [module M1 : sig type t1 = {x : int; y : int} end]
+
+    [module M2 : sig type t2 = {x : int; z : int} end]
+
+    [module M3 : sig type t3 = {y : int; z : int} end]
+
+    [open M1 open M2 open M3] [{x=0;y=0}]
+
+    Although all three labels [x], [y] and [z] are defined multiple times, we
+    can still figure out that the user wants to create a value of type [M1.t1]
+    since the combination of labels [x, y] only occurs on this type. *)
+
 module W = Warnings
 open Id_uast
 
@@ -43,18 +68,53 @@ type ty_info = {
      field for [t3] will be [t1].*)
 }
 
+type record_info = {
+  rid : Ident.t; (* The name of the record type. *)
+  rparams : Ident.t list;
+  (* The type parameters for the record type. Should be equal to the [tparams]
+       list in the entry for [rid] in the corresponding type environment. *)
+  rfields : (Ident.t * Id_uast.pty) list; (* The list of all record fields. *)
+}
+
+type field_info = { rfid : Ident.t; rfty : Id_uast.pty; rfrecord : record_info }
+
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 and mod_defs = {
   fun_env : fun_info Env.t; (* Function definitions *)
   type_env : ty_info Env.t; (* Type definitions *)
+  field_env : field_info Env.t;
+  (* Maps the name of each identifier for a record field to the corresponding
+     [field_info] object.
+
+     Invariant: for all values [rf] in the co-domain of [field_env], there
+     exists one and only one value [r] in the co-domain of [record_env] where [r
+     = rf.rfrecord].
+
+     Invariant: the cardinality of [field_env] is greater or equal than the
+     cardinality of [record_env]. *)
+  record_env : record_info Record_env.t;
+  (* Similar to [field_env], except now the domain is the list of record
+     labels. This environment is used strictly for record creation.
+
+     Invariant: for all values [r] in the co-domain of [record_env], there
+     exists one and only one value [t] in the co-domain of [type_env] where
+     [r.rid = t.tid]. Additionally, [r.rparams = t.tparams].
+
+     Invariant: the cardinality of [record_env] is smaller or equal than
+     the cardinality of [type_env]. *)
   mod_env : mod_info Env.t; (* Nested modules *)
 }
 (** Set of top level module definitions *)
 
-(** Represents all the definitions within a module *)
 let empty_defs =
-  { fun_env = Env.empty; type_env = Env.empty; mod_env = Env.empty }
+  {
+    fun_env = Env.empty;
+    type_env = Env.empty;
+    field_env = Env.empty;
+    record_env = Record_env.empty;
+    mod_env = Env.empty;
+  }
 
 (** [lookup f defs pid] accesses the namespace [f defs] and returns the data
     associated with [pid].
@@ -176,6 +236,98 @@ let fun_qualid env q =
   let q, info = fun_info env q in
   (q, info.fparams, info.fty)
 
+(* [leaf q] returns an identifier string without its prefix. *)
+let leaf = function
+  | Parse_uast.Qdot (_, id) -> id.pid_str
+  | Qid id -> id.pid_str
+
+let fields_qualid ~loc defs fields =
+  (* If we have a record creation where one of the fields is qualified, for
+     example, [{M.x = 0; y = 0}], then we look for the definition of a record
+     with labels [x] and [y] in module [M]. To do this, we first check if any
+     field is of the form [M1.M2...]. We then use the environment associated
+     with module [M1.M2...] to perform the lookup for the record. *)
+
+  (* [qdot_mod q] returns the environment associated with the prefix of [q]. If
+     the identifier has no prefix (i.e. is not of the form [M1.M2...]), this
+     function returns [None]. *)
+  let qdot_mod = function
+    | Parse_uast.Qdot (q, _) -> Some (snd (access_mod defs q))
+    | _ -> None
+  in
+
+  (* If there is an identifier in [fields] of the form [M1.M2...], returns the
+     environment its prefix refers to. Otherwise, use the [defs] environment. *)
+  let rdefs = Option.value ~default:defs (List.find_map qdot_mod fields) in
+
+  (* Turn all field identifiers into unqualified strings. *)
+  let labels = List.map leaf fields in
+
+  (* Find the record object with the labels the user supplied in [env]. If this
+     look up fails, it is because there is no record type in environment [rdefs]
+     where the labels are equal to those in [labels]. TODO: in case of a
+     [Not_found], we should give a more precise error message (e.g. are there
+     fields missing, are the fields not defined etc). *)
+  let find_labels env =
+    try Record_env.find labels env
+    with Not_found -> W.error ~loc W.Invalid_record_labels
+  in
+
+  let record = find_labels rdefs.record_env in
+  (* [find_label id] finds corresponding identifier to [id] in [id_labels]. This
+     look up always succeeds as long as [pid.pid_str] is one of the labels in the
+     [labels] list. *)
+  let find_label pid =
+    List.find
+      (fun (id, _) -> id.Ident.id_str = pid.Preid.pid_str)
+      record.rfields
+  in
+
+  (* [resolve_field q] maps the identifier [q] with the type of its
+     label. Additionally, if [q] is of type [M1.M2...], we check if the label is
+     defined in module [M1.M2..]. *)
+  let resolve_field q =
+    match q with
+    | Parse_uast.Qid pid ->
+        (* If a field is not qualified, we look for the corresponding identifier in
+          [id_labels]. This lookup always succeeds. *)
+        let id, ty = find_label pid in
+        (Qid id, ty)
+    | Qdot (pre, pid) ->
+        (* If a field is qualified, we check if we can reach [record] by
+          following the modules in [q] in environment [defs]. If not, either
+          the identifier [pre] does not denote a valid module, the record label
+          [pid] does not exist in module [pre], or the record label [pid]
+          belongs to another type. *)
+
+        (* This lookup checks if the module [pre] exists. *)
+        let pre_id, rdefs = access_mod defs pre in
+
+        (* This lookup checks if there is a record with the same fields as
+           [record] in module [pre].*)
+        let r = find_labels rdefs.record_env in
+
+        (* This lookup checks if the record that [q] belongs to is the same as
+           [record]. *)
+        let () =
+          let open Uast_utils in
+          if not (Ident.equal r.rid record.rid) then
+            W.error ~loc
+              (W.Incompatible_field
+                 (flatten q, flatten pre @ [ r.rid.id_str ], record.rid.id_str))
+        in
+
+        (* If we reach this point, [pre] is a valid path to reach the field
+          [pid]. We then look for the corresponding identifier in the [labels]
+          list *)
+        let id, ty = find_label pid in
+        (Qdot (pre_id, id), ty)
+  in
+
+  let l = List.map resolve_field fields in
+  let ty = { params = record.rparams; name = record.rid } in
+  (l, ty)
+
 (** [get_vars ty] returns the type variables within the type [ty]. *)
 let get_vars ty =
   let tbl = Hashtbl.create 100 in
@@ -230,6 +382,24 @@ let add_type tid tparams talias defs =
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
 let add_type env tid tparams talias = add_def (add_type tid tparams talias) env
+
+let add_record rid rparams rfields defs =
+  let info = { rid; rparams; rfields } in
+  (* Maps each record field name to the a field info object *)
+  let f defs (rfid, rfty) =
+    let rfenv = defs.field_env in
+    let rfinfo = { rfid; rfty; rfrecord = info } in
+    { defs with field_env = Env.add rfid.Ident.id_str rfinfo rfenv }
+  in
+  (* Map each field name to a [field_info] object. *)
+  let defs = List.fold_left f defs rfields in
+  (* Map the list of field names to the [record_info] object. *)
+  let field_nms = List.map (fun (x, _) -> x.Ident.id_str) rfields in
+  let env = defs.record_env in
+  { defs with record_env = Record_env.add field_nms info env }
+
+let add_record env rid rparams rfields =
+  add_def (add_record rid rparams rfields) env
 
 (** [type_env] contains every primitive Gospel type. *)
 let type_env =

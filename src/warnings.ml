@@ -6,8 +6,11 @@ type kind =
   | Bad_type of string * string
   | Duplicated_argument of string
   | Duplicated_parameter of string
+  | Duplicated_record_label of string
   | Illegal_character of char
   | Illegal_escape of string * string option
+  | Incompatible_field of string list * string list * string
+  | Invalid_record_labels
   | Syntax_error
   | Unbound_type of string list
   | Unbound_type_variable of string
@@ -39,11 +42,21 @@ let pp_kind ppf = function
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Duplicated_parameter s ->
       pf ppf "The type parameter %s occurs several times" s
+  | Duplicated_record_label l -> pf ppf "Two labels are named %s" l
+  | Invalid_record_labels -> pf ppf "No record found with the provided labels"
   | Illegal_character c -> pf ppf "Illegal character %c" c
   | Illegal_escape (s, explanation) ->
       pf ppf "Illegal backslash escape in string or character (%s)%a" s
         (option (fmt ": %s"))
         explanation
+  | Incompatible_field (field, field_type, expected_type) ->
+      pf ppf
+        "The identifier %a belongs to the type %a but is mixed here with \
+         fields of type %s"
+        (list ~sep:(const string ".") string)
+        field
+        (list ~sep:(const string ".") string)
+        field_type expected_type
   | Syntax_error -> pf ppf "Syntax error"
   | Unbound_type s ->
       pf ppf "Unbound type constructor %a"

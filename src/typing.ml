@@ -15,12 +15,16 @@ open Namespace
 
 type local_env = {
   term_var : Ident.t Env.t;
-  (* Local term variables bound with a [let] or a quantifier *)
+  (* Local term variables e.g. names bound with a [let] or a quantifier *)
   type_var : Ident.t Env.t; (* Type variables. *)
+  type_nm : Ident.t option;
+      (* When processing the definition for a type named [t], this field will
+         be [Some t]. In all other cases, [t] is [None] *)
 }
 (** Keeps track of the variables within the scope of a term. *)
 
-let empty_local_env = { term_var = Env.empty; type_var = Env.empty }
+let empty_local_env =
+  { term_var = Env.empty; type_var = Env.empty; type_nm = None }
 
 (** [add_term_var var id env] maps the term variable [var] to the tagged
     identifier [id] *)
@@ -32,12 +36,17 @@ let add_term_var var id env =
 let add_type_var var id env =
   { env with type_var = Env.add var id env.type_var }
 
+let add_type_nm id env = { env with type_nm = Some id }
+
 (** [unique_pty ~bind defs env pty] Returns a type annotation where each type
     symbol (including type variables) has been replaced with a unique
-    identifier. Type variables are searched in [env] and type names are search
-    in [defs]. Type annotations are allowed to introduce type variables into the
-    local scope if the [bind] flag is [true] but are never allowed to introduce
-    fresh type names. When we encounter a type variable that is not in [env], we
+    identifier. Type variables are searched in [env] and type names are searched
+    in [defs]. When we are processing type definitions, type names are also be
+    searched for in [env].
+
+    Type annotations are allowed to introduce type variables into the local
+    scope if the [bind] flag is [true] but are never allowed to introduce fresh
+    type names. When we encounter a type variable that is not in [env], we
     either add it or raise an exception depending on the value of [bind]. *)
 let unique_pty ~bind defs env =
   let rec unique_pty = function
@@ -53,6 +62,14 @@ let unique_pty ~bind defs env =
         (* This case is only reached when the variable [pid] is unbound and we
           cannot add new type variables to the environment. *)
         W.error ~loc:pid.pid_loc (W.Unbound_type_variable pid.pid_str)
+    | PTtyapp (Qid pid, l)
+      when Option.fold
+             ~some:(fun t -> t.Ident.id_str = pid.pid_str)
+             ~none:false !env.type_nm ->
+        (* This case is only reached when processing the definition of some type
+          [t] and the user refers to [t] within the definition. *)
+        let nm = Option.get !env.type_nm in
+        PTtyapp (Qid nm, List.map unique_pty l)
     | PTtyapp (q, l) ->
         (* When we encounter a type identifier, we must check if it is an alias
            for another type and if so replace it. *)
@@ -193,9 +210,33 @@ let axiom defs ax =
   let ax_text = ax.ax_text in
   { ax_name; ax_term; ax_loc; ax_text }
 
-let type_kind = function Parse_uast.PTtype_abstract -> PTtype_abstract
+let type_kind env tid tparams tvar_env = function
+  | Parse_uast.PTtype_abstract -> (env, PTtype_abstract)
+  | PTtype_record l ->
+      let () =
+        (* Raise an error if two records have the same label. *)
+        let open Preid in
+        let eq (x, _) (y, _) = Preid.eq x y in
+        let error (x, _) =
+          W.error ~loc:x.pid_loc (W.Duplicated_record_label x.pid_str)
+        in
+        Utils.duplicate eq error l
+      in
+      (* Adds the name of the type to the local scope. This allows for recursive
+         definitions to be well typed without modifying the namespace. *)
+      let tvar_env = add_type_nm tid tvar_env in
+      (* Function to create a unique record field *)
+      let field (id, pty) =
+        let id = Ident.from_preid id in
+        let pty = unique_pty (scope env) tvar_env pty in
+        (id, pty)
+      in
+      let fields = List.map field l in
+      let env = add_record env tid tparams fields in
+      (env, PTtype_record fields)
 
-let ghost_type_decl defs t =
+let ghost_type_decl env t =
+  let defs = scope env in
   let tname = Ident.from_preid t.Parse_uast.tname in
   let () =
     (* Raise an error if two type parameters have the same name *)
@@ -206,24 +247,28 @@ let ghost_type_decl defs t =
   in
   let tparams = List.map Ident.from_preid t.tparams in
   (* Create an environment with the type variables in *)
-  let env =
+  let tvar_env =
     List.fold_left
       (fun acc param -> add_type_var param.Ident.id_str param acc)
       empty_local_env tparams
   in
   (* We call [unique_pty] with the [bind] flag to false so that an error is
      raised if any type variables besides those defined in [tparams] are used. *)
-  let tmanifest = Option.map (unique_pty defs env) t.tmanifest in
-  {
-    tname;
-    tparams;
-    tprivate = t.tprivate;
-    tkind = type_kind t.tkind;
-    tmanifest;
-    tattributes = t.tattributes;
-    tspec = None;
-    tloc = t.tloc;
-  }
+  let tmanifest = Option.map (unique_pty defs tvar_env) t.tmanifest in
+  let env, tkind = type_kind env tname tparams tvar_env t.tkind in
+  let def =
+    {
+      tname;
+      tparams;
+      tprivate = t.tprivate;
+      tkind;
+      tmanifest;
+      tattributes = t.tattributes;
+      tspec = None;
+      tloc = t.tloc;
+    }
+  in
+  (env, def)
 
 let rec process_module env m =
   (* TODO figure out when this is None *)
@@ -283,7 +328,7 @@ and gospel_sig env = function
       let ax = Solver.axiom ax in
       (Sig_axiom ax, env)
   | Sig_ghost_type t ->
-      let t = ghost_type_decl (scope env) t in
+      let env, t = ghost_type_decl env t in
       let alias = t.tmanifest in
       let env = add_type env t.tname t.tparams alias in
       (Sig_ghost_type t, env)
