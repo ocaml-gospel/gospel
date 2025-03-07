@@ -149,9 +149,13 @@ decl_params:
 | LEFTPAR l=separated_nonempty_list(COMMA, quote_lident) RIGHTPAR
   { l }
 
+record_field: id=lident COLON t=typ { id, t }
+
 type_def:
 | t=typ
   { PTtype_abstract, Some t }
+| LEFTBRC l = semicolon_list1(record_field) RIGHTBRC
+  { PTtype_record l, None }
 
 type_decl:
 | TYPE tparams=decl_params id=lident def=preceded(EQUAL, type_def)?

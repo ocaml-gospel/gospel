@@ -29,12 +29,28 @@ val defs : env -> mod_defs
     definitions *)
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
+type record_info = {
+  rid : Ident.t; (* The name of the record type. *)
+  rparams : Ident.t list;
+  (* The type parameters for the record type. Should be equal to the [tparams]
+       list in the entry for [rid] in the corresponding type environment. *)
+  rfields : (Ident.t * Id_uast.pty) list; (* The list of all record fields. *)
+}
+(** [record_info] contains the necessary to type check field accesses and record
+    creation. When a record type is processed, an entry of [record_info] is
+    added as well as an entry of [type_info]. *)
+
 (* Functions to update the environment by adding a top level definition *)
-val add_fun : env -> Ident.t -> Types.ty -> env
-val add_type : env -> Ident.t -> Ident.t list -> Types.ty option -> env
+val add_fun : env -> Ident.t -> Id_uast.pty -> env
+val add_type : env -> Ident.t -> Ident.t list -> Id_uast.pty option -> env
+
+val add_record :
+  env -> Ident.t -> Ident.t list -> (Ident.t * Id_uast.pty) list -> env
+
 val add_mod : env -> Ident.t -> mod_defs -> env
 
-val resolve_alias : mod_defs -> Parse_uast.qualid -> Types.ty list -> Types.ty
+val resolve_alias :
+  mod_defs -> Parse_uast.qualid -> Id_uast.pty list -> Id_uast.pty
 (** If the type [q] in an alias such as
 
     [type (tv_1, tv_2, ...) t = alias]
@@ -51,6 +67,18 @@ val fun_qualid :
     function identifier. Also returns the function's type and the type
     parameters used.
     @raise Not_found if [q] is not a valid function identifier *)
+
+val fields_qualid :
+  loc:Location.t ->
+  mod_defs ->
+  Parse_uast.qualid list ->
+  (Id_uast.qualid * Id_uast.pty) list * Id_uast.ty_app
+(** [fields_qualid defs ~loc l] receives a list of identifiers used to create a
+    record and returns:
+    - A list of qualified identifiers for each record label in [l] coupled with
+      their types.
+    - The identifier for the record type the labels [l] belong to.
+    - The type parameters for the record type. *)
 
 val empty_env : env
 (** The empty environment. The only names in scope are Gospel primitive types *)

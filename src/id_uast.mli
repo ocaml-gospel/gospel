@@ -33,6 +33,9 @@ and labelled_arg =
 type binder = id * pty option
 type param = id * pty
 
+type ty_app = { params : id list; name : id }
+(** Name of a type coupled with its type variables. *)
+
 type term = { term_desc : term_desc; term_loc : Location.t }
 
 and term_desc =
@@ -132,7 +135,7 @@ type s_val_description = {
   vloc : Location.t;
 }
 
-type type_kind = PTtype_abstract
+type type_kind = PTtype_abstract | PTtype_record of (id * pty) list
 type private_flag = Private | Public
 
 type s_type_declaration = {
