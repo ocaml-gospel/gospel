@@ -28,6 +28,7 @@ type term_node =
   | Tif of term * term * term
   | Ttuple of term list
   | Tlambda of tsymbol list * term
+  | Trecord of (Id_uast.qualid * term) list
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }
 
