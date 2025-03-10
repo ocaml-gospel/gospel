@@ -54,7 +54,7 @@ and term_desc =
   | Tcase of term * (pattern * term option * term) list
   | Tcast of term * pty
   | Ttuple of term list
-  | Trecord of (qualid * term) list
+  | Trecord of (qualid * term * pty) list * ty_app
   | Tscope of qualid * term
   | Told of term
 

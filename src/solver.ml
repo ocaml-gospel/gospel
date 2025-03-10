@@ -104,6 +104,22 @@ let assoc_vars vars =
   in
   map_binders f vars
 
+(** [record_ty env rfid] returns a binder that introduces the record type that
+    the record label [rfid] belongs to as well as the type variables in the
+    record type. *)
+let record_ty params rid =
+ fun k ->
+  let@ vars = assoc_vars params in
+  let@ ty = shallow (S.Tyapp (rid, List.map snd vars)) in
+  k (vars, ty)
+
+(** [field_pty vars q t ty] returns a binder that introduces [q], [t] and an
+    inferno type variable whose value is equal to [ty]. *)
+let field_pty vars q t ty =
+ fun k ->
+  let@ ty = deep (pty_to_deep_flex vars ty) in
+  k (q, t, ty)
+
 (** [top_level_pty env id] returns a binder that introduces the type of the top
     level function [id]. *)
 let top_level_pty params ty =
@@ -264,6 +280,19 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) args in
         let+ l, t = build_def l c in
         Tlambda (l, t)
+    | Trecord (l, rec_ty) ->
+        (* Gets the record type as well as the list of type parameters used as
+           inferno variables. *)
+        let@ vars, r_ty = record_ty rec_ty.params rec_ty.name in
+        (* Get the expected type of each record label. *)
+        let@ tys = map_binders (fun (q, t, ty) -> field_pty vars q t ty) l in
+        (* Associate each field instantiation with its expected type *)
+        let check_field (q, t, v) =
+          let+ t = hastype t v in
+          (q, t)
+        in
+        let+ l = map_constraints check_field tys and+ () = r -- r_ty in
+        Trecord l
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in

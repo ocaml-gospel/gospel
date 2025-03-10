@@ -155,6 +155,14 @@ let rec unique_term defs env t =
         let args = List.map (binder defs env) args in
         let t = unique_term !env t in
         Tlambda (args, t, pty)
+    | Trecord l ->
+        let qids, info =
+          Namespace.fields_qualid ~loc:t.term_loc defs (List.map fst l)
+        in
+        let values =
+          List.map2 (fun (id, ty) (_, t) -> (id, unique_term env t, ty)) qids l
+        in
+        Trecord (values, info)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }
