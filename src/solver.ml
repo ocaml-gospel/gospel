@@ -23,73 +23,26 @@ module Solver = Solver.Make (X) (S) (T)
 open Solver
 module W = Warnings
 
-(* The following functions make use of "deep types". These are a
-   special encoding provided by Inferno when we already know a type
-   before we begin typechecking. This is useful for logical functions
-   and predicates since these are required to have arguments with
-   explicitly annotated types (since Gospel does not support let
-   polymophism). After constructing a deep type, we then call the
-   [deep] function which returns a variable [x] and creates an Inferno
-   constraint stating that [x] must be equal to the provided deep
-   type. *)
-
 (** Deep type for functions *)
 let deep_arrow arg ret =
   let f = S.ty_arrow arg ret in
   DeepStructure f
 
-(** [fresh_pty_vars pty] is similar to [pty_vars], but also returns a new [pty]
-    where every type variable has been given a new unique identifier.*)
-let fresh_pty_vars pty =
-  (* Maps the unique identifiers of [pty] to the corresponding fresh
-     type variable. *)
-  let tbl : (int, Ident.t) Hashtbl.t = Hashtbl.create 100 in
-  let rec pty_vars = function
-    | PTtyvar v ->
-        let fresh_id =
-          (* Try to find the fresh type variable that corresponds with [v] *)
-          try Hashtbl.find tbl v.id_tag
-          with Not_found ->
-            (* If there is no binding, create a new variable identical
-               to [v] with a new identifier. *)
-            let id = Ident.clone v in
-            Hashtbl.add tbl v.id_tag id;
-            id
-        in
-        PTtyvar fresh_id
-    | PTtyapp (id, l) -> PTtyapp (id, List.map pty_vars l)
-    | PTarrow (arg, ret) -> PTarrow (pty_vars arg, pty_vars ret)
-    | PTtuple _ -> assert false
-  in
-  (* Fresh type *)
-  let fresh_pty = pty_vars pty in
-  let vars =
-    Hashtbl.to_seq_values tbl
-    (* Sequence of type variables in [fresh_pty]. *)
-    |> List.of_seq (* Turn the lazy sequence into a list. *)
-  in
-  (vars, fresh_pty)
-
-(** Maps a top level definition's unique identifier to its decoded type.
-
-    One might wonder why we do this bookkeeping here instead of in
-    [Inferno_prep] since function types are explicit in their definitions. The
-    reason is that sometimes we have definitions such as
-
-    [function n : 'a = 0]
-
-    Where the type annotation is valid but some type variables need to be
-    instantiated with a concrete type (in this case, ['a] must be instantiated
-    with [integer]). This means that we can only record the type of a function
-    once the Inferno constraint has been solved and the decoded type has been
-    resolved. *)
-let fun_types : (int, Types.ty) Hashtbl.t = Hashtbl.create 100
-
-(** Given the identifier for a top level function, return its type with fresh
-    type variables. *)
-let top_level_pty id =
-  let pty = Hashtbl.find fun_types id.Ident.id_tag in
-  fresh_pty_vars pty
+(** [map_binders f xs] is conceptually similar to [List.map], but creates a
+    binder for each element in [xs]. This means an application of [f] may bind
+    (and possibly return) inferno variables as well as applying some arbitrary
+    transformation, as one would expect from [List.map]. This function returns a
+    binder that introduces a list of all the values bound by applying [f] to
+    every element in [xs]. *)
+let rec map_binders (f : 'a -> ('b, 'r) binder) (xs : 'a list) :
+    ('b list, 'r) binder =
+ fun k ->
+  match xs with
+  | [] -> k []
+  | x :: xs ->
+      let@ y = f x in
+      let@ l = map_binders f xs in
+      k (y :: l)
 
 (* The following functions are used to turn Gospel signatures into Inferno
    constraints that, when solved, will produce typed signatures. If the
@@ -130,6 +83,26 @@ let pty_to_deep_rigid = pty_to_deep (fun v -> DeepStructure (Tvar v))
 let pty_to_deep_flex vars =
   pty_to_deep (fun v -> DeepVar (List.assoc v.id_tag vars))
 
+(** [assoc_vars vars] returns a binder for a list where every type variable in
+    [vars] is associated with a fresh Inferno type variable. *)
+let assoc_vars vars =
+  let f var k =
+    let@ v = exist in
+    k (var.Ident.id_tag, v)
+  in
+  map_binders f vars
+
+(** [top_level_pty env id] returns a binder that introduces the type of the top
+    level function [id]. *)
+let top_level_pty params ty =
+ fun k ->
+  (* Associate each type variable in [params] with a flexible inferno
+      variable. *)
+  let@ vars = assoc_vars params in
+  (* Turn the type [ty] into an inferno type variable *)
+  let@ ty = deep (pty_to_deep_flex vars ty) in
+  k ty
+
 (** [build_def l c] Returns a constraint where the variables in [l] have been
     added to the scope of constraint [c] by means of a chain of [def]
     constraints. Each element of [l] is a pair consisting of an identifier [x]
@@ -152,19 +125,6 @@ let build_def l c =
     ([], t)
   in
   List.fold_right loop l acc
-
-(** [map_binders f xs] is in principle similar to [List.map f xs], but because
-    the function [f] returns a binder it allows us to introduce inferno
-    variables for each element of [xs]. *)
-let rec map_binders (f : 'a -> ('b, 'r) binder) (xs : 'a list) :
-    ('b list, 'r) binder =
- fun k ->
-  match xs with
-  | [] -> k []
-  | x :: xs ->
-      let@ y = f x in
-      let@ l = map_binders f xs in
-      k (y :: l)
 
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
@@ -195,38 +155,22 @@ let rec hastype (t : Id_uast.term) (r : variable) =
           | Pconst_float _ -> r --- S.ty_float
         in
         Tconst constant
-    | Tvar q ->
-        (* We ignore any module accesses since all variables have been
-          uniquely tagged. *)
-        let id = Types.leaf q in
-        if id.id_local then
-          (* If the variable is defined within the scope of this term,
-             we create a constraint stating that the variable [id]
-             must be an instance of type [r]. No lookup is performed
-             on this branch as the bookkeeping is done by Inferno. *)
-          let+ _ = instance id r in
-          (* We can ignore the return value of [instance] since it will always
-             return the empty list since all local variables are bound with
-             [def], which creates a monomorphic scheme. *)
-          Tvar q
-        else
-          (* In the case of a top level definition outside the scope of this
-             term, we lookup its type in [env] and create a constraint stating
-             that the type [r] must be equal to the function's type. *)
-          let vars, ty = top_level_pty id in
-          (* For each type variable in the type of the top level definitions, creates *)
-          let f var k =
-            let@ v = exist in
-            k (var.Ident.id_tag, v)
-          in
-          (* Associative list binding each Gospel identifier with an inferno
-             variable. *)
-          let@ vars = map_binders f vars in
-          (* Creates a deep type for the function type *)
-          let@ f = deep (pty_to_deep_flex vars ty) in
-          (* The type of the function must be equal to [r]. *)
-          let+ () = f -- r in
-          Tvar q
+    | Tlocal id ->
+        (* If the variable is defined within the scope of this term,
+          we create a constraint stating that the variable [id]
+          must be an instance of type [r]. No lookup is performed
+          as the bookkeeping is done by Inferno. *)
+        let+ _ = instance id r in
+        (* We can ignore the return value of [instance] since it will always
+          return the empty list since all local variables are bound with
+          [def], which creates a monomorphic scheme. *)
+        Tvar (Qid id)
+    | Tvar (q, params, pty) ->
+        (* In the case of a top level definition outside the scope of this term,
+           we use the type provided during the name resolution stage. *)
+        let@ ty = top_level_pty params pty in
+        let+ () = r -- ty in
+        Tvar q
     | Tlet (id, t1, t2) ->
         (* let id = t1 in t2 *)
         (* The term [t1] has some arbitrary type [v_type]. *)
@@ -356,7 +300,7 @@ let function_cstr (f : Id_uast.function_) : Tast.function_ co =
   let fun_ty = Option.fold ~some:(fun t -> t.t_ty) ~none:ret tt in
   mk_function f params tt fun_ty fun_spec
 
-(** Creates a constraint ensuring the term within an axiom has type [bool]. *)
+(** Creates a constraint ensuring the term within an axiom has type [prop]. *)
 let axiom_cstr ax =
   let@ ty = shallow S.ty_bool in
   let+ t = hastype ax.Id_uast.ax_term ty in

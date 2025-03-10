@@ -39,7 +39,8 @@ and term_desc =
   | Ttrue
   | Tfalse
   | Tconst of constant
-  | Tvar of qualid
+  | Tvar of qualid * id list * pty
+  | Tlocal of id
   | Tfield of term * qualid
   | Tapply of term * term
   | Tif of term * term * term
