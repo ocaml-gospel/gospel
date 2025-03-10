@@ -25,7 +25,6 @@ let empty_local_env = { term_var = Env.empty; type_var = Env.empty }
 (** [add_term_var var id env] maps the term variable [var] to the tagged
     identifier [id] *)
 let add_term_var var id env =
-  let id = Ident.to_local id in
   { env with term_var = Env.add var id env.term_var }
 
 (** [add_type_var var id env] maps the type variable [var] to the tagged
@@ -71,16 +70,20 @@ let unique_pty defs env =
 let unique_var env defs q =
   match q with
   | Parse_uast.Qid pid when Env.mem pid.pid_str env ->
-      Id_uast.Qid (Env.find pid.pid_str env)
+      Tlocal (Env.find pid.pid_str env)
   | _ ->
       (* If [q] is of the form [Qdot] it cannot be a local variable *)
-      fun_qualid defs q
+      let q, params, id = fun_qualid defs q in
+      Tvar (q, params, id)
 
-(** [unique_term defs env t] returns a term where every variable in [t] has been
-    replaced with a uniquely tagged variable. When we find a free variable, we
-    first search the local scope. If it is not found then we search the top
-    level. When a variable is bound either with a [let] or a quantifier, we
-    create a new unique identifier and map it to [env]. *)
+(** [unique_term top defs env t] returns a term where every variable in [t] has
+    been replaced with a uniquely tagged variable. When we find a free variable,
+    we first search the local scope. If it is not found then we search the top
+    level. When a variable from the top level is used, we must add its typing
+    information to the AST. This is necessary for the type inference phase so
+    that the Inferno solver knows the type of all the variables outside the
+    scope of the term. When a variable is bound either with a [let] or a
+    quantifier, we create a new unique identifier and map it in [env]. *)
 let rec unique_term defs env t =
   (* The namespace remains constant in each recursive call *)
   let unique_term = unique_term defs in
@@ -89,7 +92,7 @@ let rec unique_term defs env t =
     | Parse_uast.Ttrue -> Ttrue
     | Tfalse -> Tfalse
     | Tconst c -> Tconst c
-    | Tvar q -> Tvar (unique_var env.term_var defs q)
+    | Tvar q -> unique_var env.term_var defs q
     | Tlet (v, t1, t2) ->
         let id = Ident.from_preid v in
         let t1 = unique_term env t1 in
@@ -161,7 +164,10 @@ let function_ f defs =
     None
   in
   let fun_loc = f.fun_loc in
-  { fun_name; fun_rec; fun_type; fun_params; fun_def; fun_spec; fun_loc }
+  let f =
+    { fun_name; fun_rec; fun_type; fun_params; fun_def; fun_spec; fun_loc }
+  in
+  f
 
 let axiom defs ax =
   let ax_name = Ident.from_preid ax.Parse_uast.ax_name in
@@ -239,7 +245,8 @@ and gospel_sig env = function
   | Parse_uast.Sig_function f ->
       let f = function_ f (scope env) in
       let f = Solver.function_ f in
-      let env = add_fun env f.fun_name in
+      let fun_ty = Tast.fun_to_arrow f.fun_params f.fun_ret in
+      let env = add_fun env f.fun_name fun_ty in
       (Tast.Sig_function f, env)
   | Sig_axiom ax ->
       (* Since axioms cannot be referenced, the environment is not

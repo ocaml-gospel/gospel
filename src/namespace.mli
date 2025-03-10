@@ -27,19 +27,21 @@ val defs : env -> mod_defs
 
 (* Records containing the information necessary regarding each top level
     definitions *)
-type fun_info = { fid : Ident.t }
 type ty_info = { tid : Ident.t; tarity : int }
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 (* Functions to update the environment by adding a top level definition *)
-val add_fun : env -> Ident.t -> env
+val add_fun : env -> Ident.t -> Types.ty -> env
 val add_type : env -> Ident.t -> int -> env
 val add_mod : env -> Ident.t -> mod_defs -> env
-
-(* These functions receive a qualified identifier and return a fully resolved
-   identifier and the information associated with it. *)
 val type_info : mod_defs -> Parse_uast.qualid -> Id_uast.qualid * ty_info
-val fun_qualid : mod_defs -> Parse_uast.qualid -> Id_uast.qualid
+
+val fun_qualid :
+  mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Ident.t list * Id_uast.pty
+(** [fun_qualid defs q] turns every sub identifier in [q] into a fully resolved
+    function identifier. Also returns the function's type and the type
+    parameters used.
+    @raise Not_found if [q] is not a valid function identifier *)
 
 val empty_env : env
 (** The empty environment. The only names in scope are Gospel primitive types *)
