@@ -27,7 +27,7 @@ type term_node =
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
   | Ttuple of term list
-  | Tlambda of tsymbol list * term
+  | Tlambda of tsymbol list * term * Id_uast.pty option
   | Trecord of (Id_uast.qualid * term) list
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }

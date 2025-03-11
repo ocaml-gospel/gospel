@@ -211,20 +211,23 @@ let resolve_alias env q l =
   let len1, len2 = (List.length params, List.length l) in
   if len1 <> len2 then (* type arity check *)
     W.error ~loc:Location.none (W.Bad_arity (info.tid.Ident.id_str, len1, len2));
-  match info.talias with
-  | None ->
-      (* If this type has no alias, apply the type identifier to the list of
+  let alias =
+    match info.talias with
+    | None ->
+        (* If this type has no alias, apply the type identifier to the list of
         arguments. *)
-      PTtyapp (q, l)
-  | Some alias ->
-      (* When there is an alias, we create a map that binds each type variable
+        None
+    | Some alias ->
+        (* When there is an alias, we create a map that binds each type variable
         identifier in [alias] to the corresponding type in [l]. *)
-      let var_map =
-        List.fold_left2
-          (fun acc avar tvar -> M.add avar.Ident.id_tag tvar acc)
-          M.empty params l
-      in
-      build_alias var_map alias
+        let var_map =
+          List.fold_left2
+            (fun acc avar tvar -> M.add avar.Ident.id_tag tvar acc)
+            M.empty params l
+        in
+        Some (build_alias var_map alias)
+  in
+  PTtyapp (Types.mk_info q ~alias, l)
 
 let fun_info =
   unique_toplevel_qualid
@@ -376,9 +379,20 @@ let add_mod mid mdefs defs =
 
 let add_mod env mid mdefs = add_def (add_mod mid mdefs) env
 
+(** [to_alias pty] Turns every instance of a type name application in [pty] into
+    its respective alias, if it exists. *)
+let rec to_alias = function
+  | PTtyvar v -> PTtyvar v
+  | PTtyapp (app, l) -> (
+      match app.app_alias with
+      | None -> PTtyapp (app, List.map to_alias l)
+      | Some t -> t)
+  | PTarrow (arg, res) -> PTarrow (to_alias arg, to_alias res)
+  | PTtuple l -> PTtuple (List.map to_alias l)
+
 let add_type tid tparams talias defs =
   let tenv = defs.type_env in
-  let info = { tid; tparams; talias } in
+  let info = { tid; tparams; talias = Option.map to_alias talias } in
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
 let add_type env tid tparams talias = add_def (add_type tid tparams talias) env

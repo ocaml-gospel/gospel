@@ -14,7 +14,7 @@
 (** Represents a Gospel type where unresolved type variables are represented by
     values of type ['a]. *)
 type 'a structure =
-  | Tyapp of Ident.t * 'a list
+  | Tyapp of Id_uast.qualid * 'a list
   | Tyarrow of 'a * 'a
   | Tytuple of 'a list
   | Tvar of Ident.t
@@ -27,11 +27,11 @@ let integer_id = create_id "integer"
 let char_id = create_id "char"
 let string_id = create_id "string"
 let float_id = create_id "float"
-let ty_bool = Tyapp (bool_id, [])
-let ty_integer = Tyapp (integer_id, [])
-let ty_char = Tyapp (char_id, [])
-let ty_string = Tyapp (string_id, [])
-let ty_float = Tyapp (float_id, [])
+let ty_bool = Tyapp (Qid bool_id, [])
+let ty_integer = Tyapp (Qid integer_id, [])
+let ty_char = Tyapp (Qid char_id, [])
+let ty_string = Tyapp (Qid string_id, [])
+let ty_float = Tyapp (Qid float_id, [])
 
 let primitive_list =
   [
@@ -79,6 +79,8 @@ let list_iter2 f ts us =
 let iter2 f t1 t2 =
   match (t1, t2) with
   | Tyapp (id1, args1), Tyapp (id2, args2) ->
+      let id1 = Uast_utils.leaf id1 in
+      let id2 = Uast_utils.leaf id2 in
       if not (Ident.equal id1 id2) then raise Iter2
       else list_iter2 f args1 args2
   | Tyarrow (arg1, res1), Tyarrow (arg2, res2) ->

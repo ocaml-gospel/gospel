@@ -75,3 +75,5 @@ let flatten q =
     | Qdot (q, id) -> id.pid_str :: flatten q
   in
   List.rev (flatten q)
+
+let leaf q = match q with Id_uast.Qid id -> id | Qdot (_, id) -> id

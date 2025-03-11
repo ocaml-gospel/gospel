@@ -69,7 +69,7 @@ let unique_pty ~bind defs env =
         (* This case is only reached when processing the definition of some type
           [t] and the user refers to [t] within the definition. *)
         let nm = Option.get !env.type_nm in
-        PTtyapp (Qid nm, List.map unique_pty l)
+        PTtyapp (Types.mk_info (Qid nm), List.map unique_pty l)
     | PTtyapp (q, l) ->
         (* When we encounter a type identifier, we must check if it is an alias
            for another type and if so replace it. *)
@@ -325,8 +325,7 @@ and signature s env =
 and gospel_sig env = function
   | Parse_uast.Sig_function f ->
       let f = function_ f (scope env) in
-      let f = Solver.function_ f in
-      let fun_ty = Tast.fun_to_arrow f.fun_params f.fun_ret in
+      let f, fun_ty = Solver.function_ f in
       let env = add_fun env f.fun_name fun_ty in
       (Tast.Sig_function f, env)
   | Sig_axiom ax ->
