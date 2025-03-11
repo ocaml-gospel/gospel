@@ -40,6 +40,13 @@
     Type alias expansion: In the presence of some type annotation that uses some
     type [t] that is an alias for the type expression [texp], [t] is coupled
     with [texp]. This is necessary since Inferno has no way to natively type
-    aliases. *)
+    aliases.
+
+    Types of top level variables: When we have specifications that use top level
+    names, we insert whatever typing information is necessary in the AST. In the
+    case of function applications, we insert the type of the function. In the
+    case of record creation, we insert the type of the record and the type of
+    each field. In the case of record field applications, we insert the type of
+    the record and the type of the field. *)
 
 val signatures : Parse_uast.s_signature -> Tast.s_signature * Namespace.mod_defs

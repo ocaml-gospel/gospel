@@ -314,6 +314,16 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         in
         let+ l = map_constraints check_field tys and+ () = r -- r_ty in
         Trecord l
+    | Tfield (t, rec_ty, field, ty) ->
+        (* Get the type for the record which [field] belongs to. *)
+        let@ vars, r_ty = record_ty rec_ty.params rec_ty.name in
+        (* Get the type of the field. *)
+        let@ ty = deep (pty_to_deep_flex vars ty) in
+        (* The term [t] must be of the type of the record which [t] belongs
+           to. Additionally, the type of this term must be equal to the type of
+           the field. *)
+        let+ t = hastype t r_ty and+ () = r -- ty in
+        Tfield (t, field)
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in

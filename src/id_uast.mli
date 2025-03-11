@@ -53,8 +53,15 @@ and term_desc =
   | Tfalse
   | Tconst of constant
   | Tvar of qualid * id list * pty
+    (* We have two nodes for term variables, one for local variables and another
+       for top level variables. This is necessary because the Inferno solver can
+       only keep track of types for variables that are local to the given term,
+       meaning we must supply the type of all top level variables that the term
+       uses. *)
   | Tlocal of id
-  | Tfield of term * qualid
+  | Tfield of term * ty_app * qualid * pty
+    (* For field applications, we store the type of the record it belongs to as
+       well as the type of the record field. *)
   | Tapply of term * term
   | Tif of term * term * term
   | Tquant of Parse_uast.quant * binder list * term
