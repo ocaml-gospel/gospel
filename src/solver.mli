@@ -9,4 +9,4 @@
 (**************************************************************************)
 
 val axiom : Id_uast.axiom -> Tast.axiom
-val function_ : Id_uast.function_ -> Tast.function_
+val function_ : Id_uast.function_ -> Tast.function_ * Id_uast.pty

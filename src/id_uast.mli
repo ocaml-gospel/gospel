@@ -17,11 +17,21 @@ type qualid = Qid of id | Qdot of qualid * id
 
 type pty =
   | PTtyvar of id
-  | PTtyapp of qualid * pty list
+  | PTtyapp of app_info * pty list
   | PTtuple of pty list
   | PTarrow of pty * pty
 
-and labelled_arg =
+and app_info = { app_qid : qualid; app_alias : pty option }
+(** For every type application the user writes, we also keep track of the alias
+    for that type. We need the type alias for the type checking phase and we
+    need the original annotation for the so that we preserve what the user wrote
+    across in the typed AST. If [app_alias] in [None], this type application
+    does not have a type alias.
+
+    Invariant : If a type application has the type alias [t], all type
+    applications used within [t] will not have any aliases. *)
+
+type labelled_arg =
   | Lunit
   | Lnone of id
   | Loptional of id
