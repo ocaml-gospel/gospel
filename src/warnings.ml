@@ -12,6 +12,7 @@ type kind =
   | Incompatible_field of string list * string list * string
   | Invalid_record_labels
   | Syntax_error
+  | Unbound_record_label of string list
   | Unbound_type of string list
   | Unbound_type_variable of string
   | Unbound_variable of string list
@@ -58,6 +59,8 @@ let pp_kind ppf = function
         (list ~sep:(const string ".") string)
         field_type expected_type
   | Syntax_error -> pf ppf "Syntax error"
+  | Unbound_record_label s ->
+      pf ppf "Unbound record label %a" (list ~sep:(const string ".") string) s
   | Unbound_type s ->
       pf ppf "Unbound type constructor %a"
         (list ~sep:(const string ".") string)

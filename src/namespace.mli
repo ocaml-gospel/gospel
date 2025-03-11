@@ -80,6 +80,14 @@ val fields_qualid :
     - The identifier for the record type the labels [l] belong to.
     - The type parameters for the record type. *)
 
+val get_field_info :
+  mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Id_uast.pty * Id_uast.ty_app
+(** [get_field_info defs id] receives a record field identifier and returns:
+    - The resolved identifier for [q].
+    - The type of the record field [q].
+    - The identifier for the record type the label [id] belong to.
+    - The type parameters for the record type. *)
+
 val empty_env : env
 (** The empty environment. The only names in scope are Gospel primitive types *)
 

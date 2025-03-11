@@ -163,6 +163,9 @@ let rec unique_term defs env t =
           List.map2 (fun (id, ty) (_, t) -> (id, unique_term env t, ty)) qids l
         in
         Trecord (values, info)
+    | Tfield (t, q) ->
+        let qid, fty, record_ty = Namespace.get_field_info defs q in
+        Tfield (unique_term env t, record_ty, qid, fty)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }

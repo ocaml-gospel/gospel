@@ -131,6 +131,7 @@ let lookup f (defs : mod_defs) pid =
 let find_fun = fun d -> d.fun_env
 let find_type = fun d -> d.type_env
 let find_mod = fun d -> d.mod_env
+let find_fields = fun d -> d.field_env
 
 (** [access_mod defs q] returns a qualified identifer where the identifiers used
     in [q] have been replaced with uniquely tagged identifiers. This function
@@ -330,6 +331,16 @@ let fields_qualid ~loc defs fields =
   let l = List.map resolve_field fields in
   let ty = { params = record.rparams; name = record.rid } in
   (l, ty)
+
+let get_field_info defs q =
+  let q, info =
+    unique_toplevel_qualid
+      (fun x -> x.rfid)
+      find_fields
+      (fun id -> Warnings.Unbound_record_label id)
+      defs q
+  in
+  (q, info.rfty, { params = info.rfrecord.rparams; name = info.rfrecord.rid })
 
 (** [get_vars ty] returns the type variables within the type [ty]. *)
 let get_vars ty =
