@@ -137,19 +137,22 @@ let find_fields = fun d -> d.field_env
     in [q] have been replaced with uniquely tagged identifiers. This function
     assumes that all the identifiers in [q] are belong to the module namespace.
     This function also returns the definitions contained in the module
-    associated with [q].
-    @raise Not_found
-      if any of the identifiers in [q] are not valid module identifiers. TODO,
-      This exception should be caught here and subsequently throw a Gospel
-      exception. *)
-let rec access_mod defs = function
+    associated with [q]. *)
+let rec access_mod defs =
+  (* Looks up a module identifier and throws an error in case it is not in
+     scope. *)
+  let lookup defs pid =
+    try lookup find_mod defs pid
+    with Not_found -> W.error ~loc:pid.pid_loc (W.Unbound_module pid.pid_str)
+  in
+  function
   | Parse_uast.Qid pid ->
-      let info = lookup find_mod defs pid in
+      let info = lookup defs pid in
       let id = info.mid in
       (Qid id, info.mdefs)
   | Qdot (q, pid) ->
       let q, defs = access_mod defs q in
-      let info = lookup find_mod defs pid in
+      let info = lookup defs pid in
       let id = info.mid in
       let defs = info.mdefs in
       (Qdot (q, id), defs)

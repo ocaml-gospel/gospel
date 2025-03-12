@@ -12,6 +12,7 @@ type kind =
   | Incompatible_field of string list * string list * string
   | Invalid_record_labels
   | Syntax_error
+  | Unbound_module of string
   | Unbound_record_label of string list
   | Unbound_type of string list
   | Unbound_type_variable of string
@@ -59,6 +60,7 @@ let pp_kind ppf = function
         (list ~sep:(const string ".") string)
         field_type expected_type
   | Syntax_error -> pf ppf "Syntax error"
+  | Unbound_module s -> pf ppf "Unbound module %s" s
   | Unbound_record_label s ->
       pf ppf "Unbound record label %a" (list ~sep:(const string ".") string) s
   | Unbound_type s ->
