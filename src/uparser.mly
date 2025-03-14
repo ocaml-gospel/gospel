@@ -9,6 +9,7 @@
 (**************************************************************************)
 
 %{
+  module W = Warnings
   open Ppxlib
   open Preid
   open Parse_uast
@@ -91,7 +92,7 @@
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
 
 %token AS
-%token LET MATCH PREDICATE
+%token LET PREDICATE
 %token WITH
 %token TYPE
 
@@ -104,7 +105,6 @@
 %token LEFTSQ LTGT OR QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
 %token STAR TILDE UNDERSCORE
-%token WHEN
 (* priorities *)
 
 %nonassoc IN
@@ -113,7 +113,6 @@
 %right COLON AS
 
 %right ARROW LRARROW
-%nonassoc WHEN
 %nonassoc RIGHTSQ
 %right OR BARBAR
 %right AND AMPAMP
@@ -128,8 +127,6 @@
 %nonassoc prec_prefix_op
 %nonassoc LEFTSQ
 %nonassoc OPPREF
-
-%left BAR
 
 %start <Parse_uast.gospel_signature> top
 %start <Parse_uast.val_spec> val_spec
@@ -399,13 +396,9 @@ term_:
       match pat.pat_desc with
       | Pvar id -> Tlet (id, def, t2)
       | Pwild -> Tlet (id_anonymous pat.pat_loc, def, t2)
-      | _ -> Tcase (def, [pat, None, t2]) }
+      | _ -> W.error ~loc:pat.pat_loc W.Syntax_error  }
 | LET id = attrs(lident_op_id) EQUAL t1 = term IN t2 = term
     { Tlet (id, t1, t2) }
-| MATCH t = term WITH branches = match_cases(term)
-    { Tcase (t, branches) }
-| MATCH l = comma_list2(term) WITH branches = match_cases(term)
-    { Tcase (mk_term (Ttuple l) $loc(l), branches) }
 | q = quant l = comma_list1(quant_vars) DOT t = term
     { Tquant (q, List.concat l, t) }
 | FUN args = fun_vars+ ty = preceded(COLON,fun_typ)? ARROW t = term
@@ -426,16 +419,6 @@ term_rec_field(X):
                      term_loc = loc_of_qualid q} in
             (q,t)
           }
-;
-
-match_cases(X):
-| cl = bar_list1(separated_pair(guarded_pattern, ARROW, X))
-    { List.map (fun ((a,g),c) -> a,g,c) cl }
-;
-
-guarded_pattern:
-| p = pattern { p, None }
-| p = pattern WHEN t = term { p, Some t }
 ;
 
 fun_vars:
