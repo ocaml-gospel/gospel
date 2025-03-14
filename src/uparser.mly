@@ -205,7 +205,7 @@ func:
 | f=func_(PREDICATE, epsilon) { f }
 
 func_name:
-| ident_rich {$1}
+| id = ident_rich { id }
 | NOT { mk_pid "not" $loc }
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
   { mk_pid (mixfix "{}") $loc }
@@ -213,8 +213,8 @@ func_name:
   { mk_pid (mixfix "{:_:}") $loc }
 
 func_spec:
-| (* epsilon*)       { empty_fspec }
-| nonempty_func_spec { $1 }
+| (* epsilon*)              { empty_fspec }
+| spec = nonempty_func_spec { spec }
 
 nonempty_func_spec:
 | REQUIRES t=term bd=func_spec
@@ -293,27 +293,27 @@ val_spec_body:
 fun_arg:
 | LEFTPAR RIGHTPAR
   { Lunit }
-| lident
-  { Lnone $1 }
-| TILDE lident
-  { Lnamed $2 }
-| QUESTION lident
-  { Loptional $2 }
+| id = lident
+  { Lnone id }
+| TILDE id = lident
+  { Lnamed id }
+| QUESTION id = lident
+  { Loptional id }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
   { Lghost (id, ty) }
 ;
 
 ret_value:
-| lident
-  { Lnone $1 }
+| id = lident
+  { Lnone id }
 | LEFTSQ id=lident COLON ty=typ RIGHTSQ
   { Lghost (id, ty) }
 ;
 
 ret_name:
-| LEFTPAR separated_list(COMMA, ret_value) RIGHTPAR EQUAL
-  { $2 }
-| comma_list(ret_value) EQUAL { $1 } ;
+| LEFTPAR l = separated_list(COMMA, ret_value) RIGHTPAR EQUAL
+  { l }
+| l = comma_list(ret_value) EQUAL { l } ;
 
 raises:
 | q=uqualid ARROW t=term
@@ -327,8 +327,8 @@ raises:
 ;
 
 params:
-| param  { $1 }
-| param params { $1 @ $2 }
+| p = param  { p }
+| p = param l = params { p @ l }
 ;
 
 param:
@@ -337,7 +337,7 @@ param:
 ;
 
 cast:
-| COLON ty_arg  { $2 }
+| COLON ty = ty_arg  { ty }
 ;
 
 term: t = mk_term(term_) { t }
@@ -346,12 +346,12 @@ term: t = mk_term(term_) { t }
 term_:
 | term_arg_
     { chain_desc $1 }
-| NOT t=term
+| NOT t = term
     { mk_op_apply (mk_pid "not" $loc($1)) [t] }
 | OLD term
     { Told $2 }
-| prefix_op term %prec prec_prefix_op
-    { mk_op_apply $1 [$2] }
+| op = prefix_op t = term %prec prec_prefix_op
+    { mk_op_apply op [t] }
 | l = term ; o = infix_op_1 ; r = term
     { Tinfix (l, o, r) }
 | l = term ; o = infix_op_234 ; r = term
@@ -363,32 +363,32 @@ term_:
 | term_arg located(term_arg)+
     { let join f (a, e) = mk_term (Tapply (f, a)) ($startpos, e) in
       (List.fold_left join $1 $2).term_desc }
-| IF term THEN term ELSE term
-    { Tif ($2, $4, $6) }
-| LET pattern EQUAL term IN term
-    { let cast ty = { $4 with term_desc = Tcast ($4, ty) } in
-      let pat, def = match $2.pat_desc with
-        | Ptuple [] -> { $2 with pat_desc = Pwild }, cast (PTtuple [])
+| IF g = term THEN t1 = term ELSE t2 = term
+    { Tif (g, t1, t2) }
+| LET p = pattern EQUAL t1 = term IN t2 = term
+    { let cast ty = { t1 with term_desc = Tcast (t1, ty) } in
+      let pat, def = match p.pat_desc with
+        | Ptuple [] -> { p with pat_desc = Pwild }, cast (PTtuple [])
         | Pcast ({pat_desc = (Pvar _|Pwild); _} as p, ty) -> p, cast ty
-        | _ -> $2, $4 in
+        | _ -> p, t1 in
       match pat.pat_desc with
-      | Pvar id -> Tlet (id, def, $6)
-      | Pwild -> Tlet (id_anonymous pat.pat_loc, def, $6)
-      | _ -> Tcase (def, [pat, None, $6]) }
-| LET attrs(lident_op_id) EQUAL term IN term
-    { Tlet ($2, $4, $6) }
-| MATCH term WITH match_cases(term)
-    { Tcase ($2, $4) }
-| MATCH comma_list2(term) WITH match_cases(term)
-    { Tcase (mk_term (Ttuple $2) $loc($2), $4) }
-| quant comma_list1(quant_vars) DOT term
-    { Tquant ($1, List.concat $2, $4) }
+      | Pvar id -> Tlet (id, def, t2)
+      | Pwild -> Tlet (id_anonymous pat.pat_loc, def, t2)
+      | _ -> Tcase (def, [pat, None, t2]) }
+| LET id = attrs(lident_op_id) EQUAL t1 = term IN t2 = term
+    { Tlet (id, t1, t2) }
+| MATCH t = term WITH branches = match_cases(term)
+    { Tcase (t, branches) }
+| MATCH l = comma_list2(term) WITH branches = match_cases(term)
+    { Tcase (mk_term (Ttuple l) $loc(l), branches) }
+| q = quant l = comma_list1(quant_vars) DOT t = term
+    { Tquant (q, List.concat l, t) }
 | FUN args = fun_vars+ ty = preceded(COLON,fun_typ)? ARROW t = term
     { Tlambda (args, t, ty) }
-| attr term %prec prec_named
-    { Tattr ($1, $2) }
-| term cast
-    { Tcast ($1, $2) }
+| a = attr t = term %prec prec_named
+    { Tattr (a, t) }
+| t = term ty = cast
+    { Tcast (t, ty) }
 ;
 
 field_list1(X):
@@ -396,10 +396,10 @@ field_list1(X):
 ;
 
 term_rec_field(X):
-| separated_pair(lqualid, EQUAL, X) { $1 }
-| lqualid { let t = {term_desc = Tvar $1;
-                     term_loc = loc_of_qualid $1} in
-            ($1,t)
+| l = separated_pair(lqualid, EQUAL, X) { l }
+| q = lqualid { let t = {term_desc = Tvar q;
+                     term_loc = loc_of_qualid q} in
+            (q,t)
           }
 ;
 
@@ -409,8 +409,8 @@ match_cases(X):
 ;
 
 guarded_pattern:
-| pattern { $1, None }
-| pattern WHEN term { $1, Some $3 }
+| p = pattern { p, None }
+| p = pattern WHEN t = term { p, Some t }
 ;
 
 fun_vars:
@@ -418,33 +418,33 @@ fun_vars:
 | LEFTPAR v=binder_var t=cast RIGHTPAR { v, Some t }
 
 quant_vars:
-| binder_var+ cast? { List.map (fun id -> id, $2) $1 }
+| l = binder_var+ ty = cast? { List.map (fun id -> id, ty) l }
 ;
 
-attrs(X): X attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) $1 $2 }
+attrs(X): l=X a=attr* { List.fold_left (fun acc s -> Preid.add_attr acc s) l a }
 ;
 
 attr:
-| ATTRIBUTE    { $1 }
+| a = ATTRIBUTE    { a }
 ;
 
-term_arg: mk_term(term_arg_) { $1 };
-term_dot: mk_term(term_dot_) { $1 }
+term_arg: t = mk_term(term_arg_) { t };
+term_dot: t = mk_term(term_dot_) { t }
 ;
 
 term_arg_:
-| qualid                    { Tvar $1 }
-| constant                  { Tconst $1 }
+| q = qualid                { Tvar q }
+| c = constant              { Tconst c }
 | TRUE                      { Ttrue }
 | FALSE                     { Tfalse }
 | o = oppref ; a = term_arg { mk_op_apply o [a] }
-| term_sub_                 { $1 }
+| t = term_sub_             { t }
 ;
 
 term_dot_:
-| lqualid                   { Tvar $1 }
+| q = lqualid               { Tvar q }
 | o = oppref ; a = term_dot { mk_op_apply o [a] }
-| term_sub_                 { $1 }
+| t = term_sub_             { t }
 ;
 
 term_block_:
@@ -452,7 +452,7 @@ term_block_:
 | LEFTPAR RIGHTPAR                                  { Ttuple [] }
 | LEFTSQRIGHTSQ
     { Tvar (Qid (mk_pid "[]"  $loc)) }
-| LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
+| LEFTBRC r = field_list1(term) RIGHTBRC            { Trecord r }
 | LEFTBRCRIGHTBRC
     { Tvar (Qid (mk_pid (mixfix "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
@@ -461,23 +461,23 @@ term_block_:
 ;
 
 term_sub_:
-| term_block_
-    { $1 }
-| uqualid DOT mk_term(term_block_)
-    { Tscope ($1, $3) }
-| term_dot DOT lqualid_rich
-    { Tfield ($1, $3) }
-| term_arg LEFTSQ term RIGHTSQ
-    { mk_op_apply (get_op $loc($2)) [$1;$3] }
-| term_arg LEFTSQ term ARROW term RIGHTSQ
-    { mk_op_apply (set_op $loc($2)) [$1;$3;$5] }
-| term_arg LEFTSQ term DOTDOT term RIGHTSQ
-    { mk_op_apply (sub_op $loc($2)) [$1;$3;$5] }
-| term_arg LEFTSQ term DOTDOT RIGHTSQ
-    { mk_op_apply (above_op $loc($2)) [$1;$3] }
-| term_arg LEFTSQ DOTDOT term RIGHTSQ
-    { mk_op_apply (below_op $loc($2)) [$1;$4] }
-| LEFTPAR comma_list2(term) RIGHTPAR                { Ttuple $2 }
+| t = term_block_
+    { t }
+| q = uqualid DOT t = mk_term(term_block_)
+    { Tscope (q, t) }
+| t = term_dot DOT q = lqualid_rich
+    { Tfield (t, q) }
+| s = term_arg l = location(LEFTSQ) i = term RIGHTSQ
+    { mk_op_apply (get_op l) [s; i] }
+| m = term_arg l = location(LEFTSQ) k = term ARROW v = term RIGHTSQ
+    { mk_op_apply (set_op l) [m; k; v] }
+| s = term_arg l = location(LEFTSQ) i1 = term DOTDOT i2 = term RIGHTSQ
+    { mk_op_apply (sub_op l) [s; i1; i2] }
+| s = term_arg l = location(LEFTSQ) i = term DOTDOT RIGHTSQ
+    { mk_op_apply (above_op l) [s; i] }
+| s = term_arg l = location(LEFTSQ) DOTDOT i = term RIGHTSQ
+    { mk_op_apply (below_op l) [s; i] }
+| LEFTPAR l = comma_list2(term) RIGHTPAR                { Ttuple l }
 ;
 
 quant:
@@ -486,61 +486,57 @@ quant:
 ;
 
 constant:
-| INTEGER { let i, m = $1 in Pconst_integer (i, m) }
-| FLOAT { Pconst_float ($1, None) }
-| STRING { Pconst_string ($1, mk_loc $loc, None) }
-| CHAR { Pconst_char $1 }
+| v = INTEGER { let i, m = v in Pconst_integer (i, m) }
+| v = FLOAT { Pconst_float (v, None) }
+| s = STRING { Pconst_string (s, mk_loc $loc, None) }
+| c = CHAR { Pconst_char c }
 ;
 
 binder_var:
-| attrs(lident)  { $1 }
+| l = attrs(lident)  { l }
 ;
 
 mk_expr(X): d = X { mk_expr d $loc }
 ;
 
 typ:
-| ty_arg
-    { $1 }
-| lident COLON aty=typ ARROW rty=typ
-    { PTarrow (aty, rty) }
-| QUESTION lident COLON aty=typ ARROW rty=typ
-    { PTarrow (aty, rty) }
-| typ ARROW typ
-    { PTarrow ($1, $3) }
-| ty_arg STAR ty_tuple
-    { PTtuple ($1 :: $3) }
+| v = ty_arg
+    { v }
+| arg = typ ARROW ret = typ
+    { PTarrow (arg, ret) }
+| t = ty_arg STAR l = ty_tuple
+    { PTtuple (t :: l) }
 ;
 
 fun_typ:
-| ty_arg
-    { $1 }
-| ty_arg STAR ty_tuple
-    { PTtuple ($1 :: $3) }
+| ty = ty_arg
+    { ty }
+| ty = ty_arg STAR l = ty_tuple
+    { PTtuple (ty :: l) }
 ;
 
 ty_tuple:
-| ty_arg
-    { [$1] }
-| ty_arg STAR ty_tuple
-    { $1 :: $3 }
+| arg = ty_arg
+    { [arg] }
+| ty = ty_arg STAR l = ty_tuple
+    { ty :: l }
 ;
 
 ty_arg:
-| lqualid
-    { PTtyapp ($1, []) }
-| quote_lident
-    { PTtyvar $1 }
-| LEFTPAR typ RIGHTPAR
-    { $2 }
-| ty_arg lqualid
-    { PTtyapp ($2, [$1]) }
-| LEFTPAR typ COMMA separated_nonempty_list(COMMA, typ)  RIGHTPAR id=lqualid
-    { PTtyapp (id, $2::$4) }
+| q = lqualid
+    { PTtyapp (q, []) }
+| v = quote_lident
+    { PTtyvar v }
+| LEFTPAR ty = typ RIGHTPAR
+    { ty }
+| ty = ty_arg q = lqualid
+    { PTtyapp (q, [ty]) }
+| LEFTPAR ty = typ COMMA l = separated_nonempty_list(COMMA, typ)  RIGHTPAR id=lqualid
+    { PTtyapp (id, ty :: l) }
 ;
 
 %inline ty:
-| typ {$1}
+| ty = typ { ty }
 ;
 
 mk_term(X): d = X { mk_term d $loc }
@@ -548,52 +544,56 @@ mk_term(X): d = X { mk_term d $loc }
 
 (* Patterns *)
 
-mk_pat(X): X { mk_pat $1 $loc }
+mk_pat(X): t = X { mk_pat t $loc }
 ;
 
-pattern: mk_pat(pattern_) { $1 };
-pat_arg: mk_pat(pat_arg_) { $1 }
-pat_arg_no_lpar: mk_pat(pat_arg_no_lpar_) { $1 }
+pattern: p = mk_pat(pattern_) { p };
+pat_arg: p = mk_pat(pat_arg_) { p }
+pat_arg_no_lpar: p = mk_pat(pat_arg_no_lpar_) { p }
 ;
 
 pattern_:
-| pat_conj_                             { $1 }
-| mk_pat(pat_conj_) BAR pattern         { Por ($1,$3) }
+| p = pat_conj_                                 { p }
+| p1 = mk_pat(pat_conj_) BAR p2 = pattern         { Por (p1, p2) }
 ;
 
 pat_conj_:
-| pat_uni_                              { $1 }
-| comma_list2(mk_pat(pat_uni_))         { Ptuple $1 }
+| p = pat_uni_                            { p }
+| l = comma_list2(mk_pat(pat_uni_))       { Ptuple l }
 ;
 
 pat_uni_:
-| pat_arg_                              { $1 }
-| pat_arg COLONCOLON mk_pat(pat_uni_)
-    { Papp (Qid (mk_pid (infix "::") $loc),[$1;$3]) }
-| uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
-| uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
-| mk_pat(pat_uni_) AS attrs(lident)
-                                        { Pas ($1,$3) }
-| mk_pat(pat_uni_) cast                 { Pcast ($1, $2) }
+| p = pat_arg_
+    { p }
+| ph = pat_arg COLONCOLON pt = mk_pat(pat_uni_)
+    { Papp (Qid (mk_pid (infix "::") $loc),[ph;pt]) }
+| q = uqualid LEFTPAR l = separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR
+    { Papp (q, l) }
+| q = uqualid p = pat_arg_no_lpar
+    { Papp (q, [p]) }
+| p = mk_pat(pat_uni_) AS id = attrs(lident)
+    { Pas (p, id) }
+| p = mk_pat(pat_uni_) ty = cast
+    { Pcast (p, ty) }
 ;
 
 pat_arg_:
 | LEFTPAR RIGHTPAR                      { Ptuple [] }
-| LEFTPAR pattern_ RIGHTPAR             { $2 }
-| pat_arg_no_lpar_                      { $1 }
+| LEFTPAR p = pattern_ RIGHTPAR         { p }
+| p = pat_arg_no_lpar_                  { p }
 ;
 
 pat_arg_no_lpar_:
-| attrs(lident)                         { Pvar $1 }
+| id = attrs(lident)                    { Pvar id }
 | UNDERSCORE                            { Pwild }
-| uqualid                               { Papp ($1,[]) }
-| constant                              { Pconst $1 }
-| CHAR DOTDOT CHAR                      { Pinterval ($1,$3) }
+| q = uqualid                           { Papp (q,[]) }
+| c = constant                          { Pconst c }
+| c1 = CHAR DOTDOT c2 = CHAR            { Pinterval (c1, c2) }
 | TRUE                                  { Ptrue }
 | FALSE                                 { Pfalse }
 | LEFTSQRIGHTSQ
   { Papp (Qid (mk_pid "[]"  $loc), []) }
-| LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
+| LEFTBRC p = field_pattern(pattern) RIGHTBRC { Prec p }
 ;
 
 
@@ -603,20 +603,20 @@ field_pattern(X):
 ;
 
 pattern_rec_field(X):
-| separated_pair(lqualid, EQUAL, X) { $1 }
-| lqualid { let p = {pat_desc = Pvar (qualid_preid $1);
-                     pat_loc = loc_of_qualid $1} in
-            ($1,p)
+| l = separated_pair(lqualid, EQUAL, X) { l }
+| q = lqualid { let p = {pat_desc = Pvar (qualid_preid q);
+                     pat_loc = loc_of_qualid q} in
+            (q, p)
           }
 ;
 
 (* Symbolic operation names *)
 
 op_symbol:
-| OP1     { $1 }
-| OP2     { $1 }
-| OP3     { $1 }
-| OP4     { $1 }
+| o = OP1 { o }
+| o = OP2 { o }
+| o = OP3 { o }
+| o = OP4 { o }
 | ARROW   { "->" }
 | LRARROW { "<->" }
 | OR      { "\\/" }
@@ -631,7 +631,7 @@ op_symbol:
 ;
 
 prefix_op:
-| op_symbol { mk_pid (prefix $1) $loc }
+| o = op_symbol { mk_pid (prefix o) $loc }
 ;
 
 %inline infix_op_1:
@@ -654,37 +654,37 @@ prefix_op:
 (* Idents *)
 
 lident:
-| LIDENT        { mk_pid $1 $loc }
+| id = LIDENT        { mk_pid id $loc }
 ;
 
 uident:
-| UIDENT        { mk_pid $1 $loc }
+| id = UIDENT        { mk_pid id $loc }
 ;
 
 quote_lident:
-| QUOTE_LIDENT  { mk_pid $1 $loc }
+| id = QUOTE_LIDENT  { mk_pid id $loc }
 ;
 
 ident_rich:
-| uident        { $1 }
-| lident_rich   { $1 }
+| id = uident        { id }
+| id = lident_rich   { id }
 ;
 
 lident_rich:
-| lident        { $1 }
-| lident_op_id  { $1 }
+| id = lident        { id }
+| id = lident_op_id  { id }
 ;
 
 lident_op_id:
-| LEFTPAR lident_op RIGHTPAR  { mk_pid $2 $loc }
+| LEFTPAR id = lident_op RIGHTPAR  { mk_pid id $loc }
 ;
 
 lident_op:
-| op_symbol                                   { infix $1 }
-| op_symbol UNDERSCORE                        { prefix $1 }
+| op = op_symbol                              { infix op }
+| op = op_symbol UNDERSCORE                   { prefix op }
 | EQUAL                                       { infix "=" }
 | LTGT                                        { infix "<>" }
-| OPPREF UNDERSCORE?                          { prefix $1 }
+| op = OPPREF UNDERSCORE?                     { prefix op }
 | DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
 | LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
 | LEFTSQ ARROW RIGHTSQ                        { mixfix "[->]" }
@@ -696,29 +696,29 @@ lident_op:
 (* Qualified idents *)
 
 qualid:
-| ident_rich              { Qid $1 }
-| uqualid DOT ident_rich  { Qdot ($1, $3) }
+| id = ident_rich                  { Qid id }
+| q = uqualid DOT id = ident_rich  { Qdot (q, id) }
 ;
 
 lqualid_rich:
-| lident_rich             { Qid $1 }
-| uqualid DOT lident_rich { Qdot ($1, $3) }
+| id = lident_rich                 { Qid id }
+| q = uqualid DOT id = lident_rich { Qdot (q, id) }
 ;
 
 lqualid:
-| lident              { Qid $1 }
-| uqualid DOT lident  { Qdot ($1, $3) }
+| id = lident                      { Qid id }
+| q = uqualid DOT id = lident      { Qdot (q, id) }
 ;
 
 uqualid:
-| uident              { Qid $1 }
-| uqualid DOT uident  { Qdot ($1, $3) }
+| id = uident                      { Qid id }
+| q = uqualid DOT id = uident      { Qdot (q, id) }
 ;
 
 (* Miscellaneous *)
 
 comma_list(X):
-| separated_nonempty_list(COMMA, X) { $1 }
+| l = separated_nonempty_list(COMMA, X) { l }
 ;
 
 bar_list1(X):
@@ -726,15 +726,15 @@ bar_list1(X):
 ;
 
 with_list1(X):
-| separated_nonempty_list(WITH, X)  { $1 }
+| l = separated_nonempty_list(WITH, X)  { l }
 ;
 
 comma_list2(X):
-| X COMMA comma_list1(X) { $1 :: $3 }
+| hd = X COMMA l = comma_list1(X) { hd :: l }
 ;
 
 comma_list1(X):
-| separated_nonempty_list(COMMA, X) { $1 }
+| l = separated_nonempty_list(COMMA, X) { l }
 ;
 
 semicolon_list1(X):
@@ -743,8 +743,10 @@ semicolon_list1(X):
 ;
 
 star_list2(X):
-| X STAR separated_nonempty_list(STAR, X) { $1 :: $3 }
+| x = X STAR l = separated_nonempty_list(STAR, X) { x :: l }
 ;
 
-located(X): X { $1, $endpos }
+located(X): x = X { x, $endpos }
+
+location(X) : X { $loc($1) }
 ;
