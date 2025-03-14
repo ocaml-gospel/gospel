@@ -327,6 +327,14 @@ let rec hastype (t : Id_uast.term) (r : variable) =
     | Tattr (s, t) ->
         let+ t = hastype t r in
         Tattr (s, t)
+    | Tcast (t, ty) ->
+        (* Turn the type annotation into a deep type. *)
+        let@ ty_var = deep (pty_to_deep_rigid ty) in
+        let+ t = hastype t r
+        (* Ensure that the type annotation corresponds with the type of the
+          term. *)
+        and+ () = r -- ty_var in
+        Tcast (t, ty)
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in

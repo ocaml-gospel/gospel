@@ -167,6 +167,10 @@ let rec unique_term defs env t =
         let qid, fty, record_ty = Namespace.get_field_info defs q in
         Tfield (unique_term env t, record_ty, qid, fty)
     | Tattr (att, t) -> Tattr (att, unique_term env t)
+    | Tcast (t, pty) ->
+        let t = unique_term env t in
+        let ty = unique_pty defs env pty in
+        Tcast (t, ty)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }
