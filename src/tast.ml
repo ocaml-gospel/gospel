@@ -31,6 +31,7 @@ type term_node =
   | Trecord of (Id_uast.qualid * term) list
   | Tfield of term * Id_uast.qualid
   | Tattr of string * term
+  | Tcast of term * Id_uast.pty
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }
 
