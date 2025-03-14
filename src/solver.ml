@@ -324,6 +324,9 @@ let rec hastype (t : Id_uast.term) (r : variable) =
            the field. *)
         let+ t = hastype t r_ty and+ () = r -- ty in
         Tfield (t, field)
+    | Tattr (s, t) ->
+        let+ t = hastype t r in
+        Tattr (s, t)
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in
