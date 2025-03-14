@@ -30,6 +30,7 @@ type term_node =
   | Tlambda of tsymbol list * term * Id_uast.pty option
   | Trecord of (Id_uast.qualid * term) list
   | Tfield of term * Id_uast.qualid
+  | Tattr of string * term
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }
 
