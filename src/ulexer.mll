@@ -38,7 +38,6 @@
         "in", IN;
         "invariant", INVARIANT;
         "let", LET;
-        "match", MATCH;
         "modifies", MODIFIES;
         "model", MODEL;
         "mutable", MUTABLE;
@@ -54,7 +53,6 @@
 	"type", TYPE;
         "variant", VARIANT;
         "with", WITH;
-        "when", WHEN;
       ]
 
   (* to translate escape sequences *)
