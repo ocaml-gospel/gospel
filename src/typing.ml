@@ -359,6 +359,6 @@ and signatures l env =
       let t, env = signatures t env in
       (s :: t, env)
 
-let signatures l =
-  let l, env = signatures l Namespace.empty_env in
+let signatures env l =
+  let l, env = signatures l env in
   (l, Namespace.defs env)

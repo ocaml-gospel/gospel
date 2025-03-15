@@ -49,4 +49,10 @@
     each field. In the case of record field applications, we insert the type of
     the record and the type of the field. *)
 
-val signatures : Parse_uast.s_signature -> Tast.s_signature * Namespace.mod_defs
+val signatures :
+  Namespace.env ->
+  Parse_uast.s_signature ->
+  Tast.s_signature * Namespace.mod_defs
+(** [signature env sigs] type checks the list of top level signatures [sigs] and
+    returns a map containing all the definitions within the module as well as a
+    typed copy of the definitions in [sigs]. *)
