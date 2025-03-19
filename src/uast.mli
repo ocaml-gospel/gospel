@@ -48,7 +48,7 @@ and pat_desc =
 (* Logical terms and formulas *)
 
 type binder = Preid.t * pty option
-type param = Location.t * Preid.t * pty
+type param = Preid.t * pty
 type quant = Tforall | Texists
 
 type term = { term_desc : term_desc; term_loc : Location.t }

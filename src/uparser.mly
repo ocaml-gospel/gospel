@@ -289,7 +289,7 @@ params:
 
 param:
 | LEFTPAR params=lident+ COLON t=ty RIGHTPAR
-  { List.map (fun x -> mk_loc $loc, x, t) params }
+  { List.map (fun x -> x, t) params }
 ;
 
 cast:
