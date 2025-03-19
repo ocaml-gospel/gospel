@@ -1,0 +1,21 @@
+; Creates an executable that type checks the Gospel and OCaml standard
+; library and creates a marshalled representation of their
+; definitions.
+
+(rule
+ (targets gospelstdlib.gospel)
+ (deps
+  (:check checklib.exe)
+  gospelstdlib.mli)
+ (action
+  (run %{check})))
+
+(library
+ (name bin_utils)
+ (modules bin_utils)
+ (libraries gospel))
+
+(executable
+ (name checklib)
+ (modules checklib)
+ (libraries gospel bin_utils))

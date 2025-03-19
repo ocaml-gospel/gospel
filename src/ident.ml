@@ -40,6 +40,7 @@ let gen_tag =
     !r
 
 let mk_id id_str id_loc = { id_str; id_attrs = []; id_loc; id_tag = gen_tag () }
+let stdlib_id = mk_id "Gospelstdlib" Location.none
 
 let tvar () =
   { id_str = "a"; id_attrs = []; id_loc = Location.none; id_tag = gen_tag () }

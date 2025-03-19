@@ -4,4 +4,8 @@
 (executable
  (name cli)
  (public_name gospel)
- (libraries cmdliner dune-build-info gospel))
+ (preprocess
+  (pps ppx_blob))
+ (preprocessor_deps
+  (file ../stdlib/gospelstdlib.gospel))
+ (libraries cmdliner dune-build-info gospel ppx_blob bin_utils))

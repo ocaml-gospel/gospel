@@ -11,27 +11,6 @@
 module W = Warnings
 open Ppxlib
 
-let stdlib = "Stdlib"
-let gospelstdlib = "Gospelstdlib"
-let gospelstdlib_file = "gospelstdlib.mli"
-
-let with_loadpath load_path file =
-  let exception Break of string in
-  let try_open d =
-    try
-      let f = Filename.concat d file in
-      if Sys.file_exists f then raise (Break f)
-    with Sys_error _ -> ()
-  in
-  if file = gospelstdlib_file then file
-  else if Filename.is_relative file then
-    try
-      List.iter try_open load_path;
-      raise Not_found
-    with Break c -> c
-  else if Sys.file_exists file then file
-  else raise Not_found
-
 let parse_ocaml_lb lb =
   let lb_pps = Fmt.str "%a" Pps.run lb |> Lexing.from_string in
   Location.init lb_pps lb.lex_start_p.pos_fname;
@@ -50,32 +29,8 @@ module B = Ast_builder.Make (struct
   let loc = Location.none
 end)
 
-let parse_gospel ?(add_std = true) ~filename signature name =
-  let open_gospelstdlib =
-    let payload = PStr [ B.(pstr_eval (estring "open Gospelstdlib")) [] ] in
-    let name = { txt = "gospel"; loc = Location.none } in
-    B.attribute ~name ~payload |> B.psig_attribute
-  in
-  let open_stdlib =
-    let payload = PStr [ B.(pstr_eval (estring "open Stdlib")) [] ] in
-    let name = { txt = "gospel"; loc = Location.none } in
-    B.attribute ~name ~payload |> B.psig_attribute
-  in
-  let s =
-    if
-      String.equal name gospelstdlib
-      || String.equal name stdlib
-      || String.equal name "CamlinternalFormatBasics"
-      || not add_std
-    then signature
-    else open_stdlib :: open_gospelstdlib :: signature
-  in
-  Uattr2spec.signature ~filename s
-
-let path2module p =
-  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
+let parse_gospel = Uattr2spec.signature
 
 let parse_ocaml_gospel path =
-  let module_name = path2module path in
   let ocaml = parse_ocaml path in
-  parse_gospel ~filename:path ocaml module_name
+  parse_gospel ~filename:path ocaml
