@@ -1,3 +1,0 @@
-(executable
- (name file_to_string)
- (modules file_to_string))

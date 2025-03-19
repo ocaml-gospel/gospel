@@ -9,17 +9,11 @@
 (**************************************************************************)
 
 open Gospel
-open Parser_frontend
-open Typing
+open Bin_utils
 module W = Warnings
-
-let path2module p =
-  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
 (** Directory in which compiled Gospel files will be placed. *)
 let comp_dir = "_gospel"
-
-let gospel_ext = ".gospel"
 
 (** [error msg file] receives an error message template [msg] that expects the
     name of a file and exits the program with exit code [1] and prints [msg]
@@ -27,46 +21,6 @@ let gospel_ext = ".gospel"
 let error msg file =
   Fmt.epr msg file;
   exit 1
-
-(** [read_gospel_file f] un-marshals the contents of the compiled gospel file
-    [f] creating a [mod_defs] value with the compiled definitions. This function
-    fails if the file [f] is not a valid [.gospel] file. *)
-let read_gospel_file f =
-  let ic = open_in f in
-  (* Note: although this explicit type annotation is not strictly necessary for
-     the code to compile, it ensures that [read_gospel_file] can only be used to
-     un-marshal values of type [Namespace.mod_defs]. *)
-  let defs : Namespace.mod_defs =
-    try Marshal.from_channel ic
-    with Failure _ ->
-      error
-        "Error: the compiled gospel file %s is not compatible with the current \
-         version of Gospel."
-        f
-  in
-  close_in ic;
-  defs
-
-(** [check_file file] parses and type checks [file] and creates a corresponding
-    [.gospel] file.
-    @raise Warnings.Error if there is a parsing or typing error in [file]. *)
-let check_file env file =
-  let ocaml = parse_ocaml file in
-  let module_nm = path2module file in
-  let sigs = parse_gospel ~add_std:false ~filename:file ocaml module_nm in
-  let _, mods = signatures env sigs in
-
-  (* Stores the Gospel definitions in [file] in a [.gospel] file in the
-     [_gospel] directory.
-
-     Issue : If two files have the same name but are in different
-     sub-directories, this will write them to the same file. *)
-  let comp =
-    open_out (Format.sprintf "%s/%s%s" comp_dir module_nm gospel_ext)
-  in
-  Marshal.to_channel comp env [];
-  close_out comp;
-  mods
 
 let invalid_extension s =
   let ext = Filename.extension s in
@@ -88,6 +42,28 @@ let errors files =
           f)
     files
 
+(** [read_gospel_file f] un-marshals the contents of the compiled gospel file
+    [f] creating a [mod_defs] value with the compiled definitions. This function
+    fails if the file [f] is not a valid [.gospel] file. *)
+let read_gospel_file f =
+  let ic = open_in f in
+  (* Note: although this explicit type annotation is not strictly necessary for
+     the code to compile, it ensures that [read_gospel_file] can only be used to
+     un-marshal values of type [Namespace.mod_defs]. *)
+  let defs : Namespace.mod_defs =
+    try Marshal.from_channel ic
+    with Failure _ ->
+      error
+        "Error: the compiled gospel file %s is not compatible with the current \
+         version of Gospel."
+        f
+  in
+  close_in ic;
+  defs
+
+let path2module p =
+  Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
+
 let run files =
   errors files;
   (* Create the compilation directory if it does not already exist. *)
@@ -106,14 +82,22 @@ let run files =
        Gospel interface file. *)
     let mods =
       if Filename.extension file = gospel_ext then read_gospel_file file
-      else check_file env file
+      else check_file ~comp_dir ~env file
     in
     let module_nm = path2module file in
     let id = Ident.mk_id module_nm Location.none in
     Namespace.add_mod env id mods
   in
+  (* Un-marshal the gospel standard library that is created in compile time. *)
+  let stdlib : Namespace.mod_defs =
+    (* At compile time the [%blob] annotation is replaced with the raw string
+       of the marshalled gospel standard library. *)
+    Marshal.from_string [%blob "../stdlib/gospelstdlib.gospel"] 0
+  in
+
+  let env = Namespace.init_env stdlib in
   let _ =
-    try List.fold_left check Namespace.empty_env files
+    try List.fold_left check env files
     with Warnings.Error e ->
       Fmt.epr "%a@." W.pp e;
       exit 1

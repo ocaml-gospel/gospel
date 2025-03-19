@@ -11,12 +11,6 @@
 
 open Ppxlib
 
-val with_loadpath : string list -> string -> string
-(** [with_loadpath loadpath filename] finds the first directory [d] in
-    [loadpath] such that [d/filename] is a valid file path, and returns it. If
-    [filename] is an absolute valid path or is ["gospelstdlib.mli"], it returns
-    it unchanged. Raises Not_found if no such path exists. *)
-
 val parse_ocaml : string -> signature
 (** `parse_ocaml file` parses the OCaml content of the `file` if it is a valid
     interface.
@@ -24,14 +18,9 @@ val parse_ocaml : string -> signature
     Raise Not_found if file does not exist. Raise Syntax_error if there is an
     OCaml syntax error. *)
 
-val parse_gospel :
-  ?add_std:bool ->
-  filename:string ->
-  signature ->
-  string ->
-  Parse_uast.s_signature
-(** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
-    integrates them in the corresponding OCaml signatures. *)
+val parse_gospel : filename:string -> signature -> Parse_uast.s_signature
+(** [parse_gospel filename sig_list] parses the GOSPEL attributes and integrates
+    them in the corresponding OCaml signatures. *)
 
 val parse_ocaml_gospel : string -> Parse_uast.s_signature
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL

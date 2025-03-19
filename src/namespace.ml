@@ -438,3 +438,14 @@ let type_env =
 (** The empty environment. The only names that it contains with are primitive
     Gospel type definitions. *)
 let empty_env = { defs = empty_defs; scope = { empty_defs with type_env } }
+
+(** The initial environment for every Gospel file. The only names that it
+    contains with are primitive Gospel type definitions and the definitions
+    within the Gospel standard library. *)
+let init_env stdlib =
+  (* Create a type environment that contains the primitive gospel types as well
+     as the types defined in the standard library. *)
+  (* Create a module named [Gospelstdlib] with all the definitions within [stdlib]. *)
+  let stdlib_info = { mid = Ident.stdlib_id; mdefs = stdlib } in
+  let mod_env = Env.add Ident.stdlib_id.id_str stdlib_info stdlib.mod_env in
+  { defs = empty_defs; scope = { stdlib with type_env; mod_env } }

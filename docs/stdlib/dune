@@ -4,7 +4,7 @@
 (rule
  (deps
   (:gospel %{bin:gospel})
-  (:src ../../src/stdlib/gospelstdlib.mli))
+  (:src ../../stdlib/gospelstdlib.mli))
  (action
   (with-stdout-to
    gospelstdlib.mli

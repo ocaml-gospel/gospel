@@ -89,7 +89,16 @@ val get_field_info :
     - The type parameters for the record type. *)
 
 val empty_env : env
-(** The empty environment. The only names in scope are Gospel primitive types *)
+(** The empty environment. The only names in scope are primitive Gospel types.
+    This should be the initial environment when processing the Gospel standard
+    library. *)
+
+val init_env : mod_defs -> env
+(** [init_env stdlib] receives the definitions in the Gospel standard library
+    [stdlib] and creates an environment where every name in [stdlib] is in scope
+    as well as every name in [empty_env]. Additionally creates a module named
+    [Gospelstdlib] with every definition in [stdlib]. This should be the initial
+    environment for any Gospel project. *)
 
 val submodule : env -> env
 (** Returns a new environment for processing a submodule. The variables in scope
