@@ -51,6 +51,8 @@ type term = { term_desc : term_desc; term_loc : Location.t }
 and term_desc =
   | Ttrue
   | Tfalse
+  | TTrue
+  | TFalse
   | Tconst of constant
   | Tvar of qualid * id list * pty
     (* We have two nodes for term variables, one for local variables and another

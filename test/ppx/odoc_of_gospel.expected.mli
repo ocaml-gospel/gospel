@@ -1,7 +1,7 @@
 [@@@ocaml.text " Module informal documentation "]
 [@@@ocaml.text " An axiom declaration "]
-[@@@gospel {| axiom a : true |}]
-[@@@ocaml.text "{@gospel[\nGospel declaration:\n    axiom a : true ]}"]
+[@@@gospel {| axiom a : True |}]
+[@@@ocaml.text "{@gospel[\nGospel declaration:\n    axiom a : True ]}"]
 [@@@ocaml.text " A logical function declaration without definition "]
 [@@@gospel {| function f : integer -> integer |}]
 [@@@ocaml.text
@@ -29,17 +29,17 @@
 type 'a t[@@ocaml.doc {| A program type declaration with specifications |}]
 [@@gospel {| model m : 'a sequence
     with x
-    invariant true |}][@@ocaml.doc
-                                                                    "{@gospel[\nGospel specification:\n    model m : 'a sequence\n    with x\n    invariant true ]}"]
+    invariant True |}][@@ocaml.doc
+                                                                    "{@gospel[\nGospel specification:\n    model m : 'a sequence\n    with x\n    invariant True ]}"]
 val prog_fun : int -> int[@@ocaml.doc
                            {| A program function with specifications |}]
 [@@gospel {| y = prog_fun x
-    requires true
-    ensures true |}][@@ocaml.doc
-                                                                    "{@gospel[\nGospel specification:\n    y = prog_fun x\n    requires true\n    ensures true ]}"]
+    requires True
+    ensures True |}][@@ocaml.doc
+                                                                    "{@gospel[\nGospel specification:\n    y = prog_fun x\n    requires True\n    ensures True ]}"]
 val multiple_gospel_attribute : int -> int[@@gospel
                                             {| y = multiple_gospel_attribute x |}]
-[@@gospel {| requires true |}][@@gospel {| ensures true |}][@@ocaml.doc
+[@@gospel {| requires True |}][@@gospel {| ensures True |}][@@ocaml.doc
                                                              "{@gospel[\nGospel specification:\n    y = multiple_gospel_attribute x ]}"]
-[@@ocaml.doc "{@gospel[\nGospel specification:\n    requires true ]}"]
-[@@ocaml.doc "{@gospel[\nGospel specification:\n    ensures true ]}"]
+[@@ocaml.doc "{@gospel[\nGospel specification:\n    requires True ]}"]
+[@@ocaml.doc "{@gospel[\nGospel specification:\n    ensures True ]}"]

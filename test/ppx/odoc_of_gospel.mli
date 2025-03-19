@@ -2,7 +2,7 @@
 
 (** An axiom declaration *)
 
-(*@ axiom a : true *)
+(*@ axiom a : True *)
 
 (** A logical function declaration without definition *)
 
@@ -30,15 +30,15 @@ type 'a t
 (** A program type declaration with specifications *)
 (*@ model m : 'a sequence
     with x
-    invariant true *)
+    invariant True *)
 
 val prog_fun : int -> int
 (** A program function with specifications *)
 (*@ y = prog_fun x
-    requires true
-    ensures true *)
+    requires True
+    ensures True *)
 
 val multiple_gospel_attribute : int -> int
 (*@ y = multiple_gospel_attribute x *)
-(*@ requires true *)
-(*@ ensures true *)
+(*@ requires True *)
+(*@ ensures True *)

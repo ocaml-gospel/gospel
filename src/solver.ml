@@ -190,13 +190,21 @@ let rec hastype (t : Id_uast.term) (r : variable) =
   let+ t_node =
     match t.term_desc with
     | Id_uast.Ttrue ->
-        (* For true and false, we state that the expected type must be
-          a boolean *)
+        (* For true and false, we state that the expected type is
+           bool *)
         let+ () = r --- S.ty_bool in
         Ttrue
     | Tfalse ->
         let+ () = r --- S.ty_bool in
         Tfalse
+    | TTrue ->
+        (* For True and False (capitalized) we state that the expected
+           type is prop *)
+        let+ () = r --- S.ty_prop in
+        TTrue
+    | TFalse ->
+        let+ () = r --- S.ty_prop in
+        TFalse
     | Tconst constant ->
         (* Depending on the type of constant, we restrict the expected type
            accordingly *)
@@ -258,7 +266,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
     | Tquant (q, l, t) ->
         (* forall. x y z. t *)
         (* The term [t] must be a formula *)
-        let c = lift hastype t S.ty_bool in
+        let c = lift hastype t S.ty_prop in
         (* Transform the list of Gospel type annotation into a list of
            Inferno binders *)
         let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) l in
@@ -362,7 +370,7 @@ let process_fun_spec f =
     specification is well typed. *)
 let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
   (* Turn the return type into a deep type *)
-  let ret_pty = Option.value ~default:Types.ty_bool f.fun_type in
+  let ret_pty = Option.value ~default:Types.ty_prop f.fun_type in
   let arrow_ty =
     List.fold_right
       (fun (_, pty) acc -> PTarrow (pty, acc))
@@ -416,7 +424,7 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
 
 (** Creates a constraint ensuring the term within an axiom has type [prop]. *)
 let axiom_cstr ax =
-  let@ ty = shallow S.ty_bool in
+  let@ ty = shallow S.ty_prop in
   let+ t = hastype ax.Id_uast.ax_term ty in
   mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 

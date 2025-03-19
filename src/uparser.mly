@@ -90,6 +90,7 @@
 %token IF IN
 %token OLD NOT RAISES
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
+%token TRUEPROP FALSEPROP
 
 %token AS
 %token LET PREDICATE
@@ -447,6 +448,8 @@ term_arg_:
 | c = constant              { Tconst c }
 | TRUE                      { Ttrue }
 | FALSE                     { Tfalse }
+| TRUEPROP                  { TTrue }
+| FALSEPROP                 { TFalse }
 | o = oppref ; a = term_arg { mk_op_apply o [a] }
 | t = term_sub_             { t }
 ;

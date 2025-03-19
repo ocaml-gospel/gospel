@@ -16,7 +16,7 @@
     - [type string]
     - [type char]
     - [type float]
-    - [type bool]
+    - [type prop]
     - [type integer]
     - [type int]
 
@@ -26,7 +26,7 @@
 
 (*@ predicate (=) (x : 'a) (y : 'a) *)
 (*@ predicate (<>) (x : 'a) (y : 'a) *)
-(*@ predicate not (x : bool) *)
+(*@ predicate not (x : prop) *)
 
 (** The rest of this module is the actual content of the Gospel module
     [Gospelstdlib]. This module is automatically opened in Gospel
@@ -34,9 +34,9 @@
 
 (** Logical symbols *)
 
-(*@ predicate (->) (p : bool) (q : bool) *)
+(*@ predicate (->) (p : prop) (q : prop) *)
 
-(*@ predicate (<->) (p : bool) (q : bool) *)
+(*@ predicate (<->) (p : prop) (q : prop) *)
 
 (** Boolean operators *)
 
@@ -261,7 +261,7 @@ module Sequence : sig
         forall s x.
         mem x s <-> multiplicity x s > 0 *)
 
-  (*@ predicate _forall (p : 'a -> bool) (s : 'a sequence) *)
+  (*@ predicate _forall (p : 'a -> prop) (s : 'a sequence) *)
   (** [_forall p s] holds iff all elements in [s] satisfy predicate [p] *)
 
   (*@ axiom forall_def :
@@ -270,14 +270,14 @@ module Sequence : sig
         (forall x. mem x s -> p x)
   *)
 
-  (*@ predicate _exists (p : 'a -> bool) (s : 'a sequence) *)
+  (*@ predicate _exists (p : 'a -> prop) (s : 'a sequence) *)
   (** [_exists p s] holds iff there exists some element in [s] that satisfies
       the predicate [p] *)
 
   (*@ axiom _exists_def :
         forall p s.
         _exists p s <->
-          (exists x. mem x s && p x) *)
+          (exists x. mem x s /\ p x) *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a sequence whose elements are the elements of [s],
@@ -288,7 +288,7 @@ module Sequence : sig
         in_range s i ->
         (map f s)[i] = f (s[i]) *)
 
-  (*@ function filter (f: 'a -> bool) (s: 'a t) : 'a t *)
+  (*@ function filter (f: 'a -> prop) (s: 'a t) : 'a t *)
   (** [filter f s] is a sequence whose elements are the elements of [s], that
       satisfy [f]. *)
 
@@ -303,7 +303,7 @@ module Sequence : sig
 
   (*@ axiom filter_map_elems :
         forall f s y.
-        (exists x. f x = Some y && mem x s) <->
+        (exists x. f x = Some y /\ mem x s) <->
         mem y (filter_map f s) *)
 
   (*@ function get (s: 'a t) (i: integer) : 'a *)
@@ -512,7 +512,7 @@ module Bag : sig
        subset b b' <->
          (forall x. multiplicity x b <= multiplicity x b') *)
 
-  (*@ function filter (f: 'a -> bool) (b: 'a t) : 'a t *)
+  (*@ function filter (f: 'a -> prop) (b: 'a t) : 'a t *)
   (** [filter f b] is the bag of all elements in [b] that satisfy [f]. *)
 
   (*@ axiom filter_mem :
@@ -620,7 +620,7 @@ module Set : sig
 
   (*@ axiom union_mem :
         forall s s' x.
-        (mem x s || mem x s') ->
+        (mem x s \/ mem x s') ->
         mem x (union s s') *)
 
   (*@ axiom union_mem_neg :
@@ -640,7 +640,7 @@ module Set : sig
 
   (*@ axiom inter_mem_neq :
         forall s s' x.
-        not (mem x s || mem x s') ->
+        not (mem x s \/ mem x s') ->
         not mem x (inter s s') *)
 
   (*@ predicate disjoint (s s': 'a t) *)
@@ -678,9 +678,9 @@ module Set : sig
   (*@ axiom set_map :
         forall f s x.
         mem x (map f s) <->
-          (exists y. f y = x && mem y s) *)
+          (exists y. f y = x /\ mem y s) *)
 
-  (*@ function partition (f: 'a -> bool) (s: 'a t) : ('a t * 'a t) *)
+  (*@ function partition (f: 'a -> prop) (s: 'a t) : ('a t * 'a t) *)
   (** [partition f s] is the pair of sets [(s1, s2)], where [s1] is the set of
       all the elements of [s] that satisfy the predicate [f], and [s2] is the
       set of all the elements of [s] that do not satisfy [f]. *)
@@ -717,18 +717,22 @@ module Set : sig
 
   (*@ axiom cardinal_empty : cardinal empty = 0 *)
 
-  (*@ axiom cardinal_remove :
+  (*@ axiom cardinal_remove_mem :
         forall s x.
         finite s ->
-        if mem x s
-         then cardinal (remove x s) = cardinal s - 1
-         else cardinal (remove x s) = cardinal s *)
+        mem x s ->
+         cardinal (remove x s) = cardinal s - 1 *)
+
+  (*@ axiom cardinal_remove_not_mem :
+        forall s x.
+        finite s ->
+        not (mem x s) ->
+          cardinal (remove x s) = cardinal s *)
 
   (*@ axiom cardinal_add :
         forall s x. finite s ->
-        if mem x s
-          then cardinal (add x s) = cardinal s
-          else cardinal (add x s) = cardinal s + 1 *)
+        not (mem x s) ->
+          cardinal (add x s) = cardinal s *)
 
   (*@ function of_seq (s: 'a Sequence.t) : 'a t *)
   (** [of_seq] returns a set where each element also belongs to [s] *)
@@ -769,7 +773,15 @@ end
       forall f : ('a -> 'b).
       forall x : 'a.
       forall y : 'b.
-      f[x -> y] = fun arg -> if arg = x then y else f x *)
+      f[x -> y] x = y *)
+
+(*@ axiom map_set_def_neq :
+      forall f : ('a -> 'b).
+      forall x : 'a.
+      forall y : 'b.
+      forall z : 'a.
+      x <> z ->
+        f[x -> y] z = f z *)
 
 module Map : sig
   (** Maps from keys of type ['a] to values of type ['b] are represented by
