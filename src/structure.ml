@@ -23,11 +23,13 @@ let create_id s = Ident.mk_id s Location.none
 
 (* Built in Gospel types *)
 let bool_id = create_id "bool"
+let prop_id = create_id "prop"
 let integer_id = create_id "integer"
 let char_id = create_id "char"
 let string_id = create_id "string"
 let float_id = create_id "float"
 let ty_bool = Tyapp (Qid bool_id, [])
+let ty_prop = Tyapp (Qid prop_id, [])
 let ty_integer = Tyapp (Qid integer_id, [])
 let ty_char = Tyapp (Qid char_id, [])
 let ty_string = Tyapp (Qid string_id, [])
@@ -36,6 +38,7 @@ let ty_float = Tyapp (Qid float_id, [])
 let primitive_list =
   [
     ("bool", bool_id);
+    ("prop", prop_id);
     ("integer", integer_id);
     ("char", char_id);
     ("string", string_id);

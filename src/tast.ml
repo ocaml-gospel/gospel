@@ -20,6 +20,8 @@ let mk_ts ts_id ts_ty = { ts_id; ts_ty }
 type term_node =
   | Ttrue
   | Tfalse
+  | TTrue
+  | TFalse
   | Tvar of Id_uast.qualid
   | Tlet of Ident.t * term * term
   | Tconst of Ppxlib.constant

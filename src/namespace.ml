@@ -439,7 +439,7 @@ let type_env =
     These are the only functions that exist as primitives. *)
 let fun_env =
   let open Types in
-  let op_ty = ty_arrow ty_bool (ty_arrow ty_bool ty_bool) in
+  let op_ty = ty_arrow ty_prop (ty_arrow ty_prop ty_prop) in
   let op_info fid = { fid; fparams = []; fty = op_ty } in
   let conj = "infix /\\" in
   let disj = "infix \\/" in

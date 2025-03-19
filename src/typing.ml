@@ -128,6 +128,8 @@ let rec unique_term defs env t =
     match t.Parse_uast.term_desc with
     | Parse_uast.Ttrue -> Ttrue
     | Tfalse -> Tfalse
+    | TTrue -> TTrue
+    | TFalse -> TFalse
     | Tconst c -> Tconst c
     | Tvar q -> unique_var env.term_var defs q
     | Tlet (v, t1, t2) ->

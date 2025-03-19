@@ -216,6 +216,10 @@ rule token = parse
       { EQUAL }
   | "<>"
       { LTGT }
+  | "True"
+      { TRUEPROP }
+  | "False"
+      { FALSEPROP }
   | "'" (lident as id)
       { QUOTE_LIDENT id }
   | "`" (lident as id) "`"

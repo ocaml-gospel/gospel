@@ -34,7 +34,7 @@ columns:
   Module informal documentation
   An axiom declaration
   Gospel declaration:
-      axiom a : true 
+      axiom a : True 
   A logical function declaration without definition
   Gospel declaration:
       function f : integer -> integer 
@@ -57,21 +57,22 @@ columns:
   Gospel specification:
       model m : 'a sequence
       with x
-      invariant true 
+      invariant True 
   
   \f[CB]val\fR prog_fun : int \f[CB]\->\fR int
   A program function with specifications
   Gospel specification:
       y = prog_fun x
-      requires true
-      ensures true 
+      requires True
+      ensures True 
   
   \f[CB]val\fR multiple_gospel_attribute : int \f[CB]\->\fR int
   Gospel specification:
       y = multiple_gospel_attribute x 
   Gospel specification:
-      requires true 
+      requires True 
   Gospel specification:
-      ensures true 
+      ensures True 
   
   
+
