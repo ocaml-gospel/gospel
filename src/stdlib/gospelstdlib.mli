@@ -13,7 +13,6 @@
 (** The following are not defined in the Gospelstdlib but are built-in in
     Gospel:
 
-    - [type unit]
     - [type string]
     - [type char]
     - [type float]
@@ -23,13 +22,11 @@
 
     - [type 'a option]
     - [function None: 'a option]
-    - [function Some (x: 'a) : 'a option]
+    - [function Some (x: 'a) : 'a option] *)
 
-    - [type 'a list]
-    - [function ([]): 'a list]
-    - [function (::) (x: 'a) (l: 'a list) : 'a list]
-
-    - [predicate (=) (x y: 'a)] *)
+(*@ predicate (=) (x : 'a) (y : 'a) *)
+(*@ predicate (<>) (x : 'a) (y : 'a) *)
+(*@ predicate not (x : bool) *)
 
 (** The rest of this module is the actual content of the Gospel module
     [Gospelstdlib]. This module is automatically opened in Gospel
@@ -59,6 +56,11 @@
 
 (*@ type 'a set *)
 (** The type for sets. *)
+
+(*@ type 'a option *)
+
+(*@ function Some (x : 'a) : 'a option *)
+(*@ function None : 'a option *)
 
 (*@ type ('a, 'b) map = 'a -> 'b*)
 (** The type for total maps *)
@@ -91,18 +93,6 @@
 (*@ predicate (>=) (x y: integer) *)
 (*@ predicate (<) (x y: integer) *)
 (*@ predicate (<=) (x y: integer) *)
-
-(*@ function integer_of_int (x: int) : integer *)
-(*@ coercion *)
-
-(*@ function to_seq (a : 'a array) : 'a sequence *)
-(*@ coercion *)
-
-(*@ function of_list (s : 'a list) : 'a sequence *)
-(*@ coercion *)
-
-(*@ function max_int : integer *)
-(*@ function min_int : integer *)
 
 (** {1 Sequences} *)
 
@@ -587,11 +577,6 @@ module Bag : sig
         forall s x.
         Sequence.multiplicity x s = multiplicity x (of_seq s) *)
 end
-
-(** {1 Sets} *)
-
-(*@ function ({}) : 'a set *)
-(** [{}] is the empty set. *)
 
 module Set : sig
   (*@ type 'a t = 'a set *)
