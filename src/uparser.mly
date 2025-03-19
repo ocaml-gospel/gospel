@@ -213,7 +213,9 @@ func:
 | f=func_(PREDICATE, epsilon) { f }
 
 func_name:
-| id = ident_rich { id }
+| id = lident { id }
+| id = uident { id }
+| id = lident_fun_id { id }
 | NOT { mk_pid "not" $loc }
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
   { mk_pid (mixfix "{}") $loc }
@@ -627,9 +629,7 @@ op_symbol:
 | o = OP4 { o }
 | ARROW   { "->" }
 | LRARROW { "<->" }
-| OR      { "\\/" }
 | BARBAR  { "||" }
-| AND     { "/\\" }
 | AMPAMP  { "&&" }
 | STAR    { "*"  }
 ;
@@ -683,8 +683,13 @@ lident_rich:
 | id = lident_op_id  { id }
 ;
 
-lident_op_id:
+lident_fun_id:
 | LEFTPAR id = lident_op RIGHTPAR  { mk_pid id $loc }
+
+lident_op_id:
+| id = lident_fun_id               { id }
+| LEFTPAR OR RIGHTPAR              { mk_pid (infix "\\/") $loc }
+| LEFTPAR AND RIGHTPAR             { mk_pid (infix "/\\") $loc }
 ;
 
 lident_op:

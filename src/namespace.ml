@@ -435,17 +435,37 @@ let type_env =
     (fun tenv (x, y) -> Env.add x { tid = y; tparams = []; talias = None } tenv)
     Env.empty Structure.primitive_list
 
+(** [fun_env] contains the definitions for logical disjunction and conjunction.
+    These are the only functions that exist as primitives. *)
+let fun_env =
+  let open Types in
+  let op_ty = ty_arrow ty_bool (ty_arrow ty_bool ty_bool) in
+  let op_info fid = { fid; fparams = []; fty = op_ty } in
+  let conj = "infix /\\" in
+  let disj = "infix \\/" in
+  let conj_id = Ident.mk_id conj Location.none in
+  let disj_id = Ident.mk_id disj Location.none in
+  Env.empty |> Env.add conj (op_info conj_id) |> Env.add disj (op_info disj_id)
+
 (** The empty environment. The only names that it contains with are primitive
     Gospel type definitions. *)
-let empty_env = { defs = empty_defs; scope = { empty_defs with type_env } }
+let empty_env =
+  { defs = empty_defs; scope = { empty_defs with type_env; fun_env } }
 
 (** The initial environment for every Gospel file. The only names that it
     contains with are primitive Gospel type definitions and the definitions
     within the Gospel standard library. *)
 let init_env stdlib =
+  (* Combines two environments whose domains are disjoint. *)
+  let union e1 e2 = Env.union (fun _ _ _ -> assert false) e1 e2 in
+
   (* Create a type environment that contains the primitive gospel types as well
      as the types defined in the standard library. *)
+  let type_env = union type_env stdlib.type_env in
+  (* Creates a function enviornment that contains logical conjunction and
+     disjunction as well as all values in the standard library. *)
+  let fun_env = union fun_env stdlib.fun_env in
   (* Create a module named [Gospelstdlib] with all the definitions within [stdlib]. *)
   let stdlib_info = { mid = Ident.stdlib_id; mdefs = stdlib } in
   let mod_env = Env.add Ident.stdlib_id.id_str stdlib_info stdlib.mod_env in
-  { defs = empty_defs; scope = { stdlib with type_env; mod_env } }
+  { defs = empty_defs; scope = { stdlib with type_env; fun_env; mod_env } }

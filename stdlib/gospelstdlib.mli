@@ -36,10 +36,6 @@
 
 (*@ predicate (->) (p : bool) (q : bool) *)
 
-(*@ predicate (/\) (p : bool) (q : bool) *)
-
-(*@ predicate (\/) (p : bool) (q : bool) *)
-
 (*@ predicate (<->) (p : bool) (q : bool) *)
 
 (** Boolean operators *)
