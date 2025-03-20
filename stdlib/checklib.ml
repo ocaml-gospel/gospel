@@ -14,6 +14,7 @@ module W = Gospel.Warnings
 
 let () =
   let _ =
+    let () = Gospel.Ident.Tag.set_project_name "##stdlib##" in
     try Bin_utils.check_file "gospelstdlib.mli"
     with W.Error e ->
       Fmt.epr "%a@." W.pp e;

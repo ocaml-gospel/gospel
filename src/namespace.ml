@@ -196,15 +196,15 @@ let type_info =
     find_type
     (fun id -> W.Unbound_type id)
 
-module M = Map.Make (Int)
+module Tbl = Ident.IdTable
 
 (** [build_alias var_map alias] returns a new type with the same structure as
     [alias] where every type variable has been replaced with their binding in
     [var_map]. *)
-let rec build_alias var_map alias =
-  let build_alias = build_alias var_map in
+let rec build_alias var_tbl alias =
+  let build_alias = build_alias var_tbl in
   match alias with
-  | PTtyvar id -> M.find id.id_tag var_map
+  | PTtyvar id -> Tbl.find var_tbl id.id_tag
   | PTarrow (t1, t2) -> PTarrow (build_alias t1, build_alias t2)
   | PTtyapp (q, l) -> PTtyapp (q, List.map build_alias l)
   | PTtuple l -> PTtuple (List.map build_alias l)
@@ -224,12 +224,13 @@ let resolve_alias env q l =
     | Some alias ->
         (* When there is an alias, we create a map that binds each type variable
         identifier in [alias] to the corresponding type in [l]. *)
-        let var_map =
-          List.fold_left2
-            (fun acc avar tvar -> M.add avar.Ident.id_tag tvar acc)
-            M.empty params l
+        let var_tbl = Ident.IdTable.create 100 in
+        let () =
+          List.iter2
+            (fun avar tvar -> Tbl.add var_tbl avar.Ident.id_tag tvar)
+            params l
         in
-        Some (build_alias var_map alias)
+        Some (build_alias var_tbl alias)
   in
   PTtyapp (Types.mk_info q ~alias, l)
 
