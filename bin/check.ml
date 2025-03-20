@@ -80,6 +80,7 @@ let run files =
   let check env file =
     (* Precondition: this file must have extension [.gospel] or be a valid
        Gospel interface file. *)
+    let () = Ident.Tag.set_project_name file in
     let mods =
       if Filename.extension file = gospel_ext then read_gospel_file file
       else check_file ~comp_dir ~env file
