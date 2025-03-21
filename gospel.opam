@@ -33,7 +33,7 @@ build: [
   ]
 ]
 depends: [
-  "ocaml" {>= "4.11"}
+  "ocaml" {>= "4.14"}
   "ocamlfind"
   "dune" {>= "3.0.0"}
   "dune-build-info"
