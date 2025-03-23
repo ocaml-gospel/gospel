@@ -43,6 +43,12 @@ let dependencies =
   parse deps 1;
   deps
 
+let comp_dir_rule =
+  {|(rule
+(targets _gospel)
+   (action (run mkdir -p _gospel))) ; create the compilation directory.
+   |}
+
 let print_rule file =
   if Filename.extension file = ".mli" then
     let deps =
@@ -54,8 +60,8 @@ let print_rule file =
       {|(rule
  (deps
   %%{bin:gospel}
-  (:checker %%{project_root}/test/utils/testchecker.exe)%s)
- (targets _gospel)
+  (:checker %%{project_root}/test/utils/testchecker.exe)%s
+       _gospel)
  (action
   (with-outputs-to %s.output
    (run %%{checker} %%{dep:%s}))))
@@ -71,4 +77,5 @@ let print_rule file =
 let () =
   let files = Filename.current_dir_name |> Sys.readdir in
   Array.sort String.compare files;
+  Printf.printf "%s" comp_dir_rule;
   Array.iter print_rule files

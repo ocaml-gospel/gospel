@@ -30,8 +30,8 @@ jobs:
       - name: Build the test suite
         run: opam exec -- dune build
 
-      # - name: Run the normal tests
-      #   run: opam exec -- dune runtest
+      - name: Run the normal tests
+        run: opam exec -- dune runtest
 
       - name: Install the OPAM package
         run: |
