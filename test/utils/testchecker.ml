@@ -39,7 +39,7 @@ let test_file file =
   let status = Sys.command command in
   pr "%a" print file;
   if status <> 0 then
-    pr "[@(* {%s@\n[%d] @[%a@]@\n|gospel_expected}@] *)@\n" result_start status
+    pr "@[%s@\n[%d] @[%a@]@\n|gospel_expected}@] *)@\n" result_start status
       print stderr
 
 let () =
