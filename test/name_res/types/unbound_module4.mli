@@ -1,0 +1,25 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
+module M : sig
+  (*@ type g *)
+end
+
+(*@ type t *)
+
+(*@ type test = M.t *)
+
+(* {gospel_expected|
+[1] File "unbound_module4.mli", line 17, characters 18-19:
+    17 | (*@ type test = M.t *)
+                           ^
+    Error: Unbound type constructor M.t
+    
+|gospel_expected} *)
