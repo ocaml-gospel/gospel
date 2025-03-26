@@ -10,7 +10,7 @@
 
 %{
   open Ppxlib
-  open Identifier
+  open Preid
   open Uast
   open Uast_utils
 
