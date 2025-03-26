@@ -42,11 +42,7 @@ let parse_ocaml_lb lb =
     W.error ~loc W.Syntax_error
 
 let parse_ocaml file =
-  let lb =
-    if String.equal file gospelstdlib_file then
-      Lexing.from_string Gospellib.contents
-    else open_in file |> Lexing.from_channel
-  in
+  let lb = open_in file |> Lexing.from_channel in
   Location.init lb file;
   parse_ocaml_lb lb
 

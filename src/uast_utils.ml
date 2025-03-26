@@ -60,3 +60,7 @@ let rec chain t =
 
 (** Same behaviour as [chain] but receives and retruns a [term_desc] *)
 let chain_desc t = (chain { term_desc = t; term_loc = Location.none }).term_desc
+
+let prefix s = "prefix " ^ s
+let infix s = "infix " ^ s
+let mixfix s = "mixfix " ^ s

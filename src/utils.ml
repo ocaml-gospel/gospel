@@ -8,22 +8,6 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-module Mstr = Map.Make (String)
-
-let rec split_at_f f = function
-  | [] -> ([], [])
-  | x :: xs when f x ->
-      let xs', ys' = split_at_f f xs in
-      (x :: xs', ys')
-  | l -> ([], l)
-
-let rec split_at_i i = function
-  | [] -> ([], [])
-  | l when i <= 0 -> ([], l)
-  | x :: xs ->
-      let xs', ys' = split_at_i (pred i) xs in
-      (x :: xs', ys')
-
 module Fmt = struct
   include Fmt
 

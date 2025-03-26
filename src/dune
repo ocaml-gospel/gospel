@@ -14,12 +14,6 @@
  (modules_without_implementation uast))
 
 (rule
- (targets gospellib.ml)
- (deps stdlib/gospelstdlib.mli)
- (action
-  (run stdlib/file_to_string.exe %{deps} %{targets})))
-
-(rule
  (alias fmt)
  (enabled_if %{bin-available:ex})
  (action

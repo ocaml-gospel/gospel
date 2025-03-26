@@ -6,7 +6,7 @@ First, we compile the file, running the source preprocessor and the ppx:
 
 Then run Odoc
 
-  $ odoc compile odoc_of_gospel.cmti
+  $ odoc compile odoc_of_gospel.cmti 2> /dev/null
 
 We test the html and the latex outputs
 

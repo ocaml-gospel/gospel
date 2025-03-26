@@ -54,4 +54,3 @@
  (action
   (chdir %{project_root}
    (run gospel check %{dep:README.mli}))))
-

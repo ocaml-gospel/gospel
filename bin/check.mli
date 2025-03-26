@@ -8,6 +8,5 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-type config = { verbose : bool; load_path : string list }
-
-val run : config -> string list -> bool
+val run : string -> unit
+(** Given the name of a file, runs the Inferno typechecker *)
