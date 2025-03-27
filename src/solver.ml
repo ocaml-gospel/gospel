@@ -352,11 +352,8 @@ let rec hastype (t : Id_uast.term) (r : variable) =
     recursive *)
 let typecheck c =
   try snd (Solver.solve ~rectypes:false (let0 c)) with
-  | Solver.Unify (loc, ty1, ty2) ->
-      let ty1s = Fmt.str "%a" Types.print_ty ty1 in
-      let ty2s = Fmt.str "%a" Types.print_ty ty2 in
-      let loc = Uast_utils.mk_loc loc in
-      W.error ~loc (W.Bad_type (ty1s, ty2s))
+  | Solver.Unify (loc, ty1, ty2) -> Types.incompatible_types loc ty1 ty2
+  | Solver.Cycle (loc, pty) -> Types.cycle loc pty
   | Solver.Unbound _ -> assert false
 (* Unbound variables are caught before we run the solver *)
 
