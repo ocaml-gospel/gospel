@@ -8,4 +8,4 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val signatures : Uast.s_signature -> int list * Tast.signature list
+val signatures : Parse_uast.s_signature -> int list * Tast.signature list

@@ -7,7 +7,7 @@
 (*  This software is free software, distributed under the MIT license     *)
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
-open Uast
+open Parse_uast
 
 let mk_term t l = { term_desc = t; term_loc = l }
 
@@ -16,7 +16,7 @@ let mk_term t l = { term_desc = t; term_loc = l }
     be used for any function application, the locations of the subterms would
     not correspond to what would be expected. *)
 let mk_op_apply op args =
-  let f = mk_term (Tpreid (Qpreid op)) op.pid_loc in
+  let f = mk_term (Tvar (Qid op)) op.pid_loc in
   let t =
     List.fold_left (fun f arg -> mk_term (Tapply (f, arg)) arg.term_loc) f args
   in

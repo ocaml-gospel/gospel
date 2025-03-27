@@ -10,7 +10,7 @@
 
 module W = Warnings
 open Ppxlib
-open Uast
+open Parse_uast
 
 let is_spec attr = attr.attr_name.txt = "gospel"
 
@@ -237,8 +237,9 @@ and module_type ~filename m =
   }
 
 and module_declaration ~filename m =
+  let nm = m.pmd_name in
   {
-    mdname = m.pmd_name;
+    mdname = Option.map (fun id -> Preid.create ~loc:nm.loc id) nm.txt;
     mdtype = module_type ~filename m.pmd_type;
     mdattributes = m.pmd_attributes;
     mdloc = m.pmd_loc;

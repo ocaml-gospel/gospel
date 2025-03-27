@@ -11,7 +11,7 @@
 %{
   open Ppxlib
   open Preid
-  open Uast
+  open Parse_uast
   open Uast_utils
 
   let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
@@ -50,9 +50,9 @@
     fun_loc = Location.none;
   }
 
-  let loc_of_qualid = function Qpreid pid | Qdot (_, pid) -> pid.pid_loc
+  let loc_of_qualid = function Qid pid | Qdot (_, pid) -> pid.pid_loc
 
-  let qualid_preid = function Qpreid p | Qdot (_, p) -> p
+  let qualid_preid = function Qid p | Qdot (_, p) -> p
 %}
 
 (* Tokens *)
@@ -125,11 +125,11 @@
 
 %left BAR
 
-%start <Uast.function_> func
-%start <Uast.axiom> axiom
-%start <Uast.val_spec> val_spec
-%start <Uast.type_spec> type_spec
-%start <Uast.fun_spec> func_spec
+%start <Parse_uast.function_> func
+%start <Parse_uast.axiom> axiom
+%start <Parse_uast.val_spec> val_spec
+%start <Parse_uast.type_spec> type_spec
+%start <Parse_uast.fun_spec> func_spec
 
 %%
 
@@ -347,7 +347,7 @@ field_list1(X):
 
 term_rec_field(X):
 | separated_pair(lqualid, EQUAL, X) { $1 }
-| lqualid { let t = {term_desc = Tpreid $1;
+| lqualid { let t = {term_desc = Tvar $1;
                      term_loc = loc_of_qualid $1} in
             ($1,t)
           }
@@ -379,7 +379,7 @@ term_dot: mk_term(term_dot_) { $1 }
 ;
 
 term_arg_:
-| qualid                    { Tpreid $1 }
+| qualid                    { Tvar $1 }
 | constant                  { Tconst $1 }
 | TRUE                      { Ttrue }
 | FALSE                     { Tfalse }
@@ -388,7 +388,7 @@ term_arg_:
 ;
 
 term_dot_:
-| lqualid                   { Tpreid $1 }
+| lqualid                   { Tvar $1 }
 | o = oppref ; a = term_dot { mk_op_apply o [a] }
 | term_sub_                 { $1 }
 ;
@@ -397,10 +397,10 @@ term_block_:
 | LEFTPAR t=term RIGHTPAR                           { t.term_desc }
 | LEFTPAR RIGHTPAR                                  { Ttuple [] }
 | LEFTSQRIGHTSQ
-    { Tpreid (Qpreid (mk_pid "[]"  $loc)) }
+    { Tvar (Qid (mk_pid "[]"  $loc)) }
 | LEFTBRC field_list1(term) RIGHTBRC                { Trecord $2 }
 | LEFTBRCRIGHTBRC
-    { Tpreid (Qpreid (mk_pid (mixfix "{}") $loc)) }
+    { Tvar (Qid (mk_pid (mixfix "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
     { let id = mk_pid (mixfix "{:_:}") $loc in
       mk_op_apply id [t] }
@@ -515,7 +515,7 @@ pat_conj_:
 pat_uni_:
 | pat_arg_                              { $1 }
 | pat_arg COLONCOLON mk_pat(pat_uni_)
-    { Papp (Qpreid (mk_pid (infix "::") $loc),[$1;$3]) }
+    { Papp (Qid (mk_pid (infix "::") $loc),[$1;$3]) }
 | uqualid LEFTPAR separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR              { Papp ($1,$3) }
 | uqualid pat_arg_no_lpar               { Papp ($1,[$2]) }
 | mk_pat(pat_uni_) AS attrs(lident)
@@ -538,7 +538,7 @@ pat_arg_no_lpar_:
 | TRUE                                  { Ptrue }
 | FALSE                                 { Pfalse }
 | LEFTSQRIGHTSQ
-  { Papp (Qpreid (mk_pid "[]"  $loc), []) }
+  { Papp (Qid (mk_pid "[]"  $loc), []) }
 | LEFTBRC field_pattern(pattern) RIGHTBRC { Prec $2 }
 ;
 
@@ -642,22 +642,22 @@ lident_op:
 (* Qualified idents *)
 
 qualid:
-| ident_rich              { Qpreid $1 }
+| ident_rich              { Qid $1 }
 | uqualid DOT ident_rich  { Qdot ($1, $3) }
 ;
 
 lqualid_rich:
-| lident_rich             { Qpreid $1 }
+| lident_rich             { Qid $1 }
 | uqualid DOT lident_rich { Qdot ($1, $3) }
 ;
 
 lqualid:
-| lident              { Qpreid $1 }
+| lident              { Qid $1 }
 | uqualid DOT lident  { Qdot ($1, $3) }
 ;
 
 uqualid:
-| uident              { Qpreid $1 }
+| uident              { Qid $1 }
 | uqualid DOT uident  { Qdot ($1, $3) }
 ;
 

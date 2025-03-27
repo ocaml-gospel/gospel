@@ -18,7 +18,7 @@
   ppxlib.ast
   pp_loc
   inferno)
- (modules_without_implementation uast))
+ (modules_without_implementation id_uast parse_uast))
 
 (rule
  (alias fmt)
