@@ -109,7 +109,7 @@ let pp_gen pp_sort pp_kind ppf loc k =
       let start_pos, end_pos =
         (repair_pos loc.loc_start, repair_pos loc.loc_end)
       in
-      pf ppf "%a@\n%a%a: @[%a.@]"
+      pf ppf "%a@\n%a%a: @[%a@]"
         (styled `Bold Location.print)
         { loc_start = start_pos; loc_end = end_pos; loc_ghost = false }
         (Pp_loc.pp ~max_lines:10 ~input)
