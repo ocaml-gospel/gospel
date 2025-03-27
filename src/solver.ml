@@ -350,12 +350,19 @@ let rec hastype (t : Id_uast.term) (r : variable) =
 
 (** Solves an arbitrary constraint assuming types are not allowed to be
     recursive *)
-let typecheck c =
-  try snd (Solver.solve ~rectypes:false (let0 c)) with
+let typecheck tvars c =
+  Types.add_tvars tvars;
+  try
+    let t = snd (Solver.solve ~rectypes:false (let0 c)) in
+    Types.clear_tvars ();
+    t
+  with
   | Solver.Unify (loc, ty1, ty2) -> Types.incompatible_types loc ty1 ty2
   | Solver.Cycle (loc, pty) -> Types.cycle loc pty
   | Solver.Unbound _ -> assert false
-(* Unbound variables are caught before we run the solver *)
+  (* Unbound variables are caught before we run the solver *)
+  | Solver.VariableScopeEscape _ -> assert false
+(* This exception is only thrown when using rigid Inferno variables. *)
 
 let process_fun_spec f =
   Option.fold ~some:(fun _ -> assert false) ~none:(pure None) f
@@ -425,5 +432,5 @@ let axiom_cstr ax =
   let+ t = hastype ax.Id_uast.ax_term ty in
   mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 
-let axiom ax = typecheck (axiom_cstr ax)
-let function_ f = typecheck (function_cstr f)
+let axiom tvars ax = typecheck tvars (axiom_cstr ax)
+let function_ tvars f = typecheck tvars (function_cstr f)

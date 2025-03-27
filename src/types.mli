@@ -21,6 +21,14 @@ val mu : tyvar -> ty -> ty
 
 (*  End of Inferno definitions *)
 
+val add_tvars : Ident.t list -> unit
+(** [add_tvars l] ensures that Inferno generated type variables will not have
+    names equal to those in [l]. *)
+
+val clear_tvars : unit -> unit
+(** [clear_tvars ()] ensures that the next batch of Inferno generated type
+    variables will have no restrictions. *)
+
 val ty_arrow : ty -> ty -> ty
 (** [ty_arrow ty1 ty2] creates an arrow type where the argument is of type [ty1]
     and the result is [ty2]*)
