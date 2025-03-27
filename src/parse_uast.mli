@@ -8,24 +8,25 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Ppxlib
+type id = Preid.t
 
 (* Types *)
+open Ppxlib
 
-type qualid = Qpreid of Preid.t | Qdot of qualid * Preid.t
+type qualid = Qid of id | Qdot of qualid * id
 
 type pty =
-  | PTtyvar of Preid.t
+  | PTtyvar of id
   | PTtyapp of qualid * pty list
   | PTtuple of pty list
   | PTarrow of pty * pty
 
 and labelled_arg =
   | Lunit
-  | Lnone of Preid.t
-  | Loptional of Preid.t
-  | Lnamed of Preid.t
-  | Lghost of Preid.t * pty
+  | Lnone of id
+  | Loptional of id
+  | Lnamed of id
+  | Lghost of id * pty
 
 (* Patterns *)
 
@@ -33,13 +34,13 @@ type pattern = { pat_desc : pat_desc; pat_loc : Location.t }
 
 and pat_desc =
   | Pwild
-  | Pvar of Preid.t
+  | Pvar of id
   | Ptrue
   | Pfalse
   | Papp of qualid * pattern list
   | Prec of (qualid * pattern) list
   | Ptuple of pattern list
-  | Pas of pattern * Preid.t
+  | Pas of pattern * id
   | Por of pattern * pattern
   | Pcast of pattern * pty
   | Pconst of constant
@@ -47,8 +48,8 @@ and pat_desc =
 
 (* Logical terms and formulas *)
 
-type binder = Preid.t * pty option
-type param = Preid.t * pty
+type binder = id * pty option
+type param = id * pty
 type quant = Tforall | Texists
 
 type term = { term_desc : term_desc; term_loc : Location.t }
@@ -57,21 +58,21 @@ and term_desc =
   | Ttrue
   | Tfalse
   | Tconst of constant
-  | Tpreid of qualid
+  | Tvar of qualid
   | Tfield of term * qualid
   | Tapply of term * term
-  | Tinfix of term * Preid.t * term
+  | Tinfix of term * id * term
   (* [Tinfix] represents a chain of infix operations such as [e1 <
-     e2 < ...]. This node is necessary during parsing so that there
-     exists a distinction between chains of infix operators such
-     as (x < y < z) and (x < (y < z)). During typing, this node is
-     desugared into a normal function application and handled the
-     same way as [Tapply] *)
+       e2 < ...]. This node is necessary during parsing so that there
+       exists a distinction between chains of infix operators such
+       as (x < y < z) and (x < (y < z)). During typing, this node is
+       desugared into a normal function application and handled the
+       same way as [Tapply] *)
   | Tif of term * term * term
   | Tquant of quant * binder list * term
   | Tlambda of pattern list * term * pty option
   | Tattr of string * term
-  | Tlet of Preid.t * term * term
+  | Tlet of id * term * term
   | Tcase of term * (pattern * term option * term) list
   | Tcast of term * pty
   | Ttuple of term list
@@ -84,7 +85,7 @@ and term_desc =
 type xpost = Location.t * (qualid * (pattern * term) option) list
 
 type spec_header = {
-  sp_hd_nm : Preid.t;
+  sp_hd_nm : id;
   (* header name *)
   sp_hd_ret : labelled_arg list;
   (* Can only be LNone or LGhost *)
@@ -106,17 +107,12 @@ type val_spec = {
   sp_loc : Location.t;
 }
 
-type field = {
-  f_loc : Location.t;
-  f_preid : Preid.t;
-  f_pty : pty;
-  f_mutable : bool;
-}
+type field = { f_loc : Location.t; f_preid : id; f_pty : pty; f_mutable : bool }
 
 type type_spec = {
   ty_ephemeral : bool;
   ty_field : field list;
-  ty_invariant : (Preid.t * term list) option;
+  ty_invariant : (id * term list) option;
   ty_text : string;
   ty_loc : Location.t;
 }
@@ -130,9 +126,9 @@ type fun_spec = {
   fun_loc : Location.t;
 }
 
-(* type param  = Location.t * Preid.t * pty *)
+(* type param  = Location.t * id * pty *)
 type function_ = {
-  fun_name : Preid.t;
+  fun_name : id;
   fun_rec : bool;
   fun_type : pty option;
   fun_params : param list;
@@ -143,7 +139,7 @@ type function_ = {
 }
 
 type axiom = {
-  ax_name : Preid.t;
+  ax_name : id;
   ax_term : term;
   ax_loc : Location.t;
   ax_text : string;
@@ -275,7 +271,7 @@ and s_module_type = {
 }
 
 and s_module_declaration = {
-  mdname : string option loc;
+  mdname : id option;
   mdtype : s_module_type;
   mdattributes : attributes;
   (* ... [@@id1] [@@id2] *)

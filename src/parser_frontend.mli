@@ -25,11 +25,15 @@ val parse_ocaml : string -> signature
     OCaml syntax error. *)
 
 val parse_gospel :
-  ?add_std:bool -> filename:string -> signature -> string -> Uast.s_signature
+  ?add_std:bool ->
+  filename:string ->
+  signature ->
+  string ->
+  Parse_uast.s_signature
 (** [parse_gospel sig_list module_name] parses the GOSPEL attributes and
     integrates them in the corresponding OCaml signatures. *)
 
-val parse_ocaml_gospel : string -> Uast.s_signature
+val parse_ocaml_gospel : string -> Parse_uast.s_signature
 (** [parse_ocaml_gospel path] parses the OCaml interface and the GOSPEL
     specification of the file located in [path].
 
