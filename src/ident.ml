@@ -84,13 +84,8 @@ let mk_id id_str id_loc =
 
 let stdlib_id = mk_id "Gospelstdlib" Location.none
 
-let tvar () =
-  {
-    id_str = "a";
-    id_attrs = [];
-    id_loc = Location.none;
-    id_tag = Tag.gen_id ();
-  }
+let tvar nm =
+  { id_str = nm; id_attrs = []; id_loc = Location.none; id_tag = Tag.gen_id () }
 
 let from_preid p =
   {
