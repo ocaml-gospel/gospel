@@ -2,8 +2,11 @@ open Ppxlib
 open Utils
 
 type kind =
+  | Arity_mismatch of string * string * int * int
   | Bad_arity of string * int * int
   | Bad_type of string * string
+  | Bad_subtype of string * string * string * string
+  | Cycle of string * string
   | Duplicated_argument of string
   | Duplicated_parameter of string
   | Duplicated_record_label of string
@@ -11,6 +14,7 @@ type kind =
   | Illegal_escape of string * string option
   | Incompatible_field of string list * string list * string
   | Invalid_record_labels
+  | Not_a_function of string
   | Syntax_error
   | Unbound_module of string
   | Unbound_record_label of string list
@@ -32,15 +36,27 @@ open Fmt
 let function_ ppf (f, t1, t2) = pf ppf "%s: %s -> %s" f t1 t2
 
 let pp_kind ppf = function
+  | Arity_mismatch (ty1s, ty2s, expected, received) ->
+      pf ppf
+        "Mismatch between a type %s@ and type %s@\n\
+         Mismatch between arity %d and arity %d"
+        ty1s ty2s expected received
   | Bad_arity (f, expected, got) ->
       pf ppf
-        "The type constructor %s expects %d argument(s)@ but is applied to %d \
+        "The type constructor %s expected %d argument(s)@ but is applied to %d \
          argument(s) here"
         f expected got
-  | Bad_type (t1, t2) ->
+  | Bad_subtype (ty1, ty2, ty1_sub, ty2_sub) ->
       pf ppf
-        "This value has type %s@ but an expression was expected of type@ %s" t1
-        t2
+        "Mismatch between type %s@ and type %s@\n\
+         Type %s is incompatible with type %s"
+        ty1 ty2 ty1_sub ty2_sub
+  | Bad_type (t1, t2) -> pf ppf "Mismatch between type %s@ and type %s" t1 t2
+  | Cycle (v, t) ->
+      pf ppf
+        "This expression has type '%s@ but an expression was expected of type \
+         %s@ The type variable '%s occurs inside %s"
+        v t v t
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Duplicated_parameter s ->
       pf ppf "The type parameter %s occurs several times" s
@@ -59,6 +75,8 @@ let pp_kind ppf = function
         field
         (list ~sep:(const string ".") string)
         field_type expected_type
+  | Not_a_function s ->
+      pf ppf "Expected a functional value but received a value of type %s" s
   | Syntax_error -> pf ppf "Syntax error"
   | Unbound_module s -> pf ppf "Unbound module %s" s
   | Unbound_record_label s ->
