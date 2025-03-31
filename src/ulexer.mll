@@ -20,6 +20,7 @@
       (fun (x,y) -> Hashtbl.add keywords x y)
       [
         "as", AS;
+	"and", AND;
         "axiom", AXIOM;
         "checks", CHECKS;
         "coercion", COERCION;
@@ -205,9 +206,9 @@ rule token = parse
   | "||"
       { BARBAR }
   | "/\\"
-      { AND }
+      { CONJ }
   | "\\/"
-      { OR }
+      { DISJ }
   | ".."
       { DOTDOT }
   | "|"

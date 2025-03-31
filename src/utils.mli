@@ -16,6 +16,19 @@ val duplicate : ('a -> 'a -> bool) -> ('a -> unit) -> 'a list -> unit
     elements in the list satisfy [p]. This function has quadratic time
     complexity and therefore should only be used on very small lists.*)
 
+exception Cycle of string * string list
+(** [raise (Cycle s l)] returns the start (and, naturally end) of a cycle [s]
+    and the list of nodes [l] that make up the rest of the cycle. If [l] is
+    empty, then there is an edge that connects [s] to itself. *)
+
+val depends : (string * string list) list -> string list
+(** [depends eq error graph] returns a list [l] with each node in [graph] where,
+    for each [i, j] where [0 <= i <= j < List.length l], the node [List.nth l j]
+    cannot be reached from [List.nth l i] through a non-empty path, according to
+    [graph].
+
+    @raise Cycle When [graph] has a cycle. *)
+
 module Fmt : sig
   include module type of struct
     include Fmt

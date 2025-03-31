@@ -18,9 +18,10 @@ type local_env = {
   (* Local term variables e.g. names bound with a [let] or a quantifier *)
   type_vars : (string, Ident.t) Hashtbl.t;
   (* Type variables. *)
-  type_nm : Ident.t option;
-      (* When processing the definition for a type named [t], this field will
-         be [Some t]. In all other cases, [t] is [None] *)
+  type_nms : Ident.t Env.t;
+      (* When processing a recursive type definition, this environment keeps
+         track of all the type names that are not aliases that the definition
+         introduces. *)
 }
 (** Keeps track of the variables within the scope of a term. We use an immutable
     environment for term variables since it makes it easier to manage scopes. We
@@ -30,7 +31,7 @@ type local_env = {
     quantifier. *)
 
 let empty_local_env () =
-  { term_var = Env.empty; type_vars = Hashtbl.create 100; type_nm = None }
+  { term_var = Env.empty; type_vars = Hashtbl.create 100; type_nms = Env.empty }
 
 (** [add_term_var var id env] maps the term variable [var] to the tagged
     identifier [id] *)
@@ -41,7 +42,8 @@ let add_term_var var id env =
     identifier [id] *)
 let add_type_var id env = Hashtbl.add env.type_vars id.Ident.id_str id
 
-let add_type_nm id env = { env with type_nm = Some id }
+let add_type_nm id env =
+  { env with type_nms = Env.add id.Ident.id_str id env.type_nms }
 
 (** [type_vars ~bind env pty] returns a list of all the type variables used in
     [pty]. If the [bind] flag is false, then this type is not allowed to
@@ -78,14 +80,11 @@ let type_vars ~bind env pty =
 let unique_pty ~bind defs env pty =
   let rec unique_pty = function
     | Parse_uast.PTtyvar pid -> PTtyvar (Hashtbl.find env.type_vars pid.pid_str)
-    | PTtyapp (Qid pid, l)
-      when Option.fold
-             ~some:(fun t -> t.Ident.id_str = pid.pid_str)
-             ~none:false env.type_nm ->
-        (* This case is only reached when processing the definition of some type
-          [t] and the user refers to [t] within the definition. *)
-        let nm = Option.get env.type_nm in
-        PTtyapp (Types.mk_info (Qid nm), List.map unique_pty l)
+    | PTtyapp (Qid id, l) when Env.mem id.pid_str env.type_nms ->
+        (* This branch is reached when we are processing a set of recursive type
+          definitions and [id] is one of the type names. *)
+        let info = Types.mk_info (Qid (Env.find id.pid_str env.type_nms)) in
+        PTtyapp (info, List.map unique_pty l)
     | PTtyapp (q, l) ->
         (* When we encounter a type identifier, we must check if it is an alias
            for another type and if so replace it. *)
@@ -241,34 +240,113 @@ let axiom defs ax =
   let ax_text = ax.ax_text in
   ({ ax_name; ax_term; ax_loc; ax_text }, get_tvars local_env)
 
-let type_kind env tid tparams tvar_env = function
+(** [tdecl_env l] creates a local environment that contains each type name
+    defined in [l] that is not a type alias. *)
+let tdecl_env (l : Parse_uast.s_type_declaration list) =
+  let open Parse_uast in
+  let add_decl env t =
+    (* Check if [t] is a type alias. *)
+    if Option.is_none t.tmanifest then
+      let id = Ident.from_preid t.tname in
+      add_type_nm id env
+    else env
+  in
+  List.fold_left add_decl (empty_local_env ()) l
+
+(** [get_alias_deps aliases pty] returns a list consisting of every type name in
+    [aliases] that [pty] uses. Naturally, the returned list must be a sub list
+    of [aliases]. *)
+let get_alias_deps aliases pty =
+  let deps = ref [] in
+  (* Checks if an identifier is in the [aliases] list and has not already been
+     added to the [deps] list. *)
+  let is_alias = function
+    | Parse_uast.Qid id ->
+        if List.mem id.pid_str aliases && not (List.mem id.pid_str !deps) then
+          deps := id.pid_str :: !deps
+    | _ -> ()
+  in
+  (* Iterator function that updates [deps] in place. *)
+  let rec loop = function
+    | Parse_uast.PTtyvar _ -> ()
+    | PTtyapp (q, l) ->
+        is_alias q;
+        List.iter loop l
+    | PTarrow (arg, res) ->
+        loop arg;
+        loop res
+    | PTtuple l -> List.iter loop l
+  in
+  loop pty;
+  !deps
+
+(** [alias_order l] returns a list consisting of the names of the types aliases
+    defined in [l]. Moreover, the names appear in the order in which the type
+    aliases should be added to the namespace so that any type aliases that
+    depend on other type aliases can be expanded. Example:
+
+    [type t3 = {x : t2} and  t2 = t1 and t1 = t3]
+
+    When we add [t3] to the namespace, we want to expand the record type
+    annotation [x : t2] to [x : t3], however, that can only be done after we
+    process the type aliases [t1] and [t2]. Moreover, [t1] must be processed
+    before [t2], since the definition of [t2] uses [t1]. Given this, the
+    resulting list will be [[t1; t2]]. Note that [t3] is not included seeing as
+    it is not a type alias. *)
+let alias_order l =
+  let open Parse_uast in
+  (* List with each type name that is an alias for some other type. *)
+  let aliases =
+    List.filter_map
+      (fun decl ->
+        if Option.is_some decl.tmanifest then
+          Some (decl.tname.pid_str, decl.tloc)
+        else None)
+      l
+  in
+  let names = List.map fst aliases in
+  (* [node decl] returns [Some (nm, deps)] where [nm] is the name of the type
+     and [deps] are the aliases that [decl] uses in its definition. *)
+  let node decl =
+    Option.map
+      (fun pty -> (decl.tname.pid_str, get_alias_deps names pty))
+      decl.tmanifest
+  in
+  let graph = List.filter_map node l in
+  try Utils.depends graph
+  with Utils.Cycle (x, l) ->
+    let loc = List.assoc x aliases in
+    let error =
+      match l with
+      | [] -> W.Cyclic_definition x
+      | _ -> W.Cyclic_definitions (x, l)
+    in
+    W.error ~loc error
+
+let type_kind env tid tparams lenv = function
   | Parse_uast.PTtype_abstract -> (env, PTtype_abstract)
   | PTtype_record l ->
-      let () =
-        (* Raise an error if two records have the same label. *)
-        let open Preid in
-        let eq (x, _) (y, _) = Preid.eq x y in
-        let error (x, _) =
-          W.error ~loc:x.pid_loc (W.Duplicated_record_label x.pid_str)
-        in
-        Utils.duplicate eq error l
-      in
-      (* Adds the name of the type to the local scope. This allows for recursive
-         definitions to be well typed without modifying the namespace. *)
-      let tvar_env = add_type_nm tid tvar_env in
       (* Function to create a unique record field *)
       let field (id, pty) =
         let id = Ident.from_preid id in
-        let pty = unique_pty ~bind:false (scope env) tvar_env pty in
+        let pty = unique_pty ~bind:false (scope env) lenv pty in
         (id, pty)
       in
       let fields = List.map field l in
+      (* If this is an OCaml record declaration, the record fields are not
+         inserted into the namespace. *)
       let env = add_record env tid tparams fields in
       (env, PTtype_record fields)
 
-let ghost_type_decl env t =
+let ghost_type_decl lenv env t =
   let defs = scope env in
-  let tname = Ident.from_preid t.Parse_uast.tname in
+  (* If the identifier for this type has already been generated and added to the
+     environment, we use it. If not (either this is a type alias or this is a
+     non-recursive type definition) we generate a new identifier. *)
+  let tname =
+    try Env.find t.Parse_uast.tname.pid_str lenv.type_nms
+    with Not_found -> Ident.from_preid t.tname
+  in
   let () =
     (* Raise an error if two type parameters have the same name *)
     let error x =
@@ -277,8 +355,9 @@ let ghost_type_decl env t =
     Utils.duplicate Preid.eq error t.tparams
   in
   let tparams = List.map Ident.from_preid t.tparams in
-  (* Create an environment with the type variables in *)
-  let tvar_env = empty_local_env () in
+  (* Keep the local definitions within [lenv] but refresh the type variables
+     table so that it is independent of the other type definitions we are processing *)
+  let tvar_env = { lenv with type_vars = Hashtbl.create 100 } in
   let () = List.iter (fun param -> add_type_var param tvar_env) tparams in
   (* We call [unique_pty] with the [bind] flag to false so that an error is
      raised if any type variables besides those defined in [tparams] are used. *)
@@ -298,7 +377,90 @@ let ghost_type_decl env t =
       tloc = t.tloc;
     }
   in
+  let env = add_type env tname tparams tmanifest in
   (env, def)
+
+(** [tdecl_duplicates l] Raises an exception if there are duplicate type names
+    or duplicate record fields in a list of type definitions. If there are none,
+    this function has no observable effect. *)
+let tdecl_duplicates l =
+  let open Parse_uast in
+  let open Preid in
+  (* Check if there are two type definitions with the same name *)
+  let eq = fun x y -> Preid.eq x.tname y.tname in
+  let t_error d =
+    raise (W.error ~loc:d.tloc (W.Duplicated_type_definition d.tname.pid_str))
+  in
+
+  (* Check if there are two record fields with the same name across all type definitions *)
+  let get_fields = function PTtype_record l -> List.map fst l | _ -> [] in
+  let all_fields = List.concat_map (fun decl -> get_fields decl.tkind) l in
+  let field_error l =
+    raise (W.error ~loc:l.pid_loc (W.Duplicated_record_label l.pid_str))
+  in
+  Utils.duplicate Preid.eq field_error all_fields;
+  Utils.duplicate eq t_error l
+
+(** [ghost_tdecl_list env l] processes a list of mutually recursive type
+    definitions. It does this by:
+
+    - Checking if there are duplicate type names or record labels.
+
+    - Creating a local environment which track the non-aliased type names
+      introduced by [l].
+
+    - Splitting the type declarations into aliases and non-aliases and placing
+      the aliases in the correct order (to see what exactly that means, see the
+      documentation for [alias_order].)
+
+    - Processing and adding each alias to the namespace.
+
+    - Processing the remaining type definition. In this step and the previous,
+      if a type uses one of the aliases defined in [l], these are fetched from
+      the namespace whereas the definitions for non-aliased definitions are
+      fetched from the local environment.
+
+    - Once we have processed each type definition, we put them back in the order
+      in which they appear in [l]. This done only so that the original AST and
+      the typed AST are as similar as possible. *)
+let ghost_tdecl_list env l =
+  let open Parse_uast in
+  (* Create a local environment with the non-aliased type names introduced by
+     [l]. *)
+  let () = tdecl_duplicates l in
+  let lenv = tdecl_env l in
+
+  (* List with the aliases in the order in which they must be processed. *)
+  let order = alias_order l in
+  let aliases_order =
+    List.map (fun x -> List.find (fun decl -> decl.tname.pid_str = x) l) order
+  in
+  (* List with every type definition in [l] with the type aliases at the top in
+     the correct order. *)
+  let all_defs =
+    aliases_order
+    @ List.filter (fun x -> not (List.mem x.tname.pid_str order)) l
+  in
+
+  (* Process each definition and update the environment accordingly. *)
+  let env, defs =
+    List.fold_left
+      (fun (env, defs) def ->
+        let env, def = ghost_type_decl lenv env def in
+        (env, def :: defs))
+      (env, []) all_defs
+  in
+
+  (* Place the type definitions in the order the user put them. *)
+  let defs_og_order =
+    List.map
+      (fun pdecl ->
+        List.find
+          (fun id_decl -> pdecl.tname.pid_str = id_decl.Id_uast.tname.id_str)
+          defs)
+      l
+  in
+  (env, defs_og_order)
 
 let rec process_module env m =
   (* TODO figure out when this is None *)
@@ -357,9 +519,7 @@ and gospel_sig env = function
       let ax = Solver.axiom vars ax in
       (Sig_axiom ax, env)
   | Sig_ghost_type t ->
-      let env, t = ghost_type_decl env t in
-      let alias = t.tmanifest in
-      let env = add_type env t.tname t.tparams alias in
+      let env, t = ghost_tdecl_list env t in
       (Sig_ghost_type t, env)
   | _ -> assert false
 

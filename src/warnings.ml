@@ -7,9 +7,12 @@ type kind =
   | Bad_type of string * string
   | Bad_subtype of string * string * string * string
   | Cycle of string * string
+  | Cyclic_definition of string
+  | Cyclic_definitions of string * string list
   | Duplicated_argument of string
   | Duplicated_parameter of string
   | Duplicated_record_label of string
+  | Duplicated_type_definition of string
   | Illegal_character of char
   | Illegal_escape of string * string option
   | Incompatible_field of string list * string list * string
@@ -57,10 +60,16 @@ let pp_kind ppf = function
         "This expression has type '%s@ but an expression was expected of type \
          %s@ The type variable '%s occurs inside %s"
         v t v t
+  | Cyclic_definition v -> pf ppf "The type abbreviation %s is cyclic" v
+  | Cyclic_definitions (v, l) ->
+      pf ppf "The type abbreviation %s contains a cycle@\n%a" v
+        (list ~sep:arrow string) (l @ [ v ])
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Duplicated_parameter s ->
       pf ppf "The type parameter %s occurs several times" s
   | Duplicated_record_label l -> pf ppf "Two labels are named %s" l
+  | Duplicated_type_definition s ->
+      pf ppf "Multiple definitions of the type name %s@\n" s
   | Invalid_record_labels -> pf ppf "No record found with the provided labels"
   | Illegal_character c -> pf ppf "Illegal character %c" c
   | Illegal_escape (s, explanation) ->
