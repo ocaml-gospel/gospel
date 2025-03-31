@@ -194,7 +194,7 @@ type s_with_constraint =
 type gospel_signature =
   | Sig_function of function_
   | Sig_axiom of axiom
-  | Sig_ghost_type of s_type_declaration
+  | Sig_ghost_type of s_type_declaration list
   | Sig_ghost_open of open_description
 
 type s_signature_item_desc =
