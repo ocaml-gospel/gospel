@@ -364,8 +364,19 @@ let typecheck tvars c =
   | Solver.VariableScopeEscape _ -> assert false
 (* This exception is only thrown when using rigid Inferno variables. *)
 
-let process_fun_spec f =
-  Option.fold ~some:(fun _ -> assert false) ~none:(pure None) f
+let fmla t =
+  let@ ty = shallow S.ty_prop in
+  hastype t ty
+
+let int_term t =
+  let@ ty = shallow S.ty_integer in
+  hastype t ty
+
+let fspec_constraint f =
+  let+ pre = map_constraints fmla f.Id_uast.fun_req
+  and+ post = map_constraints fmla f.Id_uast.fun_ens
+  and+ variant = map_constraints int_term f.fun_variant in
+  mk_fun_spec pre post variant f.fun_text f.fun_loc
 
 (** [function_cstr ts f] Creates a constraint whose semantic value is a list of
     signatures whose head is the declaration of the function described by [f].
@@ -385,7 +396,9 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
 
   (* Map each type annotation of a parameter to a deep type. *)
   let to_deep (arg, pty) =
+    (* This is the type we will use in the Inferno constraint. *)
     let deep_arg = pty_to_deep_rigid pty in
+    (* This is the type annotation we will insert into the typed AST. *)
     let deep_annot = pty_to_deep_rigid ~alias:false pty in
     (arg, deep_arg, deep_annot)
   in
@@ -416,10 +429,16 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
     List.map (fun (x, dty, annot) -> (x, (deep dty, deep annot))) deep_params
   in
 
-  (* Typed term and function parameters *)
-  let+ params, tt = build_def deep_params body_c
-  (* Typed function specification *)
-  and+ fun_spec = process_fun_spec f.fun_spec
+  (* Combines the constraint for the function body and the constraint for the
+     specification. This way, they can be solved under the same chain of [def]
+     constraints. *)
+  let fco =
+    let+ body = body_c and+ spec = fspec_constraint f.fun_spec in
+    (body, spec)
+  in
+
+  (* Function parameters, typed term and typed function specification. *)
+  let+ params, (tt, fun_spec) = build_def deep_params fco
   (* Decoded return type *)
   and+ ret = decode ret_ty in
   let fun_ty = Option.fold ~some:(fun t -> t.t_ty) ~none:ret tt in
@@ -428,8 +447,7 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
 
 (** Creates a constraint ensuring the term within an axiom has type [prop]. *)
 let axiom_cstr ax =
-  let@ ty = shallow S.ty_prop in
-  let+ t = hastype ax.Id_uast.ax_term ty in
+  let+ t = fmla ax.Id_uast.ax_term in
   mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 
 let axiom tvars ax = typecheck tvars (axiom_cstr ax)

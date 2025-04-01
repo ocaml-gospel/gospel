@@ -46,7 +46,6 @@
     fun_req = [];
     fun_ens = [];
     fun_variant = [];
-    fun_coer = false;
     fun_text = "";
     fun_loc = Location.none;
   }
@@ -86,7 +85,6 @@
 %token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC AND
 %token INVARIANT
-%token COERCION
 %token IF IN
 %token OLD NOT RAISES
 %token THEN TRUE MODIFIES EQUIVALENT CHECKS DIVERGES PURE
@@ -209,7 +207,7 @@ axiom:
 func_(X, PTY):
 | X fun_rec=boption(REC) fun_name=func_name fun_params=loption(params)
     ty=PTY fun_def=preceded(EQUAL, term)? spec=func_spec
-  { { fun_name; fun_rec; fun_type = ty; fun_params; fun_def; fun_spec = Some spec;
+  { { fun_name; fun_rec; fun_type = ty; fun_params; fun_def; fun_spec = spec;
       fun_loc = mk_loc $loc; } }
 
 ftyp: COLON t=typ { Some t }
@@ -241,8 +239,6 @@ nonempty_func_spec:
   { { bd with fun_ens = t :: bd.fun_ens } }
 | VARIANT t=term bd=func_spec
   { { bd with fun_variant = t :: bd.fun_variant } }
-| COERCION bd=func_spec
-  { { bd with fun_coer = true } }
 ;
 
 type_spec:
