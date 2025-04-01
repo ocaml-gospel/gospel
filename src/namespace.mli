@@ -88,6 +88,10 @@ val get_field_info :
     - The identifier for the record type the label [id] belong to.
     - The type parameters for the record type. *)
 
+val gospel_open : env -> Parse_uast.qualid -> Id_uast.qualid * env
+(** [gospel_open defs id] adds the definitions in module [id] into the scope
+    [defs]. *)
+
 val empty_env : env
 (** The empty environment. The only names in scope are primitive Gospel types.
     This should be the initial environment when processing the Gospel standard

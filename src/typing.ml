@@ -529,7 +529,9 @@ and gospel_sig env = function
   | Sig_ghost_type t ->
       let env, t = ghost_tdecl_list env t in
       (Sig_ghost_type t, env)
-  | _ -> assert false
+  | Sig_ghost_open q ->
+      let q, env = Namespace.gospel_open env q in
+      (Sig_ghost_open q, env)
 
 (** [signatures l env] Processes a list of top level signatures along with the
     current environment. *)
