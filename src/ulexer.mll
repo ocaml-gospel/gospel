@@ -23,7 +23,6 @@
 	"and", AND;
         "axiom", AXIOM;
         "checks", CHECKS;
-        "coercion", COERCION;
         "consumes", CONSUMES;
         "diverges", DIVERGES;
         "else", ELSE;

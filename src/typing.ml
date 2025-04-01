@@ -198,6 +198,16 @@ let param_dups l =
 (** [get_tvars env] returns the list of type variables defined in [env]. *)
 let get_tvars env = Hashtbl.to_seq_values env.type_vars |> List.of_seq
 
+let fun_spec defs env spec =
+  let unique_term = unique_term defs env in
+  {
+    fun_req = List.map unique_term spec.Parse_uast.fun_req;
+    fun_ens = List.map unique_term spec.fun_ens;
+    fun_variant = List.map unique_term spec.fun_variant;
+    fun_text = spec.fun_text;
+    fun_loc = spec.fun_loc;
+  }
+
 let function_ f defs =
   let fun_name = Ident.from_preid f.Parse_uast.fun_name in
   let fun_rec = f.fun_rec in
@@ -215,6 +225,7 @@ let function_ f defs =
         (id, pty))
       f.fun_params
   in
+  let fun_spec = fun_spec defs !env f.fun_spec in
   let () =
     if fun_rec then
       (* If the function is recursive, add it as a local variable. *)
@@ -222,15 +233,12 @@ let function_ f defs =
     else ()
   in
   let fun_def = Option.map (unique_term defs !env) f.fun_def in
-  let fun_spec =
-    ignore f.fun_spec;
-    None
-  in
+  let vars = get_tvars !env in
   let fun_loc = f.fun_loc in
   let f =
     { fun_name; fun_rec; fun_type; fun_params; fun_def; fun_spec; fun_loc }
   in
-  (f, get_tvars !env)
+  (f, vars)
 
 let axiom defs ax =
   let ax_name = Ident.from_preid ax.Parse_uast.ax_name in
