@@ -189,7 +189,7 @@ type gospel_signature =
   | Sig_function of function_
   | Sig_axiom of axiom
   | Sig_ghost_type of s_type_declaration
-  | Sig_ghost_open of open_description
+  | Sig_ghost_open of qualid
 
 type s_signature_item_desc =
   | Sig_val of s_val_description

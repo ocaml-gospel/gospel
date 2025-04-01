@@ -430,6 +430,23 @@ let add_record rid rparams rfields defs =
 let add_record env rid rparams rfields =
   add_def (add_record rid rparams rfields) env
 
+(** [defs_union m1 m2] combines the definitions in [m1] and [m2]. In the case
+    two definitions have the same name, we keep the value in [m2]. *)
+let defs_union m1 m2 =
+  let union e1 e2 = Env.union (fun _ _ x -> Some x) e1 e2 in
+  let runion e1 e2 = Record_env.union (fun _ _ x -> Some x) e1 e2 in
+  {
+    fun_env = union m1.fun_env m2.fun_env;
+    type_env = union m1.type_env m2.type_env;
+    field_env = union m1.field_env m2.field_env;
+    record_env = runion m1.record_env m2.record_env;
+    mod_env = union m1.mod_env m2.mod_env;
+  }
+
+let gospel_open env qid =
+  let q, mods = access_mod env.scope qid in
+  (q, { env with scope = defs_union env.scope mods })
+
 (** [type_env] contains every primitive Gospel type. *)
 let type_env =
   List.fold_left

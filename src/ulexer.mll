@@ -43,6 +43,7 @@
         "mutable", MUTABLE;
         "not", NOT;
         "old", OLD;
+	"open", OPEN;
         "predicate", PREDICATE;
         "pure", PURE;
         "raises", RAISES;
