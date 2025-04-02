@@ -352,6 +352,29 @@ let type_kind env tid tparams lenv = function
       let env = add_record env tid tparams fields in
       (env, PTtype_record fields)
 
+let unique_tspec env local_env self_ty tspec =
+  (* [invariants [pid, l] processes a list of invariants for the give type
+     where [pid] is a variable of type [self_ty]. *)
+  let invariants (pid, l) =
+    let id = Ident.from_preid pid in
+    let inv t =
+      let local_env = add_term_var id.id_str id local_env in
+      let t = unique_term env local_env t in
+      let tvars = get_tvars local_env in
+      Solver.invariant tvars id self_ty t
+    in
+    (id, List.map inv l)
+  in
+  Tast.mk_type_spec tspec.Parse_uast.ty_ephemeral
+    (Option.map invariants tspec.ty_invariant)
+    tspec.ty_text tspec.ty_loc
+
+(** [ghost_type_decl lenv env t] processes the ghost type declaration [t] and
+    adds its definitions to [env], producing a new environment. Additionally,
+    this function also produces a closure which, when given an environment, will
+    generate a typed declaration. The reason we do not generate it immediately
+    is because the type specification of [t] may refer to record fields that
+    have not been introduced into the scope yet. *)
 let ghost_type_decl lenv env t =
   let defs = scope env in
   (* If the identifier for this type has already been generated and added to the
@@ -378,21 +401,28 @@ let ghost_type_decl lenv env t =
   let tmanifest =
     Option.map (unique_pty ~bind:false defs tvar_env) t.tmanifest
   in
+
   let env, tkind = type_kind env tname tparams tvar_env t.tkind in
-  let def =
-    {
-      tname;
-      tparams;
-      tprivate = t.tprivate;
-      tkind;
-      tmanifest;
-      tattributes = t.tattributes;
-      tspec = None;
-      tloc = t.tloc;
-    }
+
+  (* The [pty] object that represents this type name. This is necessary for the
+     typed specification, where there will always be a variable of this type.*)
+  let info = Types.mk_info ~alias:tmanifest (Qid tname) in
+  let self_ty = PTtyapp (info, List.map (fun x -> PTtyvar x) tparams) in
+
+  (* Closure that generates the typed declaration. Note that all this closure
+     does is process the type specification. *)
+  let def_gen =
+   fun env ->
+    let tspec =
+      Option.fold ~none:Tast.empty_tspec
+        ~some:(unique_tspec (scope env) tvar_env self_ty)
+        t.tspec
+    in
+    Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
+      t.tloc
   in
   let env = add_type env tname tparams tmanifest in
-  (env, def)
+  (env, def_gen)
 
 (** [tdecl_duplicates l] Raises an exception if there are duplicate type names
     or duplicate record fields in a list of type definitions. If there are none,
@@ -429,10 +459,10 @@ let tdecl_duplicates l =
 
     - Processing and adding each alias to the namespace.
 
-    - Processing the remaining type definition. In this step and the previous,
-      if a type uses one of the aliases defined in [l], these are fetched from
-      the namespace whereas the definitions for non-aliased definitions are
-      fetched from the local environment.
+    - Adding the remaining type definitions to the namespace. In this step and
+      the previous, if a type uses one of the aliases defined in [l], these are
+      fetched from the namespace whereas the definitions for non-aliased
+      definitions are fetched from the local environment.
 
     - Once we have processed each type definition, we put them back in the order
       in which they appear in [l]. This done only so that the original AST and
@@ -464,13 +494,16 @@ let ghost_tdecl_list env l =
         (env, def :: defs))
       (env, []) all_defs
   in
+  (* Now that every record field has been added the scope, we can produce the
+     typed declaration *)
+  let defs = List.map (fun gen -> gen env) defs in
 
   (* Place the type definitions in the order the user put them. *)
   let defs_og_order =
     List.map
       (fun pdecl ->
         List.find
-          (fun id_decl -> pdecl.tname.pid_str = id_decl.Id_uast.tname.id_str)
+          (fun id_decl -> pdecl.tname.pid_str = id_decl.Tast.tname.id_str)
           defs)
       l
   in
