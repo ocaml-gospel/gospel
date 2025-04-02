@@ -130,7 +130,9 @@ let binder defs env (pid, pty) =
     scope of the term. When a variable is bound either with a [let] or a
     quantifier, we create a new unique identifier and map it in [env]. *)
 let rec unique_term defs env t =
-  (* The namespace remains constant in each recursive call *)
+  (* To be used when we perform a local open. *)
+  let unique_term_open = unique_term in
+  (* The namespace remains constant in all other recursive calls *)
   let unique_term = unique_term defs in
   let term_desc =
     match t.Parse_uast.term_desc with
@@ -181,6 +183,10 @@ let rec unique_term defs env t =
         let ty = unique_pty ~bind:true defs env pty in
         let t = unique_term env t in
         Tcast (t, ty)
+    | Tscope (q, t) ->
+        let q, defs = Namespace.local_open defs q in
+        let t = unique_term_open defs env t in
+        Tscope (q, t)
     | _ -> assert false
   in
   { term_desc; term_loc = t.term_loc }
