@@ -39,8 +39,6 @@
         "invariant", INVARIANT;
         "let", LET;
         "modifies", MODIFIES;
-        "model", MODEL;
-        "mutable", MUTABLE;
         "not", NOT;
         "old", OLD;
 	"open", OPEN;

@@ -69,7 +69,35 @@ type function_ = {
   fun_loc : Location.t;  (** Location *)
 }
 
-and s_module_type_desc = Mod_signature of s_signature
+type type_spec = {
+  ty_ephemeral : bool;
+  ty_invariant : (Id_uast.id * term list) option;
+  ty_text : string;
+  ty_loc : Location.t;
+}
+
+let mk_type_spec ty_ephemeral ty_invariant ty_text ty_loc =
+  { ty_ephemeral; ty_invariant; ty_text; ty_loc }
+
+let empty_tspec = mk_type_spec false None "" Location.none
+
+type s_type_declaration = {
+  tname : Id_uast.id;
+  tparams : Id_uast.id list;
+  tkind : Id_uast.type_kind;
+  tprivate : Parse_uast.private_flag;
+  tmanifest : Id_uast.pty option;
+  tattributes : Ppxlib.attributes;
+  (* ... [@@id1] [@@id2] *)
+  tspec : type_spec;
+  (* specification *)
+  tloc : Location.t;
+}
+
+let mk_tdecl tname tparams tkind tprivate tmanifest tattributes tspec tloc =
+  { tname; tparams; tkind; tprivate; tmanifest; tattributes; tspec; tloc }
+
+type s_module_type_desc = Mod_signature of s_signature
 
 and s_module_declaration = {
   mdname : Ident.t option;
@@ -89,7 +117,7 @@ and s_signature_item_desc =
   | Sig_function of function_
   | Sig_axiom of axiom
   | Sig_module of s_module_declaration
-  | Sig_ghost_type of Id_uast.s_type_declaration list
+  | Sig_ghost_type of s_type_declaration list
   | Sig_ghost_open of Id_uast.qualid
   | Sig_attribute of Ppxlib.attribute
 

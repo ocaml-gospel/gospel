@@ -100,7 +100,6 @@
 
 %token CONJ AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
 %token EOF EQUAL
-%token MUTABLE MODEL
 %token LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
 %token LEFTSQ LTGT DISJ QUESTION RIGHTBRC COLONRIGHTBRC RIGHTPAR RIGHTSQ SEMICOLON
 %token LEFTSQRIGHTSQ
@@ -182,7 +181,6 @@ type_decl(X):
       tattributes = [];
       tspec = Some {
 		  ty_ephemeral = false;
-		  ty_field = [];
 		  ty_invariant = inv;
 		  ty_text = "";
 		  ty_loc = mk_loc $loc(inv);
@@ -245,9 +243,8 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| e=ts_ephemeral m=list(type_spec_model) i=ts_invariants EOF
-  { { ty_ephemeral = e || List.exists (fun f -> f.f_mutable) m;
-      ty_field = m;
+| e=ts_ephemeral i=ts_invariants EOF
+  { { ty_ephemeral = e;
       ty_invariant = i;
       ty_text = "";
       ty_loc = Location.none;
@@ -266,12 +263,6 @@ ts_invariants:
 
 ts_invariant:
 | INVARIANT inv=term { inv }
-;
-
-type_spec_model:
-| f_mutable=boption(MUTABLE) MODEL f_preid=lident_rich COLON f_pty=typ
-  { { f_preid; f_mutable; f_pty;
-      f_loc = mk_loc $loc } }
 ;
 
 val_spec_own:

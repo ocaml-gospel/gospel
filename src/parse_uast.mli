@@ -108,11 +108,8 @@ type val_spec = {
   sp_loc : Location.t;
 }
 
-type field = { f_loc : Location.t; f_preid : id; f_pty : pty; f_mutable : bool }
-
 type type_spec = {
   ty_ephemeral : bool;
-  ty_field : field list;
   ty_invariant : (id * term list) option;
   ty_text : string;
   ty_loc : Location.t;

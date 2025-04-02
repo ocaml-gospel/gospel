@@ -383,6 +383,11 @@ let fspec_constraint f =
   and+ variant = map_constraints int_term f.fun_variant in
   mk_fun_spec pre post variant f.fun_text f.fun_loc
 
+let invariant_constraint id ty inv =
+  let t = fmla inv in
+  let@ ty = deep (pty_to_deep_rigid ty) in
+  def id ty t
+
 (** [function_cstr ts f] Creates a constraint whose semantic value is a list of
     signatures whose head is the declaration of the function described by [f].
     This is the conjunction of two constraints: one that checks if the body of
@@ -457,3 +462,4 @@ let axiom_cstr ax =
 
 let axiom tvars ax = typecheck tvars (axiom_cstr ax)
 let function_ tvars f = typecheck tvars (function_cstr f)
+let invariant tvars id ty inv = typecheck tvars (invariant_constraint id ty inv)

@@ -25,3 +25,6 @@ val axiom : Ident.t list -> Id_uast.axiom -> Tast.axiom
 
 val function_ :
   Ident.t list -> Id_uast.function_ -> Tast.function_ * Id_uast.pty
+
+val invariant :
+  Ident.t list -> Ident.t -> Id_uast.pty -> Id_uast.term -> Tast.term
