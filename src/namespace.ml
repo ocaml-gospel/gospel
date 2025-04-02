@@ -443,6 +443,10 @@ let defs_union m1 m2 =
     mod_env = union m1.mod_env m2.mod_env;
   }
 
+let local_open defs qid =
+  let q, mods = access_mod defs qid in
+  (q, defs_union defs mods)
+
 let gospel_open env qid =
   let q, mods = access_mod env.scope qid in
   (q, { env with scope = defs_union env.scope mods })

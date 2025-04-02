@@ -34,6 +34,7 @@ type term_node =
   | Tfield of term * Id_uast.qualid
   | Tattr of string * term
   | Tcast of term * Id_uast.pty
+  | Tscope of Id_uast.qualid * term
 
 and term = { t_node : term_node; t_ty : ty; t_loc : Location.t }
 

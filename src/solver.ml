@@ -343,6 +343,11 @@ let rec hastype (t : Id_uast.term) (r : variable) =
           term. *)
         and+ () = r -- ty_var in
         Tcast (t, ty)
+    | Tscope (q, t) ->
+        (* Since name resolution has already been handled, we can safely ignore
+          local scopes. *)
+        let+ t = hastype t r in
+        Tscope (q, t)
     | _ -> assert false
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in
