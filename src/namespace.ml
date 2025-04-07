@@ -81,6 +81,7 @@ type field_info = { rfid : Ident.t; rfty : Id_uast.pty; rfrecord : record_info }
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 and mod_defs = {
+  (* Environments for Gospel definitions *)
   fun_env : fun_info Env.t; (* Function definitions *)
   type_env : ty_info Env.t; (* Type definitions *)
   field_env : field_info Env.t;
@@ -103,6 +104,9 @@ and mod_defs = {
 
      Invariant: the cardinality of [record_env] is smaller or equal than
      the cardinality of [type_env]. *)
+  (* Environments for OCaml definitions *)
+  ocaml_type_env : ty_info Env.t;
+  (* OCaml type definitions. *)
   mod_env : mod_info Env.t; (* Nested modules *)
 }
 (** Set of top level module definitions *)
@@ -113,6 +117,7 @@ let empty_defs =
     type_env = Env.empty;
     field_env = Env.empty;
     record_env = Record_env.empty;
+    ocaml_type_env = Env.empty;
     mod_env = Env.empty;
   }
 
@@ -129,7 +134,7 @@ let lookup f (defs : mod_defs) pid =
 (* Helper functions for field accesses *)
 
 let find_fun = fun d -> d.fun_env
-let find_type = fun d -> d.type_env
+let find_type ~ocaml = fun d -> if ocaml then d.ocaml_type_env else d.type_env
 let find_mod = fun d -> d.mod_env
 let find_fields = fun d -> d.field_env
 
@@ -190,10 +195,10 @@ let unique_toplevel_qualid field env err defs q =
     let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
     W.error ~loc (err id)
 
-let type_info =
+let type_info ~ocaml =
   unique_toplevel_qualid
     (fun x -> x.tid)
-    find_type
+    (find_type ~ocaml)
     (fun id -> W.Unbound_type id)
 
 module Tbl = Ident.IdTable
@@ -209,8 +214,8 @@ let rec build_alias var_tbl alias =
   | PTtyapp (q, l) -> PTtyapp (q, List.map build_alias l)
   | PTtuple l -> PTtuple (List.map build_alias l)
 
-let resolve_alias env q l =
-  let q, info = type_info env q in
+let resolve_alias ~ocaml env q l =
+  let q, info = type_info ~ocaml env q in
   let params = info.tparams in
   let len1, len2 = (List.length params, List.length l) in
   if len1 <> len2 then (* type arity check *)
@@ -405,14 +410,24 @@ let rec to_alias = function
   | PTarrow (arg, res) -> PTarrow (to_alias arg, to_alias res)
   | PTtuple l -> PTtuple (List.map to_alias l)
 
-let add_type tid tparams talias defs =
+let add_ocaml_type tid tparams talias defs =
+  let tenv = defs.ocaml_type_env in
+  let info = { tid; tparams; talias = Option.map to_alias talias } in
+  { defs with ocaml_type_env = Env.add tid.Ident.id_str info tenv }
+
+let add_ocaml_type env id params alias =
+  add_def (add_ocaml_type id params alias) env
+
+let add_gospel_type tid tparams talias defs =
   let tenv = defs.type_env in
   let info = { tid; tparams; talias = Option.map to_alias talias } in
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
-let add_type env tid tparams talias = add_def (add_type tid tparams talias) env
+let add_gospel_type env id params alias =
+  add_def (add_gospel_type id params alias) env
 
 let add_record rid rparams rfields defs =
+  let rfields = List.map (fun l -> (l.pld_name, l.pld_type)) rfields in
   let info = { rid; rparams; rfields } in
   (* Maps each record field name to the a field info object *)
   let f defs (rfid, rfty) =
@@ -431,7 +446,8 @@ let add_record env rid rparams rfields =
   add_def (add_record rid rparams rfields) env
 
 (** [defs_union m1 m2] combines the definitions in [m1] and [m2]. In the case
-    two definitions have the same name, we keep the value in [m2]. *)
+    two definitions have the same name, we keep the value in [m2]. Any OCaml
+    types defined in [m2] are ignored. *)
 let defs_union m1 m2 =
   let union e1 e2 = Env.union (fun _ _ x -> Some x) e1 e2 in
   let runion e1 e2 = Record_env.union (fun _ _ x -> Some x) e1 e2 in
@@ -440,6 +456,7 @@ let defs_union m1 m2 =
     type_env = union m1.type_env m2.type_env;
     field_env = union m1.field_env m2.field_env;
     record_env = runion m1.record_env m2.record_env;
+    ocaml_type_env = m1.ocaml_type_env;
     mod_env = union m1.mod_env m2.mod_env;
   }
 

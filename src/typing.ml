@@ -19,9 +19,11 @@ type local_env = {
   type_vars : (string, Ident.t) Hashtbl.t;
   (* Type variables. *)
   type_nms : Ident.t Env.t;
-      (* When processing a recursive type definition, this environment keeps
-         track of all the type names that are not aliases that the definition
-         introduces. *)
+  (* When processing a recursive type definition, this environment keeps
+     track of all the type names that are not aliases that the definition
+     introduces. *)
+  ocaml_type_nms : Ident.t Env.t;
+      (* Same as the previous field, but for OCaml type names. *)
 }
 (** Keeps track of the variables within the scope of a term. We use an immutable
     environment for term variables since it makes it easier to manage scopes. We
@@ -31,7 +33,12 @@ type local_env = {
     quantifier. *)
 
 let empty_local_env () =
-  { term_var = Env.empty; type_vars = Hashtbl.create 100; type_nms = Env.empty }
+  {
+    term_var = Env.empty;
+    type_vars = Hashtbl.create 100;
+    type_nms = Env.empty;
+    ocaml_type_nms = Env.empty;
+  }
 
 (** [add_term_var var id env] maps the term variable [var] to the tagged
     identifier [id] *)
@@ -42,8 +49,10 @@ let add_term_var var id env =
     identifier [id] *)
 let add_type_var id env = Hashtbl.add env.type_vars id.Ident.id_str id
 
-let add_type_nm id env =
-  { env with type_nms = Env.add id.Ident.id_str id env.type_nms }
+let add_type_nm ~ocaml id env =
+  if ocaml then
+    { env with ocaml_type_nms = Env.add id.Ident.id_str id env.ocaml_type_nms }
+  else { env with type_nms = Env.add id.Ident.id_str id env.type_nms }
 
 (** [type_vars ~bind env pty] returns a list of all the type variables used in
     [pty]. If the [bind] flag is false, then this type is not allowed to
@@ -72,23 +81,36 @@ let type_vars ~bind env pty =
   in
   type_vars pty
 
-(** [unique_pty ~bind defs env pty vars] Returns a type annotation where each
-    type symbol (including type variables) has been replaced with a unique
+let is_local_type ~ocaml id env =
+  let env = if ocaml then env.ocaml_type_nms else env.type_nms in
+  Env.mem id.Preid.pid_str env
+
+let get_local_type ~ocaml id env =
+  let env = if ocaml then env.ocaml_type_nms else env.type_nms in
+  Env.find id.Preid.pid_str env
+
+(** [unique_pty ~ocaml ~bind defs env pty vars] Returns a type annotation where
+    each type symbol (including type variables) has been replaced with a unique
     identifier. Type variables are searched in [env] and type names are searched
     in [defs]. When we are processing type definitions, type names are also be
-    searched for in [env]. *)
-let unique_pty ~bind defs env pty =
+    searched for in [env].
+
+    If the [bind] flag is [false] then this function is not allowed to introduce
+    any type variables that are not already defined in [env]. The [ocaml] flag
+    is used to determine if we will search for type names in the [ocaml]
+    namespace or the [gospel] namespace. *)
+let unique_pty ~ocaml ~bind defs env pty =
   let rec unique_pty = function
     | Parse_uast.PTtyvar pid -> PTtyvar (Hashtbl.find env.type_vars pid.pid_str)
-    | PTtyapp (Qid id, l) when Env.mem id.pid_str env.type_nms ->
+    | PTtyapp (Qid id, l) when is_local_type ~ocaml id env ->
         (* This branch is reached when we are processing a set of recursive type
           definitions and [id] is one of the type names. *)
-        let info = Types.mk_info (Qid (Env.find id.pid_str env.type_nms)) in
+        let info = Types.mk_info (Qid (get_local_type ~ocaml id env)) in
         PTtyapp (info, List.map unique_pty l)
     | PTtyapp (q, l) ->
         (* When we encounter a type identifier, we must check if it is an alias
            for another type and if so replace it. *)
-        resolve_alias defs q (List.map unique_pty l)
+        resolve_alias ~ocaml defs q (List.map unique_pty l)
     | PTarrow (arg, res) ->
         let arg = unique_pty arg in
         let res = unique_pty res in
@@ -118,7 +140,7 @@ let unique_var env defs q =
 let binder defs env (pid, pty) =
   let id = Ident.from_preid pid in
   env := add_term_var pid.pid_str id !env;
-  let pty = Option.map (unique_pty ~bind:true defs !env) pty in
+  let pty = Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty in
   (id, pty)
 
 (** [unique_term top defs env t] returns a term where every variable in [t] has
@@ -163,7 +185,9 @@ let rec unique_term defs env t =
     | Ttuple l -> Ttuple (List.map (unique_term env) l)
     | Tlambda (args, t, pty) ->
         let env = ref env in
-        let pty = Option.map (unique_pty ~bind:true defs !env) pty in
+        let pty =
+          Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty
+        in
         let args = List.map (binder defs env) args in
         let t = unique_term !env t in
         Tlambda (args, t, pty)
@@ -180,7 +204,7 @@ let rec unique_term defs env t =
         Tfield (unique_term env t, record_ty, qid, fty)
     | Tattr (att, t) -> Tattr (att, unique_term env t)
     | Tcast (t, pty) ->
-        let ty = unique_pty ~bind:true defs env pty in
+        let ty = unique_pty ~ocaml:false ~bind:true defs env pty in
         let t = unique_term env t in
         Tcast (t, ty)
     | Tscope (q, t) ->
@@ -219,7 +243,8 @@ let function_ f defs =
   let fun_rec = f.fun_rec in
   let env = ref (empty_local_env ()) in
   let () = param_dups f.fun_params in
-  let fun_type = Option.map (unique_pty ~bind:true defs !env) f.fun_type in
+  let unique_pty = unique_pty ~ocaml:false ~bind:true defs in
+  let fun_type = Option.map (unique_pty !env) f.fun_type in
   let fun_params =
     List.map
       (fun (pid, pty) ->
@@ -227,7 +252,7 @@ let function_ f defs =
         (* Add the function parameters to the local environment. *)
         env := add_term_var pid.pid_str id !env;
         (* Add the type variables in [pty] to the local environment. *)
-        let pty = unique_pty ~bind:true defs !env pty in
+        let pty = unique_pty !env pty in
         (id, pty))
       f.fun_params
   in
@@ -256,13 +281,13 @@ let axiom defs ax =
 
 (** [tdecl_env l] creates a local environment that contains each type name
     defined in [l] that is not a type alias. *)
-let tdecl_env (l : Parse_uast.s_type_declaration list) =
+let tdecl_env ~ocaml (l : Parse_uast.s_type_declaration list) =
   let open Parse_uast in
   let add_decl env t =
     (* Check if [t] is a type alias. *)
     if Option.is_none t.tmanifest then
       let id = Ident.from_preid t.tname in
-      add_type_nm id env
+      add_type_nm ~ocaml id env
     else env
   in
   List.fold_left add_decl (empty_local_env ()) l
@@ -337,25 +362,34 @@ let alias_order l =
     in
     W.error ~loc error
 
-let type_kind env tid tparams lenv = function
+let type_kind ~ocaml env tid tparams lenv = function
   | Parse_uast.PTtype_abstract -> (env, PTtype_abstract)
   | PTtype_record l ->
+      let open Parse_uast in
       (* Function to create a unique record field *)
-      let field (id, pty) =
-        let id = Ident.from_preid id in
-        let pty = unique_pty ~bind:false (scope env) lenv pty in
-        (id, pty)
+      let field l =
+        let id = Ident.from_preid l.pld_name in
+        let pty = unique_pty ~ocaml ~bind:false (scope env) lenv l.pld_type in
+        {
+          Id_uast.pld_name = id;
+          pld_mutable = l.pld_mutable;
+          pld_type = pty;
+          pld_loc = l.pld_loc;
+        }
       in
       let fields = List.map field l in
       (* If this is an OCaml record declaration, the record fields are not
          inserted into the namespace. *)
-      let env = add_record env tid tparams fields in
+      let env = if ocaml then env else add_record env tid tparams fields in
       (env, PTtype_record fields)
 
-let unique_tspec env local_env self_ty tspec =
+let unique_tspec ~ocaml env local_env self_ty tspec =
   (* [invariants [pid, l] processes a list of invariants for the give type
      where [pid] is a variable of type [self_ty]. *)
   let invariants (pid, l) =
+    if ocaml then assert false
+      (* TODO: when I introduce model fields, replace the assert with a check that
+       the type has a model. *);
     let id = Ident.from_preid pid in
     let inv t =
       let local_env = add_term_var id.id_str id local_env in
@@ -369,13 +403,13 @@ let unique_tspec env local_env self_ty tspec =
     (Option.map invariants tspec.ty_invariant)
     tspec.ty_text tspec.ty_loc
 
-(** [ghost_type_decl lenv env t] processes the ghost type declaration [t] and
-    adds its definitions to [env], producing a new environment. Additionally,
-    this function also produces a closure which, when given an environment, will
+(** [type_decl lenv env t] processes the ghost type declaration [t] and adds its
+    definitions to [env], producing a new environment. Additionally, this
+    function also produces a closure which, when given an environment, will
     generate a typed declaration. The reason we do not generate it immediately
     is because the type specification of [t] may refer to record fields that
     have not been introduced into the scope yet. *)
-let ghost_type_decl lenv env t =
+let type_decl ~ocaml lenv env t =
   let defs = scope env in
   (* If the identifier for this type has already been generated and added to the
      environment, we use it. If not (either this is a type alias or this is a
@@ -399,10 +433,10 @@ let ghost_type_decl lenv env t =
   (* We call [unique_pty] with the [bind] flag to false so that an error is
      raised if any type variables besides those defined in [tparams] are used. *)
   let tmanifest =
-    Option.map (unique_pty ~bind:false defs tvar_env) t.tmanifest
+    Option.map (unique_pty ~ocaml ~bind:false defs tvar_env) t.tmanifest
   in
 
-  let env, tkind = type_kind env tname tparams tvar_env t.tkind in
+  let env, tkind = type_kind ~ocaml env tname tparams tvar_env t.tkind in
 
   (* The [pty] object that represents this type name. This is necessary for the
      typed specification, where there will always be a variable of this type.*)
@@ -415,13 +449,17 @@ let ghost_type_decl lenv env t =
    fun env ->
     let tspec =
       Option.fold ~none:Tast.empty_tspec
-        ~some:(unique_tspec (scope env) tvar_env self_ty)
+        ~some:(unique_tspec ~ocaml (scope env) tvar_env self_ty)
         t.tspec
     in
     Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
       t.tloc
   in
-  let env = add_type env tname tparams tmanifest in
+  (* Depending on the ocaml *)
+  let env =
+    if ocaml then add_ocaml_type env tname tparams tmanifest
+    else add_gospel_type env tname tparams tmanifest
+  in
   (env, def_gen)
 
 (** [tdecl_duplicates l] Raises an exception if there are duplicate type names
@@ -437,16 +475,19 @@ let tdecl_duplicates l =
   in
 
   (* Check if there are two record fields with the same name across all type definitions *)
-  let get_fields = function PTtype_record l -> List.map fst l | _ -> [] in
+  let get_fields = function PTtype_record l -> l | _ -> [] in
   let all_fields = List.concat_map (fun decl -> get_fields decl.tkind) l in
   let field_error l =
-    raise (W.error ~loc:l.pid_loc (W.Duplicated_record_label l.pid_str))
+    raise
+      (W.error ~loc:l.pld_loc (W.Duplicated_record_label l.pld_name.pid_str))
   in
-  Utils.duplicate Preid.eq field_error all_fields;
+  Utils.duplicate
+    (fun x y -> Preid.eq x.pld_name y.pld_name)
+    field_error all_fields;
   Utils.duplicate eq t_error l
 
-(** [ghost_tdecl_list env l] processes a list of mutually recursive type
-    definitions. It does this by:
+(** [tdecl_list env l] processes a list of mutually recursive type definitions.
+    It does this by:
 
     - Checking if there are duplicate type names or record labels.
 
@@ -467,12 +508,12 @@ let tdecl_duplicates l =
     - Once we have processed each type definition, we put them back in the order
       in which they appear in [l]. This done only so that the original AST and
       the typed AST are as similar as possible. *)
-let ghost_tdecl_list env l =
+let tdecl_list ~ocaml env l =
   let open Parse_uast in
   (* Create a local environment with the non-aliased type names introduced by
      [l]. *)
   let () = tdecl_duplicates l in
-  let lenv = tdecl_env l in
+  let lenv = tdecl_env ~ocaml l in
 
   (* List with the aliases in the order in which they must be processed. *)
   let order = alias_order l in
@@ -490,7 +531,7 @@ let ghost_tdecl_list env l =
   let env, defs =
     List.fold_left
       (fun (env, defs) def ->
-        let env, def = ghost_type_decl lenv env def in
+        let env, def = type_decl ~ocaml lenv env def in
         (env, def :: defs))
       (env, []) all_defs
   in
@@ -547,6 +588,9 @@ and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
+    | Sig_type t ->
+        let env, t = tdecl_list ~ocaml:true env t in
+        (Tast.Sig_type t, env)
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | _ -> assert false
@@ -566,7 +610,7 @@ and gospel_sig env = function
       let ax = Solver.axiom vars ax in
       (Sig_axiom ax, env)
   | Sig_ghost_type t ->
-      let env, t = ghost_tdecl_list env t in
+      let env, t = tdecl_list ~ocaml:false env t in
       (Sig_ghost_type t, env)
   | Sig_ghost_open q ->
       let q, env = Namespace.gospel_open env q in

@@ -152,7 +152,12 @@ decl_params:
 | LEFTPAR l=separated_nonempty_list(COMMA, quote_lident) RIGHTPAR
   { l }
 
-record_field: id=lident COLON t=typ { id, t }
+record_field:
+| id=lident COLON t=typ
+    { { pld_name = id;
+	pld_mutable = Immutable;
+	pld_type = t;
+	pld_loc = mk_loc $loc } }
 
 type_def:
 | t=typ

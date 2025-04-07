@@ -154,7 +154,16 @@ type s_val_description = {
   vloc : Location.t;
 }
 
-type type_kind = PTtype_abstract | PTtype_record of (id * pty) list
+type mutable_flag = Mutable | Immutable
+
+type label_declaration = {
+  pld_name : id;
+  pld_mutable : mutable_flag;
+  pld_type : pty;
+  pld_loc : Location.t;
+}
+
+type type_kind = PTtype_abstract | PTtype_record of label_declaration list
 type private_flag = Private | Public
 
 type s_type_declaration = {
