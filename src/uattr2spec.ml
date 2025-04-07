@@ -53,10 +53,6 @@ let parse_gospel ~filename parse attr =
     in
     W.error ~loc W.Syntax_error
 
-let ptype_kind = function
-  | Ptype_abstract -> PTtype_abstract
-  | _ -> assert false
-
 let params_to_id =
   let param_to_id (core_type, _) =
     let loc = core_type.ptyp_loc in
@@ -93,6 +89,23 @@ let rec core_to_pty cty =
   | Ptyp_arrow (_, t1, t2) -> PTarrow (core_to_pty t1, core_to_pty t2)
   | Ptyp_tuple l -> PTtuple (List.map core_to_pty l)
   | _ -> assert false (* TODO replace with unsupported*)
+
+let ptype_kind = function
+  | Ptype_abstract -> PTtype_abstract
+  | Ptype_record l ->
+      let to_gospel_label l =
+        {
+          pld_name = preid_of_loc l.Ppxlib.pld_name;
+          pld_mutable =
+            (match l.pld_mutable with
+            | Mutable -> Mutable
+            | Immutable -> Immutable);
+          pld_type = core_to_pty l.pld_type;
+          pld_loc = l.pld_loc;
+        }
+      in
+      PTtype_record (List.map to_gospel_label l)
+  | _ -> assert false
 
 let mk_tdecl t attrs spec =
   {
