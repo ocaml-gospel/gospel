@@ -445,28 +445,31 @@ let add_record rid rparams rfields defs =
 let add_record env rid rparams rfields =
   add_def (add_record rid rparams rfields) env
 
-(** [defs_union m1 m2] combines the definitions in [m1] and [m2]. In the case
-    two definitions have the same name, we keep the value in [m2]. Any OCaml
-    types defined in [m2] are ignored. *)
-let defs_union m1 m2 =
-  let union e1 e2 = Env.union (fun _ _ x -> Some x) e1 e2 in
-  let runion e1 e2 = Record_env.union (fun _ _ x -> Some x) e1 e2 in
+(** [defs_union m1 m2] combines the Gospel definitions in [m1] and [m2]. In the
+    case two definitions have the same name, we keep the value in [m2]. If the
+    [ocaml] flag is true, then the OCaml definitions in [m2] are also added to
+    the scope *)
+let defs_union ~ocaml m1 m2 =
+  let choose_snd = fun _ _ x -> Some x in
+  let union e1 e2 = Env.union choose_snd e1 e2 in
+  let runion e1 e2 = Record_env.union choose_snd e1 e2 in
+  let ounion e1 e2 = if ocaml then Env.union choose_snd e1 e2 else e1 in
   {
     fun_env = union m1.fun_env m2.fun_env;
     type_env = union m1.type_env m2.type_env;
     field_env = union m1.field_env m2.field_env;
     record_env = runion m1.record_env m2.record_env;
-    ocaml_type_env = m1.ocaml_type_env;
+    ocaml_type_env = ounion m1.ocaml_type_env m2.ocaml_type_env;
     mod_env = union m1.mod_env m2.mod_env;
   }
 
 let local_open defs qid =
   let q, mods = access_mod defs qid in
-  (q, defs_union defs mods)
+  (q, defs_union ~ocaml:false defs mods)
 
 let gospel_open env qid =
   let q, mods = access_mod env.scope qid in
-  (q, { env with scope = defs_union env.scope mods })
+  (q, { env with scope = defs_union ~ocaml:false env.scope mods })
 
 (** [type_env] contains every primitive Gospel type. *)
 let type_env =
@@ -491,20 +494,30 @@ let fun_env =
 let empty_env =
   { defs = empty_defs; scope = { empty_defs with type_env; fun_env } }
 
-(** The initial environment for every Gospel file. The only names that it
-    contains with are primitive Gospel type definitions and the definitions
-    within the Gospel standard library. *)
-let init_env stdlib =
+(** The initial environment for every Gospel file. The only names in scope are
+    primitive Gospel and OCaml type definitions and the definitions within the
+    Gospel standard library. *)
+let init_env ?ocamlprimitives gospelstdlib =
   (* Combines two environments whose domains are disjoint. *)
   let union e1 e2 = Env.union (fun _ _ _ -> assert false) e1 e2 in
 
   (* Create a type environment that contains the primitive gospel types as well
      as the types defined in the standard library. *)
-  let type_env = union type_env stdlib.type_env in
+  let type_env = union type_env gospelstdlib.type_env in
   (* Creates a function enviornment that contains logical conjunction and
      disjunction as well as all values in the standard library. *)
-  let fun_env = union fun_env stdlib.fun_env in
+  let fun_env = union fun_env gospelstdlib.fun_env in
   (* Create a module named [Gospelstdlib] with all the definitions within [stdlib]. *)
-  let stdlib_info = { mid = Ident.stdlib_id; mdefs = stdlib } in
-  let mod_env = Env.add Ident.stdlib_id.id_str stdlib_info stdlib.mod_env in
-  { defs = empty_defs; scope = { stdlib with type_env; fun_env; mod_env } }
+  let stdlib_info = { mid = Ident.stdlib_id; mdefs = gospelstdlib } in
+  let mod_env =
+    Env.add Ident.stdlib_id.id_str stdlib_info gospelstdlib.mod_env
+  in
+  let scope = { gospelstdlib with type_env; fun_env; mod_env } in
+  (* If the environment with OCaml primitives is different from [None], add its
+     definitions to the scope. *)
+  let scope =
+    match ocamlprimitives with
+    | None -> scope
+    | Some m -> defs_union ~ocaml:true scope m
+  in
+  { defs = empty_defs; scope }

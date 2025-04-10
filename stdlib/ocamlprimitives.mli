@@ -8,21 +8,17 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Gospel
+(** This file is used to introduce OCaml primitive types into the scope and pair
+    them with their respective [model] fields. *)
 
-module W = Warnings
-(** Simple script to type check the Gospel and OCaml standard library and
-    generate a [.gospel] file for it. *)
-
-let () =
-  let _ =
-    let () = Ident.Tag.set_project_name "##stdlib##" in
-    try
-      let defs = Bin_utils.check_file "gospelstdlib.mli" in
-      let env = Namespace.init_env defs in
-      Bin_utils.check_file ~env "ocamlprimitives.mli"
-    with W.Error e ->
-      Fmt.epr "%a@." W.pp e;
-      exit 1
-  in
-  ()
+type unit
+type int
+type bool
+type float
+type char
+type 'a list
+type 'a array
+type string
+type bytes
+type 'a ref
+type floatarray
