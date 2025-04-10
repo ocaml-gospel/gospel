@@ -106,7 +106,7 @@ val empty_env : env
     This should be the initial environment when processing the Gospel standard
     library. *)
 
-val init_env : mod_defs -> env
+val init_env : ?ocamlprimitives:mod_defs -> mod_defs -> env
 (** [init_env stdlib] receives the definitions in the Gospel standard library
     [stdlib] and creates an environment where every name in [stdlib] is in scope
     as well as every name in [empty_env]. Additionally creates a module named

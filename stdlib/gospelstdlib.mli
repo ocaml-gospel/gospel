@@ -8,7 +8,11 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-(** This file contains the Gospel standard library. *)
+(** This file contains the Gospel standard library. This file only contains
+    Gospel definitions to aid in writing specifications.
+
+    Note: This file is processed before [ocamlprimitives], meaning it cannot use
+    any primitive OCaml types. *)
 
 (** The following are not defined in the Gospelstdlib but are built-in in
     Gospel:

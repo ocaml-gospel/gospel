@@ -95,8 +95,14 @@ let run files =
        of the marshalled gospel standard library. *)
     Marshal.from_string [%blob "../stdlib/gospelstdlib.gospel"] 0
   in
+  (* Un-marshal the file with the OCaml primitive types. *)
+  let ocamlprimitives : Namespace.mod_defs =
+    (* At compile time the [%blob] annotation is replaced with the raw string
+       of the marshalled file. *)
+    Marshal.from_string [%blob "../stdlib/ocamlprimitives.gospel"] 0
+  in
 
-  let env = Namespace.init_env stdlib in
+  let env = Namespace.init_env ~ocamlprimitives stdlib in
   let _ =
     try List.fold_left check env files
     with Warnings.Error e ->

@@ -3,10 +3,11 @@
 ; definitions.
 
 (rule
- (targets gospelstdlib.gospel)
+ (targets gospelstdlib.gospel ocamlprimitives.gospel)
  (deps
   (:check checklib.exe)
-  gospelstdlib.mli)
+  gospelstdlib.mli
+  ocamlprimitives.mli)
  (action
   (run %{check})))
 
