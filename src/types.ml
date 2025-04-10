@@ -183,8 +183,9 @@ let deep_incompatible ty1 ty2 = Option.get (incompatible ~shallow:false ty1 ty2)
 let rec n_args t =
   match expand_alias t with PTarrow (_, ret) -> 1 + n_args ret | _ -> 0
 
+module W = Warnings
+
 let incompatible_types loc ty1 ty2 =
-  let module W = Warnings in
   let n_args1 = n_args ty1 in
   let n_args2 = n_args ty2 in
   let ty1s = Fmt.str "%a" print_ty ty1 in
@@ -203,10 +204,13 @@ let incompatible_types loc ty1 ty2 =
   W.error error ~loc
 
 let cycle loc t =
-  let module W = Warnings in
   let loc = Uast_utils.mk_loc loc in
   match t with
   | PTarrow (PTtyvar v, t) ->
       let tys = Fmt.str "%a" print_ty t in
       W.error ~loc (W.Cycle (v.id_str, tys))
   | _ -> assert false (* See comment for [mu] function *)
+
+let ocaml_no_model id ty =
+  let tys = Fmt.str "%a" print_ty ty in
+  W.error ~loc:id.Preid.pid_loc (W.No_model (id.pid_str, tys))

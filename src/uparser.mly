@@ -82,7 +82,7 @@
 (* keywords *)
 
 %token AXIOM
-%token MUTABLE ELSE EXISTS FALSE FORALL FUNCTION FUN
+%token MUTABLE MODEL ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC AND
 %token INVARIANT
 %token IF IN
@@ -187,6 +187,7 @@ type_decl(X):
       tspec = Some {
 		  ty_mutable = false;
 		  ty_invariant = inv;
+		  ty_model = No_model;
 		  ty_text = "";
 		  ty_loc = mk_loc $loc(inv);
 		};
@@ -247,10 +248,23 @@ nonempty_func_spec:
   { { bd with fun_variant = t :: bd.fun_variant } }
 ;
 
+model_field:
+| MODEL id = lident COLON t = typ
+  { id, t }
+
+ts_model:
+| (* epsilon *)
+  { No_model }
+| MODEL COLON t=typ
+  { Implicit t }
+| l = model_field+
+  { Fields l }
+
 type_spec:
-| m=ts_mutable i=ts_invariants EOF
+| m=ts_mutable model=ts_model i=ts_invariants EOF
   { { ty_mutable = m;
       ty_invariant = i;
+      ty_model = model;
       ty_text = "";
       ty_loc = Location.none;
   } }
