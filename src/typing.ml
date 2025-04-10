@@ -399,7 +399,7 @@ let unique_tspec ~ocaml env local_env self_ty tspec =
     in
     (id, List.map inv l)
   in
-  Tast.mk_type_spec tspec.Parse_uast.ty_ephemeral
+  Tast.mk_type_spec tspec.Parse_uast.ty_mutable
     (Option.map invariants tspec.ty_invariant)
     tspec.ty_text tspec.ty_loc
 

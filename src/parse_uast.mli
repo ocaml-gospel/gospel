@@ -109,7 +109,7 @@ type val_spec = {
 }
 
 type type_spec = {
-  ty_ephemeral : bool;
+  ty_mutable : bool;
   ty_invariant : (id * term list) option;
   ty_text : string;
   ty_loc : Location.t;

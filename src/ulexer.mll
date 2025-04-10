@@ -28,8 +28,7 @@
         "else", ELSE;
         "exists", EXISTS;
         "ensures", ENSURES;
-        "ephemeral", EPHEMERAL;
-        "equivalent", EQUIVALENT;
+     	"equivalent", EQUIVALENT;
         "false", FALSE;
         "forall", FORALL;
         "fun", FUN;
@@ -39,7 +38,8 @@
         "invariant", INVARIANT;
         "let", LET;
         "modifies", MODIFIES;
-        "not", NOT;
+        "mutable", MUTABLE;
+	"not", NOT;
         "old", OLD;
 	"open", OPEN;
         "predicate", PREDICATE;

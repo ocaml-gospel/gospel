@@ -82,7 +82,7 @@
 (* keywords *)
 
 %token AXIOM
-%token EPHEMERAL ELSE EXISTS FALSE FORALL FUNCTION FUN
+%token MUTABLE ELSE EXISTS FALSE FORALL FUNCTION FUN
 %token REC AND
 %token INVARIANT
 %token IF IN
@@ -185,7 +185,7 @@ type_decl(X):
       tprivate = Public;
       tattributes = [];
       tspec = Some {
-		  ty_ephemeral = false;
+		  ty_mutable = false;
 		  ty_invariant = inv;
 		  ty_text = "";
 		  ty_loc = mk_loc $loc(inv);
@@ -248,17 +248,17 @@ nonempty_func_spec:
 ;
 
 type_spec:
-| e=ts_ephemeral i=ts_invariants EOF
-  { { ty_ephemeral = e;
+| m=ts_mutable i=ts_invariants EOF
+  { { ty_mutable = m;
       ty_invariant = i;
       ty_text = "";
       ty_loc = Location.none;
   } }
 ;
 
-ts_ephemeral:
-| EPHEMERAL { true }
-|           { false }
+ts_mutable:
+| MUTABLE { true }
+|         { false }
 ;
 
 ts_invariants:
