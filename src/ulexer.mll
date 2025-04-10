@@ -37,6 +37,7 @@
         "in", IN;
         "invariant", INVARIANT;
         "let", LET;
+	"model", MODEL;
         "modifies", MODIFIES;
         "mutable", MUTABLE;
 	"not", NOT;

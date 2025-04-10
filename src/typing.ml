@@ -378,30 +378,58 @@ let type_kind ~ocaml env tid tparams lenv = function
         }
       in
       let fields = List.map field l in
+      let fields_id =
+        List.map (fun l -> (l.Id_uast.pld_name, l.pld_type)) fields
+      in
       (* If this is an OCaml record declaration, the record fields are not
          inserted into the namespace. *)
-      let env = if ocaml then env else add_record env tid tparams fields in
+      let env = if ocaml then env else add_record env tid tparams fields_id in
       (env, PTtype_record fields)
 
-let unique_tspec ~ocaml env local_env self_ty tspec =
+let unique_tspec ~ocaml env model local_env self_ty tspec =
   (* [invariants [pid, l] processes a list of invariants for the give type
      where [pid] is a variable of type [self_ty]. *)
   let invariants (pid, l) =
-    if ocaml then assert false
-      (* TODO: when I introduce model fields, replace the assert with a check that
-       the type has a model. *);
-    let id = Ident.from_preid pid in
-    let inv t =
-      let local_env = add_term_var id.id_str id local_env in
-      let t = unique_term env local_env t in
-      let tvars = get_tvars local_env in
-      Solver.invariant tvars id self_ty t
-    in
-    (id, List.map inv l)
+    if ocaml && model = No_model then Types.ocaml_no_model pid self_ty
+    else
+      let id = Ident.from_preid pid in
+      let inv t =
+        let local_env = add_term_var id.id_str id local_env in
+        let t = unique_term env local_env t in
+        let tvars = get_tvars local_env in
+        Solver.invariant tvars id self_ty t
+      in
+      (id, List.map inv l)
   in
   Tast.mk_type_spec tspec.Parse_uast.ty_mutable
     (Option.map invariants tspec.ty_invariant)
-    tspec.ty_text tspec.ty_loc
+    model tspec.ty_text tspec.ty_loc
+
+(** [create_model env lenv tname tparams tspec] Processes the model field(s) of
+    the type specification [tspec]. If [tspec] has named model fields, we create
+    a Gospel record with the same name as the OCaml type whose fields have the
+    same names as the model and add it to [env]. Otherwise, we return [env]
+    unchanged. *)
+let create_model env lenv tname tparams tspec =
+  let open Parse_uast in
+  let unique_pty = unique_pty ~ocaml:false ~bind:false (scope env) lenv in
+  match tspec with
+  | None -> (env, Id_uast.No_model)
+  | Some t -> (
+      let model = t.ty_model in
+      match model with
+      | No_model -> (env, No_model)
+      | Implicit pty ->
+          let mpty = unique_pty pty in
+          (env, Implicit mpty)
+      | Fields l ->
+          let model_tname = Ident.from_preid tname in
+          let l =
+            List.map (fun (id, pty) -> (Ident.from_preid id, unique_pty pty)) l
+          in
+          let env = Namespace.add_gospel_type env model_tname tparams None in
+          let env = Namespace.add_record env model_tname tparams l in
+          (env, Fields l))
 
 (** [type_decl lenv env t] processes the ghost type declaration [t] and adds its
     definitions to [env], producing a new environment. Additionally, this
@@ -428,20 +456,33 @@ let type_decl ~ocaml lenv env t =
   let tparams = List.map Ident.from_preid t.tparams in
   (* Keep the local definitions within [lenv] but refresh the type variables
      table so that it is independent of the other type definitions we are processing *)
-  let tvar_env = { lenv with type_vars = Hashtbl.create 100 } in
-  let () = List.iter (fun param -> add_type_var param tvar_env) tparams in
+  let lenv = { lenv with type_vars = Hashtbl.create 100 } in
+  let () = List.iter (fun param -> add_type_var param lenv) tparams in
   (* We call [unique_pty] with the [bind] flag to false so that an error is
      raised if any type variables besides those defined in [tparams] are used. *)
   let tmanifest =
-    Option.map (unique_pty ~ocaml ~bind:false defs tvar_env) t.tmanifest
+    Option.map (unique_pty ~ocaml ~bind:false defs lenv) t.tmanifest
   in
 
-  let env, tkind = type_kind ~ocaml env tname tparams tvar_env t.tkind in
+  let env, tkind = type_kind ~ocaml env tname tparams lenv t.tkind in
+  let env, model = create_model env lenv t.tname tparams t.tspec in
+
+  let tvars = List.map (fun x -> PTtyvar x) tparams in
 
   (* The [pty] object that represents this type name. This is necessary for the
-     typed specification, where there will always be a variable of this type.*)
-  let info = Types.mk_info ~alias:tmanifest (Qid tname) in
-  let self_ty = PTtyapp (info, List.map (fun x -> PTtyvar x) tparams) in
+     typed specification, where there will always be a variable of this type. *)
+  let self_ty =
+    match model with
+    | Implicit pty -> pty
+    | Fields _ ->
+        (* If the model has multiple named fields, we fetch the record type
+           created by [create_model]. *)
+        Namespace.resolve_alias ~ocaml:false (scope env) (Qid t.tname) tvars
+    | _ ->
+        (* If there is no model, then we use the type itself within the invariant. *)
+        let info = Types.mk_info ~alias:tmanifest (Qid tname) in
+        PTtyapp (info, tvars)
+  in
 
   (* Closure that generates the typed declaration. Note that all this closure
      does is process the type specification. *)
@@ -449,13 +490,14 @@ let type_decl ~ocaml lenv env t =
    fun env ->
     let tspec =
       Option.fold ~none:Tast.empty_tspec
-        ~some:(unique_tspec ~ocaml (scope env) tvar_env self_ty)
+        ~some:(unique_tspec ~ocaml (scope env) model lenv self_ty)
         t.tspec
     in
     Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
       t.tloc
   in
-  (* Depending on the ocaml *)
+  (* Update the environment depending on whether or not this is an OCaml
+     definition. *)
   let env =
     if ocaml then add_ocaml_type env tname tparams tmanifest
     else add_gospel_type env tname tparams tmanifest

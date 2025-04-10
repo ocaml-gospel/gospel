@@ -38,6 +38,9 @@ val ty_prop : ty
 
 val mk_info : ?alias:ty option -> Id_uast.qualid -> Id_uast.app_info
 
+(* The following functions are used to emit errors when it is necessary to print
+   a type. *)
+
 val incompatible_types : Lexing.position * Lexing.position -> ty -> ty -> 'a
 (** [incompatible_types loc ty1 ty2] compares the expected type [ty1] and the
     received [ty2] and raises an error depending on the type of mismatch between
@@ -45,3 +48,7 @@ val incompatible_types : Lexing.position * Lexing.position -> ty -> ty -> 'a
 
 val cycle : Lexing.position * Lexing.position -> ty -> 'a
 (** [cycle loc t] emits an error for the cyclic type [t]. *)
+
+val ocaml_no_model : Preid.t -> ty -> 'a
+(** [ocaml_no_model loc id ty] emits an error stating that [id] is an OCaml
+    variable of type [ty] that has no valid Gospel representation. *)

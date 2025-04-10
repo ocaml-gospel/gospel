@@ -427,7 +427,6 @@ let add_gospel_type env id params alias =
   add_def (add_gospel_type id params alias) env
 
 let add_record rid rparams rfields defs =
-  let rfields = List.map (fun l -> (l.pld_name, l.pld_type)) rfields in
   let info = { rid; rparams; rfields } in
   (* Maps each record field name to the a field info object *)
   let f defs (rfid, rfty) =

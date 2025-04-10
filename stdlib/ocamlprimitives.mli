@@ -13,12 +13,33 @@
 
 type unit
 type int
+(*@ model : integer *)
+
 type bool
+(*@ model : prop *)
+
 type float
 type char
+(*@ model : char *)
+
 type 'a list
+(*@ model : 'a sequence *)
+
 type 'a array
+(*@ mutable
+    model elems : 'a sequence
+    model length : integer
+    with arr invariant 0 <= arr.length <= Sequence.length arr.elems *)
+
 type string
+(*@ model : char sequence *)
+
 type bytes
+(*@ mutable
+    model : char sequence *)
+
 type 'a ref
+(*@ mutable
+    model : 'a *)
+
 type floatarray

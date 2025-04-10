@@ -17,6 +17,7 @@ type kind =
   | Illegal_escape of string * string option
   | Incompatible_field of string list * string list * string
   | Invalid_record_labels
+  | No_model of string * string
   | Not_a_function of string
   | Syntax_error
   | Unbound_module of string
@@ -84,6 +85,11 @@ let pp_kind ppf = function
         field
         (list ~sep:(const string ".") string)
         field_type expected_type
+  | No_model (v, t) ->
+      pf ppf
+        "The OCaml variable %s has type %s@\n\
+         There is no Gospel representation for this type"
+        v t
   | Not_a_function s ->
       pf ppf "Expected a functional value but received a value of type %s" s
   | Syntax_error -> pf ppf "Syntax error"

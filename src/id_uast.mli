@@ -103,9 +103,12 @@ type val_spec = {
   sp_loc : Location.t;
 }
 
+type model = No_model | Implicit of pty | Fields of (id * pty) list
+
 type type_spec = {
   ty_ephemeral : bool;
   ty_invariant : (id * term list) option;
+  ty_model : model;
   ty_text : string;
   ty_loc : Location.t;
 }
