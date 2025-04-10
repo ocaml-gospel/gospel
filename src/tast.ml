@@ -70,14 +70,14 @@ type function_ = {
 }
 
 type type_spec = {
-  ty_ephemeral : bool;
+  ty_mutable : bool;
   ty_invariant : (Id_uast.id * term list) option;
   ty_text : string;
   ty_loc : Location.t;
 }
 
-let mk_type_spec ty_ephemeral ty_invariant ty_text ty_loc =
-  { ty_ephemeral; ty_invariant; ty_text; ty_loc }
+let mk_type_spec ty_mutable ty_invariant ty_text ty_loc =
+  { ty_mutable; ty_invariant; ty_text; ty_loc }
 
 let empty_tspec = mk_type_spec false None "" Location.none
 
