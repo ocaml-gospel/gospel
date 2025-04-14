@@ -592,25 +592,42 @@ let tdecl_list ~ocaml env l =
   in
   (env, defs_og_order)
 
+let process_exception exn defs =
+  let exn_id = Ident.from_preid exn.Parse_uast.exn_id in
+  let lenv = empty_local_env () in
+  let exn_args =
+    List.map (unique_pty ~ocaml:true ~bind:true (scope defs) lenv) exn.exn_args
+  in
+  let env = add_exn defs exn_id exn_args in
+  let exn =
+    {
+      exn_id;
+      exn_args;
+      exn_attributes = exn.exn_attributes;
+      exn_loc = exn.exn_loc;
+    }
+  in
+  (Tast.Sig_exception exn, env)
+
 let rec process_module env m =
   (* TODO figure out when this is None *)
   let id = Option.map Ident.from_preid m.Parse_uast.mdname in
   (* Since we are now at the beginning of a new module, we create an environment
-     with the same variables in scope, but with no module definitions. *)
+         with the same variables in scope, but with no module definitions. *)
   let sub_mod_env = submodule env in
   let mdesc, mod_defs =
     match m.mdtype.mdesc with
     | Mod_signature m ->
         (* The returned environment contains the all the definitions in this
-           submodule. *)
+              submodule. *)
         let s, env = signatures m sub_mod_env in
         (* We ignore the [scope] field in [env] as it is not relevant after
-           processing the module. *)
+              processing the module. *)
         (Tast.Mod_signature s, defs env)
     | _ -> assert false
   in
   (* If this module has an identifier, then this function adds it to the current
-     definitions *)
+         definitions *)
   let env =
     Option.fold ~none:env ~some:(fun id -> add_mod env id mod_defs) id
   in
@@ -635,6 +652,7 @@ and signature s env =
         (Tast.Sig_type t, env)
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
+    | Sig_exception exn -> process_exception exn env
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
@@ -647,7 +665,7 @@ and gospel_sig env = function
       (Tast.Sig_function f, env)
   | Sig_axiom ax ->
       (* Since axioms cannot be referenced, the environment is not
-        modified.*)
+            modified.*)
       let ax, vars = axiom (scope env) ax in
       let ax = Solver.axiom vars ax in
       (Sig_axiom ax, env)
