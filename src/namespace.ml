@@ -78,6 +78,12 @@ type record_info = {
 
 type field_info = { rfid : Ident.t; rfty : Id_uast.pty; rfrecord : record_info }
 
+type exn_info = {
+  eid : Ident.t;
+  eargs : Id_uast.pty list;
+      (* The OCaml types of the arguments this exception receives. *)
+}
+
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 and mod_defs = {
@@ -107,6 +113,7 @@ and mod_defs = {
   (* Environments for OCaml definitions *)
   ocaml_type_env : ty_info Env.t;
   (* OCaml type definitions. *)
+  exn_env : exn_info Env.t; (* Exceptions  *)
   mod_env : mod_info Env.t; (* Nested modules *)
 }
 (** Set of top level module definitions *)
@@ -118,6 +125,7 @@ let empty_defs =
     field_env = Env.empty;
     record_env = Record_env.empty;
     ocaml_type_env = Env.empty;
+    exn_env = Env.empty;
     mod_env = Env.empty;
   }
 
@@ -135,6 +143,7 @@ let lookup f (defs : mod_defs) pid =
 
 let find_fun = fun d -> d.fun_env
 let find_type ~ocaml = fun d -> if ocaml then d.ocaml_type_env else d.type_env
+let find_exn = fun d -> d.exn_env
 let find_mod = fun d -> d.mod_env
 let find_fields = fun d -> d.field_env
 
@@ -200,6 +209,16 @@ let type_info ~ocaml =
     (fun x -> x.tid)
     (find_type ~ocaml)
     (fun id -> W.Unbound_type id)
+
+let exn_info =
+  unique_toplevel_qualid
+    (fun x -> x.eid)
+    find_exn
+    (fun id -> W.Unbound_exception id)
+
+let get_exn_info env id =
+  let id, info = exn_info env id in
+  (id, info.eargs)
 
 module Tbl = Ident.IdTable
 
@@ -444,6 +463,12 @@ let add_record rid rparams rfields defs =
 let add_record env rid rparams rfields =
   add_def (add_record rid rparams rfields) env
 
+let add_exn id args env =
+  let info = { eid = id; eargs = args } in
+  { env with exn_env = Env.add id.id_str info env.exn_env }
+
+let add_exn env id args = add_def (add_exn id args) env
+
 (** [defs_union m1 m2] combines the Gospel definitions in [m1] and [m2]. In the
     case two definitions have the same name, we keep the value in [m2]. If the
     [ocaml] flag is true, then the OCaml definitions in [m2] are also added to
@@ -459,6 +484,7 @@ let defs_union ~ocaml m1 m2 =
     field_env = union m1.field_env m2.field_env;
     record_env = runion m1.record_env m2.record_env;
     ocaml_type_env = ounion m1.ocaml_type_env m2.ocaml_type_env;
+    exn_env = ounion m1.exn_env m2.exn_env;
     mod_env = union m1.mod_env m2.mod_env;
   }
 

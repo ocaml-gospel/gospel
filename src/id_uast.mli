@@ -198,6 +198,13 @@ type gospel_signature =
   | Sig_ghost_type of s_type_declaration
   | Sig_ghost_open of qualid
 
+type exception_decl = {
+  exn_id : id;
+  exn_args : pty list;
+  exn_loc : Location.t;
+  exn_attributes : attributes;
+}
+
 type s_signature_item_desc =
   | Sig_val of s_val_description
   (*
@@ -222,7 +229,7 @@ type s_signature_item_desc =
   (* these were not modified *)
   | Sig_modsubst of module_substitution
   (* module X := M *)
-  | Sig_exception of type_exception
+  | Sig_exception of exception_decl
   (* exception C of T *)
   | Sig_open of open_description
   (* open X *)

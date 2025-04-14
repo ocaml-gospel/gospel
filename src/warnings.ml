@@ -20,6 +20,7 @@ type kind =
   | No_model of string * string
   | Not_a_function of string
   | Syntax_error
+  | Unbound_exception of string list
   | Unbound_module of string
   | Unbound_record_label of string list
   | Unbound_type of string list
@@ -93,6 +94,8 @@ let pp_kind ppf = function
   | Not_a_function s ->
       pf ppf "Expected a functional value but received a value of type %s" s
   | Syntax_error -> pf ppf "Syntax error"
+  | Unbound_exception s ->
+      pf ppf "Unbound exception %a" (list ~sep:(const string ".") string) s
   | Unbound_module s -> pf ppf "Unbound module %s" s
   | Unbound_record_label s ->
       pf ppf "Unbound record label %a" (list ~sep:(const string ".") string) s

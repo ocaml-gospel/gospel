@@ -160,6 +160,19 @@ let with_constraint c =
   | Pwith_modtype (l1, l2) -> Wmodtype (l1, l2)
   | Pwith_modtypesubst (l1, l2) -> Wmodtypesubst (l1, l2)
 
+let sig_exception exn =
+  let c = exn.ptyexn_constructor in
+  let exn_id = preid_of_loc c.pext_name in
+  let exn_loc = c.pext_loc in
+  let exn_attributes = c.pext_attributes in
+  let exn_args =
+    match c.pext_kind with
+    | Pext_decl ([], Pcstr_tuple args, _) -> List.map core_to_pty args
+    | Pext_rebind _ -> assert false (* Cannot occur on an interface file. *)
+    | _ -> assert false
+  in
+  { exn_id; exn_loc; exn_attributes; exn_args }
+
 let rec signature_item_desc ~filename = function
   | Psig_value v -> Sig_val (val_description ~filename v)
   | Psig_type (_, tl) -> Sig_type (List.map (type_declaration ~filename) tl)
@@ -170,7 +183,7 @@ let rec signature_item_desc ~filename = function
       Sig_recmodule (List.map (module_declaration ~filename) d)
   | Psig_modtype d -> Sig_modtype (module_type_declaration ~filename d)
   | Psig_typext t -> Sig_typext t
-  | Psig_exception e -> Sig_exception e
+  | Psig_exception e -> Sig_exception (sig_exception e)
   | Psig_open o -> Sig_open o
   | Psig_include i -> Sig_include i
   | Psig_class c -> Sig_class c
