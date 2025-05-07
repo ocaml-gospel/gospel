@@ -72,21 +72,14 @@ let rec map_constraints (f : 'a -> 'b co) (xs : 'a list) : 'b list co =
     translation of type variables depends on whether this is the type of a top
     level function or a type annotation for a local variable, this function
     allows the caller to supply an [f] to detail how to handle type variables.
-
-    The [alias] flag indicates whether or not type names should be expanded into
-    their aliases. When the inferno type variable is used for type inference,
-    this flag should be set to [true] and when it is used to be decoded and
-    inserted into the parse tree in should be set to [false]. *)
-let rec pty_to_deep ~alias f pty =
-  let pty_to_deep = pty_to_deep ~alias f in
+*)
+let rec pty_to_deep f pty =
+  let pty_to_deep = pty_to_deep f in
   match pty with
   | PTtyvar id -> f id
   | PTtyapp (id, l) -> (
       match id.app_alias with
-      | Some t when alias ->
-          (* Note: The value of [alias] does not actually matter for this call
-            since it is not possible to expand any names within an alias. *)
-          pty_to_deep t
+      | Some t -> pty_to_deep t
       | _ -> DeepStructure (S.Tyapp (id.app_qid, List.map pty_to_deep l)))
   | PTarrow (arg, ret) -> deep_arrow (pty_to_deep arg) (pty_to_deep ret)
   | PTtuple l -> DeepStructure (S.Tytuple (List.map pty_to_deep l))
@@ -94,16 +87,16 @@ let rec pty_to_deep ~alias f pty =
 (** [pty_to_deep_rigid pty] is a refinement of [pty_to_deep] where each type
     variable in [pty] becomes a rigid type variable i.e. this variable cannot be
     unified with any other type. *)
-let pty_to_deep_rigid ?(alias = true) =
-  pty_to_deep ~alias (fun v -> DeepStructure (Tvar v))
+let pty_to_deep_rigid pty =
+  deep (pty_to_deep (fun v -> DeepStructure (Tvar v)) pty)
 
 (** [pty_to_deep_flex vars pty] is a refinement of [pty_to_deep] where each type
     variable in [pty] is mapped to the corresponding inferno variable in the
     associative list [vars]. This way, assuming that all the inferno variables
     in [vars] are flexible, the type variables in the resulting deep type can be
     unified with any other type *)
-let pty_to_deep_flex ?(alias = true) vars =
-  pty_to_deep ~alias (fun v -> DeepVar (List.assoc v.id_tag vars))
+let pty_to_deep_flex vars pty =
+  deep (pty_to_deep (fun v -> DeepVar (List.assoc v.id_tag vars)) pty)
 
 (** [assoc_vars vars] returns a binder for a list where every type variable in
     [vars] is associated with a fresh Inferno type variable. *)
@@ -127,7 +120,7 @@ let record_ty params rid =
     inferno type variable whose value is equal to [ty]. *)
 let field_pty vars q t ty =
  fun k ->
-  let@ ty = deep (pty_to_deep_flex vars ty) in
+  let@ ty = pty_to_deep_flex vars ty in
   k (q, t, ty)
 
 (** [top_level_pty env id] returns a binder that introduces the type of the top
@@ -138,29 +131,53 @@ let top_level_pty params ty =
       variable. *)
   let@ vars = assoc_vars params in
   (* Turn the type [ty] into an inferno type variable *)
-  let@ ty = deep (pty_to_deep_flex ~alias:true vars ty) in
+  let@ ty = pty_to_deep_flex vars ty in
   k ty
 
-(** [build_def l c] Returns a constraint where the variables in [l] have been
-    added to the scope of constraint [c] by means of a chain of [def]
+(** [binder_to_deep pty] If [pty] is not [Some t], creates an Inferno variable
+    that is equal to [t]. If not, create an unconstrained inferno variable *)
+let pty_opt_to_deep = function
+  | None ->
+      fun k ->
+        let@ v = exist in
+        let annot = decode v in
+        k (v, annot)
+  | Some ty ->
+      fun k ->
+        let@ v = pty_to_deep_rigid ty in
+        k (v, pure ty)
+
+(** [build_def vars c] Creates a constraint that adds the variables in [vars] to
+    the scope of constraint [c] via a chain of [def] constraints. *)
+let build_def vars c =
+  List.fold_right
+    (fun tid c ->
+      let@ ty = pty_to_deep_rigid tid.ts_ty in
+      def tid.ts_id ty c)
+    vars c
+
+(** [build_def_opt vars c] Returns a constraint where the variables in [l] have
+    been added to the scope of constraint [c] by means of a chain of [def]
     constraints.
 
-    Each element of [l] is a pair consisting of an identifier [x] and an Inferno
-    binder which allows us to use the type of [x] in a constraint.
+    Each element of [vars] is a pair consisting of an identifier [x] and its
+    type annotation. If [None], then the user did not supply one and we
+    associate it with a flexible Inferno type variable.
 
     The semantic value of the returned constraint is the semantic value of [c]
-    coupled with the list of bound variables and their types. *)
-let build_def l c =
-  (* [loop (id, (ty_res, ty_annot)) c] wraps the constraint [c] in a [def]
-     constraint where the variable [id] has the type associated with the binder
-     [ty_res]. [ty_annot] is the type that the user supplied when binding this
-     variable and [ty_res] is [ty_annot] where every type alias has been replaced and correctly instantiated.*)
-  let loop (id, (ty_res, ty_annot)) c =
-    let@ res_var = ty_res in
-    let@ annot_var = ty_annot in
-    let+ l, t = def id res_var c and+ ty = decode annot_var in
-
-    (mk_ts id ty :: l, t)
+    coupled with the list of bound variables and their types. This list is
+    identical to [vars] except that all [None] values have been replaced with
+    the inferred type. *)
+let build_def_opt vars c =
+  (* [loop (id, ty_annot) c] creates a constraint stating that
+     variable [id] has type [ty_annot] in constraint [c]. The semantic
+     value of this constraint is the same as [c], except we add the
+     variable [id] and coupled with its inferred type to the returned
+     list. *)
+  let loop (id, ty_annot) c =
+    let@ ty_res, annot = pty_opt_to_deep ty_annot in
+    let+ annot = annot and+ l, t = def id ty_res c in
+    (mk_ts id annot :: l, t)
   in
   (* Map the constraint [c] to one where the semantic value is a pair whose
      first element is an empty list and the second is the semantic value of [c]
@@ -170,23 +187,7 @@ let build_def l c =
     let+ t = c in
     ([], t)
   in
-  List.fold_right loop l acc
-
-(** [binder_to_deep pty] If [pty] is not [Some t], creates an Inferno variable
-    that is equal to [t]. If not, create an unconstrained inferno variable *)
-let pty_opt_to_deep = function
-  | None -> (exist, exist)
-  | Some ty ->
-      (deep (pty_to_deep_rigid ty), deep (pty_to_deep_rigid ~alias:false ty))
-
-(** [to_deep (arg, pty)] receives an argument paired with its type annotation
-    and generates . *)
-let to_deep (arg, pty) =
-  (* This is the type we will use in the Inferno constraint. *)
-  let deep_arg = pty_to_deep_rigid pty in
-  (* This is the type annotation we will insert into the typed AST. *)
-  let deep_annot = pty_to_deep_rigid ~alias:false pty in
-  (arg, deep_arg, deep_annot)
+  List.fold_right loop vars acc
 
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
@@ -278,8 +279,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         let c = lift hastype t S.ty_prop in
         (* Transform the list of Gospel type annotation into a list of
            Inferno binders *)
-        let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) l in
-        let+ l, t = build_def l c in
+        let+ l, t = build_def_opt l c in
         Tquant (q, l, t)
     | Tif (g, then_b, else_b) ->
         (* if g then then_b else else_b *)
@@ -308,15 +308,12 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         and+ () = r --- Tytuple (List.map snd vars) in
         Ttuple l
     | Tlambda (args, t, pty) ->
-        let b1, b2 = pty_opt_to_deep pty in
-        let@ r = b1 in
-        let@ annot = b2 in
+        let@ r, annot = pty_opt_to_deep pty in
 
         let c = hastype t r in
         (* Transform the list of Gospel type annotation into a list of
            Inferno binders *)
-        let l = List.map (fun (x, b) -> (x, pty_opt_to_deep b)) args in
-        let+ l, t = build_def l c and+ annot_ty = decode annot in
+        let+ l, t = build_def_opt args c and+ annot_ty = annot in
         Tlambda (l, t, Option.map (fun _ -> annot_ty) pty)
     | Trecord (l, rec_ty) ->
         (* Gets the record type as well as the list of type parameters used as
@@ -335,7 +332,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* Get the type for the record which [field] belongs to. *)
         let@ vars, r_ty = record_ty rec_ty.params rec_ty.name in
         (* Get the type of the field. *)
-        let@ ty = deep (pty_to_deep_flex vars ty) in
+        let@ ty = pty_to_deep_flex vars ty in
         (* The term [t] must be of the type of the record which [t] belongs
            to. Additionally, the type of this term must be equal to the type of
            the field. *)
@@ -346,7 +343,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         Tattr (s, t)
     | Tcast (t, ty) ->
         (* Turn the type annotation into a deep type. *)
-        let@ ty_var = deep (pty_to_deep_rigid ty) in
+        let@ ty_var = pty_to_deep_rigid ty in
         let+ t = hastype t r
         (* Ensure that the type annotation corresponds with the type of the
           term. *)
@@ -396,7 +393,7 @@ let fspec_constraint f =
 
 let invariant_constraint id ty inv =
   let t = fmla inv in
-  let@ ty = deep (pty_to_deep_rigid ty) in
+  let@ ty = pty_to_deep_rigid ty in
   def id ty t
 
 (** [function_cstr ts f] Creates a constraint whose semantic value is a list of
@@ -413,13 +410,10 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
       f.fun_params ret_pty
   in
 
-  let@ ret_ty = deep (pty_to_deep_rigid ret_pty) in
-
-  let deep_params = List.map to_deep f.fun_params in
+  let@ ret_ty = pty_to_deep_rigid ret_pty in
 
   (* The function type encoded as a deep type *)
-  let deep_fun_type = pty_to_deep_rigid arrow_ty in
-  let@ fun_ty = deep deep_fun_type in
+  let@ fun_ty = pty_to_deep_rigid arrow_ty in
 
   (* Typecheck the body of the function. Must have the same return
      type that the user indicated. *)
@@ -437,11 +431,6 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
         in
         Some tt
   in
-  (* Each variable is now associated with a binder. *)
-  let deep_params =
-    List.map (fun (x, dty, annot) -> (x, (deep dty, deep annot))) deep_params
-  in
-
   (* Combines the constraint for the function body and the constraint for the
      specification. This way, they can be solved under the same chain of [def]
      constraints. *)
@@ -451,7 +440,8 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
   in
 
   (* Function parameters, typed term and typed function specification. *)
-  let+ params, (tt, fun_spec) = build_def deep_params fco
+  let params = List.map (fun (x, t) -> mk_ts x t) f.fun_params in
+  let+ tt, fun_spec = build_def params fco
   (* Decoded return type *)
   and+ ret = decode ret_ty in
   let fun_ty = Option.fold ~some:(fun t -> t.t_ty) ~none:ret tt in
@@ -463,37 +453,29 @@ let axiom_cstr ax =
   let+ t = fmla ax.Id_uast.ax_term in
   mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 
+(** [sp_var arg] turns a value of type [sp_var] into a [tsymbol]. If [arg] is an
+    unnamed variable, return [None]. *)
 let sp_var = function
-  | Ghost (id, pty) -> Some (id, pty)
-  | OCaml v -> Option.map (fun x -> (v.var_name, x)) v.ty_gospel
+  | Ghost (id, pty) -> Some (mk_ts id pty)
+  | OCaml v -> Option.map (mk_ts v.var_name) v.ty_gospel
   | _ -> None
 
+(** Creates a constraint ensuring that the terms within [pre] and [post] are
+    well typed. *)
 let spec_cstr args rets pre post =
+  (* Constraint that solves each pre and post condition. *)
   let spec_cstr =
     let+ pre = map_constraints fmla pre and+ post = map_constraints fmla post in
     (pre, post)
   in
-  let args =
-    List.filter_map
-      (fun x ->
-        Option.map
-          (fun x ->
-            let x, y, z = to_deep x in
-            (x, (deep y, deep z)))
-          (sp_var x))
-      args
-  in
-  let rets =
-    List.filter_map
-      (fun x ->
-        Option.map
-          (fun x ->
-            let x, y, z = to_deep x in
-            (x, (deep y, deep z)))
-          (sp_var x))
-      rets
-  in
-  let+ _, (pre, post) = build_def (args @ rets) spec_cstr in
+  let args = List.filter_map sp_var args in
+  let rets = List.filter_map sp_var rets in
+  (* Remark: Return values are added to the scope of both the pre and
+     post conditions, although return values are not allowed to be
+     used in the former.  This is fine since we have already performed
+     name resolution before calling the solver meaning that this case
+     will never happen. *)
+  let+ pre, post = build_def (args @ rets) spec_cstr in
   (pre, post)
 
 let axiom tvars ax = typecheck tvars (axiom_cstr ax)
