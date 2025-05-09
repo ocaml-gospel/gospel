@@ -77,3 +77,16 @@ let flatten q =
   List.rev (flatten q)
 
 let leaf q = match q with Id_uast.Qid id -> id | Qdot (_, id) -> id
+
+(** Let operator that ignores [None] values *)
+let ( let* ) o f = match o with None -> None | Some x -> Some (f x)
+
+(** Used to chain multiple [let*]. *)
+let ( and* ) x y =
+  match (x, y) with None, _ | _, None -> None | Some x, Some y -> Some (x, y)
+
+let rec map_option f = function
+  | [] -> Some []
+  | x :: t ->
+      let* x = f x and* t = map_option f t in
+      x :: t

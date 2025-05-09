@@ -11,6 +11,7 @@
 module W = Warnings
 open Ppxlib
 open Parse_uast
+open Uast_utils
 
 let is_spec attr = attr.attr_name.txt = "gospel"
 
@@ -57,15 +58,12 @@ let params_to_id =
   let param_to_id (core_type, _) =
     let loc = core_type.ptyp_loc in
     match core_type.ptyp_desc with
-    | Ptyp_var s -> Preid.create s ~loc
-    | Ptyp_any ->
-        W.error ~loc
-          (W.unsupported ~loc
-             "Wildcard type variables not supported in type declarations")
+    | Ptyp_var s -> Some (Preid.create s ~loc)
+    | Ptyp_any -> None
     | _ -> assert false
     (* There are no other possible values for type parameters in type declarations *)
   in
-  List.map param_to_id
+  map_option param_to_id
 
 let preid_of_loc s = Preid.create ~loc:s.loc s.txt
 
@@ -108,9 +106,10 @@ let ptype_kind = function
   | _ -> assert false
 
 let mk_tdecl t attrs spec =
+  let* tparams = params_to_id t.ptype_params in
   {
     tname = preid_of_loc t.ptype_name;
-    tparams = params_to_id t.ptype_params;
+    tparams;
     tkind = ptype_kind t.ptype_kind;
     tprivate = private_flag t.ptype_private;
     tmanifest = Option.map core_to_pty t.ptype_manifest;
@@ -129,36 +128,9 @@ let type_declaration ~filename t =
   let spec = Option.map parse spec_attr in
   mk_tdecl t other_attrs spec
 
-let val_description ~filename v =
-  let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
-  let parse attr =
-    let sp_text, spec = parse_gospel ~filename Uparser.val_spec attr in
-    let sp_loc = get_spec_loc attr in
-    { spec with sp_text; sp_loc }
-  in
-  let spec = Option.map parse spec_attr in
-  {
-    vname = v.pval_name;
-    vtype = v.pval_type;
-    vprim = v.pval_prim;
-    vattributes = other_attrs;
-    vspec = spec;
-    vloc = v.pval_loc;
-  }
-
 let floating_spec ~filename a =
   let txt, s = parse_gospel ~filename Uparser.top a in
   Sig_gospel (s, txt)
-
-let with_constraint c =
-  let no_spec_type_decl t = mk_tdecl t t.ptype_attributes None in
-  match c with
-  | Pwith_type (l, t) -> Wtype (l, no_spec_type_decl t)
-  | Pwith_module (l1, l2) -> Wmodule (l1, l2)
-  | Pwith_typesubst (l, t) -> Wtypesubst (l, no_spec_type_decl t)
-  | Pwith_modsubst (l1, l2) -> Wmodsubst (l1, l2)
-  | Pwith_modtype (l1, l2) -> Wmodtype (l1, l2)
-  | Pwith_modtypesubst (l1, l2) -> Wmodtypesubst (l1, l2)
 
 let sig_exception exn =
   let c = exn.ptyexn_constructor in
@@ -173,73 +145,66 @@ let sig_exception exn =
   in
   { exn_id; exn_loc; exn_attributes; exn_args }
 
+(** [signature_item_desc ~filename s] turns the OCaml signature [s] into an
+    appropriate Gospel signature. If the signature [s] is unsupported by Gospel
+    or is an OCaml value declaration without a specification, we return [None].
+*)
 let rec signature_item_desc ~filename = function
-  | Psig_value v -> Sig_val (val_description ~filename v)
-  | Psig_type (_, tl) -> Sig_type (List.map (type_declaration ~filename) tl)
+  | Psig_value _ -> None
+  | Psig_type (_, tl) ->
+      let* tl = map_option (type_declaration ~filename) tl in
+      Sig_type tl
   | Psig_attribute a ->
-      if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
-  | Psig_module m -> Sig_module (module_declaration ~filename m)
-  | Psig_recmodule d ->
-      Sig_recmodule (List.map (module_declaration ~filename) d)
-  | Psig_modtype d -> Sig_modtype (module_type_declaration ~filename d)
-  | Psig_typext t -> Sig_typext t
-  | Psig_exception e -> Sig_exception (sig_exception e)
-  | Psig_open o -> Sig_open o
-  | Psig_include i -> Sig_include i
-  | Psig_class c -> Sig_class c
-  | Psig_class_type c -> Sig_class_type c
-  | Psig_extension (e, a) -> Sig_extension (e, a)
-  | Psig_typesubst s -> Sig_typesubst (List.map (type_declaration ~filename) s)
-  | Psig_modsubst s -> Sig_modsubst s
-  | Psig_modtypesubst s ->
-      Sig_modtypesubst (module_type_declaration ~filename s)
+      if not (is_spec a) then Some (Sig_attribute a)
+      else Some (floating_spec ~filename a)
+  | Psig_module m ->
+      let* decl = module_declaration ~filename m in
+      Sig_module decl
+  | Psig_exception e -> Some (Sig_exception (sig_exception e))
+  (* Unsupported *)
+  | Psig_recmodule _ -> None
+  | Psig_modtype _ -> None
+  | Psig_typext _ -> None
+  | Psig_open _ -> None
+  | Psig_include _ -> None
+  | Psig_class _ -> None
+  | Psig_class_type _ -> None
+  | Psig_extension _ -> None
+  | Psig_typesubst _ -> None
+  | Psig_modsubst _ -> None
+  | Psig_modtypesubst _ -> None
 
 and signature ~filename sigs =
-  List.map
+  List.filter_map
     (fun { psig_desc; psig_loc } ->
       let filename =
         match psig_loc.loc_start.pos_fname with
         | "" | "_none_" -> filename
         | f -> f
       in
-      { sdesc = signature_item_desc ~filename psig_desc; sloc = psig_loc })
+      let sdesc = signature_item_desc ~filename psig_desc in
+      Option.map (fun sdesc -> { sdesc; sloc = psig_loc }) sdesc)
     sigs
 
 and module_type_desc ~filename = function
-  | Pmty_ident id -> Mod_ident id
-  | Pmty_signature s -> Mod_signature (signature ~filename s)
-  | Pmty_functor (fp, mt) ->
-      Mod_functor (functor_parameter ~filename fp, module_type ~filename mt)
-  | Pmty_with (m, c) ->
-      Mod_with (module_type ~filename m, List.map with_constraint c)
-  | Pmty_typeof m -> Mod_typeof m
-  | Pmty_extension e -> Mod_extension e
-  | Pmty_alias a -> Mod_alias a
-
-and functor_parameter ~filename = function
-  | Unit -> Unit
-  | Named (s, m) -> Named (s, module_type ~filename m)
+  | Pmty_signature s -> Some (Mod_signature (signature ~filename s))
+  | Pmty_ident _ -> None
+  | Pmty_functor _ -> None
+  | Pmty_with _ -> None
+  | Pmty_typeof _ -> None
+  | Pmty_extension _ -> None
+  | Pmty_alias _ -> None
 
 and module_type ~filename m =
-  {
-    mdesc = module_type_desc ~filename m.pmty_desc;
-    mloc = m.pmty_loc;
-    mattributes = m.pmty_attributes;
-  }
+  let* mdesc = module_type_desc ~filename m.pmty_desc in
+  { mdesc; mloc = m.pmty_loc; mattributes = m.pmty_attributes }
 
 and module_declaration ~filename m =
   let nm = m.pmd_name in
+  let* mdtype = module_type ~filename m.pmd_type in
   {
     mdname = Option.map (fun id -> Preid.create ~loc:nm.loc id) nm.txt;
-    mdtype = module_type ~filename m.pmd_type;
+    mdtype;
     mdattributes = m.pmd_attributes;
     mdloc = m.pmd_loc;
-  }
-
-and module_type_declaration ~filename m =
-  {
-    mtdname = m.pmtd_name;
-    mtdtype = Option.map (module_type ~filename) m.pmtd_type;
-    mtdattributes = m.pmtd_attributes;
-    mtdloc = m.pmtd_loc;
   }

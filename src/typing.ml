@@ -624,7 +624,6 @@ let rec process_module env m =
         (* We ignore the [scope] field in [env] as it is not relevant after
               processing the module. *)
         (Tast.Mod_signature s, defs env)
-    | _ -> assert false
   in
   (* If this module has an identifier, then this function adds it to the current
          definitions *)
