@@ -1,0 +1,21 @@
+(**************************************************************************)
+(*                                                                        *)
+(*  GOSPEL -- A Specification Language for OCaml                          *)
+(*                                                                        *)
+(*  Copyright (c) 2018- The VOCaL Project                                 *)
+(*                                                                        *)
+(*  This software is free software, distributed under the MIT license     *)
+(*  (as described in file LICENSE enclosed).                              *)
+(**************************************************************************)
+
+val f : int -> unit
+(*@ let () = f x in
+      ensures True *)
+
+(* {gospel_expected|
+[1] File "cant_return_unit1.mli", line 12, characters 3-39:
+    12 | ... let () = f x in
+    13 |       ensures True ..
+    Error: This function has no listed side effects, it cannot return unit
+    
+|gospel_expected} *)
