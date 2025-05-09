@@ -228,12 +228,6 @@ type s_signature_item_desc =
   (* module X : MT *)
   | Sig_recmodule of s_module_declaration list
   (* module rec X1 : MT1 and ... and Xn : MTn *)
-  | Sig_modtype of s_module_type_declaration
-  (* module type S = MT
-     module type S *)
-  | Sig_modtypesubst of s_module_type_declaration
-  (* module type S :=  ...  *)
-  (* these were not modified *)
   | Sig_modsubst of module_substitution
   (* module X := M *)
   | Sig_exception of exception_decl
@@ -254,22 +248,7 @@ type s_signature_item_desc =
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list
-
-and s_module_type_desc =
-  | Mod_ident of Longident.t loc
-  (* S *)
-  | Mod_signature of s_signature
-  (* sig ... end *)
-  | Mod_functor of s_functor_parameter * s_module_type
-  (* functor(X : MT1) -> MT2 *)
-  | Mod_with of s_module_type * s_with_constraint list
-  (* MT with ... *)
-  | Mod_typeof of module_expr
-  (* module type of ME *)
-  | Mod_extension of extension
-  (* [%id] *)
-  | Mod_alias of Longident.t loc
-(* (module M) *)
+and s_module_type_desc = Mod_signature of s_signature
 
 and s_functor_parameter =
   | Unit
@@ -290,12 +269,4 @@ and s_module_declaration = {
   mdattributes : attributes;
   (* ... [@@id1] [@@id2] *)
   mdloc : Location.t;
-}
-
-and s_module_type_declaration = {
-  mtdname : string loc;
-  mtdtype : s_module_type option;
-  mtdattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  mtdloc : Location.t;
 }

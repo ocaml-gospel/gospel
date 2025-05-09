@@ -175,23 +175,6 @@ type s_type_declaration = {
   tloc : Location.t;
 }
 
-type s_with_constraint =
-  | Wtype of Longident.t loc * s_type_declaration
-  (* with type X.t = ...
-
-     Note: the last component of the longident must match
-     the name of the type_declaration. *)
-  | Wmodule of Longident.t loc * Longident.t loc
-  (* with module X.Y = Z *)
-  | Wtypesubst of Longident.t loc * s_type_declaration
-  (* with type X.t := ..., same format as [Pwith_type] *)
-  | Wmodtypesubst of longident_loc * module_type
-  (* with module type X.Y := sig end *)
-  | Wmodtype of longident_loc * module_type
-  (* with module type X.Y = Z *)
-  | Wmodsubst of Longident.t loc * Longident.t loc
-(* with module X.Y := Z *)
-
 type gospel_signature =
   | Sig_function of function_
   | Sig_axiom of axiom
@@ -219,26 +202,8 @@ type s_signature_item_desc =
   (* type t1 += ... *)
   | Sig_module of s_module_declaration
   (* module X : MT *)
-  | Sig_recmodule of s_module_declaration list
-  (* module rec X1 : MT1 and ... and Xn : MTn *)
-  | Sig_modtype of s_module_type_declaration
-  (* module type S = MT
-     module type S *)
-  | Sig_modtypesubst of s_module_type_declaration
-  (* module type S :=  ...  *)
-  (* these were not modified *)
-  | Sig_modsubst of module_substitution
-  (* module X := M *)
   | Sig_exception of exception_decl
   (* exception C of T *)
-  | Sig_open of open_description
-  (* open X *)
-  | Sig_include of include_description
-  (* include MT *)
-  | Sig_class of class_description list
-  (* class c1 : ... and ... and cn : ... *)
-  | Sig_class_type of class_type_declaration list
-  (* class type ct1 = ... and ... and ctn = ... *)
   | Sig_attribute of attribute
   (* [@@@id] *)
   | Sig_extension of extension * attributes
@@ -248,29 +213,7 @@ type s_signature_item_desc =
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list
-
-and s_module_type_desc =
-  | Mod_ident of Longident.t loc
-  (* S *)
-  | Mod_signature of s_signature
-  (* sig ... end *)
-  | Mod_functor of s_functor_parameter * s_module_type
-  (* functor(X : MT1) -> MT2 *)
-  | Mod_with of s_module_type * s_with_constraint list
-  (* MT with ... *)
-  | Mod_typeof of module_expr
-  (* module type of ME *)
-  | Mod_extension of extension
-  (* [%id] *)
-  | Mod_alias of Longident.t loc
-(* (module M) *)
-
-and s_functor_parameter =
-  | Unit
-  (* () *)
-  | Named of string option loc * s_module_type
-(* (X : MT)          Some X, MT
-   (_ : MT)          None, MT *)
+and s_module_type_desc = Mod_ident of Longident.t loc
 
 and s_module_type = {
   mdesc : s_module_type_desc;
@@ -284,12 +227,4 @@ and s_module_declaration = {
   mdattributes : attributes;
   (* ... [@@id1] [@@id2] *)
   mdloc : Location.t;
-}
-
-and s_module_type_declaration = {
-  mtdname : string loc;
-  mtdtype : s_module_type option;
-  mtdattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  mtdloc : Location.t;
 }
