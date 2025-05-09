@@ -31,13 +31,6 @@ and app_info = { app_qid : qualid; app_alias : pty option }
     Invariant : If a type application has the type alias [t], all type
     applications used within [t] will not have any aliases. *)
 
-type labelled_arg =
-  | Lunit
-  | Lnone of id
-  | Loptional of id
-  | Lnamed of id
-  | Lghost of id * pty
-
 (* Logical terms and formulas *)
 
 type binder = id * pty option
@@ -78,27 +71,32 @@ and term_desc =
 
 (* Specification *)
 
-type xpost = Location.t * (qualid * (pattern * term) option) list
+type sp_var =
+  | Unnamed
+  | Ghost of id * pty (* Ghost variable *)
+  | OCaml of {
+      var_name : id; (* Variable name *)
+      ty_ocaml : pty; (* OCaml type of the variable. *)
+      ty_gospel : pty option; (* Gospel type of the variable. *)
+      prod : bool;
+      (* Flag indicating if the function receives ownership of the value. *)
+      cons : bool;
+      (* Flag indicating if the function returns ownership of the value. *)
+      ro : bool;
+          (* Read only flag. If [false], the variable is modified
+           by the function.
 
-type spec_header = {
-  sp_hd_nm : id;
-  (* header name *)
-  sp_hd_ret : labelled_arg list;
-  (* Can only be LNone or LGhost *)
-  sp_hd_args : labelled_arg list; (* header arguments' names *)
-}
+           Remark: If this [sp_var] value refers to a return
+           value, [ro] is [true]. *)
+    }
 
 type val_spec = {
-  sp_header : spec_header option;
+  sp_args : sp_var list;
+  sp_rets : sp_var list;
   sp_pre : term list;
-  sp_checks : term list;
   sp_post : term list;
-  sp_xpost : xpost list;
-  sp_writes : term list;
-  sp_consumes : term list;
   sp_diverge : bool;
   sp_pure : bool;
-  sp_equiv : string list;
   sp_text : string;
   sp_loc : Location.t;
 }

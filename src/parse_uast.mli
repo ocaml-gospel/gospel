@@ -21,11 +21,10 @@ type pty =
   | PTtuple of pty list
   | PTarrow of pty * pty
 
-and labelled_arg =
-  | Lunit
-  | Lnone of id
-  | Loptional of id
-  | Lnamed of id
+type labelled_arg =
+  | Lwild
+  | Lunit of Location.t
+  | Lvar of id
   | Lghost of id * pty
 
 (* Patterns *)
@@ -83,8 +82,6 @@ and term_desc =
 
 (* Specification *)
 
-type xpost = Location.t * (qualid * (pattern * term) option) list
-
 type spec_header = {
   sp_hd_nm : id;
   (* header name *)
@@ -93,17 +90,21 @@ type spec_header = {
   sp_hd_args : labelled_arg list; (* header arguments' names *)
 }
 
-type val_spec = {
-  sp_header : spec_header option;
+type pre_spec = {
   sp_pre : term list;
-  sp_checks : term list;
-  sp_post : term list;
-  sp_xpost : xpost list;
-  sp_writes : term list;
-  sp_consumes : term list;
+  sp_consumes : qualid list;
+  sp_modifies : qualid list;
+  sp_preserves : qualid list;
   sp_diverge : bool;
   sp_pure : bool;
-  sp_equiv : string list;
+}
+
+type post_spec = { sp_post : term list; sp_produces : qualid list }
+
+type val_spec = {
+  sp_header : spec_header option;
+  sp_pre_spec : pre_spec;
+  sp_post_spec : post_spec;
   sp_text : string;
   sp_loc : Location.t;
 }
@@ -147,8 +148,8 @@ type axiom = {
 (* Modified OCaml constructs with specification attached *)
 
 type s_val_description = {
-  vname : string loc;
-  vtype : core_type;
+  vname : id;
+  vtype : pty;
   vprim : string list;
   vattributes : attributes;
   (* ... [@@id1] [@@id2] *)
