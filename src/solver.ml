@@ -179,6 +179,15 @@ let pty_opt_to_deep = function
   | Some ty ->
       (deep (pty_to_deep_rigid ty), deep (pty_to_deep_rigid ~alias:false ty))
 
+(** [to_deep (arg, pty)] receives an argument paired with its type annotation
+    and generates . *)
+let to_deep (arg, pty) =
+  (* This is the type we will use in the Inferno constraint. *)
+  let deep_arg = pty_to_deep_rigid pty in
+  (* This is the type annotation we will insert into the typed AST. *)
+  let deep_annot = pty_to_deep_rigid ~alias:false pty in
+  (arg, deep_arg, deep_annot)
+
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
     [ts] is used to ensure that all type annotations are valid. *)
@@ -348,7 +357,9 @@ let rec hastype (t : Id_uast.term) (r : variable) =
           local scopes. *)
         let+ t = hastype t r in
         Tscope (q, t)
-    | _ -> assert false
+    | Told t ->
+        let+ t = hastype t r in
+        Told t
   (* By calling [decode], we can get the inferred type of the term. *)
   and+ t_ty = decode r in
   mk_term t_node t_ty t.term_loc
@@ -404,14 +415,6 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
 
   let@ ret_ty = deep (pty_to_deep_rigid ret_pty) in
 
-  (* Map each type annotation of a parameter to a deep type. *)
-  let to_deep (arg, pty) =
-    (* This is the type we will use in the Inferno constraint. *)
-    let deep_arg = pty_to_deep_rigid pty in
-    (* This is the type annotation we will insert into the typed AST. *)
-    let deep_annot = pty_to_deep_rigid ~alias:false pty in
-    (arg, deep_arg, deep_annot)
-  in
   let deep_params = List.map to_deep f.fun_params in
 
   (* The function type encoded as a deep type *)
@@ -460,6 +463,43 @@ let axiom_cstr ax =
   let+ t = fmla ax.Id_uast.ax_term in
   mk_axiom ax.ax_name t ax.ax_loc ax.ax_text
 
+let sp_var = function
+  | Ghost (id, pty) -> Some (id, pty)
+  | OCaml v -> Option.map (fun x -> (v.var_name, x)) v.ty_gospel
+  | _ -> None
+
+let spec_cstr args rets pre post =
+  let spec_cstr =
+    let+ pre = map_constraints fmla pre and+ post = map_constraints fmla post in
+    (pre, post)
+  in
+  let args =
+    List.filter_map
+      (fun x ->
+        Option.map
+          (fun x ->
+            let x, y, z = to_deep x in
+            (x, (deep y, deep z)))
+          (sp_var x))
+      args
+  in
+  let rets =
+    List.filter_map
+      (fun x ->
+        Option.map
+          (fun x ->
+            let x, y, z = to_deep x in
+            (x, (deep y, deep z)))
+          (sp_var x))
+      rets
+  in
+  let+ _, (pre, post) = build_def (args @ rets) spec_cstr in
+  (pre, post)
+
 let axiom tvars ax = typecheck tvars (axiom_cstr ax)
 let function_ tvars f = typecheck tvars (function_cstr f)
+
+let spec tvars args rets pre post =
+  typecheck tvars (spec_cstr args rets pre post)
+
 let invariant tvars id ty inv = typecheck tvars (invariant_constraint id ty inv)

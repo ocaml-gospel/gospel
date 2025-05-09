@@ -128,6 +128,23 @@ let type_declaration ~filename t =
   let spec = Option.map parse spec_attr in
   mk_tdecl t other_attrs spec
 
+let val_description ~filename v =
+  let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
+  let parse attr =
+    let sp_text, spec = parse_gospel ~filename Uparser.val_spec attr in
+    let sp_loc = get_spec_loc attr in
+    { spec with sp_text; sp_loc }
+  in
+  let spec = Option.map parse spec_attr in
+  {
+    vname = preid_of_loc v.pval_name;
+    vtype = core_to_pty v.pval_type;
+    vprim = v.pval_prim;
+    vattributes = other_attrs;
+    vspec = spec;
+    vloc = v.pval_loc;
+  }
+
 let floating_spec ~filename a =
   let txt, s = parse_gospel ~filename Uparser.top a in
   Sig_gospel (s, txt)
@@ -150,7 +167,9 @@ let sig_exception exn =
     or is an OCaml value declaration without a specification, we return [None].
 *)
 let rec signature_item_desc ~filename = function
-  | Psig_value _ -> None
+  | Psig_value v ->
+      let v = val_description ~filename v in
+      Some (Sig_val v)
   | Psig_type (_, tl) ->
       let* tl = map_option (type_declaration ~filename) tl in
       Sig_type tl

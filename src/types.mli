@@ -36,7 +36,8 @@ val ty_arrow : ty -> ty -> ty
 val ty_prop : ty
 (** Type of propositions *)
 
-val mk_info : ?alias:ty option -> Id_uast.qualid -> Id_uast.app_info
+val mk_info :
+  ?alias:ty option -> ?model:ty option -> Id_uast.qualid -> Id_uast.app_info
 
 (* The following functions are used to emit errors when it is necessary to print
    a type. *)
@@ -49,6 +50,11 @@ val incompatible_types : Lexing.position * Lexing.position -> ty -> ty -> 'a
 val cycle : Lexing.position * Lexing.position -> ty -> 'a
 (** [cycle loc t] emits an error for the cyclic type [t]. *)
 
-val ocaml_no_model : Preid.t -> ty -> 'a
+val ocaml_no_model : Location.t -> ty -> 'a
 (** [ocaml_no_model loc id ty] emits an error stating that [id] is an OCaml
     variable of type [ty] that has no valid Gospel representation. *)
+
+val invalid_header_unit : loc:Location.t -> ty -> 'a
+(** [ocaml_no_model loc ty] emits an error stating that the header at location
+    [loc] has a pattern that expected a value of type unit by received one of
+    type [ty] *)

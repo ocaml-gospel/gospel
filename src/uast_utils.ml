@@ -58,6 +58,50 @@ let rec chain t =
           mk_term (mk_op_apply o [ t1; t2 ]) t.term_loc)
   | _ -> t
 
+(** [args_to_list t] returns two lists, the first contains the types of
+    arguments that values of type [t] receive (empty if [t] is not an arrow
+    type). The second contains a singleton list with the return type. If [t] is
+    a tuple [t1 * ... * tn], returns the list [t1; ...; tn]. *)
+let rec args_to_list t =
+  match t with
+  | Id_uast.PTarrow (t1, t2) ->
+      let args, ret = args_to_list t2 in
+      (t1 :: args, ret)
+  | PTtuple l -> ([], l)
+  | _ -> ([], [ t ])
+
+(** [create_header nm nargs nrets] creates a [spec_header] with [nargs]
+    arguments and a single return value, all of which will be [Lwild]. *)
+let create_header nm nargs =
+  let mk_arg _ = Lwild in
+  let args = List.init nargs mk_arg in
+  let rets = [ Lwild ] in
+  { sp_hd_nm = nm; sp_hd_ret = rets; sp_hd_args = args }
+
+(** Let operator that ignores [None] values *)
+let ( let* ) o f = match o with None -> None | Some x -> Some (f x)
+
+(** Used to chain multiple [let*]. *)
+let ( and* ) x y =
+  match (x, y) with None, _ | _, None -> None | Some x, Some y -> Some (x, y)
+
+let rec map_option f = function
+  | [] -> Some []
+  | x :: t ->
+      let* x = f x and* t = map_option f t in
+      x :: t
+
+let get_name = function
+  | Lunit _ | Lwild -> None
+  | Lvar id | Lghost (id, _) -> Some id
+
+let v_eq v1 v2 =
+  let v_eq v1 v2 =
+    let* v1 = get_name v1 and* v2 = get_name v2 in
+    Preid.eq v1 v2
+  in
+  Option.value ~default:false (v_eq v1 v2)
+
 (** Same behaviour as [chain] but receives and retruns a [term_desc] *)
 let chain_desc t = (chain { term_desc = t; term_loc = Location.none }).term_desc
 
@@ -78,15 +122,18 @@ let flatten q =
 
 let leaf q = match q with Id_uast.Qid id -> id | Qdot (_, id) -> id
 
-(** Let operator that ignores [None] values *)
-let ( let* ) o f = match o with None -> None | Some x -> Some (f x)
+let flatten_ident q =
+  let rec flatten = function
+    | Id_uast.Qid id -> [ id.id_str ]
+    | Qdot (q, id) -> id.id_str :: flatten q
+  in
+  List.rev (flatten q)
 
-(** Used to chain multiple [let*]. *)
-let ( and* ) x y =
-  match (x, y) with None, _ | _, None -> None | Some x, Some y -> Some (x, y)
-
-let rec map_option f = function
-  | [] -> Some []
-  | x :: t ->
-      let* x = f x and* t = map_option f t in
-      x :: t
+(** [eq_qualid q1 q2] Checks if the qualified identifier [q1] and [q2] refer to
+    the same identifier. This function ignores if the two identifiers have
+    different symbolic representations. For example: [M1.x] is the same as [x],
+    assuming that both identifiers refer to the same variable. *)
+let eq_qualid q1 q2 =
+  let id1 = leaf q1 in
+  let id2 = leaf q2 in
+  Ident.equal id1 id2
