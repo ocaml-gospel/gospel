@@ -9,15 +9,28 @@ type kind =
   | Cycle of string * string
   | Cyclic_definition of string
   | Cyclic_definitions of string * string list
+  | Desugared_consumes of string list
+  | Desugared_produces of string list
   | Duplicated_argument of string
+  | Duplicated_consumes of string list
+  | Duplicated_header_value of string
+  | Duplicated_modifies of string list
   | Duplicated_parameter of string
+  | Duplicated_preserves of string list
+  | Duplicated_produces of string list
   | Duplicated_record_label of string
   | Duplicated_type_definition of string
   | Illegal_character of char
   | Illegal_escape of string * string option
   | Incompatible_field of string list * string list * string
+  | Invalid_arg_number of int * int
+  | Invalid_header_name of string
+  | Invalid_header_unit of string
+  | Invalid_old
   | Invalid_record_labels
-  | No_model of string * string
+  | Invalid_ret_number of int * int
+  | Modified_and_preserved of string list
+  | No_model of string
   | Not_a_function of string
   | Syntax_error
   | Unbound_exception of string list
@@ -38,7 +51,8 @@ let unsupported ~loc s = error ~loc (Unsupported s)
 
 open Fmt
 
-let function_ ppf (f, t1, t2) = pf ppf "%s: %s -> %s" f t1 t2
+let print_qid ppf l = pf ppf "%a" (list ~sep:(const string ".") string) l
+let plural ppf n = if n = 1 then pf ppf "" else pf ppf "s"
 
 let pp_kind ppf = function
   | Arity_mismatch (ty1s, ty2s, expected, received) ->
@@ -66,13 +80,50 @@ let pp_kind ppf = function
   | Cyclic_definitions (v, l) ->
       pf ppf "The type abbreviation %s contains a cycle@\n%a" v
         (list ~sep:arrow string) (l @ [ v ])
+  | Desugared_consumes v ->
+      pf ppf
+        "The variable %a appears in a produces and in a preserves or modifies \
+         clause"
+        print_qid v
+  | Desugared_produces v ->
+      pf ppf
+        "The variable %a appears in a produces and in a preserves or modifies \
+         clause"
+        print_qid v
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
+  | Duplicated_consumes arg ->
+      pf ppf "The variable %a is listed as consumes twice" print_qid arg
+  | Duplicated_header_value v ->
+      pf ppf "The variable %s is defined twice in this header" v
+  | Duplicated_modifies v ->
+      pf ppf "The variable %a is listed as modified twice" print_qid v
+  | Duplicated_preserves v ->
+      pf ppf "The variable %a is listed as preserved twice" print_qid v
+  | Duplicated_produces v ->
+      pf ppf "The variable %a is listed as produced twice" print_qid v
   | Duplicated_parameter s ->
       pf ppf "The type parameter %s occurs several times" s
   | Duplicated_record_label l -> pf ppf "Two labels are named %s" l
   | Duplicated_type_definition s ->
       pf ppf "Multiple definitions of the type name %s@\n" s
+  | Invalid_arg_number (expected, got) ->
+      pf ppf "This header has %d argument%a but expected %d" got plural got
+        expected
+  | Invalid_header_name s ->
+      pf ppf
+        "Header name %s does not match the declared value in the OCaml \
+         interface"
+        s
+  | Invalid_header_unit v ->
+      pf ppf
+        "This pattern matches on values of type unit, which is incompatible \
+         with %s"
+        v
+  | Invalid_old -> pf ppf "The old tag cannot be used in this term"
   | Invalid_record_labels -> pf ppf "No record found with the provided labels"
+  | Invalid_ret_number (expected, got) ->
+      pf ppf "This header has %d return value%a but expected %d" got plural got
+        expected
   | Illegal_character c -> pf ppf "Illegal character %c" c
   | Illegal_escape (s, explanation) ->
       pf ppf "Illegal backslash escape in string or character (%s)%a" s
@@ -86,27 +137,21 @@ let pp_kind ppf = function
         field
         (list ~sep:(const string ".") string)
         field_type expected_type
-  | No_model (v, t) ->
-      pf ppf
-        "The OCaml variable %s has type %s@\n\
-         There is no Gospel representation for this type"
-        v t
+  | Modified_and_preserved v ->
+      pf ppf "The variable %a is present in a modifies and preserves clause"
+        print_qid v
+  | No_model v ->
+      pf ppf "The type %s has no model, it cannot have an invariant" v
   | Not_a_function s ->
       pf ppf "Expected a functional value but received a value of type %s" s
   | Syntax_error -> pf ppf "Syntax error"
-  | Unbound_exception s ->
-      pf ppf "Unbound exception %a" (list ~sep:(const string ".") string) s
+  | Unbound_exception s -> pf ppf "Unbound exception %a" print_qid s
   | Unbound_module s -> pf ppf "Unbound module %s" s
-  | Unbound_record_label s ->
-      pf ppf "Unbound record label %a" (list ~sep:(const string ".") string) s
-  | Unbound_type s ->
-      pf ppf "Unbound type constructor %a"
-        (list ~sep:(const string ".") string)
-        s
+  | Unbound_record_label s -> pf ppf "Unbound record label %a" print_qid s
+  | Unbound_type s -> pf ppf "Unbound type constructor %a" print_qid s
   | Unbound_type_variable s ->
       pf ppf "The type variable '%s is unbound in this type declaration" s
-  | Unbound_variable s ->
-      pf ppf "Unbound value %a" (list ~sep:(const string ".") string) s
+  | Unbound_variable s -> pf ppf "Unbound value %a" print_qid s
   | Unsupported s -> pf ppf "Not yet supported: %s" s
   | Unterminated_comment -> pf ppf "Unterminated comment"
 

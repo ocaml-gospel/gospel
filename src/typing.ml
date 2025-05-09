@@ -41,9 +41,17 @@ let empty_local_env () =
   }
 
 (** [add_term_var var id env] maps the term variable [var] to the tagged
-    identifier [id] *)
-let add_term_var var id env =
-  { env with term_var = Env.add var id env.term_var }
+    identifier [id] in [env] and [old_env] if it is different from [None]. *)
+let add_spec_var id old_env env =
+  let old_env =
+    Option.map
+      (fun old_env ->
+        { old_env with term_var = Env.add id.Ident.id_str id old_env.term_var })
+      old_env
+  in
+  (old_env, { env with term_var = Env.add id.id_str id env.term_var })
+
+let add_term_var id env = snd (add_spec_var id None env)
 
 (** [add_type_var var id env] maps the type variable [var] to the tagged
     identifier [id] *)
@@ -108,9 +116,9 @@ let unique_pty ~ocaml ~bind defs env pty =
         let info = Types.mk_info (Qid (get_local_type ~ocaml id env)) in
         PTtyapp (info, List.map unique_pty l)
     | PTtyapp (q, l) ->
-        (* When we encounter a type identifier, we must check if it is an alias
-           for another type and if so replace it. *)
-        resolve_alias ~ocaml defs q (List.map unique_pty l)
+        let l = List.map unique_pty l in
+        let app = resolve_application ~ocaml defs q l in
+        PTtyapp (app, l)
     | PTarrow (arg, res) ->
         let arg = unique_pty arg in
         let res = unique_pty res in
@@ -137,25 +145,38 @@ let unique_var env defs q =
 (** [binder (pid, pty)] maps the string [pid.pid_str] to a fresh tagged
     variable, adds all the type variables present in [pty] to the local scope
     and turns [pty] into a tagged annotation. *)
-let binder defs env (pid, pty) =
+let binder defs old_env env (pid, pty) =
   let id = Ident.from_preid pid in
-  env := add_term_var pid.pid_str id !env;
+  let old_env', env' = add_spec_var id !old_env !env in
+  old_env := old_env';
+  env := env';
   let pty = Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty in
   (id, pty)
 
-(** [unique_term top defs env t] returns a term where every variable in [t] has
-    been replaced with a uniquely tagged variable. When we find a free variable,
-    we first search the local scope. If it is not found then we search the top
-    level. When a variable from the top level is used, we must add its typing
-    information to the AST. This is necessary for the type inference phase so
-    that the Inferno solver knows the type of all the variables outside the
-    scope of the term. When a variable is bound either with a [let] or a
-    quantifier, we create a new unique identifier and map it in [env]. *)
-let rec unique_term defs env t =
+(** [unique_term top defs old_env env t] returns a term where every variable in
+    [t] has been replaced with a uniquely tagged variable. When we find a free
+    variable, we first search the local scope. The local scope is made up of two
+    environments: [old_env] and [env], where [old_env] are the variables that
+    are in scope only inside of [old] tags and [env] are those that are
+    available outside of it. The [old_env] environment should include all
+    variables within [env]. If [old_env] is [None], then we are processing a
+    term that is not allowed to use the [old] keyword (i.e. anything that is not
+    a post condition). These environments include variables bound within the
+    term as well as specification arguments.
+
+    When a variable is not found then we search in [defs] the top level. When a
+    variable from the top level is used, we must add its typing information to
+    the AST. This is necessary for the type inference phase so that the Inferno
+    solver knows the type of all the variables outside the scope of the term. *)
+let rec unique_post_term defs old_env env t =
   (* To be used when we perform a local open. *)
-  let unique_term_open = unique_term in
-  (* The namespace remains constant in all other recursive calls *)
-  let unique_term = unique_term defs in
+  let unique_term_open defs = unique_post_term defs old_env env in
+  (* When processing a node that introduces a new name to the scope,
+     we have to update the local environment. *)
+  let unique_term_let old_env env = unique_post_term defs old_env env in
+  (* The namespace and environment remains constant in all other
+     recursive calls. *)
+  let unique_term = unique_post_term defs old_env env in
   let term_desc =
     match t.Parse_uast.term_desc with
     | Parse_uast.Ttrue -> Ttrue
@@ -166,54 +187,71 @@ let rec unique_term defs env t =
     | Tvar q -> unique_var env.term_var defs q
     | Tlet (v, t1, t2) ->
         let id = Ident.from_preid v in
-        let t1 = unique_term env t1 in
+        let t1 = unique_term t1 in
         (* Add the identifier to the local environment *)
-        let t2 = unique_term (add_term_var v.pid_str id env) t2 in
+        let old_env, env = add_spec_var id old_env env in
+        let t2 = unique_term_let old_env env t2 in
         Tlet (id, t1, t2)
-    | Tapply (t1, t2) -> Tapply (unique_term env t1, unique_term env t2)
-    | Tinfix _ -> (unique_term env (Uast_utils.chain t)).term_desc
+    | Tapply (t1, t2) -> Tapply (unique_term t1, unique_term t2)
+    | Tinfix _ -> (unique_term (Uast_utils.chain t)).term_desc
     | Tquant (q, l, t) ->
+        let old_env = ref old_env in
         let env = ref env in
-        let l = List.map (binder defs env) l in
-        let t = unique_term !env t in
+        let l = List.map (binder defs old_env env) l in
+        let t = unique_term_let !old_env !env t in
         Tquant (q, l, t)
     | Tif (g, then_b, else_b) ->
-        let g = unique_term env g in
-        let then_b = unique_term env then_b in
-        let else_b = unique_term env else_b in
+        let g = unique_term g in
+        let then_b = unique_term then_b in
+        let else_b = unique_term else_b in
         Tif (g, then_b, else_b)
-    | Ttuple l -> Ttuple (List.map (unique_term env) l)
+    | Ttuple l -> Ttuple (List.map unique_term l)
     | Tlambda (args, t, pty) ->
+        let old_env = ref old_env in
         let env = ref env in
         let pty =
           Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty
         in
-        let args = List.map (binder defs env) args in
-        let t = unique_term !env t in
+        let args = List.map (binder defs old_env env) args in
+        let t = unique_term_let !old_env !env t in
         Tlambda (args, t, pty)
     | Trecord l ->
         let qids, info =
           Namespace.fields_qualid ~loc:t.term_loc defs (List.map fst l)
         in
         let values =
-          List.map2 (fun (id, ty) (_, t) -> (id, unique_term env t, ty)) qids l
+          List.map2 (fun (id, ty) (_, t) -> (id, unique_term t, ty)) qids l
         in
         Trecord (values, info)
     | Tfield (t, q) ->
         let qid, fty, record_ty = Namespace.get_field_info defs q in
-        Tfield (unique_term env t, record_ty, qid, fty)
-    | Tattr (att, t) -> Tattr (att, unique_term env t)
+        Tfield (unique_term t, record_ty, qid, fty)
+    | Tattr (att, t) -> Tattr (att, unique_term t)
     | Tcast (t, pty) ->
         let ty = unique_pty ~ocaml:false ~bind:true defs env pty in
-        let t = unique_term env t in
+        let t = unique_term t in
         Tcast (t, ty)
     | Tscope (q, t) ->
         let q, defs = Namespace.local_open defs q in
-        let t = unique_term_open defs env t in
+        let t = unique_term_open defs t in
         Tscope (q, t)
-    | _ -> assert false
+    | Told t ->
+        let env =
+          match old_env with
+          | None -> W.error ~loc:t.term_loc Invalid_old
+          | Some env -> env
+        in
+        let t = unique_term_let None env t in
+        Told t
   in
   { term_desc; term_loc = t.term_loc }
+
+(** [unique_term defs env t] is to be used for any term that is not a post
+    condition.*)
+let unique_term defs env t = unique_post_term defs None env t
+
+let unique_post_term defs pre_env post_env t =
+  unique_post_term defs (Some pre_env) post_env t
 
 (* Helper functions for top level signatures *)
 
@@ -250,7 +288,7 @@ let function_ f defs =
       (fun (pid, pty) ->
         let id = Ident.from_preid pid in
         (* Add the function parameters to the local environment. *)
-        env := add_term_var pid.pid_str id !env;
+        env := add_term_var id !env;
         (* Add the type variables in [pty] to the local environment. *)
         let pty = unique_pty !env pty in
         (id, pty))
@@ -260,7 +298,7 @@ let function_ f defs =
   let () =
     if fun_rec then
       (* If the function is recursive, add it as a local variable. *)
-      env := add_term_var fun_name.id_str fun_name !env
+      env := add_term_var fun_name !env
     else ()
   in
   let fun_def = Option.map (unique_term defs !env) f.fun_def in
@@ -324,7 +362,7 @@ let get_alias_deps aliases pty =
     aliases should be added to the namespace so that any type aliases that
     depend on other type aliases can be expanded. Example:
 
-    [type t3 = {x : t2} and  t2 = t1 and t1 = t3]
+    [type t3 = {x : t2} and t2 = t1 and t1 = t3]
 
     When we add [t3] to the namespace, we want to expand the record type
     annotation [x : t2] to [x : t3], however, that can only be done after we
@@ -386,20 +424,23 @@ let type_kind ~ocaml env tid tparams lenv = function
       let env = if ocaml then env else add_record env tid tparams fields_id in
       (env, PTtype_record fields)
 
-let unique_tspec ~ocaml env model local_env self_ty tspec =
+let unique_tspec env model local_env self_ty inv_ty tspec =
   (* [invariants [pid, l] processes a list of invariants for the give type
      where [pid] is a variable of type [self_ty]. *)
   let invariants (pid, l) =
-    if ocaml && model = No_model then Types.ocaml_no_model pid self_ty
-    else
-      let id = Ident.from_preid pid in
-      let inv t =
-        let local_env = add_term_var id.id_str id local_env in
-        let t = unique_term env local_env t in
-        let tvars = get_tvars local_env in
-        Solver.invariant tvars id self_ty t
-      in
-      (id, List.map inv l)
+    let id = Ident.from_preid pid in
+    let self_ty =
+      match inv_ty with
+      | Some t -> t
+      | None -> Types.ocaml_no_model pid.pid_loc self_ty
+    in
+    let inv t =
+      let local_env = add_term_var id local_env in
+      let t = unique_term env local_env t in
+      let tvars = get_tvars local_env in
+      Solver.invariant tvars id self_ty t
+    in
+    (id, List.map inv l)
   in
   Tast.mk_type_spec tspec.Parse_uast.ty_mutable
     (Option.map invariants tspec.ty_invariant)
@@ -431,12 +472,31 @@ let create_model env lenv tname tparams tspec =
           let env = Namespace.add_record env model_tname tparams l in
           (env, Fields l))
 
-(** [type_decl lenv env t] processes the ghost type declaration [t] and adds its
-    definitions to [env], producing a new environment. Additionally, this
-    function also produces a closure which, when given an environment, will
+(** [to_model pty] Turns the OCaml type [pty] into its logical representation.
+    This type function only returns [None] if any type expression uses an arrow
+    type or if any of the type applications used do not have an associated
+    Gospel representation. *)
+let rec to_model =
+  let open Uast_utils in
+  function
+  | PTtyvar v -> Some (PTtyvar v)
+  | PTtyapp (app, _) -> app.app_model
+  | PTarrow (arg, ret) ->
+      let* t1 = to_model arg and* t2 = to_model ret in
+      PTarrow (t1, t2)
+  | PTtuple l ->
+      let* l = map_option to_model l in
+      PTtuple l
+
+(** [type_decl lenv env t] processes the type declaration [t] and adds it to
+    [env]. Additionally, if the typed specification of [t] contains named
+    models, we also add to [env] a record type with the same model fields as
+    [t].
+
+    This function also returns a closure which, when given an environment, will
     generate a typed declaration. The reason we do not generate it immediately
-    is because the type specification of [t] may refer to record fields that
-    have not been introduced into the scope yet. *)
+    is because the type specification of [t] may refer to model fields that have
+    not been introduced into the scope yet. *)
 let type_decl ~ocaml lenv env t =
   let defs = scope env in
   (* If the identifier for this type has already been generated and added to the
@@ -471,35 +531,43 @@ let type_decl ~ocaml lenv env t =
 
   (* The [pty] object that represents this type name. This is necessary for the
      typed specification, where there will always be a variable of this type. *)
-  let self_ty =
+  let model_ty =
     match model with
-    | Implicit pty -> pty
+    | Implicit pty -> Some pty
     | Fields _ ->
         (* If the model has multiple named fields, we fetch the record type
-           created by [create_model]. *)
-        Namespace.resolve_alias ~ocaml:false (scope env) (Qid t.tname) tvars
-    | _ ->
-        (* If there is no model, then we use the type itself within the invariant. *)
-        let info = Types.mk_info ~alias:tmanifest (Qid tname) in
-        PTtyapp (info, tvars)
+          created by [create_model]. *)
+        let t =
+          Namespace.resolve_application ~ocaml:false (scope env) (Qid t.tname)
+            tvars
+        in
+        Some (PTtyapp (t, tvars))
+    | No_model -> Option.bind tmanifest to_model
   in
 
   (* Closure that generates the typed declaration. Note that all this closure
      does is process the type specification. *)
   let def_gen =
-   fun env ->
-    let tspec =
-      Option.fold ~none:Tast.empty_tspec
-        ~some:(unique_tspec ~ocaml (scope env) model lenv self_ty)
-        t.tspec
-    in
-    Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
-      t.tloc
+    let info = Types.mk_info ~alias:tmanifest ~model:model_ty (Qid tname) in
+    let self_ty = PTtyapp (info, tvars) in
+    (* The [pty] object that represents values of this type within
+       type invariants, if there are any. If this is an OCaml type, we
+       use its model, if it exists. If it is a Gospel type, we use the
+       type itself *)
+    let inv_ty = if ocaml then model_ty else Some self_ty in
+    fun env ->
+      let tspec =
+        Option.fold ~none:Tast.empty_tspec
+          ~some:(unique_tspec (scope env) model lenv self_ty inv_ty)
+          t.tspec
+      in
+      Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
+        t.tloc
   in
   (* Update the environment depending on whether or not this is an OCaml
      definition. *)
   let env =
-    if ocaml then add_ocaml_type env tname tparams tmanifest
+    if ocaml then add_ocaml_type env tname tparams tmanifest model_ty
     else add_gospel_type env tname tparams tmanifest
   in
   (env, def_gen)
@@ -532,21 +600,16 @@ let tdecl_duplicates l =
     It does this by:
 
     - Checking if there are duplicate type names or record labels.
-
-    - Creating a local environment which track the non-aliased type names
+    - Creating a local environment which tracks the non-aliased type names
       introduced by [l].
-
     - Splitting the type declarations into aliases and non-aliases and placing
       the aliases in the correct order (to see what exactly that means, see the
       documentation for [alias_order].)
-
     - Processing and adding each alias to the namespace.
-
     - Adding the remaining type definitions to the namespace. In this step and
       the previous, if a type uses one of the aliases defined in [l], these are
       fetched from the namespace whereas the definitions for non-aliased
       definitions are fetched from the local environment.
-
     - Once we have processed each type definition, we put them back in the order
       in which they appear in [l]. This done only so that the original AST and
       the typed AST are as similar as possible. *)
@@ -609,6 +672,376 @@ let process_exception exn defs =
   in
   (Tast.Sig_exception exn, env)
 
+(* -------------------------------------------------------------------------- *)
+
+(* Value descriptions. *)
+
+(** [header_length l] takes the list of arguments (or return values) in a header
+    and counts the amount of non-ghost variables. *)
+let rec header_length = function
+  | [] -> 0
+  | x :: t -> (
+      header_length t + match x with Parse_uast.Lghost _ -> 0 | _ -> 1)
+
+(** [valid_header header types rets] Receives the [header] for a value
+    declaration that receives arguments of [types] and returns values of type
+    [rets] (if the function does not return a tuple, this list will be of length
+    one). Raises a Gospel exception if:
+    - The list of arguments and return values contain any duplicates.
+    - The number of arguments or return values is invalid for the declared type.
+    - The value name in the header does not match the name in the Gospel
+      interface file.
+
+    If none of these conditions are met, this function has no observable effect.
+*)
+let valid_header loc header val_nm types rets =
+  (* Check if the header name is the same as the OCaml value's name. *)
+  let header_nm = header.Parse_uast.sp_hd_nm in
+  if not (Preid.eq header_nm val_nm) then
+    raise
+      (W.error ~loc:header_nm.pid_loc (W.Invalid_header_name header_nm.pid_str));
+  (* Function for raising an error for a duplicate variable. *)
+  let dup_var_error l =
+    let l = Option.get (Uast_utils.get_name l) in
+    raise (W.error ~loc:l.pid_loc (W.Duplicated_header_value l.pid_str))
+  in
+  (* Check for duplicate arguments and return values. *)
+  let () =
+    Utils.duplicate Uast_utils.v_eq dup_var_error
+      (header.sp_hd_ret @ header.sp_hd_args)
+  in
+  (* Check if the number of arguments and return values is congruent
+     with the value's type *)
+  let expectedl, argl = (List.length types, header_length header.sp_hd_args) in
+  if expectedl <> argl then
+    raise (W.error ~loc (W.Invalid_arg_number (expectedl, argl)));
+  let expectedl, retl = (List.length rets, List.length header.sp_hd_ret) in
+  (* If the function returns a tuple, the user is still allowed to
+     give only one return value. *)
+  if expectedl <> retl && retl <> 1 then
+    raise (W.error ~loc (W.Invalid_ret_number (expectedl, retl)))
+
+(** [is_unit ty] Checks if the resolved type [ty] is [unit]. *)
+let is_unit = function
+  | PTtyapp ({ app_qid = Qid id; app_alias = None; _ }, []) ->
+      Ident.equal Namespace.unit_id id
+  | _ -> assert false
+
+(** [pair_hd_vars ~loc types vars] Traverses the [vars] and [types], where
+    [vars] are values (either arguments or return values) defined in a
+    specification header and [types] are the OCaml types of the values, and
+    creates an association list that maps each identifier to its type. Ghost
+    arguments are ignored at this stage. *)
+let rec pair_hd_vars types vars =
+  match (types, vars) with
+  | [], [] -> []
+  | _, Parse_uast.Lghost _ :: t ->
+      (* Ghost values are ignored at this stage. *)
+      pair_hd_vars types t
+  | ty :: types, id :: ids -> (
+      match id with
+      | Lwild ->
+          (* Wildcard arguments are always valid *)
+          pair_hd_vars types ids
+      | Lunit loc ->
+          (* A unit argument in the header is only valid if the
+             argument's type is also unit *)
+          if is_unit ty then pair_hd_vars types ids
+          else Types.invalid_header_unit ~loc ty
+      | Lvar s ->
+          let id = Ident.from_preid s in
+          (id, ty) :: pair_hd_vars types ids
+      | Lghost _ ->
+          (* Ghost values are handled in the previous branch*)
+          assert false)
+  | _ -> assert false (* Both lists must be of the same length. *)
+
+(** [resolve_vars vars error l] traverses the list of variables [l] and returns
+    the corresponding variable in [vars]. If any of the variables in [l] are not
+    defined, this function raises a Gospel exception. Additionally, if there are
+    duplicates in [l], the [dup_error] function is called to produce an
+    exception of type [W.error] and, naturally, raise the produced exception. *)
+let resolve_vars vars dup_error l =
+  (* [resolve_var qid] finds the variable [qid] in [vars] list. *)
+  let resolve_var qid =
+    match qid with
+    | Parse_uast.Qid pid -> (
+        try
+          let id, _ =
+            List.find (fun (x, _) -> x.Ident.id_str = pid.pid_str) vars
+          in
+          { id with id_loc = pid.pid_loc }
+        with Not_found ->
+          W.error ~loc:pid.pid_loc (W.Unbound_variable [ pid.pid_str ]))
+    | Qdot _ -> assert false
+    (* For now, we can only refer to arguments or return values *)
+  in
+  let l = List.map resolve_var l in
+  (* Check for duplicates in the list of resolved variables. *)
+  let error id =
+    let loc = id.Ident.id_loc in
+    W.error ~loc (dup_error [ id.id_str ])
+  in
+  let () = Utils.duplicate (fun x y -> Ident.equal x y) error l in
+  l
+
+(** [duplicated_ocaml_var l1 l2 error] Receives two lists of OCaml variables
+    paired with their types and raises a Gospel exception (generated by the
+    [error] function, which receives a list of string that represents the
+    qualified identifier of the duplicated variable) if there is a common
+    element between the two lists. *)
+let duplicated_ocaml_var l1 l2 error =
+  List.iter
+    (fun x ->
+      if List.exists (Ident.equal x) l1 then
+        W.error ~loc:x.id_loc (error [ x.id_str ]))
+    l2
+
+(** [process_sugar_ownership vspec vars] resolves the variables in the
+    [modifies] and [preserves] clauses in [vspec] using the [vars] list.
+    Additionally, creates a list of read only variables from the list of
+    [preserves] clauses. This function also catches the following errors:
+    - Two [modifies] clauses for the same variable.
+    - Two [preserves] clauses for the same variable.
+    - A [preserves] and a [modifies] clause for the same variable. *)
+let process_sugar_ownership spec vars =
+  (* Functions that return an exception in case of a duplicated
+     [modifies] or [preserves] clauses. *)
+  let dup_mod id = W.Duplicated_modifies id in
+  let dup_pres id = W.Duplicated_preserves id in
+  let pres_mod id = W.Modified_and_preserved id in
+  (* Name resolution for names in [modifies] and [preserves] clauses.
+     Also checks if there are any duplicates. *)
+  let modified_vars = resolve_vars vars dup_mod spec.Parse_uast.sp_modifies in
+  let preserved_vars =
+    resolve_vars vars dup_pres spec.Parse_uast.sp_preserves
+  in
+  (* Checks if there is a variable that is both in a [preserves] and
+     [modifies] clause. *)
+  let () = duplicated_ocaml_var modified_vars preserved_vars pres_mod in
+  let combine = modified_vars @ preserved_vars in
+  (combine, preserved_vars)
+
+(** [process_ownership ~consume own vars] processes the ownership clauses [own]
+    (which is either a list of [produces] or a list of [consumes] clauses).
+    Performs name resolution using the [vars] and each name with its respective
+    OCaml type. Also checks if the variable appears in the [mod_and_pres] list,
+    which should be the list of variables in [modifies] and [preserves] clauses.
+    The [consumes] clause only impacts error messages. *)
+let process_ownership ~consumes mod_and_pres own vars =
+  (* Functions that return (not raise) an exception for errors in
+     [consumes] or [produces] clauses.  *)
+  let dup_error qid =
+    if consumes then W.Duplicated_consumes qid else W.Duplicated_produces qid
+  in
+  let mod_error qid =
+    if consumes then W.Desugared_consumes qid else W.Desugared_produces qid
+  in
+  let l = resolve_vars vars dup_error own in
+  (* Checks if the variable also appears in a [modifies] or [preserves] clause. *)
+  let () = duplicated_ocaml_var l mod_and_pres mod_error in
+  mod_and_pres @ l
+
+(** [add_values_env header lenv defs vals consumes produces read_only] creates
+    two environments to process OCaml value specifications: one for pre
+    conditions (and old annotations) and another for post conditions. Both
+    environments begin with the same value as [lenv], which at this point should
+    only contain type variables. The type variables table is shared between both
+    environments.
+
+    For the environment for pre conditions, we add all the OCaml variables in
+    [consumes] list. For the environment for post conditions, we add all the
+    OCaml variables in [produces] as well as [consumes]. Ghost variables are
+    added to both environments
+
+    This function returns a list of [sp_var] which contains the information
+    regarding each variable in the header. *)
+let add_values_env header lenv defs args rets consumes produces read_only =
+  (* [process_var pre_env post_env v] creates an [sp_var] for the
+     header variable [v] and adds it to the [pre_env] and
+     [post_env].  *)
+  let process_var pre_env post_env vals = function
+    | Parse_uast.Lwild -> (Wildcard, pre_env, post_env)
+    | Lunit _ -> (Unit, pre_env, post_env)
+    | Lghost (pid, pty) ->
+        let id = Ident.from_preid pid in
+        let pty = unique_pty ~ocaml:false ~bind:true defs lenv pty in
+        let pre_env, post_env = add_spec_var id (Some pre_env) post_env in
+        (Ghost (id, pty), Option.get pre_env, post_env)
+    | Lvar pid ->
+        (* Finds the OCaml type and the unique identifier for [pid].
+           This lookup always succeeds. *)
+        let var_mem = fun id -> pid.pid_str = id.Ident.id_str in
+        let var_name, ty_ocaml = List.find (fun (id, _) -> var_mem id) vals in
+
+        (* Creates the Gospel representation for this OCaml value. *)
+        let ty_gospel = to_model ty_ocaml in
+        let has_gospel = Option.is_some ty_gospel in
+        (* Checks if the function receives or returns ownership of this value. *)
+        let cons = List.exists var_mem consumes in
+        let prod = List.exists var_mem produces in
+        (* Check if this value is modified. *)
+        let ro = List.exists var_mem read_only in
+        (* Adds the variable to the pre and post environment if it is
+           consumed or produced, respectively.  Additionally, if the
+           variable does not have a valid gospel representation, it is
+           never added to either environment. *)
+        let add_var ~add env =
+          if add && has_gospel then add_term_var var_name env else env
+        in
+        ( OCaml { var_name; ty_ocaml; ty_gospel; prod; cons; ro },
+          add_var ~add:cons pre_env,
+          add_var ~add:prod post_env )
+  in
+  (* [process_vars pre_env post_env l] processes a list of header variables. *)
+  let rec process_header pre_env post_env vals = function
+    | [] -> ([], pre_env, post_env)
+    | x :: t ->
+        let var, pre_env, post_env = process_var pre_env post_env vals x in
+        let vars, pre_env, post_env = process_header pre_env post_env vals t in
+        (var :: vars, pre_env, post_env)
+  in
+  let args, pre_env, post_env =
+    process_header lenv lenv args header.Parse_uast.sp_hd_args
+  in
+  let rets, pre_env, post_env =
+    process_header pre_env post_env rets header.sp_hd_ret
+  in
+  (args, rets, pre_env, post_env)
+
+(** If an OCaml argument or return value does not appear in an ownership clause,
+    we assume, in the case of an argument, a [preserves] clause and, in the case
+    of a return value, a [produces] clause. *)
+let insert_ownership consumes produces ro args rets =
+  (* [is_own q1] checks if [q1] is in any ownership clause.  If so,
+     returns [None]. *)
+  let is_own (id, _) =
+    (* Check if [q1] is in either the [produces] or [consumes]. *)
+    let eq = Ident.equal id in
+    if List.exists eq produces || List.exists eq consumes then None else Some id
+  in
+  (* We filter the [args] and [rets] list so that we only get the
+     variables that are not in any ownership clause. *)
+  let args = List.filter_map is_own args in
+  let rets = List.filter_map is_own rets in
+  (* Since the values in [args] are not in any ownership clause, they
+     are preserved, meaning they are consumed, produced and
+     unmodified.  The values in [rets] are only produced. *)
+  (args @ consumes, args @ rets @ produces, args @ ro)
+
+let type_val_spec spec defs args rets pre_env post_env =
+  let pre =
+    List.map (unique_term defs pre_env) spec.Parse_uast.sp_pre_spec.sp_pre
+  in
+  let post =
+    List.map (unique_post_term defs pre_env post_env) spec.sp_post_spec.sp_post
+  in
+  Solver.spec (get_tvars pre_env) args rets pre post
+
+(** [ocaml_value env v] Translates the specification of an OCaml value
+    description to a Gospel value description. This is done by:
+
+    - Creating a header for the specification if it does not have one.
+    - Checking for errors in the header (for more details, check the
+      documentation for [valid_header]).
+    - Turning the OCaml type of the value into a list of arguments and return
+      values and associating each non-ghost name in the header with its OCaml
+      type.
+    - Checks if the ownership clauses are valid (no duplicates and all the names
+      are OCaml variables that are in scope).
+    - Turning the OCaml types of the function's arguments and return values into
+      Gospel types.
+    - Creating the local environments for processing pre and post conditions.
+    - Typechecking the pre and post conditions and creating the typed value
+      description.
+    - Adding the OCaml value into the namespace [env] *)
+let value_spec ~loc defs lenv name ocaml_ty spec =
+  (* From the function's type, get the types of the values' arguments *)
+  let arg_types, ret_types = Uast_utils.args_to_list ocaml_ty in
+  (* Create a header if the user did not provide one. *)
+  let header =
+    Option.fold
+      ~none:(Uast_utils.create_header name (List.length arg_types))
+      ~some:(fun header ->
+        (* If the user has provided a header, then we check if there
+             are any errors. *)
+        valid_header loc header name arg_types ret_types;
+        header)
+      spec.Parse_uast.sp_header
+  in
+
+  (* If the function returns a tuple but the user only supplied one
+     return value, then the list of return types will be a singleton
+     list with a tuple. *)
+  let ret_types =
+    if List.length ret_types > 1 && header_length header.sp_hd_ret = 1 then
+      [ PTtuple ret_types ]
+    else ret_types
+  in
+
+  (* Creates association lists with the functions' arguments and
+     return values mapped to their respective types.  *)
+  let args = pair_hd_vars arg_types header.sp_hd_args in
+  let rets = pair_hd_vars ret_types header.sp_hd_ret in
+  (* Resolves the variables in [modifies] and [preserves] clauses.
+     [mod_and_pres] contains all the variables in both [modifies] and
+     [preserves] clauses, whereas [read_only] only contains those in
+     [preserves] clauses. *)
+  let mod_and_pres, read_only = process_sugar_ownership spec.sp_pre_spec args in
+  (* Resolves the variables in [consumes] and [produces] clauses.
+     Note how return values are not allowed to be consumed. *)
+  let consumes =
+    process_ownership ~consumes:true mod_and_pres spec.sp_pre_spec.sp_consumes
+      args
+  in
+  let produces =
+    process_ownership ~consumes:false mod_and_pres spec.sp_post_spec.sp_produces
+      (args @ rets)
+  in
+  (* Augment the [produces], [consumes] and [read_only] lists with all
+     the variables that are named in the header but do not appear in
+     an ownership clause.  At this point, each variable named in the
+     header appears in the [produces] or [consumes] list (or both). *)
+  let consumes, produces, read_only =
+    insert_ownership consumes produces read_only args rets
+  in
+  let args, rets, pre_env, post_env =
+    add_values_env header lenv defs args rets consumes produces read_only
+  in
+  (* Type checks the pre and post conditions. *)
+  let pre, post = type_val_spec spec defs args rets pre_env post_env in
+  {
+    Tast.sp_args = args;
+    sp_rets = rets;
+    sp_pre = pre;
+    sp_post = post;
+    sp_diverge = spec.sp_pre_spec.sp_diverge;
+    sp_pure = spec.sp_pre_spec.sp_pure;
+    sp_text = spec.sp_text;
+    sp_loc = spec.sp_loc;
+  }
+
+let ocaml_val env v =
+  let lenv = empty_local_env () in
+  let unique_ocaml_pty = unique_pty ~ocaml:true ~bind:true (scope env) lenv in
+  let vtype = unique_ocaml_pty v.Parse_uast.vtype in
+  let vspec =
+    Option.map (value_spec ~loc:v.vloc (scope env) lenv v.vname vtype) v.vspec
+  in
+  let v =
+    {
+      Tast.vname = Ident.from_preid v.vname;
+      vtype;
+      vprim = v.vprim;
+      vattributes = v.vattributes;
+      vspec;
+      vloc = v.vloc;
+    }
+  in
+  Tast.Sig_value v
+
+(* -------------------------------------------------------------------------- *)
+
 let rec process_module env m =
   (* TODO figure out when this is None *)
   let id = Option.map Ident.from_preid m.Parse_uast.mdname in
@@ -646,6 +1079,7 @@ and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
+    | Sig_val v -> (ocaml_val env v, env)
     | Sig_type t ->
         let env, t = tdecl_list ~ocaml:true env t in
         (Tast.Sig_type t, env)

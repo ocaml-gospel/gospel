@@ -81,7 +81,8 @@ let inject n =
 (** Maps a type variable to a decoded type. *)
 let variable v = PTtyvar v
 
-let mk_info ?(alias = None) id = { Id_uast.app_qid = id; app_alias = alias }
+let mk_info ?(alias = None) ?(model = None) id =
+  { Id_uast.app_qid = id; app_alias = alias; app_model = model }
 
 (** Maps a structure whose variables are decoded types into a decoded type. *)
 let structure t =
@@ -185,11 +186,13 @@ let rec n_args t =
 
 module W = Warnings
 
+let ty_to_string = Fmt.str "%a" print_ty
+
 let incompatible_types loc ty1 ty2 =
   let n_args1 = n_args ty1 in
   let n_args2 = n_args ty2 in
-  let ty1s = Fmt.str "%a" print_ty ty1 in
-  let ty2s = Fmt.str "%a" print_ty ty2 in
+  let ty1s = ty_to_string ty1 in
+  let ty2s = ty_to_string ty2 in
   let loc = Uast_utils.mk_loc loc in
   let error =
     if n_args1 <> n_args2 && n_args1 <> 0 && n_args2 <> 0 then
@@ -197,8 +200,8 @@ let incompatible_types loc ty1 ty2 =
     else if shallow_incompatible ty1 ty2 then W.Bad_type (ty1s, ty2s)
     else
       let ty1_sub, ty2_sub = deep_incompatible ty1 ty2 in
-      let ty1_frags = Fmt.str "%a" print_ty ty1_sub in
-      let ty2_frags = Fmt.str "%a" print_ty ty2_sub in
+      let ty1_frags = ty_to_string ty1_sub in
+      let ty2_frags = ty_to_string ty2_sub in
       W.Bad_subtype (ty1s, ty2s, ty1_frags, ty2_frags)
   in
   W.error error ~loc
@@ -207,10 +210,14 @@ let cycle loc t =
   let loc = Uast_utils.mk_loc loc in
   match t with
   | PTarrow (PTtyvar v, t) ->
-      let tys = Fmt.str "%a" print_ty t in
+      let tys = ty_to_string t in
       W.error ~loc (W.Cycle (v.id_str, tys))
   | _ -> assert false (* See comment for [mu] function *)
 
-let ocaml_no_model id ty =
-  let tys = Fmt.str "%a" print_ty ty in
-  W.error ~loc:id.Preid.pid_loc (W.No_model (id.pid_str, tys))
+let ocaml_no_model loc ty =
+  let tys = ty_to_string ty in
+  W.error ~loc (W.No_model tys)
+
+let invalid_header_unit ~loc ty =
+  let tys = ty_to_string ty in
+  W.error ~loc (W.Invalid_header_unit tys)

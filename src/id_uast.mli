@@ -21,7 +21,11 @@ type pty =
   | PTtuple of pty list
   | PTarrow of pty * pty
 
-and app_info = { app_qid : qualid; app_alias : pty option }
+and app_info = {
+  app_qid : qualid;
+  app_alias : pty option;
+  app_model : pty option;
+}
 (** For every type application the user writes, we also keep track of the alias
     for that type. We need the type alias for the type checking phase and we
     need the original annotation for the so that we preserve what the user wrote
@@ -29,7 +33,10 @@ and app_info = { app_qid : qualid; app_alias : pty option }
     does not have a type alias.
 
     Invariant : If a type application has the type alias [t], all type
-    applications used within [t] will not have any aliases. *)
+    applications used within [t] will not have any aliases.
+
+    Invariant: If a type application has the model [t], all type application
+    used within [t] will not have any models. *)
 
 (* Logical terms and formulas *)
 
@@ -72,7 +79,8 @@ and term_desc =
 (* Specification *)
 
 type sp_var =
-  | Unnamed
+  | Wildcard
+  | Unit
   | Ghost of id * pty (* Ghost variable *)
   | OCaml of {
       var_name : id; (* Variable name *)

@@ -66,6 +66,9 @@ type ty_info = {
      The [talias] field always points to the "top most" alias. This means if we
      have the following program [type t1 type t2 = t1 type t3 = t2] the [talias]
      field for [t3] will be [t1].*)
+  tmodel : Id_uast.pty option;
+      (* The logical representation for the type.  [None] if the type
+      has no model or is a Gospel type. *)
 }
 
 type record_info = {
@@ -222,41 +225,78 @@ let get_exn_info env id =
 
 module Tbl = Ident.IdTable
 
-(** [build_alias var_map alias] returns a new type with the same structure as
+(** [map_tvars var_map alias] returns a new type with the same structure as
     [alias] where every type variable has been replaced with their binding in
     [var_map]. *)
-let rec build_alias var_tbl alias =
-  let build_alias = build_alias var_tbl in
+let rec map_tvars var_tbl alias =
+  let map_tvars = map_tvars var_tbl in
   match alias with
-  | PTtyvar id -> Tbl.find var_tbl id.id_tag
-  | PTarrow (t1, t2) -> PTarrow (build_alias t1, build_alias t2)
-  | PTtyapp (q, l) -> PTtyapp (q, List.map build_alias l)
-  | PTtuple l -> PTtuple (List.map build_alias l)
+  | PTtyvar id ->
+      (* The type variable [id] is replaced with its binding in the
+         table [var_tbl]. *)
+      Tbl.find var_tbl id.id_tag
+  | PTarrow (t1, t2) -> PTarrow (map_tvars t1, map_tvars t2)
+  | PTtyapp (q, l) -> PTtyapp (q, List.map map_tvars l)
+  | PTtuple l -> PTtuple (List.map map_tvars l)
 
-let resolve_alias ~ocaml env q l =
+(** [ocaml_to_model defs ty] Turns an OCaml type into its logical
+    representation. This entails searching in the [defs] environment for the
+    logical representation of the type names used in [ty]. If any of the type
+    names used in [ty] do not have a Gospel model (or if [ty] includes arrow
+    types), this function returns [None]. *)
+let rec ocaml_to_model ty =
+  let open Uast_utils in
+  match ty with
+  | PTtyvar v ->
+      (* Note: The treatment of type variables within the Gospel type
+        checker is still unclear: currently we assume that we can use
+        an OCaml type variable as if it were a Gospel type variable,
+        which is unsound since OCaml types may be impure and
+        therefore unusable in a logical context. *)
+      Some (PTtyvar v)
+  | PTtyapp (q, _) -> q.app_model
+  | PTtuple l ->
+      let* l = map_option ocaml_to_model l in
+      PTtuple l
+  | PTarrow _ -> None
+
+let resolve_application ~ocaml env q l =
   let q, info = type_info ~ocaml env q in
   let params = info.tparams in
   let len1, len2 = (List.length params, List.length l) in
   if len1 <> len2 then (* type arity check *)
     W.error ~loc:Location.none (W.Bad_arity (info.tid.Ident.id_str, len1, len2));
-  let alias =
-    match info.talias with
-    | None ->
-        (* If this type has no alias, apply the type identifier to the list of
-        arguments. *)
-        None
-    | Some alias ->
-        (* When there is an alias, we create a map that binds each type variable
-        identifier in [alias] to the corresponding type in [l]. *)
-        let var_tbl = Ident.IdTable.create 100 in
-        let () =
-          List.iter2
-            (fun avar tvar -> Tbl.add var_tbl avar.Ident.id_tag tvar)
-            params l
-        in
-        Some (build_alias var_tbl alias)
+  (* Auxiliary tables to map type variables to concrete types. *)
+  let alias_tbl = Ident.IdTable.create 100 in
+  let model_tbl = Ident.IdTable.create 100 in
+  (* [populate ~f tbl tys] associates the type parameters [params]
+     with its respective element in [tys].  The [f] function is a
+     map/filter function that is called on each element of [tys].  If
+     [f] returns [None], the respective type variable is not bound in
+     the table. *)
+  let populate ~f tbl tys =
+    List.iter2
+      (fun avar t -> Option.iter (Tbl.add tbl avar.Ident.id_tag) (f t))
+      params tys
   in
-  PTtyapp (Types.mk_info q ~alias, l)
+  (* Map each type variable to the respective type in [l]. *)
+  let () = populate ~f:(fun x -> Some x) alias_tbl l in
+  (* Map each type variable to the logical representation of its
+     respective type in [l].  If there is no logical representation,
+     this variable will be unbound in [model_tbl]. *)
+  let () = populate ~f:(fun x -> ocaml_to_model x) model_tbl l in
+  (* If the type [q] is an abbreviation for another type, we can
+     always expand the abbreviation by replacing respective type
+     variables with the applied type expressions [l]. *)
+  let alias = Option.map (map_tvars alias_tbl) info.talias in
+  let model =
+    (* If the type [q] has a model, we try to build it using the
+       logical representations of the type expressions [l]. This will
+       result in a [Not_found] if any of the types in [l] that the
+       model depends on do not have a logical representation. *)
+    try Option.map (map_tvars model_tbl) info.tmodel with Not_found -> None
+  in
+  Types.mk_info q ~alias ~model
 
 let fun_info =
   unique_toplevel_qualid
@@ -429,17 +469,19 @@ let rec to_alias = function
   | PTarrow (arg, res) -> PTarrow (to_alias arg, to_alias res)
   | PTtuple l -> PTtuple (List.map to_alias l)
 
-let add_ocaml_type tid tparams talias defs =
+let add_ocaml_type tid tparams talias tmodel defs =
   let tenv = defs.ocaml_type_env in
-  let info = { tid; tparams; talias = Option.map to_alias talias } in
+  let info = { tid; tparams; talias = Option.map to_alias talias; tmodel } in
   { defs with ocaml_type_env = Env.add tid.Ident.id_str info tenv }
 
-let add_ocaml_type env id params alias =
-  add_def (add_ocaml_type id params alias) env
+let add_ocaml_type env id params alias model =
+  add_def (add_ocaml_type id params alias model) env
 
 let add_gospel_type tid tparams talias defs =
   let tenv = defs.type_env in
-  let info = { tid; tparams; talias = Option.map to_alias talias } in
+  let info =
+    { tid; tparams; talias = Option.map to_alias talias; tmodel = None }
+  in
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
 let add_gospel_type env id params alias =
@@ -499,7 +541,8 @@ let gospel_open env qid =
 (** [type_env] contains every primitive Gospel type. *)
 let type_env =
   List.fold_left
-    (fun tenv (x, y) -> Env.add x { tid = y; tparams = []; talias = None } tenv)
+    (fun tenv (x, y) ->
+      Env.add x { tid = y; tparams = []; talias = None; tmodel = None } tenv)
     Env.empty Structure.primitive_list
 
 (** [fun_env] contains the definitions for logical disjunction and conjunction.
@@ -518,6 +561,8 @@ let fun_env =
     Gospel type definitions. *)
 let empty_env =
   { defs = empty_defs; scope = { empty_defs with type_env; fun_env } }
+
+let unit_id = Ident.mk_id "unit" Location.none
 
 (** The initial environment for every Gospel file. The only names in scope are
     primitive Gospel and OCaml type definitions and the definitions within the
@@ -543,6 +588,17 @@ let init_env ?ocamlprimitives gospelstdlib =
   let scope =
     match ocamlprimitives with
     | None -> scope
-    | Some m -> defs_union ~ocaml:true scope m
+    | Some m ->
+        (* Add unit to the set of OCaml primitives.  It is not defined
+           alongside the other OCaml primitives because this type is
+           needed for typechecking specifications, meaning its
+           definition must be present at compile time. *)
+        let unit_info =
+          { tid = unit_id; tparams = []; talias = None; tmodel = None }
+        in
+        let m =
+          { m with ocaml_type_env = Env.add "unit" unit_info m.ocaml_type_env }
+        in
+        defs_union ~ocaml:true scope m
   in
   { defs = empty_defs; scope }
