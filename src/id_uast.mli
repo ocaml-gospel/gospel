@@ -78,25 +78,27 @@ and term_desc =
 
 (* Specification *)
 
-type sp_var =
-  | Wildcard
-  | Unit
-  | Ghost of id * pty (* Ghost variable *)
-  | OCaml of {
-      var_name : id; (* Variable name *)
-      ty_ocaml : pty; (* OCaml type of the variable. *)
-      ty_gospel : pty option; (* Gospel type of the variable. *)
-      prod : bool;
-      (* Flag indicating if the function receives ownership of the value. *)
-      cons : bool;
-      (* Flag indicating if the function returns ownership of the value. *)
-      ro : bool;
-          (* Read only flag. If [false], the variable is modified
+type ocaml_sp_var = {
+  var_name : qualid; (* Variable name *)
+  ty_ocaml : pty; (* OCaml type of the variable. *)
+  ty_gospel : pty option; (* Gospel type of the variable. *)
+  prod : bool;
+  (* Flag indicating if the function receives ownership of the value. *)
+  cons : bool;
+  (* Flag indicating if the function returns ownership of the value. *)
+  ro : bool;
+      (* Read only flag. If [false], the variable is modified
            by the function.
 
            Remark: If this [sp_var] value refers to a return
            value, [ro] is [true]. *)
-    }
+}
+
+type sp_var =
+  | Wildcard
+  | Unit
+  | Ghost of id * pty (* Ghost variable *)
+  | OCaml of ocaml_sp_var
 
 type val_spec = {
   sp_args : sp_var list;

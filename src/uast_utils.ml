@@ -137,3 +137,26 @@ let eq_qualid q1 q2 =
   let id1 = leaf q1 in
   let id2 = leaf q2 in
   Ident.equal id1 id2
+
+(** [ocaml_to_model defs ty] Turns an OCaml type into its logical
+    representation. This entails searching in the [defs] environment for the
+    logical representation of the type names used in [ty]. If any of the type
+    names used in [ty] do not have a Gospel model (or if [ty] includes arrow
+    types), this function returns [None]. *)
+let rec ocaml_to_model ty =
+  let open Id_uast in
+  match ty with
+  | PTtyvar v ->
+      (* Note: The treatment of type variables within the Gospel type
+        checker is still unclear: currently we assume that we can use
+        an OCaml type variable as if it were a Gospel type variable,
+        which is unsound since OCaml types may be impure and
+        therefore unusable in a logical context. *)
+      Some (PTtyvar v)
+  | PTtyapp (q, _) -> q.app_model
+  | PTtuple l ->
+      let* l = map_option ocaml_to_model l in
+      PTtuple l
+  | PTarrow (arg, ret) ->
+      let* arg = ocaml_to_model arg and* ret = ocaml_to_model ret in
+      PTarrow (arg, ret)

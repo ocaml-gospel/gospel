@@ -102,6 +102,7 @@ let mk_tdecl tname tparams tkind tprivate tmanifest tattributes tspec tloc =
 type val_spec = {
   sp_args : Id_uast.sp_var list;
   sp_rets : Id_uast.sp_var list;
+  sp_tops : Id_uast.ocaml_sp_var list;
   sp_pre : term list;
   sp_post : term list;
   sp_diverge : bool;
