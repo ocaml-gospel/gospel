@@ -116,6 +116,7 @@ and mod_defs = {
   (* Environments for OCaml definitions *)
   ocaml_type_env : ty_info Env.t;
   (* OCaml type definitions. *)
+  ocaml_val_env : fun_info Env.t;
   exn_env : exn_info Env.t; (* Exceptions  *)
   mod_env : mod_info Env.t; (* Nested modules *)
 }
@@ -128,6 +129,7 @@ let empty_defs =
     field_env = Env.empty;
     record_env = Record_env.empty;
     ocaml_type_env = Env.empty;
+    ocaml_val_env = Env.empty;
     exn_env = Env.empty;
     mod_env = Env.empty;
   }
@@ -144,7 +146,7 @@ let lookup f (defs : mod_defs) pid =
 
 (* Helper functions for field accesses *)
 
-let find_fun = fun d -> d.fun_env
+let find_fun ~ocaml = fun d -> if ocaml then d.ocaml_val_env else d.fun_env
 let find_type ~ocaml = fun d -> if ocaml then d.ocaml_type_env else d.type_env
 let find_exn = fun d -> d.exn_env
 let find_mod = fun d -> d.mod_env
@@ -239,27 +241,6 @@ let rec map_tvars var_tbl alias =
   | PTtyapp (q, l) -> PTtyapp (q, List.map map_tvars l)
   | PTtuple l -> PTtuple (List.map map_tvars l)
 
-(** [ocaml_to_model defs ty] Turns an OCaml type into its logical
-    representation. This entails searching in the [defs] environment for the
-    logical representation of the type names used in [ty]. If any of the type
-    names used in [ty] do not have a Gospel model (or if [ty] includes arrow
-    types), this function returns [None]. *)
-let rec ocaml_to_model ty =
-  let open Uast_utils in
-  match ty with
-  | PTtyvar v ->
-      (* Note: The treatment of type variables within the Gospel type
-        checker is still unclear: currently we assume that we can use
-        an OCaml type variable as if it were a Gospel type variable,
-        which is unsound since OCaml types may be impure and
-        therefore unusable in a logical context. *)
-      Some (PTtyvar v)
-  | PTtyapp (q, _) -> q.app_model
-  | PTtuple l ->
-      let* l = map_option ocaml_to_model l in
-      PTtuple l
-  | PTarrow _ -> None
-
 let resolve_application ~ocaml env q l =
   let q, info = type_info ~ocaml env q in
   let params = info.tparams in
@@ -284,7 +265,7 @@ let resolve_application ~ocaml env q l =
   (* Map each type variable to the logical representation of its
      respective type in [l].  If there is no logical representation,
      this variable will be unbound in [model_tbl]. *)
-  let () = populate ~f:(fun x -> ocaml_to_model x) model_tbl l in
+  let () = populate ~f:(fun x -> Uast_utils.ocaml_to_model x) model_tbl l in
   (* If the type [q] is an abbreviation for another type, we can
      always expand the abbreviation by replacing respective type
      variables with the applied type expressions [l]. *)
@@ -298,15 +279,34 @@ let resolve_application ~ocaml env q l =
   in
   Types.mk_info q ~alias ~model
 
-let fun_info =
+let fun_info ~ocaml =
   unique_toplevel_qualid
     (fun x -> x.fid)
-    find_fun
+    (find_fun ~ocaml)
     (fun id -> W.Unbound_variable id)
 
-let fun_qualid env q =
-  let q, info = fun_info env q in
-  (q, info.fparams, info.fty)
+let ocaml_val_check ocaml_vals env q =
+  (* If there are no valid ocaml values, then no lookup is performed. *)
+  if Tbl.length ocaml_vals = 0 then None
+  else
+    try
+      (* Raises [W.Error] if [q] is not in the OCaml namespace. *)
+      let q, _ = fun_info ~ocaml:true env q in
+      let pty = Tbl.find ocaml_vals (Uast_utils.leaf q).id_tag in
+      Some (q, pty)
+    with W.Error _ -> None
+
+let fun_qualid ocaml_vals env q =
+  match ocaml_val_check ocaml_vals env q with
+  | None ->
+      let q, info = fun_info ~ocaml:false env q in
+      (q, info.fparams, info.fty)
+  | Some (q, ty_gospel) -> (q, [], ty_gospel)
+
+let ocaml_val_qualid env q =
+  let q, info = fun_info ~ocaml:true env q in
+  assert (info.fparams = []);
+  (q, info.fty)
 
 (* [leaf q] returns an identifier string without its prefix. *)
 let leaf = function
@@ -445,11 +445,18 @@ let submodule env = { env with defs = empty_defs }
 let add_def f env = { defs = f env.defs; scope = f env.scope }
 
 let add_fun fid fty defs =
-  let env = defs.fun_env in
   let info = { fid; fty; fparams = get_vars fty } in
+  let env = defs.fun_env in
   { defs with fun_env = Env.add fid.Ident.id_str info env }
 
 let add_fun env fty fid = add_def (add_fun fty fid) env
+
+let add_ocaml_val vid vty defs =
+  let info = { fid = vid; fty = vty; fparams = get_vars vty } in
+  let env = defs.ocaml_val_env in
+  { defs with ocaml_val_env = Env.add vid.Ident.id_str info env }
+
+let add_ocaml_val env id ty = add_def (add_ocaml_val id ty) env
 
 let add_mod mid mdefs defs =
   let menv = defs.mod_env in
@@ -526,6 +533,7 @@ let defs_union ~ocaml m1 m2 =
     field_env = union m1.field_env m2.field_env;
     record_env = runion m1.record_env m2.record_env;
     ocaml_type_env = ounion m1.ocaml_type_env m2.ocaml_type_env;
+    ocaml_val_env = ounion m1.ocaml_val_env m2.ocaml_val_env;
     exn_env = ounion m1.exn_env m2.exn_env;
     mod_env = union m1.mod_env m2.mod_env;
   }

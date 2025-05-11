@@ -457,7 +457,9 @@ let axiom_cstr ax =
     unnamed variable, return [None]. *)
 let sp_var = function
   | Ghost (id, pty) -> Some (mk_ts id pty)
-  | OCaml v -> Option.map (mk_ts v.var_name) v.ty_gospel
+  | OCaml v ->
+      let id = match v.var_name with Qid id -> id | _ -> assert false in
+      Option.map (mk_ts id) v.ty_gospel
   | _ -> None
 
 (** Creates a constraint ensuring that the terms within [pre] and [post] are

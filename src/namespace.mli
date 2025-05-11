@@ -42,6 +42,7 @@ type record_info = {
 
 (* Functions to update the environment by adding a top level definition *)
 val add_fun : env -> Ident.t -> Id_uast.pty -> env
+val add_ocaml_val : env -> Ident.t -> Id_uast.pty -> env
 
 val add_gospel_type :
   env -> Ident.t -> Ident.t list -> Id_uast.pty option -> env
@@ -94,11 +95,20 @@ val resolve_application :
     Postcondition: If [ocaml] is [false], [app_model] will always be [None]. *)
 
 val fun_qualid :
-  mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Ident.t list * Id_uast.pty
-(** [fun_qualid defs q] turns every sub identifier in [q] into a fully resolved
-    function identifier. Also returns the function's type and the type
-    parameters used.
-    @raise Not_found if [q] is not a valid function identifier *)
+  Id_uast.pty Ident.IdTable.t ->
+  mod_defs ->
+  Parse_uast.qualid ->
+  Id_uast.qualid * Ident.t list * Id_uast.pty
+(** [fun_qualid ocaml_vals defs q] Searches the Gospel namespace to find the
+    function [q]. Also returns the function's type and the type parameters used.
+*)
+
+val ocaml_val_qualid :
+  mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Id_uast.pty
+(** [ocaml_val defs q] Searches the OCaml namespace to find the value [q]. If
+    [q] is bound and has a valid Gospel representation, then we return its
+    resolved identifier, its OCaml type and its Gospel representation, if it
+    exists. *)
 
 val fields_qualid :
   loc:Location.t ->
@@ -143,11 +153,16 @@ val unit_id : Ident.t
 (** The unique identifier for the unit type. *)
 
 val init_env : ?ocamlprimitives:mod_defs -> mod_defs -> env
-(** [init_env stdlib] receives the definitions in the Gospel standard library
-    [stdlib] and creates an environment where every name in [stdlib] is in scope
-    as well as every name in [empty_env]. Additionally creates a module named
-    [Gospelstdlib] with every definition in [stdlib]. This should be the initial
-    environment for any Gospel project. *)
+(** [init_env ocamlprimitives stdlib] receives the definitions in the Gospel
+    standard library [stdlib] and creates an environment where every name in
+    [stdlib] is in scope as well as every name in [empty_env]. Additionally
+    creates a module named [Gospelstdlib] with every definition in [stdlib].
+    This should be the initial environment for any Gospel project.
+
+    Another set of definitions [ocamlprimitives] may also be provided which
+    contains all primitive OCaml type definitions coupled with their logical
+    representations. Besides the one used to type check the Gospel standard
+    library, every environment should have these definitions in scope. *)
 
 val submodule : env -> env
 (** Returns a new environment for processing a submodule. The variables in scope

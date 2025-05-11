@@ -16,6 +16,10 @@ open Namespace
 type local_env = {
   term_var : Ident.t Env.t;
   (* Local term variables e.g. names bound with a [let] or a quantifier *)
+  ocaml_vals : Id_uast.pty Ident.IdTable.t;
+  (* When processing an OCaml value description, this table keeps
+     track of the OCaml values that are allowed to be used within
+     Gospel terms. *)
   type_vars : (string, Ident.t) Hashtbl.t;
   (* Type variables. *)
   type_nms : Ident.t Env.t;
@@ -36,6 +40,7 @@ let empty_local_env () =
   {
     term_var = Env.empty;
     type_vars = Hashtbl.create 100;
+    ocaml_vals = Ident.IdTable.create 100;
     type_nms = Env.empty;
     ocaml_type_nms = Env.empty;
   }
@@ -130,17 +135,24 @@ let unique_pty ~ocaml ~bind defs env pty =
 
 (** [unique_var env defs q] returns a qualified identifer where the identifiers
     used in [q] have been replaced with uniquely tagged identifiers. If [q] has
-    no module accesses (i.e. is not of the form id1.id2) then this function
-    returns the binding in [env] if it exists. Otherwise it uses [defs] to
-    search for the tagged identifiers. *)
-let unique_var env defs q =
+    no module accesses (i.e. is not of the form M.id) then this function returns
+    the binding in [env] if it exists (this is the case if the variable is bound
+    locally within the term.).
+
+    If [q] is not in [env] or is a qualified variable, we first search in the
+    OCaml namespace and then check if the variable is allowed to be used within
+    the term we are processing (i.e. this variable appears in an ownership
+    clause of the specification this term is in). If the variable is either not
+    an OCaml variable or not allowed to be used in this term, we search the
+    Gospel namespace. If no variable is found, an exception is raised. *)
+let unique_var env ocaml_vals defs q =
   match q with
   | Parse_uast.Qid pid when Env.mem pid.pid_str env ->
       Tlocal (Env.find pid.pid_str env)
   | _ ->
       (* If [q] is of the form [Qdot] it cannot be a local variable *)
-      let q, params, id = fun_qualid defs q in
-      Tvar (q, params, id)
+      let q, params, pty = fun_qualid ocaml_vals defs q in
+      Tvar (q, params, pty)
 
 (** [binder (pid, pty)] maps the string [pid.pid_str] to a fresh tagged
     variable, adds all the type variables present in [pty] to the local scope
@@ -164,7 +176,7 @@ let binder defs old_env env (pid, pty) =
     a post condition). These environments include variables bound within the
     term as well as specification arguments.
 
-    When a variable is not found then we search in [defs] the top level. When a
+    When a variable is not found then we search in the [defs] top level. When a
     variable from the top level is used, we must add its typing information to
     the AST. This is necessary for the type inference phase so that the Inferno
     solver knows the type of all the variables outside the scope of the term. *)
@@ -184,7 +196,7 @@ let rec unique_post_term defs old_env env t =
     | TTrue -> TTrue
     | TFalse -> TFalse
     | Tconst c -> Tconst c
-    | Tvar q -> unique_var env.term_var defs q
+    | Tvar q -> unique_var env.term_var env.ocaml_vals defs q
     | Tlet (v, t1, t2) ->
         let id = Ident.from_preid v in
         let t1 = unique_term t1 in
@@ -472,22 +484,6 @@ let create_model env lenv tname tparams tspec =
           let env = Namespace.add_record env model_tname tparams l in
           (env, Fields l))
 
-(** [to_model pty] Turns the OCaml type [pty] into its logical representation.
-    This type function only returns [None] if any type expression uses an arrow
-    type or if any of the type applications used do not have an associated
-    Gospel representation. *)
-let rec to_model =
-  let open Uast_utils in
-  function
-  | PTtyvar v -> Some (PTtyvar v)
-  | PTtyapp (app, _) -> app.app_model
-  | PTarrow (arg, ret) ->
-      let* t1 = to_model arg and* t2 = to_model ret in
-      PTarrow (t1, t2)
-  | PTtuple l ->
-      let* l = map_option to_model l in
-      PTtuple l
-
 (** [type_decl lenv env t] processes the type declaration [t] and adds it to
     [env]. Additionally, if the typed specification of [t] contains named
     models, we also add to [env] a record type with the same model fields as
@@ -542,7 +538,7 @@ let type_decl ~ocaml lenv env t =
             tvars
         in
         Some (PTtyapp (t, tvars))
-    | No_model -> Option.bind tmanifest to_model
+    | No_model -> Option.bind tmanifest Uast_utils.ocaml_to_model
   in
 
   (* Closure that generates the typed declaration. Note that all this closure
@@ -725,7 +721,7 @@ let valid_header loc header val_nm types rets =
 let is_unit = function
   | PTtyapp ({ app_qid = Qid id; app_alias = None; _ }, []) ->
       Ident.equal Namespace.unit_id id
-  | _ -> assert false
+  | _ -> false
 
 (** [pair_hd_vars ~loc types vars] Traverses the [vars] and [types], where
     [vars] are values (either arguments or return values) defined in a
@@ -756,55 +752,90 @@ let rec pair_hd_vars types vars =
           assert false)
   | _ -> assert false (* Both lists must be of the same length. *)
 
-(** [resolve_vars vars error l] traverses the list of variables [l] and returns
-    the corresponding variable in [vars]. If any of the variables in [l] are not
-    defined, this function raises a Gospel exception. Additionally, if there are
-    duplicates in [l], the [dup_error] function is called to produce an
-    exception of type [W.error] and, naturally, raise the produced exception. *)
-let resolve_vars vars dup_error l =
+module Tbl = Ident.IdTable
+
+type owned_variables = {
+  global : (qualid * Id_uast.pty) list;
+  header : Ident.t list;
+}
+
+(** [resolve_vars defs vars dup_error l] traverses the list of variables [l] and
+    returns the corresponding variable in [vars] or in the top level environment
+    [defs].
+
+    If any of the variables in [l] are not defined, this function raises a
+    Gospel exception. Additionally, if there are duplicates in [l], the
+    [dup_error] function is called to produce an exception of type [W.error]
+    and, naturally, raise the produced exception. *)
+let resolve_vars defs vars dup_error l =
   (* [resolve_var qid] finds the variable [qid] in [vars] list. *)
   let resolve_var qid =
-    match qid with
-    | Parse_uast.Qid pid -> (
-        try
-          let id, _ =
-            List.find (fun (x, _) -> x.Ident.id_str = pid.pid_str) vars
-          in
-          { id with id_loc = pid.pid_loc }
-        with Not_found ->
-          W.error ~loc:pid.pid_loc (W.Unbound_variable [ pid.pid_str ]))
-    | Qdot _ -> assert false
-    (* For now, we can only refer to arguments or return values *)
+    let find pid = fun (x, _) -> x.Ident.id_str = pid.Preid.pid_str in
+    (* The resolved identifier with its type. *)
+    let id, ty, global =
+      match qid with
+      | Parse_uast.Qid pid when Option.is_some (List.find_opt (find pid) vars)
+        ->
+          (* Variables defined in the header. *)
+          let id, ty = List.find (find pid) vars in
+          (Qid { id with id_loc = pid.pid_loc }, ty, false)
+      | _ ->
+          (* Top level variables. *)
+          let qid, ty_ocaml = ocaml_val_qualid defs qid in
+          (qid, ty_ocaml, true)
+    in
+    (* If variables of type [ty] cannot appear in ownership clauses
+       (e.g. arrow types), then we raise a Gospel exception. *)
+    if global then Either.left (id, ty) else Either.right (Uast_utils.leaf id)
   in
-  let l = List.map resolve_var l in
+  let global, header = List.partition_map resolve_var l in
   (* Check for duplicates in the list of resolved variables. *)
-  let error id =
-    let loc = id.Ident.id_loc in
-    W.error ~loc (dup_error [ id.id_str ])
+  let error qid =
+    let loc = (Uast_utils.leaf qid).id_loc in
+    W.error ~loc (dup_error (Uast_utils.flatten_ident qid))
   in
-  let () = Utils.duplicate (fun x y -> Ident.equal x y) error l in
-  l
+  (* Check for duplicate ownership clauses *)
+  let () =
+    Utils.duplicate (fun x y -> Ident.equal x y) (fun x -> error (Qid x)) header
+  in
+  let () =
+    Utils.duplicate
+      (fun (x, _) (y, _) -> Uast_utils.eq_qualid x y)
+      (fun (x, _) -> error x)
+      global
+  in
+  { global; header }
 
-(** [duplicated_ocaml_var l1 l2 error] Receives two lists of OCaml variables
-    paired with their types and raises a Gospel exception (generated by the
-    [error] function, which receives a list of string that represents the
-    qualified identifier of the duplicated variable) if there is a common
-    element between the two lists. *)
-let duplicated_ocaml_var l1 l2 error =
-  List.iter
+(** [duplicated_ocaml_var l1 l2 error] Receives two lists of OCaml variables and
+    raises a Gospel exception (generated by the [error] function, which receives
+    a list of strings that represents the qualified identifier) if there is a
+    common element between the two lists. *)
+let common_value l1 l2 error =
+  Seq.iter
     (fun x ->
-      if List.exists (Ident.equal x) l1 then
-        W.error ~loc:x.id_loc (error [ x.id_str ]))
+      if Seq.exists (Uast_utils.eq_qualid x) l1 then
+        W.error ~loc:(Uast_utils.leaf x).id_loc
+          (error (Uast_utils.flatten_ident x)))
     l2
 
+let duplicated_owned o1 o2 error =
+  (* Helper functions to turn [owned_variables] into sequences that can
+   be used by [duplicated_ocaml_var] *)
+  let header_to_seq l = List.to_seq l |> Seq.map (fun x -> Qid x) in
+  let global_to_seq l = List.to_seq l |> Seq.map fst in
+  let own_to_seq o =
+    Seq.append (header_to_seq o.header) (global_to_seq o.global)
+  in
+  common_value (own_to_seq o1) (own_to_seq o2) error
+
 (** [process_sugar_ownership vspec vars] resolves the variables in the
-    [modifies] and [preserves] clauses in [vspec] using the [vars] list.
-    Additionally, creates a list of read only variables from the list of
-    [preserves] clauses. This function also catches the following errors:
-    - Two [modifies] clauses for the same variable.
-    - Two [preserves] clauses for the same variable.
-    - A [preserves] and a [modifies] clause for the same variable. *)
-let process_sugar_ownership spec vars =
+    [modifies] and [preserves] clauses in [vspec] using the [vars] list and the
+    [defs] top level environment. Additionally, creates a list of read only
+    variables from the list of [preserves] clauses. This function also catches
+    the following errors: - Two [modifies] clauses for the same variable. - Two
+    [preserves] clauses for the same variable. - A [preserves] and a [modifies]
+    clause for the same variable. *)
+let process_sugar_ownership defs spec vars =
   (* Functions that return an exception in case of a duplicated
      [modifies] or [preserves] clauses. *)
   let dup_mod id = W.Duplicated_modifies id in
@@ -812,23 +843,23 @@ let process_sugar_ownership spec vars =
   let pres_mod id = W.Modified_and_preserved id in
   (* Name resolution for names in [modifies] and [preserves] clauses.
      Also checks if there are any duplicates. *)
-  let modified_vars = resolve_vars vars dup_mod spec.Parse_uast.sp_modifies in
   let preserved_vars =
-    resolve_vars vars dup_pres spec.Parse_uast.sp_preserves
+    resolve_vars defs vars dup_pres spec.Parse_uast.sp_preserves
   in
-  (* Checks if there is a variable that is both in a [preserves] and
+  let modified_vars = resolve_vars defs vars dup_mod spec.sp_modifies in
+  (* Checks if there is a value that is both in a [preserves] and
      [modifies] clause. *)
-  let () = duplicated_ocaml_var modified_vars preserved_vars pres_mod in
-  let combine = modified_vars @ preserved_vars in
-  (combine, preserved_vars)
+  let () = duplicated_owned preserved_vars modified_vars pres_mod in
+  (modified_vars, preserved_vars)
 
-(** [process_ownership ~consume own vars] processes the ownership clauses [own]
-    (which is either a list of [produces] or a list of [consumes] clauses).
-    Performs name resolution using the [vars] and each name with its respective
+(** [process_ownership ~consume defs mod_and_pres own vars] processes the
+    ownership clauses [own] (which is either a list of [produces] or a list of
+    [consumes] clauses). Performs name resolution using the [vars] list and the
+    [defs] top level environment and pair each name with its its respective
     OCaml type. Also checks if the variable appears in the [mod_and_pres] list,
     which should be the list of variables in [modifies] and [preserves] clauses.
     The [consumes] clause only impacts error messages. *)
-let process_ownership ~consumes mod_and_pres own vars =
+let process_ownership ~consumes defs modifies preserves own vars =
   (* Functions that return (not raise) an exception for errors in
      [consumes] or [produces] clauses.  *)
   let dup_error qid =
@@ -837,10 +868,15 @@ let process_ownership ~consumes mod_and_pres own vars =
   let mod_error qid =
     if consumes then W.Desugared_consumes qid else W.Desugared_produces qid
   in
-  let l = resolve_vars vars dup_error own in
-  (* Checks if the variable also appears in a [modifies] or [preserves] clause. *)
-  let () = duplicated_ocaml_var l mod_and_pres mod_error in
-  mod_and_pres @ l
+  let owned_variables = resolve_vars defs vars dup_error own in
+  (* Checks if there is a variable also appears in a [modifies] or
+     [preserves] clause. *)
+  let () = duplicated_owned owned_variables modifies mod_error in
+  let () = duplicated_owned owned_variables preserves mod_error in
+  {
+    header = owned_variables.header @ modifies.header @ preserves.header;
+    global = owned_variables.global @ modifies.global @ preserves.global;
+  }
 
 (** [add_values_env header lenv defs vals consumes produces read_only] creates
     two environments to process OCaml value specifications: one for pre
@@ -875,7 +911,7 @@ let add_values_env header lenv defs args rets consumes produces read_only =
         let var_name, ty_ocaml = List.find (fun (id, _) -> var_mem id) vals in
 
         (* Creates the Gospel representation for this OCaml value. *)
-        let ty_gospel = to_model ty_ocaml in
+        let ty_gospel = Uast_utils.ocaml_to_model ty_ocaml in
         let has_gospel = Option.is_some ty_gospel in
         (* Checks if the function receives or returns ownership of this value. *)
         let cons = List.exists var_mem consumes in
@@ -889,7 +925,7 @@ let add_values_env header lenv defs args rets consumes produces read_only =
         let add_var ~add env =
           if add && has_gospel then add_term_var var_name env else env
         in
-        ( OCaml { var_name; ty_ocaml; ty_gospel; prod; cons; ro },
+        ( OCaml { var_name = Qid var_name; ty_ocaml; ty_gospel; prod; cons; ro },
           add_var ~add:cons pre_env,
           add_var ~add:prod post_env )
   in
@@ -938,8 +974,40 @@ let type_val_spec spec defs args rets pre_env post_env =
   in
   Solver.spec (get_tvars pre_env) args rets pre post
 
-(** [ocaml_value env v] Translates the specification of an OCaml value
-    description to a Gospel value description. This is done by:
+(** [global_values pre_tbl post_tbl consumes produces modifies preserves]
+    returns the list of top level variables that are used in ownership clauses.
+    Also populates the [pre_tbl] and the [post_tbl] with the top level variables
+    that can be used in pre and post conditions, respectively. *)
+let global_values_list pre_tbl post_tbl consumes produces modifies preserves =
+  let mem x = fun (y, _) -> Uast_utils.eq_qualid x y in
+  (* The produces list without any value from the [consumes] list.  At
+     this point, there cannot be any duplicates in any other list. *)
+  let prod_no_cons =
+    List.filter (fun (x, _) -> List.exists (mem x) consumes) produces
+  in
+  List.map
+    (fun (var_name, ty_ocaml) ->
+      (* Get the Gospel model of the type. *)
+      let ty_gospel = Uast_utils.ocaml_to_model ty_ocaml in
+      (* Check if the values are consumed and produced. *)
+      let var_tag = (Uast_utils.leaf var_name).id_tag in
+      let prod = List.exists (mem var_name) produces in
+      let cons = List.exists (mem var_name) consumes in
+      (* Populates the [pre_tbl] and [post_tbl]. *)
+      if cons then Option.iter (Tbl.add pre_tbl var_tag) ty_gospel;
+      if prod then Option.iter (Tbl.add post_tbl var_tag) ty_gospel;
+      {
+        var_name;
+        ty_ocaml;
+        ty_gospel;
+        prod;
+        cons;
+        ro = List.exists (mem var_name) preserves;
+      })
+    (consumes @ prod_no_cons @ modifies @ preserves)
+
+(** [ocaml_value env v] Translates an OCaml value description to a Gospel value
+    description. This is done by:
 
     - Creating a header for the specification if it does not have one.
     - Checking for errors in the header (for more details, check the
@@ -949,9 +1017,13 @@ let type_val_spec spec defs args rets pre_env post_env =
       type.
     - Checks if the ownership clauses are valid (no duplicates and all the names
       are OCaml variables that are in scope).
+    - Augmenting the list of consumed and produced values with the variables
+      named in the header that do not appear in an ownership clause.
     - Turning the OCaml types of the function's arguments and return values into
       Gospel types.
-    - Creating the local environments for processing pre and post conditions.
+    - Creating the local environments for processing pre and post conditions
+      using the information from the ownership clauses (e.g. a value that is not
+      consumed cannot be used in a precondition).
     - Typechecking the pre and post conditions and creating the typed value
       description.
     - Adding the OCaml value into the namespace [env] *)
@@ -987,32 +1059,41 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
      [mod_and_pres] contains all the variables in both [modifies] and
      [preserves] clauses, whereas [read_only] only contains those in
      [preserves] clauses. *)
-  let mod_and_pres, read_only = process_sugar_ownership spec.sp_pre_spec args in
+  let modifies, preserves =
+    process_sugar_ownership defs spec.sp_pre_spec args
+  in
   (* Resolves the variables in [consumes] and [produces] clauses.
      Note how return values are not allowed to be consumed. *)
   let consumes =
-    process_ownership ~consumes:true mod_and_pres spec.sp_pre_spec.sp_consumes
-      args
+    process_ownership ~consumes:true defs modifies preserves
+      spec.sp_pre_spec.sp_consumes args
   in
   let produces =
-    process_ownership ~consumes:false mod_and_pres spec.sp_post_spec.sp_produces
-      (args @ rets)
+    process_ownership ~consumes:false defs modifies preserves
+      spec.sp_post_spec.sp_produces (args @ rets)
   in
-  (* Augment the [produces], [consumes] and [read_only] lists with all
+  (* Augment the [consumes], [produces] and [read_only] lists with all
      the variables that are named in the header but do not appear in
      an ownership clause.  At this point, each variable named in the
      header appears in the [produces] or [consumes] list (or both). *)
-  let consumes, produces, read_only =
-    insert_ownership consumes produces read_only args rets
+  let consumes_header, produces_header, read_only =
+    insert_ownership consumes.header produces.header preserves.header args rets
   in
+  (* Creates environments with the variables defined in the header. *)
   let args, rets, pre_env, post_env =
-    add_values_env header lenv defs args rets consumes produces read_only
+    add_values_env header lenv defs args rets consumes_header produces_header
+      read_only
+  in
+  let tops =
+    global_values_list pre_env.ocaml_vals post_env.ocaml_vals consumes.global
+      produces.global modifies.global preserves.global
   in
   (* Type checks the pre and post conditions. *)
   let pre, post = type_val_spec spec defs args rets pre_env post_env in
   {
     Tast.sp_args = args;
     sp_rets = rets;
+    sp_tops = tops;
     sp_pre = pre;
     sp_post = post;
     sp_diverge = spec.sp_pre_spec.sp_diverge;
@@ -1038,7 +1119,7 @@ let ocaml_val env v =
       vloc = v.vloc;
     }
   in
-  Tast.Sig_value v
+  (Tast.Sig_value v, add_ocaml_val env v.vname vtype)
 
 (* -------------------------------------------------------------------------- *)
 
@@ -1079,7 +1160,7 @@ and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
-    | Sig_val v -> (ocaml_val env v, env)
+    | Sig_val v -> ocaml_val env v
     | Sig_type t ->
         let env, t = tdecl_list ~ocaml:true env t in
         (Tast.Sig_type t, env)
