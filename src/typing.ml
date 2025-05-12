@@ -484,6 +484,49 @@ let create_model env lenv tname tparams tspec =
           let env = Namespace.add_record env model_tname tparams l in
           (env, Fields l))
 
+(** [can_be_owned tkind talias spec] Checks if the OCaml type definition [tkind]
+    coupled with the specifications [tspec] and type alias [talias] denote a
+    type that can be "owned", in other words, a type whose inhabitants can
+    appear in ownership clauses. This will return true if there was a [mutable]
+    annotation in [tspec] or if the type definition [tkind] uses mutability in
+    any way. *)
+let can_be_owned tkind talias tspec =
+  (* The mutable flag the user specified *)
+  let spec_mut =
+    Option.fold ~some:(fun s -> s.Parse_uast.ty_mutable) ~none:false tspec
+  in
+  (* If the type is not abstract, this will mark if the flag . *)
+  let kind_mut =
+    match tkind with
+    | PTtype_abstract ->
+        (* If the type is abstract, check if its alias is mutable (if it exists). *)
+        Option.map Uast_utils.can_own talias
+    | PTtype_record l ->
+        (* Check if any of the fields are mutable*)
+        let mut = List.exists (fun l -> l.pld_mutable = Mutable) l in
+        (* If the fields themselves are not mutable, check if the
+           types of the fields are mutable. *)
+        let mut =
+          mut || List.exists (fun l -> Uast_utils.can_own l.pld_type) l
+        in
+        Some mut
+  in
+  match (spec_mut, kind_mut) with
+  | true, Some false ->
+      (* If the specification states that the value is mutable but the
+         OCaml type definition is not impure, we raise an
+         exception. *)
+      W.error ~loc:(Option.get tspec).ty_loc W.Bad_mutable_annotation
+  | _, None ->
+      (* If the type is abstract, we use the annotation the user
+         provides.  If the user did not provide a [mutable]
+         annotation, we assume it is not mutable. *)
+      spec_mut
+  | _, Some kind_mut ->
+      (* If the type is not abstract, we use the type definition to
+         check if it is mutable or not. *)
+      kind_mut
+
 (** [type_decl lenv env t] processes the type declaration [t] and adds it to
     [env]. Additionally, if the typed specification of [t] contains named
     models, we also add to [env] a record type with the same model fields as
@@ -522,6 +565,7 @@ let type_decl ~ocaml lenv env t =
 
   let env, tkind = type_kind ~ocaml env tname tparams lenv t.tkind in
   let env, model = create_model env lenv t.tname tparams t.tspec in
+  let mut = can_be_owned tkind tmanifest t.tspec in
 
   let tvars = List.map (fun x -> PTtyvar x) tparams in
 
@@ -563,7 +607,7 @@ let type_decl ~ocaml lenv env t =
   (* Update the environment depending on whether or not this is an OCaml
      definition. *)
   let env =
-    if ocaml then add_ocaml_type env tname tparams tmanifest model_ty
+    if ocaml then add_ocaml_type env tname tparams ~mut tmanifest model_ty
     else add_gospel_type env tname tparams tmanifest
   in
   (env, def_gen)
@@ -786,6 +830,9 @@ let resolve_vars defs vars dup_error l =
     in
     (* If variables of type [ty] cannot appear in ownership clauses
        (e.g. arrow types), then we raise a Gospel exception. *)
+    if not (Uast_utils.can_own ty) then
+      W.error ~loc:(Uast_utils.qualid_loc id)
+        (W.Cant_be_owned (Uast_utils.flatten_ident id));
     if global then Either.left (id, ty) else Either.right (Uast_utils.leaf id)
   in
   let global, header = List.partition_map resolve_var l in
@@ -965,6 +1012,26 @@ let insert_ownership consumes produces ro args rets =
      unmodified.  The values in [rets] are only produced. *)
   (args @ consumes, args @ rets @ produces, args @ ro)
 
+(** [valid_pure loc args rets tops ~diverge ~pure] Checks if the function is
+    pure or not. A function is pure if it does not modify any top level variable
+    or any of its arguments. Naturally, a pure function cannot diverge.
+
+    This function raises a Gospel exception if the user added a [pure] to the
+    specification but the function does not meet the previous criteria. *)
+let valid_pure loc args tops ~diverge ~pure =
+  let is_mut = function OCaml v -> not v.ro | _ -> false in
+  (* If the function is marked as pure but at least one of the
+     variables used by this function is modified, we raise an
+     exception *)
+  let mut = List.exists is_mut args || List.exists (fun x -> not x.ro) tops in
+  if pure && mut then W.error ~loc W.Pure_modifies;
+  if pure && diverge then W.error ~loc W.Pure_diverges;
+  not (mut || diverge)
+
+(** [returns_unit rets] checks if the list of return values is the singleton
+    list composed of the [unit] type. *)
+let returns_unit = function [ r ] when is_unit r -> true | _ -> false
+
 let type_val_spec spec defs args rets pre_env post_env =
   let pre =
     List.map (unique_term defs pre_env) spec.Parse_uast.sp_pre_spec.sp_pre
@@ -1024,6 +1091,8 @@ let global_values_list pre_tbl post_tbl consumes produces modifies preserves =
     - Creating the local environments for processing pre and post conditions
       using the information from the ownership clauses (e.g. a value that is not
       consumed cannot be used in a precondition).
+    - Checking if the [pure] and [diverge] annotations are valid. Also ensure
+      that functions that return [unit] perform some effect.
     - Typechecking the pre and post conditions and creating the typed value
       description.
     - Adding the OCaml value into the namespace [env] *)
@@ -1087,6 +1156,18 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
   let tops =
     global_values_list pre_env.ocaml_vals post_env.ocaml_vals consumes.global
       produces.global modifies.global preserves.global
+  in
+  (* Raises a Gospel exception if the function is marked as pure when
+     it is not allowed. *)
+  let is_pure =
+    valid_pure loc args tops ~pure:spec.sp_pre_spec.sp_pure
+      ~diverge:spec.sp_pre_spec.sp_diverge
+  in
+  (* Raises a Gospel exception if the function returns unit but none
+     of its values are modified. *)
+  let () =
+    if is_pure && returns_unit ret_types then
+      W.error ~loc:spec.sp_loc W.Cant_return_unit
   in
   (* Type checks the pre and post conditions. *)
   let pre, post = type_val_spec spec defs args rets pre_env post_env in
