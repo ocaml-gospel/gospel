@@ -58,6 +58,8 @@ type ty_info = {
      When typechecking we replace [t] with its alias where every ['a]
      is replaced with [int] and ['b] is replaced with [string],
      resulting in the expanded type [int -> string]. *)
+  tmut : bool;
+  (* Mutability flag.  Always [false] for Gospel types. *)
   talias : Id_uast.pty option;
       (* In case of a type declaration of the form [type t = alias] where alias is
      some type expression, this value is [Some alias]. All applications of type
@@ -277,7 +279,7 @@ let resolve_application ~ocaml env q l =
        model depends on do not have a logical representation. *)
     try Option.map (map_tvars model_tbl) info.tmodel with Not_found -> None
   in
-  Types.mk_info q ~alias ~model
+  Types.mk_info q ~alias ~model ~mut:info.tmut
 
 let fun_info ~ocaml =
   unique_toplevel_qualid
@@ -476,18 +478,26 @@ let rec to_alias = function
   | PTarrow (arg, res) -> PTarrow (to_alias arg, to_alias res)
   | PTtuple l -> PTtuple (List.map to_alias l)
 
-let add_ocaml_type tid tparams talias tmodel defs =
+let add_ocaml_type tid tparams tmut talias tmodel defs =
   let tenv = defs.ocaml_type_env in
-  let info = { tid; tparams; talias = Option.map to_alias talias; tmodel } in
+  let info =
+    { tid; tparams; tmut; talias = Option.map to_alias talias; tmodel }
+  in
   { defs with ocaml_type_env = Env.add tid.Ident.id_str info tenv }
 
-let add_ocaml_type env id params alias model =
-  add_def (add_ocaml_type id params alias model) env
+let add_ocaml_type env id params ~mut alias model =
+  add_def (add_ocaml_type id params mut alias model) env
 
 let add_gospel_type tid tparams talias defs =
   let tenv = defs.type_env in
   let info =
-    { tid; tparams; talias = Option.map to_alias talias; tmodel = None }
+    {
+      tid;
+      tparams;
+      tmut = false;
+      talias = Option.map to_alias talias;
+      tmodel = None;
+    }
   in
   { defs with type_env = Env.add tid.Ident.id_str info tenv }
 
@@ -550,7 +560,9 @@ let gospel_open env qid =
 let type_env =
   List.fold_left
     (fun tenv (x, y) ->
-      Env.add x { tid = y; tparams = []; talias = None; tmodel = None } tenv)
+      Env.add x
+        { tid = y; tparams = []; tmut = false; talias = None; tmodel = None }
+        tenv)
     Env.empty Structure.primitive_list
 
 (** [fun_env] contains the definitions for logical disjunction and conjunction.
@@ -602,7 +614,13 @@ let init_env ?ocamlprimitives gospelstdlib =
            needed for typechecking specifications, meaning its
            definition must be present at compile time. *)
         let unit_info =
-          { tid = unit_id; tparams = []; talias = None; tmodel = None }
+          {
+            tid = unit_id;
+            tparams = [];
+            tmut = false;
+            talias = None;
+            tmodel = None;
+          }
         in
         let m =
           { m with ocaml_type_env = Env.add "unit" unit_info m.ocaml_type_env }

@@ -81,8 +81,8 @@ let inject n =
 (** Maps a type variable to a decoded type. *)
 let variable v = PTtyvar v
 
-let mk_info ?(alias = None) ?(model = None) id =
-  { Id_uast.app_qid = id; app_alias = alias; app_model = model }
+let mk_info ?(alias = None) ?(model = None) ?(mut = false) id =
+  { Id_uast.app_qid = id; app_alias = alias; app_model = model; app_mut = mut }
 
 (** Maps a structure whose variables are decoded types into a decoded type. *)
 let structure t =

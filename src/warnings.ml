@@ -4,8 +4,11 @@ open Utils
 type kind =
   | Arity_mismatch of string * string * int * int
   | Bad_arity of string * int * int
+  | Bad_mutable_annotation
   | Bad_type of string * string
   | Bad_subtype of string * string * string * string
+  | Cant_be_owned of string list
+  | Cant_return_unit
   | Cycle of string * string
   | Cyclic_definition of string
   | Cyclic_definitions of string * string list
@@ -32,6 +35,8 @@ type kind =
   | Modified_and_preserved of string list
   | No_model of string
   | Not_a_function of string
+  | Pure_diverges
+  | Pure_modifies
   | Syntax_error
   | Unbound_exception of string list
   | Unbound_module of string
@@ -65,12 +70,17 @@ let pp_kind ppf = function
         "The type constructor %s expected %d argument(s)@ but is applied to %d \
          argument(s) here"
         f expected got
+  | Bad_mutable_annotation -> pf ppf "This type cannot be marked as mutable"
   | Bad_subtype (ty1, ty2, ty1_sub, ty2_sub) ->
       pf ppf
         "Mismatch between type %s@ and type %s@\n\
          Type %s is incompatible with type %s"
         ty1 ty2 ty1_sub ty2_sub
   | Bad_type (t1, t2) -> pf ppf "Mismatch between type %s@ and type %s" t1 t2
+  | Cant_return_unit ->
+      pf ppf "This function has no listed side effects, it cannot return unit"
+  | Cant_be_owned id ->
+      pf ppf "The variable %a cannot appear in an ownership clause" print_qid id
   | Cycle (v, t) ->
       pf ppf
         "This expression has type '%s@ but an expression was expected of type \
@@ -144,6 +154,9 @@ let pp_kind ppf = function
       pf ppf "The type %s has no model, it cannot have an invariant" v
   | Not_a_function s ->
       pf ppf "Expected a functional value but received a value of type %s" s
+  | Pure_diverges -> pf ppf "A function marked as pure cannot diverge"
+  | Pure_modifies ->
+      pf ppf "A function annotated as pure cannot modify a variable."
   | Syntax_error -> pf ppf "Syntax error"
   | Unbound_exception s -> pf ppf "Unbound exception %a" print_qid s
   | Unbound_module s -> pf ppf "Unbound module %s" s

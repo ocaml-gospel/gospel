@@ -160,3 +160,15 @@ let rec ocaml_to_model ty =
   | PTarrow (arg, ret) ->
       let* arg = ocaml_to_model arg and* ret = ocaml_to_model ret in
       PTarrow (arg, ret)
+
+(** [can_own ty] traverses an OCaml type and checks if one needs to claim
+    ownership of this value in order to use it within a specification.. *)
+let rec can_own ty =
+  match ty with
+  | Id_uast.PTtyvar _ -> false
+  | PTtyapp (id, l) -> id.app_mut || List.exists can_own l
+  | PTtuple l -> List.exists can_own l
+  | PTarrow _ ->
+      (* For now, we assume that all OCaml functions are pure. *) false
+
+let qualid_loc = function Id_uast.Qid id | Qdot (_, id) -> id.id_loc

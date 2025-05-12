@@ -37,7 +37,11 @@ val ty_prop : ty
 (** Type of propositions *)
 
 val mk_info :
-  ?alias:ty option -> ?model:ty option -> Id_uast.qualid -> Id_uast.app_info
+  ?alias:ty option ->
+  ?model:ty option ->
+  ?mut:bool ->
+  Id_uast.qualid ->
+  Id_uast.app_info
 
 (* The following functions are used to emit errors when it is necessary to print
    a type. *)

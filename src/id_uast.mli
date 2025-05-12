@@ -25,6 +25,7 @@ and app_info = {
   app_qid : qualid;
   app_alias : pty option;
   app_model : pty option;
+  app_mut : bool;
 }
 (** For every type application the user writes, we also keep track of the alias
     for that type. We need the type alias for the type checking phase and we

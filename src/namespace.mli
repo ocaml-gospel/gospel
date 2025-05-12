@@ -51,6 +51,7 @@ val add_ocaml_type :
   env ->
   Ident.t ->
   Ident.t list ->
+  mut:bool ->
   Id_uast.pty option ->
   Id_uast.pty option ->
   env
