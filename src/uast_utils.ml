@@ -75,8 +75,7 @@ let rec args_to_list t =
 let create_header nm nargs =
   let mk_arg _ = Lwild in
   let args = List.init nargs mk_arg in
-  let rets = [ Lwild ] in
-  { sp_hd_nm = nm; sp_hd_ret = rets; sp_hd_args = args }
+  { sp_hd_nm = nm; sp_hd_args = args; sp_hd_ret = [ Lwild ] }
 
 (** Let operator that ignores [None] values *)
 let ( let* ) o f = match o with None -> None | Some x -> Some (f x)

@@ -101,10 +101,18 @@ type pre_spec = {
 
 type post_spec = { sp_post : term list; sp_produces : qualid list }
 
+type xpost_spec = {
+  sp_exn : qualid;
+  sp_rets : labelled_arg list;
+  sp_xpost : term list;
+  sp_xproduces : qualid list;
+}
+
 type val_spec = {
   sp_header : spec_header option;
   sp_pre_spec : pre_spec;
   sp_post_spec : post_spec;
+  sp_xpost_spec : xpost_spec list;
   sp_text : string;
   sp_loc : Location.t;
 }

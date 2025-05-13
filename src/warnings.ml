@@ -37,6 +37,7 @@ type kind =
   | Not_a_function of string
   | Pure_diverges
   | Pure_modifies
+  | Repeated_ret_case
   | Syntax_error
   | Unbound_exception of string list
   | Unbound_module of string
@@ -157,6 +158,8 @@ let pp_kind ppf = function
   | Pure_diverges -> pf ppf "A function marked as pure cannot diverge"
   | Pure_modifies ->
       pf ppf "A function annotated as pure cannot modify a variable."
+  | Repeated_ret_case ->
+      pf ppf "The non-exceptional case of this match is repeated"
   | Syntax_error -> pf ppf "Syntax error"
   | Unbound_exception s -> pf ppf "Unbound exception %a" print_qid s
   | Unbound_module s -> pf ppf "Unbound module %s" s
