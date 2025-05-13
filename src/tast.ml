@@ -99,12 +99,22 @@ type s_type_declaration = {
 let mk_tdecl tname tparams tkind tprivate tmanifest tattributes tspec tloc =
   { tname; tparams; tkind; tprivate; tmanifest; tattributes; tspec; tloc }
 
+type xpost_spec = {
+  sp_exn : Id_uast.qualid;
+  sp_xargs : Id_uast.sp_var list;
+  sp_xrets : Id_uast.sp_var list;
+  sp_xtops : Id_uast.ocaml_sp_var list;
+  sp_xpost : term list;
+  sp_xloc : Location.t;
+}
+
 type val_spec = {
   sp_args : Id_uast.sp_var list;
   sp_rets : Id_uast.sp_var list;
   sp_tops : Id_uast.ocaml_sp_var list;
   sp_pre : term list;
   sp_post : term list;
+  sp_xspec : xpost_spec list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_text : string;

@@ -16,6 +16,7 @@ type kind =
   | Desugared_produces of string list
   | Duplicated_argument of string
   | Duplicated_consumes of string list
+  | Duplicate_exceptional_spec of string list
   | Duplicated_header_value of string
   | Duplicated_modifies of string list
   | Duplicated_parameter of string
@@ -27,6 +28,7 @@ type kind =
   | Illegal_escape of string * string option
   | Incompatible_field of string list * string list * string
   | Invalid_arg_number of int * int
+  | Invalid_exn_ret_number of int * int
   | Invalid_header_name of string
   | Invalid_header_unit of string
   | Invalid_old
@@ -37,6 +39,7 @@ type kind =
   | Not_a_function of string
   | Pure_diverges
   | Pure_modifies
+  | Pure_raises
   | Repeated_ret_case
   | Syntax_error
   | Unbound_exception of string list
@@ -104,6 +107,9 @@ let pp_kind ppf = function
   | Duplicated_argument arg -> pf ppf "Duplicated argument %s" arg
   | Duplicated_consumes arg ->
       pf ppf "The variable %a is listed as consumes twice" print_qid arg
+  | Duplicate_exceptional_spec exn ->
+      pf ppf "The exception %a is listed twice in this specification" print_qid
+        exn
   | Duplicated_header_value v ->
       pf ppf "The variable %s is defined twice in this header" v
   | Duplicated_modifies v ->
@@ -120,6 +126,9 @@ let pp_kind ppf = function
   | Invalid_arg_number (expected, got) ->
       pf ppf "This header has %d argument%a but expected %d" got plural got
         expected
+  | Invalid_exn_ret_number (expected, got) ->
+      pf ppf "This exceptional case expected %d return value%a but got %d" got
+        plural got expected
   | Invalid_header_name s ->
       pf ppf
         "Header name %s does not match the declared value in the OCaml \
@@ -158,6 +167,8 @@ let pp_kind ppf = function
   | Pure_diverges -> pf ppf "A function marked as pure cannot diverge"
   | Pure_modifies ->
       pf ppf "A function annotated as pure cannot modify a variable."
+  | Pure_raises ->
+      pf ppf "A function annotated as pure cannot raise an exception."
   | Repeated_ret_case ->
       pf ppf "The non-exceptional case of this match is repeated"
   | Syntax_error -> pf ppf "Syntax error"

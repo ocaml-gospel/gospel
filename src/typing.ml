@@ -723,6 +723,18 @@ let rec header_length = function
   | x :: t -> (
       header_length t + match x with Parse_uast.Lghost _ -> 0 | _ -> 1)
 
+(** [valid_val_n ~loc hd_vals args error] takes checks if the amount of
+    arguments provided in [hd_vals] is valid with regards to the list of OCaml
+    types [args].
+
+    In case of a mismatch, we raise the Gospel exception returned by [error]
+    when calling it with the expected and received values in that order. If
+    there is no mismatch, this function has no effect. *)
+let valid_val_n ~loc hd_vals args error =
+  let expected = List.length args in
+  let received = header_length hd_vals in
+  if expected <> received then W.error ~loc (error expected received)
+
 (** [valid_header header types rets] Receives the [header] for a value
     declaration that receives arguments of [types] and returns values of type
     [rets] (if the function does not return a tuple, this list will be of length
@@ -734,9 +746,10 @@ let rec header_length = function
 
     If none of these conditions are met, this function has no observable effect.
 *)
-let valid_header loc header val_nm types rets =
+let valid_header loc header val_nm types rets xspecs =
   (* Check if the header name is the same as the OCaml value's name. *)
-  let header_nm = header.Parse_uast.sp_hd_nm in
+  let open Parse_uast in
+  let header_nm = header.sp_hd_nm in
   if not (Preid.eq header_nm val_nm) then
     raise
       (W.error ~loc:header_nm.pid_loc (W.Invalid_header_name header_nm.pid_str));
@@ -745,21 +758,23 @@ let valid_header loc header val_nm types rets =
     let l = Option.get (Uast_utils.get_name l) in
     raise (W.error ~loc:l.pid_loc (W.Duplicated_header_value l.pid_str))
   in
-  (* Check for duplicate arguments and return values. *)
-  let () =
-    Utils.duplicate Uast_utils.v_eq dup_var_error
-      (header.sp_hd_ret @ header.sp_hd_args)
+  (* Check for duplicate arguments and return values. Return values
+     can have the same name as long as they do not appear in the same
+     branch (i.e. belong to different exceptional specifications).  *)
+  let xspecs = List.map (fun x -> x.sp_xrets) xspecs in
+  let check_dup rets =
+    Utils.duplicate Uast_utils.v_eq dup_var_error (rets @ header.sp_hd_args)
   in
+  let () = List.iter check_dup (header.sp_hd_ret :: xspecs) in
   (* Check if the number of arguments and return values is congruent
      with the value's type *)
-  let expectedl, argl = (List.length types, header_length header.sp_hd_args) in
-  if expectedl <> argl then
-    raise (W.error ~loc (W.Invalid_arg_number (expectedl, argl)));
-  let expectedl, retl = (List.length rets, List.length header.sp_hd_ret) in
+  valid_val_n ~loc header.sp_hd_args types (fun n1 n2 ->
+      W.Invalid_arg_number (n1, n2));
   (* If the function returns a tuple, the user is still allowed to
      give only one return value. *)
-  if expectedl <> retl && retl <> 1 then
-    raise (W.error ~loc (W.Invalid_ret_number (expectedl, retl)))
+  if header_length header.sp_hd_ret <> 1 then
+    valid_val_n ~loc header.sp_hd_ret rets (fun n1 n2 ->
+        W.Invalid_ret_number (n1, n2))
 
 (** [is_unit ty] Checks if the resolved type [ty] is [unit]. *)
 let is_unit = function
@@ -939,7 +954,8 @@ let process_ownership ~consumes defs modifies preserves own vars =
 
     This function returns a list of [sp_var] which contains the information
     regarding each variable in the header. *)
-let add_values_env header lenv defs args rets consumes produces read_only =
+let add_values_env hd_args hd_rets lenv defs args rets consumes produces
+    read_only =
   (* [process_var pre_env post_env v] creates an [sp_var] for the
      header variable [v] and adds it to the [pre_env] and
      [post_env].  *)
@@ -984,12 +1000,8 @@ let add_values_env header lenv defs args rets consumes produces read_only =
         let vars, pre_env, post_env = process_header pre_env post_env vals t in
         (var :: vars, pre_env, post_env)
   in
-  let args, pre_env, post_env =
-    process_header lenv lenv args header.Parse_uast.sp_hd_args
-  in
-  let rets, pre_env, post_env =
-    process_header pre_env post_env rets header.sp_hd_ret
-  in
+  let args, pre_env, post_env = process_header lenv lenv args hd_args in
+  let rets, pre_env, post_env = process_header pre_env post_env rets hd_rets in
   (args, rets, pre_env, post_env)
 
 (** If an OCaml argument or return value does not appear in an ownership clause,
@@ -1018,15 +1030,17 @@ let insert_ownership consumes produces ro args rets =
 
     This function raises a Gospel exception if the user added a [pure] to the
     specification but the function does not meet the previous criteria. *)
-let valid_pure loc args tops ~diverge ~pure =
+let valid_pure loc args tops xspec ~diverge ~pure =
   let is_mut = function OCaml v -> not v.ro | _ -> false in
   (* If the function is marked as pure but at least one of the
      variables used by this function is modified, we raise an
      exception *)
   let mut = List.exists is_mut args || List.exists (fun x -> not x.ro) tops in
+  let raises = xspec <> [] in
   if pure && mut then W.error ~loc W.Pure_modifies;
   if pure && diverge then W.error ~loc W.Pure_diverges;
-  not (mut || diverge)
+  if pure && raises then W.error ~loc W.Pure_raises;
+  not (mut || diverge || raises)
 
 (** [returns_unit rets] checks if the list of return values is the singleton
     list composed of the [unit] type. *)
@@ -1073,6 +1087,82 @@ let global_values_list pre_tbl post_tbl consumes produces modifies preserves =
       })
     (consumes @ prod_no_cons @ modifies @ preserves)
 
+(** [process_produces defs lenv produces hd_args hd_rets consumes modifies
+     preserves args rets] processes the [produces] clause of a specification. It
+    first performs name resolution on the values in the [produces] list.
+
+    Any header variable that is not present in an ownership clause is assumed to
+    be consumed, produced and read only (effectively a [preserves]). Once we
+    have the full list of consumed and produced variables, we create the typed
+    representation for each argument, return value (represented by [sp_var]) and
+    top level variables (represented by [sp_ocaml_var]). We also create two
+    local environments: one with the variables that are consumed (for
+    preconditions) and another with the variables that are produced and consumed
+    (for postconditions).
+
+    This function is used for processing both exceptional and non-exceptional
+    specifications, since they are handled the same way. The only difference is
+    that [hd_rets], in case of an exceptional specification, should be the
+    exceptional return values and [produces] should be the [xproduces] list. *)
+let process_produces defs lenv produces hd_args hd_rets consumes modifies
+    preserves args rets =
+  let produces =
+    process_ownership ~consumes:false defs modifies preserves produces
+      (args @ rets)
+  in
+  (* Augment the [consumes], [produces] and [read_only] lists with all
+     the variables that are named in the header but do not appear in
+     an ownership clause.  At this point, each variable named in the
+     header appears in the [produces] or [consumes] list (or both).
+
+     Note: since immutable variables cannot appear in an ownership
+     clause, these will always be automatically added to the list of
+     consumed, produced and read only variables*)
+  let consumes_header, produces_header, read_only =
+    insert_ownership consumes.header produces.header preserves.header args rets
+  in
+  (* Creates environments with the variables defined in the header. *)
+  let sp_args, sp_rets, pre_env, post_env =
+    add_values_env hd_args hd_rets lenv defs args rets consumes_header
+      produces_header read_only
+  in
+  let tops =
+    global_values_list pre_env.ocaml_vals post_env.ocaml_vals consumes.global
+      produces.global modifies.global preserves.global
+  in
+  (sp_args, sp_rets, tops, pre_env, post_env)
+
+(** [type_xspec defs lenv modifies preserves consumes hd_args args xspec] type
+    checks the exceptional specification [xspec]. The process is effectively the
+    same as that for normal post conditions. *)
+let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
+  let sp_exn, ret_type = get_exn_info defs xspec.Parse_uast.sp_exn in
+  (* In exceptional specifications, the user is always allowed to
+     provide a wildcard value or no return values. *)
+  if not (xspec.sp_xrets = [] || xspec.sp_xrets = [ Lwild ]) then
+    valid_val_n ~loc:xspec.sp_xloc xspec.sp_xrets ret_type (fun n1 n2 ->
+        W.Invalid_exn_ret_number (n1, n2));
+  let xrets =
+    if xspec.sp_xrets = [] || xspec.sp_xrets = [ Lwild ] then []
+    else pair_hd_vars ret_type xspec.sp_xrets
+  in
+  let sp_xargs, sp_xrets, sp_xtops, pre_env, post_env =
+    process_produces defs lenv xspec.sp_xproduces hd_args xspec.sp_xrets
+      consumes modifies preserves args xrets
+  in
+  let xpost =
+    List.map (unique_post_term defs pre_env post_env) xspec.sp_xpost
+  in
+  let _, sp_xpost = Solver.spec (get_tvars lenv) sp_xargs sp_xrets [] xpost in
+  {
+    Tast.sp_exn;
+    sp_xargs;
+    sp_xrets;
+    sp_xtops;
+    sp_xpost;
+    sp_xloc = xspec.sp_xloc;
+  }
+
 (** [ocaml_value env v] Translates an OCaml value description to a Gospel value
     description. This is done by:
 
@@ -1095,7 +1185,11 @@ let global_values_list pre_tbl post_tbl consumes produces modifies preserves =
       that functions that return [unit] perform some effect.
     - Typechecking the pre and post conditions and creating the typed value
       description.
-    - Adding the OCaml value into the namespace [env] *)
+    - Adding the OCaml value into the namespace [env]
+
+    Note: Exceptional specifications are type checked the same way as normal
+    post conditions, the only thing that changes is the list of produced
+    variables as well as the list of return values. *)
 let value_spec ~loc defs lenv name ocaml_ty spec =
   (* From the function's type, get the types of the values' arguments *)
   let arg_types, ret_types = Uast_utils.args_to_list ocaml_ty in
@@ -1106,14 +1200,15 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
       ~some:(fun header ->
         (* If the user has provided a header, then we check if there
              are any errors. *)
-        valid_header loc header name arg_types ret_types;
+        valid_header loc header name arg_types ret_types
+          spec.Parse_uast.sp_xpost_spec;
         header)
-      spec.Parse_uast.sp_header
+      spec.sp_header
   in
 
   (* If the function returns a tuple but the user only supplied one
-     return value, then the list of return types will be a singleton
-     list with a tuple. *)
+       return value, then the list of return types will be a singleton
+       list with a tuple. *)
   let ret_types =
     if List.length ret_types > 1 && header_length header.sp_hd_ret = 1 then
       [ PTtuple ret_types ]
@@ -1121,13 +1216,13 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
   in
 
   (* Creates association lists with the functions' arguments and
-     return values mapped to their respective types.  *)
+       return values mapped to their respective types.  *)
   let args = pair_hd_vars arg_types header.sp_hd_args in
   let rets = pair_hd_vars ret_types header.sp_hd_ret in
   (* Resolves the variables in [modifies] and [preserves] clauses.
-     [mod_and_pres] contains all the variables in both [modifies] and
-     [preserves] clauses, whereas [read_only] only contains those in
-     [preserves] clauses. *)
+       [mod_and_pres] contains all the variables in both [modifies] and
+       [preserves] clauses, whereas [read_only] only contains those in
+       [preserves] clauses. *)
   let modifies, preserves =
     process_sugar_ownership defs spec.sp_pre_spec args
   in
@@ -1137,46 +1232,46 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
     process_ownership ~consumes:true defs modifies preserves
       spec.sp_pre_spec.sp_consumes args
   in
-  let produces =
-    process_ownership ~consumes:false defs modifies preserves
-      spec.sp_post_spec.sp_produces (args @ rets)
+  let sp_args, sp_rets, tops, pre_env, post_env =
+    process_produces defs lenv spec.sp_post_spec.sp_produces header.sp_hd_args
+      header.sp_hd_ret consumes modifies preserves args rets
   in
-  (* Augment the [consumes], [produces] and [read_only] lists with all
-     the variables that are named in the header but do not appear in
-     an ownership clause.  At this point, each variable named in the
-     header appears in the [produces] or [consumes] list (or both). *)
-  let consumes_header, produces_header, read_only =
-    insert_ownership consumes.header produces.header preserves.header args rets
+  (* Type check the exceptional specifications. *)
+  let sp_xspec =
+    List.map
+      (type_xspec defs lenv modifies preserves consumes header.sp_hd_args args)
+      spec.sp_xpost_spec
   in
-  (* Creates environments with the variables defined in the header. *)
-  let args, rets, pre_env, post_env =
-    add_values_env header lenv defs args rets consumes_header produces_header
-      read_only
-  in
-  let tops =
-    global_values_list pre_env.ocaml_vals post_env.ocaml_vals consumes.global
-      produces.global modifies.global preserves.global
+  (* Check if any exception is listed twice. *)
+  let () =
+    Utils.duplicate
+      (fun x y -> Uast_utils.eq_qualid x.Tast.sp_exn y.Tast.sp_exn)
+      (fun x ->
+        W.error ~loc:x.sp_xloc
+          (Duplicate_exceptional_spec (Uast_utils.flatten_ident x.sp_exn)))
+      sp_xspec
   in
   (* Raises a Gospel exception if the function is marked as pure when
-     it is not allowed. *)
+       it is not allowed. *)
   let is_pure =
-    valid_pure loc args tops ~pure:spec.sp_pre_spec.sp_pure
-      ~diverge:spec.sp_pre_spec.sp_diverge
+    valid_pure loc sp_args tops ~pure:spec.sp_pre_spec.sp_pure
+      ~diverge:spec.sp_pre_spec.sp_diverge spec.sp_xpost_spec
   in
   (* Raises a Gospel exception if the function returns unit but none
-     of its values are modified. *)
+       of its values are modified. *)
   let () =
     if is_pure && returns_unit ret_types then
       W.error ~loc:spec.sp_loc W.Cant_return_unit
   in
   (* Type checks the pre and post conditions. *)
-  let pre, post = type_val_spec spec defs args rets pre_env post_env in
+  let pre, post = type_val_spec spec defs sp_args sp_rets pre_env post_env in
   {
-    Tast.sp_args = args;
-    sp_rets = rets;
+    Tast.sp_args;
+    sp_rets;
     sp_tops = tops;
     sp_pre = pre;
     sp_post = post;
+    sp_xspec;
     sp_diverge = spec.sp_pre_spec.sp_diverge;
     sp_pure = spec.sp_pre_spec.sp_pure;
     sp_text = spec.sp_text;
