@@ -103,9 +103,10 @@ type post_spec = { sp_post : term list; sp_produces : qualid list }
 
 type xpost_spec = {
   sp_exn : qualid;
-  sp_rets : labelled_arg list;
+  sp_xrets : labelled_arg list;
   sp_xpost : term list;
   sp_xproduces : qualid list;
+  sp_xloc : Location.t;
 }
 
 type val_spec = {

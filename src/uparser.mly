@@ -203,7 +203,7 @@ val_spec:
   { mk_spec (Some h) empty_pre_vspec s [] }
 | s1=val_spec_pre h=val_spec_header IN s2=val_spec_post EOF
   { mk_spec (Some h) s1 s2 [] }
-| s1=val_spec_pre h=val_spec_match s2=val_spec_case EOF
+| s1=val_spec_pre_empty h=val_spec_match s2=val_spec_case EOF
   { let post, exn = s2 in
     let h, post =
       match post with
@@ -230,9 +230,10 @@ val_spec_case:
   { let p, xpost_list = spec in
       let xpost =
 	{ sp_exn = e;
-	  sp_rets = r;
+	  sp_xrets = r;
 	  sp_xpost = post.sp_post;
-	  sp_xproduces = post.sp_produces } in
+	  sp_xproduces = post.sp_produces;
+	  sp_xloc = mk_loc $loc } in
       p, xpost :: xpost_list}
 
 axiom:
@@ -383,6 +384,14 @@ ret_value:
 ;
 
 ret_pat:
+| v = lident
+  { [ Lvar v ] }
+| l = ret_pat_
+  { l }
+
+ret_pat_:
+| (* *)
+  { [] }
 | LEFTPAR RIGHTPAR
   { [ Lunit (mk_loc $loc) ] }
 | LEFTPAR l=comma_list(ret_value) RIGHTPAR
@@ -390,8 +399,8 @@ ret_pat:
 | UNDERSCORE { [ Lwild ] };
 
 ret_name:
-| l = comma_list(ret_value) { l }
-| l = ret_pat { l }
+| l = separated_nonempty_list(COMMA, ret_value) { l }
+| l = ret_pat_ { l }
 
 params:
 | p = param  { p }
