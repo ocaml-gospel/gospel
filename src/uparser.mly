@@ -121,7 +121,6 @@
 %nonassoc NOT
 %right EQUAL LTGT OP1
 %right COLONCOLON
-%nonassoc OLD
 %left OP2
 %left OP3 STAR
 %left OP4
@@ -129,6 +128,7 @@
 %nonassoc prec_prefix_op
 %nonassoc LEFTSQ
 %nonassoc OPPREF
+%nonassoc OLD
 
 %start <Parse_uast.gospel_signature> top
 %start <Parse_uast.val_spec> val_spec
