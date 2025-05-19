@@ -198,12 +198,16 @@ let rec unique_post_term defs old_env env t =
     | Tconst c -> Tconst c
     | Tvar q -> unique_var env.term_var env.ocaml_vals defs q
     | Tlet (v, t1, t2) ->
-        let id = Ident.from_preid v in
+        let ids = List.map Ident.from_preid v in
         let t1 = unique_term t1 in
         (* Add the identifier to the local environment *)
-        let old_env, env = add_spec_var id old_env env in
+        let old_env, env =
+          List.fold_left
+            (fun (old_env, env) id -> add_spec_var id old_env env)
+            (old_env, env) ids
+        in
         let t2 = unique_term_let old_env env t2 in
-        Tlet (id, t1, t2)
+        Tlet (ids, t1, t2)
     | Tapply (t1, t2) -> Tapply (unique_term t1, unique_term t2)
     | Tinfix _ -> (unique_term (Uast_utils.chain t)).term_desc
     | Tquant (q, l, t) ->

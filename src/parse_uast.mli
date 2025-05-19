@@ -27,24 +27,6 @@ type labelled_arg =
   | Lvar of id
   | Lghost of id * pty
 
-(* Patterns *)
-
-type pattern = { pat_desc : pat_desc; pat_loc : Location.t }
-
-and pat_desc =
-  | Pwild
-  | Pvar of id
-  | Ptrue
-  | Pfalse
-  | Papp of qualid * pattern list
-  | Prec of (qualid * pattern) list
-  | Ptuple of pattern list
-  | Pas of pattern * id
-  | Por of pattern * pattern
-  | Pcast of pattern * pty
-  | Pconst of constant
-  | Pinterval of char * char
-
 (* Logical terms and formulas *)
 
 type binder = id * pty option
@@ -73,7 +55,7 @@ and term_desc =
   | Tquant of quant * binder list * term
   | Tlambda of binder list * term * pty option
   | Tattr of string * term
-  | Tlet of id * term * term
+  | Tlet of id list * term * term
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term) list

@@ -23,7 +23,7 @@ type term_node =
   | TTrue
   | TFalse
   | Tvar of Id_uast.qualid
-  | Tlet of Ident.t * term * term
+  | Tlet of tsymbol list * term * term
   | Tconst of Ppxlib.constant
   | Tapply of term * term
   | Tquant of Parse_uast.quant * tsymbol list * term

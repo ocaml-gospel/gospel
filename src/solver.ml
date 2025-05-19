@@ -242,18 +242,40 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         let@ ty = top_level_pty params pty in
         let+ () = r -- ty in
         Tvar q
-    | Tlet (id, t1, t2) ->
-        (* let id = t1 in t2 *)
-        (* The term [t1] has some arbitrary type [v_type]. *)
-        let@ v_type = exist in
+    | Tlet (ids, t1, t2) ->
+        (* let id1, id2, ... = t1 in t2 *)
+        (* Create an inferno type variable for each variable in [ids].
+            For now, we ignore the name of the variable. *)
+        let@ tl = map_binders (fun _ -> exist) ids in
+        (* The type of [t1].  If there is more than 1, then [t1] must
+           evaluate to a tuple. *)
+        let@ v_type =
+          match ids with
+          | [] ->
+              (* If there are no variables in [ids], the
+                 type of [t1] is unbounded. *)
+              exist
+          | [ _ ] ->
+              (* If there is one variable in [ids], [tl] is a
+                 singleton list and the type of [t1] must be equal to
+                 the value in that list. *)
+              fun k -> k (List.hd tl)
+          | _ ->
+              (* If there are more than one variables, then [t1] must
+                 be evaluate to a tuple where the type of each value
+                 corresponds to [tl]. *)
+              shallow (Tytuple tl)
+        in
         let+ t1 = hastype t1 v_type
         and+ t2 =
-          (* Create a constraint for the term [t2] where the variable
-            [id] has type [v_type]. *)
+          (* Create a constraint for the term [t2] where we match each
+              variable in [ids] with its respective type in [tl]. *)
           let t2 = hastype t2 r in
-          def id v_type t2
-        in
-        Tlet (id, t1, t2)
+          List.fold_left2 (fun t2 id ty -> def id ty t2) t2 ids tl
+        (* Pair each variable with its type*)
+        and+ types = map_constraints decode tl in
+        let tids = List.map2 mk_ts ids types in
+        Tlet (tids, t1, t2)
     | Tapply (t1, t2) ->
         (* t1 t2 (Function application)*)
         (* Inferno variables for the function's argument and return type. *)
