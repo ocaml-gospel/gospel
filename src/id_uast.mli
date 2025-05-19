@@ -70,7 +70,7 @@ and term_desc =
   | Tquant of Parse_uast.quant * binder list * term
   | Tlambda of binder list * term * pty option
   | Tattr of string * term
-  | Tlet of id * term * term
+  | Tlet of id list * term * term
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term * pty) list * ty_app

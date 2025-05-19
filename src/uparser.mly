@@ -17,15 +17,12 @@
 
   let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
-  let mk_pat d l = { pat_desc  = d; pat_loc  = mk_loc l }
 
   let get_op l = mk_pid (mixfix "[_]") l
   let set_op l = mk_pid (mixfix "[->]") l
   let sub_op l = mk_pid (mixfix "[_.._]") l
   let above_op l = mk_pid (mixfix "[_..]") l
   let below_op l = mk_pid (mixfix "[.._]") l
-
-  let id_anonymous loc = Preid.create "_" ~attrs:[] ~loc
 
   let empty_pre_vspec = {
     sp_pre = [];
@@ -51,9 +48,7 @@
 
   let loc_of_qualid = function Qid pid | Qdot (_, pid) -> pid.pid_loc
 
-  let qualid_preid = function Qid p | Qdot (_, p) -> p
-
-  let mk_spec header pre post xpost =
+ let mk_spec header pre post xpost =
     {
       sp_header = header;
       sp_pre_spec = pre;
@@ -94,7 +89,6 @@
 %token TRUEPROP FALSEPROP
 %token OPEN
 
-%token AS
 %token LET MATCH PREDICATE
 %token WITH
 %token TYPE EXCEPTION
@@ -112,7 +106,7 @@
 %nonassoc IN
 %nonassoc DOT ELSE
 %nonassoc prec_named
-%right COLON AS
+%right COLON
 
 %right ARROW LRARROW
 %nonassoc RIGHTSQ
@@ -441,18 +435,12 @@ term_:
       (List.fold_left join $1 $2).term_desc }
 | IF g = term THEN t1 = term ELSE t2 = term
     { Tif (g, t1, t2) }
-| LET p = pattern EQUAL t1 = term IN t2 = term
-    { let cast ty = { t1 with term_desc = Tcast (t1, ty) } in
-      let pat, def = match p.pat_desc with
-        | Ptuple [] -> { p with pat_desc = Pwild }, cast (PTtuple [])
-        | Pcast ({pat_desc = (Pvar _|Pwild); _} as p, ty) -> p, cast ty
-        | _ -> p, t1 in
-      match pat.pat_desc with
-      | Pvar id -> Tlet (id, def, t2)
-      | Pwild -> Tlet (id_anonymous pat.pat_loc, def, t2)
-      | _ -> W.error ~loc:pat.pat_loc W.Syntax_error  }
+| LET ids = separated_nonempty_list(COMMA, lident) EQUAL t1 = term IN t2 = term
+    { Tlet (ids, t1, t2) }
+| LET UNDERSCORE EQUAL t1 = term IN t2 = term
+    { Tlet ([], t1, t2) }
 | LET id = attrs(lident_op_id) EQUAL t1 = term IN t2 = term
-    { Tlet (id, t1, t2) }
+    { Tlet ([id], t1, t2) }
 | q = quant l = comma_list1(quant_vars) DOT t = term
     { Tquant (q, List.concat l, t) }
 | FUN args = fun_vars+ ty = preceded(COLON,fun_typ)? ARROW t = term
@@ -604,74 +592,6 @@ ty_arg:
 ;
 
 mk_term(X): d = X { mk_term d $loc }
-;
-
-(* Patterns *)
-
-mk_pat(X): t = X { mk_pat t $loc }
-;
-
-pattern: p = mk_pat(pattern_) { p };
-pat_arg: p = mk_pat(pat_arg_) { p }
-pat_arg_no_lpar: p = mk_pat(pat_arg_no_lpar_) { p }
-;
-
-pattern_:
-| p = pat_conj_                                 { p }
-| p1 = mk_pat(pat_conj_) BAR p2 = pattern         { Por (p1, p2) }
-;
-
-pat_conj_:
-| p = pat_uni_                            { p }
-| l = comma_list2(mk_pat(pat_uni_))       { Ptuple l }
-;
-
-pat_uni_:
-| p = pat_arg_
-    { p }
-| ph = pat_arg COLONCOLON pt = mk_pat(pat_uni_)
-    { Papp (Qid (mk_pid (infix "::") $loc),[ph;pt]) }
-| q = uqualid LEFTPAR l = separated_list(COMMA, mk_pat(pat_uni_)) RIGHTPAR
-    { Papp (q, l) }
-| q = uqualid p = pat_arg_no_lpar
-    { Papp (q, [p]) }
-| p = mk_pat(pat_uni_) AS id = attrs(lident)
-    { Pas (p, id) }
-| p = mk_pat(pat_uni_) ty = cast
-    { Pcast (p, ty) }
-;
-
-pat_arg_:
-| LEFTPAR RIGHTPAR                      { Ptuple [] }
-| LEFTPAR p = pattern_ RIGHTPAR         { p }
-| p = pat_arg_no_lpar_                  { p }
-;
-
-pat_arg_no_lpar_:
-| id = attrs(lident)                    { Pvar id }
-| UNDERSCORE                            { Pwild }
-| q = uqualid                           { Papp (q,[]) }
-| c = constant                          { Pconst c }
-| c1 = CHAR DOTDOT c2 = CHAR            { Pinterval (c1, c2) }
-| TRUE                                  { Ptrue }
-| FALSE                                 { Pfalse }
-| LEFTSQRIGHTSQ
-  { Papp (Qid (mk_pid "[]"  $loc), []) }
-| LEFTBRC p = field_pattern(pattern) RIGHTBRC { Prec p }
-;
-
-
-
-field_pattern(X):
-| fl = semicolon_list1(pattern_rec_field(X)) { fl }
-;
-
-pattern_rec_field(X):
-| l = separated_pair(lqualid, EQUAL, X) { l }
-| q = lqualid { let p = {pat_desc = Pvar (qualid_preid q);
-                     pat_loc = loc_of_qualid q} in
-            (q, p)
-          }
 ;
 
 (* Symbolic operation names *)
