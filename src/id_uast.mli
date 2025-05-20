@@ -54,7 +54,7 @@ and term_desc =
   | Tfalse
   | TTrue
   | TFalse
-  | Tconst of constant
+  | Tconst of Parse_uast.constant
   | Tvar of qualid * id list * pty
     (* We have two nodes for term variables, one for local variables and another
        for top level variables. This is necessary because the Inferno solver can
@@ -169,13 +169,11 @@ type label_declaration = {
 }
 
 type type_kind = PTtype_abstract | PTtype_record of label_declaration list
-type private_flag = Private | Public
 
 type s_type_declaration = {
   tname : id;
   tparams : id list;
   tkind : type_kind;
-  tprivate : Parse_uast.private_flag;
   tmanifest : pty option;
   tattributes : attributes;
   (* ... [@@id1] [@@id2] *)
@@ -205,18 +203,12 @@ type s_signature_item_desc =
          *)
   | Sig_type of rec_flag * s_type_declaration list
   (* type t1 = ... and ... and tn = ... *)
-  | Sig_typesubst of s_type_declaration list
-  (* type t1 := ... and ... and tn := ...  *)
-  | Sig_typext of type_extension
-  (* type t1 += ... *)
   | Sig_module of s_module_declaration
   (* module X : MT *)
   | Sig_exception of exception_decl
   (* exception C of T *)
   | Sig_attribute of attribute
   (* [@@@id] *)
-  | Sig_extension of extension * attributes
-  (* [%%id] *)
   (* Specific to specification *)
   | Sig_gospel of gospel_signature * string
 
@@ -231,7 +223,7 @@ and s_module_type = {
 }
 
 and s_module_declaration = {
-  mdname : id option;
+  mdname : id;
   mdtype : s_module_type;
   mdattributes : attributes;
   (* ... [@@id1] [@@id2] *)

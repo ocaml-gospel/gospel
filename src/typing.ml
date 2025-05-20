@@ -605,8 +605,7 @@ let type_decl ~ocaml lenv env t =
           ~some:(unique_tspec (scope env) model lenv self_ty inv_ty)
           t.tspec
       in
-      Tast.mk_tdecl tname tparams tkind t.tprivate tmanifest t.tattributes tspec
-        t.tloc
+      Tast.mk_tdecl tname tparams tkind tmanifest t.tattributes tspec t.tloc
   in
   (* Update the environment depending on whether or not this is an OCaml
      definition. *)
@@ -1293,7 +1292,6 @@ let ocaml_val env v =
     {
       Tast.vname = Ident.from_preid v.vname;
       vtype;
-      vprim = v.vprim;
       vattributes = v.vattributes;
       vspec;
       vloc = v.vloc;
@@ -1305,7 +1303,7 @@ let ocaml_val env v =
 
 let rec process_module env m =
   (* TODO figure out when this is None *)
-  let id = Option.map Ident.from_preid m.Parse_uast.mdname in
+  let id = Ident.from_preid m.Parse_uast.mdname in
   (* Since we are now at the beginning of a new module, we create an environment
          with the same variables in scope, but with no module definitions. *)
   let sub_mod_env = submodule env in
@@ -1319,11 +1317,8 @@ let rec process_module env m =
               processing the module. *)
         (Tast.Mod_signature s, defs env)
   in
-  (* If this module has an identifier, then this function adds it to the current
-         definitions *)
-  let env =
-    Option.fold ~none:env ~some:(fun id -> add_mod env id mod_defs) id
-  in
+  (* Add the module to the environment. *)
+  let env = add_mod env id mod_defs in
   (* Rebuild the module object *)
   let mloc = m.mdtype.mloc in
   let mattributes = m.mdtype.mattributes in

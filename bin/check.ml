@@ -64,7 +64,7 @@ let read_gospel_file f =
 let path2module p =
   Filename.basename p |> Filename.chop_extension |> String.capitalize_ascii
 
-let run files =
+let run verbose files =
   errors files;
   (* Create the compilation directory if it does not already exist. *)
   if not (Sys.file_exists comp_dir) then
@@ -83,7 +83,7 @@ let run files =
     let () = Ident.Tag.set_project_name file in
     let mods =
       if Filename.extension file = gospel_ext then read_gospel_file file
-      else check_file ~comp_dir ~env file
+      else check_file ~verbose ~comp_dir ~env file
     in
     let module_nm = path2module file in
     let id = Ident.mk_id module_nm Location.none in

@@ -34,10 +34,14 @@ let files =
   let doc = "File to be processed, expect a .mli or a .ml file" in
   Arg.(non_empty & pos_all test_file [] & info [] ~doc ~docv:"FILE")
 
+let verbose =
+  let doc = "Print all intermediate forms." in
+  Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
+
 let tc =
-  let doc = "Gospel type-checker (Experimental)." in
+  let doc = "Gospel type-checker." in
   let info = Cmd.info "check" ~doc in
-  let term = Term.(const Check.run $ intfs) in
+  let term = Term.(const Check.run $ verbose $ intfs) in
   Cmd.v info term
 
 let pps =

@@ -18,9 +18,9 @@ let () =
   let _ =
     let () = Ident.Tag.set_project_name "##stdlib##" in
     try
-      let defs = Bin_utils.check_file "gospelstdlib.mli" in
+      let defs = Bin_utils.check_file ~verbose:false "gospelstdlib.mli" in
       let env = Namespace.init_env defs in
-      Bin_utils.check_file ~env "ocamlprimitives.mli"
+      Bin_utils.check_file ~verbose:false ~env "ocamlprimitives.mli"
     with W.Error e ->
       Fmt.epr "%a@." W.pp e;
       exit 1

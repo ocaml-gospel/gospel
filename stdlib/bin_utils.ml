@@ -14,11 +14,13 @@ open Parser_frontend
 
 let gospel_ext = ".gospel"
 let path2file p = Filename.basename p |> Filename.chop_extension
+let fmt = Format.std_formatter
+let pp = Format.fprintf
 
 (** [check_file file] parses and type checks [file] and creates a corresponding
     [.gospel] file in the directory [comp_dir].
     @raise Warnings.Error if there is a parsing or typing error in [file]. *)
-let check_file ?(comp_dir = "") ?(env = Namespace.empty_env) file =
+let check_file ?(comp_dir = "") ?(env = Namespace.empty_env) ~verbose file =
   (* If the compilation directory is non empty and does not end with "/", add
      it. *)
   let needs_dash =
@@ -28,6 +30,13 @@ let check_file ?(comp_dir = "") ?(env = Namespace.empty_env) file =
   let ocaml = parse_ocaml file in
   let module_nm = path2file file in
   let sigs = parse_gospel ~filename:file ocaml in
+
+  if verbose then (
+    pp fmt "@[@\n*******************************@]@.";
+    pp fmt "@[********** Parsed file ********@]@.";
+    pp fmt "@[*******************************@]@.";
+    pp fmt "@[%a@]@." Uast_printer.signature sigs);
+
   let _, mods = signatures env sigs in
   (* Stores the Gospel definitions in [file] in a [.gospel] file in the
      [_gospel] directory.
