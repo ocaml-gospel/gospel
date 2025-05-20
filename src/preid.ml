@@ -13,7 +13,13 @@ let pp_attrs = Format.pp_print_list pp_attr
 
 type t = { pid_str : string; pid_attrs : string list; pid_loc : Location.t }
 
-let pp ppf pid = Format.fprintf ppf "%s%a" pid.pid_str pp_attrs pid.pid_attrs
+let pp ppf pid =
+  let l = String.split_on_char ' ' pid.pid_str in
+  match l with
+  | [ id ] -> Format.fprintf ppf "%s%a" id pp_attrs pid.pid_attrs
+  | [ _; id ] -> Format.fprintf ppf "(%s)%a" id pp_attrs pid.pid_attrs
+  | _ -> assert false
+
 let add_attr t attr = { t with pid_attrs = attr :: t.pid_attrs }
 let eq id1 id2 = id1.pid_str = id2.pid_str
 

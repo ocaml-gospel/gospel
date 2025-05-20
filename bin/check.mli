@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-val run : string list -> unit
+val run : bool -> string list -> unit
 (** [run files] receives a list of file names that are either [.mli] (OCaml
     interfaces) or [.gospel] (compiled Gospel modules). Each [.mli] file is type
     checked in a context where all files previous to it are visible in the form

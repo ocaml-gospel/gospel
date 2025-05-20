@@ -33,6 +33,12 @@ type binder = id * pty option
 type param = id * pty
 type quant = Tforall | Texists
 
+type constant =
+  | Pconst_integer of string * char option
+  | Pconst_char of char
+  | Pconst_string of string * Location.t
+  | Pconst_float of string
+
 type term = { term_desc : term_desc; term_loc : Location.t }
 
 and term_desc =
@@ -141,7 +147,6 @@ type axiom = {
 type s_val_description = {
   vname : id;
   vtype : pty;
-  vprim : string list;
   vattributes : attributes;
   (* ... [@@id1] [@@id2] *)
   vspec : val_spec option;
@@ -165,7 +170,6 @@ type s_type_declaration = {
   tname : id;
   tparams : id list;
   tkind : type_kind;
-  tprivate : private_flag;
   tmanifest : pty option;
   tattributes : attributes;
   (* ... [@@id1] [@@id2] *)
@@ -173,23 +177,6 @@ type s_type_declaration = {
   (* specification *)
   tloc : Location.t;
 }
-
-type s_with_constraint =
-  | Wtype of Longident.t loc * s_type_declaration
-  (* with type X.t = ...
-
-     Note: the last component of the longident must match
-     the name of the type_declaration. *)
-  | Wmodule of Longident.t loc * Longident.t loc
-  (* with module X.Y = Z *)
-  | Wtypesubst of Longident.t loc * s_type_declaration
-  (* with type X.t := ..., same format as [Pwith_type] *)
-  | Wmodtypesubst of longident_loc * module_type
-  (* with module type X.Y := sig end *)
-  | Wmodtype of longident_loc * module_type
-  (* with module type X.Y = Z *)
-  | Wmodsubst of Longident.t loc * Longident.t loc
-(* with module X.Y := Z *)
 
 type gospel_signature =
   | Sig_function of function_
@@ -212,42 +199,19 @@ type s_signature_item_desc =
          *)
   | Sig_type of s_type_declaration list
   (* type t1 = ... and ... and tn = ... *)
-  | Sig_typesubst of s_type_declaration list
-  (* type t1 := ... and ... and tn := ...  *)
-  | Sig_typext of type_extension
-  (* type t1 += ... *)
   | Sig_module of s_module_declaration
   (* module X : MT *)
-  | Sig_recmodule of s_module_declaration list
-  (* module rec X1 : MT1 and ... and Xn : MTn *)
-  | Sig_modsubst of module_substitution
-  (* module X := M *)
   | Sig_exception of exception_decl
   (* exception C of T *)
-  | Sig_open of open_description
+  | Sig_open of qualid
   (* open X *)
-  | Sig_include of include_description
-  (* include MT *)
-  | Sig_class of class_description list
-  (* class c1 : ... and ... and cn : ... *)
-  | Sig_class_type of class_type_declaration list
-  (* class type ct1 = ... and ... and ctn = ... *)
   | Sig_attribute of attribute
   (* [@@@id] *)
-  | Sig_extension of extension * attributes
-  (* [%%id] *)
   | Sig_gospel of gospel_signature * string
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list
 and s_module_type_desc = Mod_signature of s_signature
-
-and s_functor_parameter =
-  | Unit
-  (* () *)
-  | Named of string option loc * s_module_type
-(* (X : MT)          Some X, MT
-   (_ : MT)          None, MT *)
 
 and s_module_type = {
   mdesc : s_module_type_desc;
@@ -256,7 +220,7 @@ and s_module_type = {
 }
 
 and s_module_declaration = {
-  mdname : id option;
+  mdname : id;
   mdtype : s_module_type;
   mdattributes : attributes;
   (* ... [@@id1] [@@id2] *)

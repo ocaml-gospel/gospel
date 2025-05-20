@@ -16,7 +16,11 @@ val gospel_ext : string
 (** The extension that compiled gospel files have. *)
 
 val check_file :
-  ?comp_dir:string -> ?env:Namespace.env -> string -> Namespace.mod_defs
+  ?comp_dir:string ->
+  ?env:Namespace.env ->
+  verbose:bool ->
+  string ->
+  Namespace.mod_defs
 (** [check_file comp_dir env file] receives an [.mli] file name and type checks
     it under [env]. If the file is correctly type checked, we create a file in
     directory [comp_dir] with the name [file] where [.mli] has been replaced

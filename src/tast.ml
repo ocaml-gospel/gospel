@@ -24,7 +24,7 @@ type term_node =
   | TFalse
   | Tvar of Id_uast.qualid
   | Tlet of tsymbol list * term * term
-  | Tconst of Ppxlib.constant
+  | Tconst of Parse_uast.constant
   | Tapply of term * term
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
@@ -87,7 +87,6 @@ type s_type_declaration = {
   tname : Id_uast.id;
   tparams : Id_uast.id list;
   tkind : Id_uast.type_kind;
-  tprivate : Parse_uast.private_flag;
   tmanifest : Id_uast.pty option;
   tattributes : Ppxlib.attributes;
   (* ... [@@id1] [@@id2] *)
@@ -96,8 +95,8 @@ type s_type_declaration = {
   tloc : Location.t;
 }
 
-let mk_tdecl tname tparams tkind tprivate tmanifest tattributes tspec tloc =
-  { tname; tparams; tkind; tprivate; tmanifest; tattributes; tspec; tloc }
+let mk_tdecl tname tparams tkind tmanifest tattributes tspec tloc =
+  { tname; tparams; tkind; tmanifest; tattributes; tspec; tloc }
 
 type xpost_spec = {
   sp_exn : Id_uast.qualid;
@@ -125,7 +124,6 @@ type s_val_description = {
   vname : Ident.t;
   vtype : ty;
   (* OCaml type of the value *)
-  vprim : string list;
   vattributes : Ppxlib.attributes;
   (* ... [@@id1] [@@id2] *)
   vspec : val_spec option;
@@ -136,7 +134,7 @@ type s_val_description = {
 type s_module_type_desc = Mod_signature of s_signature
 
 and s_module_declaration = {
-  mdname : Ident.t option;
+  mdname : Ident.t;
   mdtype : s_module_type;
   mdattributes : Ppxlib.attributes;
   (* ... [@@id1] [@@id2] *)

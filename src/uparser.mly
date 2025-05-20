@@ -10,7 +10,6 @@
 
 %{
   module W = Warnings
-  open Ppxlib
   open Preid
   open Parse_uast
   open Uast_utils
@@ -179,7 +178,6 @@ type_decl(X):
       tparams = tparams;
       tkind = kind;
       tmanifest = alias;
-      tprivate = Public;
       tattributes = [];
       tspec = Some {
 		  ty_mutable = false;
@@ -539,8 +537,8 @@ quant:
 
 constant:
 | v = INTEGER { let i, m = v in Pconst_integer (i, m) }
-| v = FLOAT { Pconst_float (v, None) }
-| s = STRING { Pconst_string (s, mk_loc $loc, None) }
+| v = FLOAT { Pconst_float v }
+| s = STRING { Pconst_string (s, mk_loc $loc) }
 | c = CHAR { Pconst_char c }
 ;
 
