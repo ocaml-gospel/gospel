@@ -67,8 +67,10 @@ let add_tvars l =
   List.iter (fun x -> Hashtbl.add used_names x.Ident.id_str ()) l
 
 let clear_tvars () =
+  let l = Hashtbl.to_seq_values inferno_ids |> List.of_seq in
   Hashtbl.clear used_names;
-  Hashtbl.clear inferno_ids
+  Hashtbl.clear inferno_ids;
+  l
 
 let inject n =
   try Hashtbl.find inferno_ids n

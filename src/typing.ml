@@ -1156,15 +1156,18 @@ let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
   let xpost =
     List.map (unique_post_term defs pre_env post_env) xspec.sp_xpost
   in
-  let _, sp_xpost = Solver.spec (get_tvars lenv) sp_xargs sp_xrets [] xpost in
-  {
-    Tast.sp_exn;
-    sp_xargs;
-    sp_xrets;
-    sp_xtops;
-    sp_xpost;
-    sp_xloc = xspec.sp_xloc;
-  }
+  let _, sp_xpost, tvars =
+    Solver.spec (get_tvars lenv) sp_xargs sp_xrets [] xpost
+  in
+  ( tvars,
+    {
+      Tast.sp_exn;
+      sp_xargs;
+      sp_xrets;
+      sp_xtops;
+      sp_xpost;
+      sp_xloc = xspec.sp_xloc;
+    } )
 
 (** [ocaml_value env v] Translates an OCaml value description to a Gospel value
     description. This is done by:
@@ -1245,6 +1248,8 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
       (type_xspec defs lenv modifies preserves consumes header.sp_hd_args args)
       spec.sp_xpost_spec
   in
+  let xtvars, sp_xspec = List.split sp_xspec in
+  let xtvars = List.concat xtvars in
   (* Check if any exception is listed twice. *)
   let () =
     Utils.duplicate
@@ -1267,19 +1272,22 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
       W.error ~loc:spec.sp_loc W.Cant_return_unit
   in
   (* Type checks the pre and post conditions. *)
-  let pre, post = type_val_spec spec defs sp_args sp_rets pre_env post_env in
-  {
-    Tast.sp_args;
-    sp_rets;
-    sp_tops = tops;
-    sp_pre = pre;
-    sp_post = post;
-    sp_xspec;
-    sp_diverge = spec.sp_pre_spec.sp_diverge;
-    sp_pure = spec.sp_pre_spec.sp_pure;
-    sp_text = spec.sp_text;
-    sp_loc = spec.sp_loc;
-  }
+  let pre, post, tvars =
+    type_val_spec spec defs sp_args sp_rets pre_env post_env
+  in
+  ( tvars @ xtvars,
+    {
+      Tast.sp_args;
+      sp_rets;
+      sp_tops = tops;
+      sp_pre = pre;
+      sp_post = post;
+      sp_xspec;
+      sp_diverge = spec.sp_pre_spec.sp_diverge;
+      sp_pure = spec.sp_pre_spec.sp_pure;
+      sp_text = spec.sp_text;
+      sp_loc = spec.sp_loc;
+    } )
 
 let ocaml_val env v =
   let lenv = empty_local_env () in
@@ -1288,16 +1296,18 @@ let ocaml_val env v =
   let vspec =
     Option.map (value_spec ~loc:v.vloc (scope env) lenv v.vname vtype) v.vspec
   in
+  let vtvars = get_tvars lenv @ Option.fold ~none:[] ~some:fst vspec in
   let v =
     {
       Tast.vname = Ident.from_preid v.vname;
       vtype;
       vattributes = v.vattributes;
-      vspec;
+      vtvars;
+      vspec = Option.map snd vspec;
       vloc = v.vloc;
     }
   in
-  (Tast.Sig_value v, add_ocaml_val env v.vname vtype)
+  (Tast.Sig_value v, add_ocaml_val env v.vname vtvars vtype)
 
 (* -------------------------------------------------------------------------- *)
 
@@ -1350,7 +1360,7 @@ and gospel_sig env = function
   | Parse_uast.Sig_function f ->
       let f, vars = function_ f (scope env) in
       let f, fun_ty = Solver.function_ vars f in
-      let env = add_fun env f.fun_name fun_ty in
+      let env = add_fun env f.fun_name f.fun_tvars fun_ty in
       (Tast.Sig_function f, env)
   | Sig_axiom ax ->
       (* Since axioms cannot be referenced, the environment is not

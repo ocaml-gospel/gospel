@@ -132,7 +132,7 @@ let top_level_pty params ty =
   let@ vars = assoc_vars params in
   (* Turn the type [ty] into an inferno type variable *)
   let@ ty = pty_to_deep_flex vars ty in
-  k ty
+  k (ty, List.map snd vars)
 
 (** [binder_to_deep pty] If [pty] is not [Some t], creates an Inferno variable
     that is equal to [t]. If not, create an unconstrained inferno variable *)
@@ -217,7 +217,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         TFalse
     | Tconst constant ->
         (* Depending on the type of constant, we restrict the expected type
-           accordingly *)
+            accordingly *)
         let+ () =
           match constant with
           | Pconst_integer _ -> r --- S.ty_integer
@@ -228,27 +228,30 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         Tconst constant
     | Tlocal id ->
         (* If the variable is defined within the scope of this term,
-          we create a constraint stating that the variable [id]
-          must be an instance of type [r]. No lookup is performed
-          as the bookkeeping is done by Inferno. *)
+            we create a constraint stating that the variable [id]
+            must be an instance of type [r]. No lookup is performed
+            as the bookkeeping is done by Inferno. *)
         let+ _ = instance id r in
         (* We can ignore the return value of [instance] since it will always
-          return the empty list since all local variables are bound with
-          [def], which creates a monomorphic scheme. *)
+            return the empty list since all local variables are bound with
+            [def], which creates a monomorphic scheme. *)
         Tvar (Qid id)
     | Tvar (q, params, pty) ->
         (* In the case of a top level definition outside the scope of this term,
-           we use the type provided during the name resolution stage. *)
-        let@ ty = top_level_pty params pty in
-        let+ () = r -- ty in
-        Tvar q
+            we use the type provided during the name resolution stage. *)
+        let@ ty, l = top_level_pty params pty in
+        let+ () = r -- ty and+ ptys = map_constraints decode l in
+        (* If the type of this variable uses any flexible inferno type
+           variables that were not unified, then we create an explicit
+           application of [q] to the types it receives as argument. *)
+        if params = [] then Tvar q else Ttyapply (q, ptys)
     | Tlet (ids, t1, t2) ->
         (* let id1, id2, ... = t1 in t2 *)
         (* Create an inferno type variable for each variable in [ids].
             For now, we ignore the name of the variable. *)
         let@ tl = map_binders (fun _ -> exist) ids in
         (* The type of [t1].  If there is more than 1, then [t1] must
-           evaluate to a tuple. *)
+            evaluate to a tuple. *)
         let@ v_type =
           match ids with
           | [] ->
@@ -286,13 +289,13 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* The argument [t2] has some type [arg_ty]. *)
         and+ t2 = hastype t2 arg_ty
         (* The return value of the term has the same type of the return value of
-           the function.
+            the function.
 
-           Note: Although [res] could be inlined with [r] with no functional
-           difference in terms of typechecking, doing it this way forces Inferno
-           to first solve the previous two constraints meaning we will get a more
-           precise error message when the return type is invalid. If this is
-           unclear, try replacing [res] with [r] and see what happens. *)
+            Note: Although [res] could be inlined with [r] with no functional
+            difference in terms of typechecking, doing it this way forces Inferno
+            to first solve the previous two constraints meaning we will get a more
+            precise error message when the return type is invalid. If this is
+            unclear, try replacing [res] with [r] and see what happens. *)
         and+ () = r -- res in
         Tapply (t1, t2)
     | Tquant (q, l, t) ->
@@ -300,7 +303,7 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* The term [t] must be a formula *)
         let c = lift hastype t S.ty_prop in
         (* Transform the list of Gospel type annotation into a list of
-           Inferno binders *)
+            Inferno binders *)
         let+ l, t = build_def_opt l c in
         Tquant (q, l, t)
     | Tif (g, then_b, else_b) ->
@@ -313,8 +316,8 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         Tif (g, then_b, else_b)
     | Ttuple l ->
         (* Given a term [t], returns a binder that returns a fresh Inferno
-          variable [v] and a constraint stating that the type of the term is
-          [v]. *)
+            variable [v] and a constraint stating that the type of the term is
+            [v]. *)
         let f t =
          fun k ->
           let@ v = exist in
@@ -334,12 +337,12 @@ let rec hastype (t : Id_uast.term) (r : variable) =
 
         let c = hastype t r in
         (* Transform the list of Gospel type annotation into a list of
-           Inferno binders *)
+            Inferno binders *)
         let+ l, t = build_def_opt args c and+ annot_ty = annot in
         Tlambda (l, t, Option.map (fun _ -> annot_ty) pty)
     | Trecord (l, rec_ty) ->
         (* Gets the record type as well as the list of type parameters used as
-           inferno variables. *)
+            inferno variables. *)
         let@ vars, r_ty = record_ty rec_ty.params rec_ty.name in
         (* Get the expected type of each record label. *)
         let@ tys = map_binders (fun (q, t, ty) -> field_pty vars q t ty) l in
@@ -356,8 +359,8 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* Get the type of the field. *)
         let@ ty = pty_to_deep_flex vars ty in
         (* The term [t] must be of the type of the record which [t] belongs
-           to. Additionally, the type of this term must be equal to the type of
-           the field. *)
+            to. Additionally, the type of this term must be equal to the type of
+            the field. *)
         let+ t = hastype t r_ty and+ () = r -- ty in
         Tfield (t, field)
     | Tattr (s, t) ->
@@ -368,12 +371,12 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         let@ ty_var = pty_to_deep_rigid ty in
         let+ t = hastype t r
         (* Ensure that the type annotation corresponds with the type of the
-          term. *)
+            term. *)
         and+ () = r -- ty_var in
         Tcast (t, ty)
     | Tscope (q, t) ->
         (* Since name resolution has already been handled, we can safely ignore
-          local scopes. *)
+            local scopes. *)
         let+ t = hastype t r in
         Tscope (q, t)
     | Told t ->
@@ -389,8 +392,8 @@ let typecheck tvars c =
   Types.add_tvars tvars;
   try
     let t = snd (Solver.solve ~rectypes:false (let0 c)) in
-    Types.clear_tvars ();
-    t
+    let l = Types.clear_tvars () in
+    (t, l)
   with
   | Solver.Unify (loc, ty1, ty2) -> Types.incompatible_types loc ty1 ty2
   | Solver.Cycle (loc, pty) -> Types.cycle loc pty
@@ -463,11 +466,8 @@ let function_cstr (f : Id_uast.function_) : (Tast.function_ * Id_uast.pty) co =
 
   (* Function parameters, typed term and typed function specification. *)
   let params = List.map (fun (x, t) -> mk_ts x t) f.fun_params in
-  let+ tt, fun_spec = build_def params fco
-  (* Decoded return type *)
-  and+ ret = decode ret_ty in
-  let fun_ty = Option.fold ~some:(fun t -> t.t_ty) ~none:ret tt in
-  let f = mk_function f params tt fun_ty fun_spec in
+  let+ tt, fun_spec = build_def params fco in
+  let f = mk_function f params tt ret_pty fun_spec in
   (f, arrow_ty)
 
 (** Creates a constraint ensuring the term within an axiom has type [prop]. *)
@@ -494,6 +494,7 @@ let spec_cstr args rets pre post =
   in
   let args = List.filter_map sp_var args in
   let rets = List.filter_map sp_var rets in
+
   (* Remark: Return values are added to the scope of both the pre and
      post conditions, although return values are not allowed to be
      used in the former.  This is fine since we have already performed
@@ -502,10 +503,19 @@ let spec_cstr args rets pre post =
   let+ pre, post = build_def (args @ rets) spec_cstr in
   (pre, post)
 
-let axiom tvars ax = typecheck tvars (axiom_cstr ax)
-let function_ tvars f = typecheck tvars (function_cstr f)
+let axiom tvars ax =
+  let ax, vars = typecheck tvars (axiom_cstr ax) in
+  { ax with ax_tvars = tvars @ vars }
+
+let function_ tvars f =
+  let (f, pty), vars = typecheck tvars (function_cstr f) in
+  ({ f with fun_tvars = tvars @ vars }, pty)
 
 let spec tvars args rets pre post =
-  typecheck tvars (spec_cstr args rets pre post)
+  let (pre, post), vars = typecheck tvars (spec_cstr args rets pre post) in
+  (pre, post, vars)
 
-let invariant tvars id ty inv = typecheck tvars (invariant_constraint id ty inv)
+let invariant tvars id ty inv =
+  (* TODO: What to do about type variables defined in type invariants. *)
+  let t, _ = typecheck tvars (invariant_constraint id ty inv) in
+  t

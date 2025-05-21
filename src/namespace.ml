@@ -412,20 +412,6 @@ let get_field_info defs q =
   in
   (q, info.rfty, { params = info.rfrecord.rparams; name = info.rfrecord.rid })
 
-(** [get_vars ty] returns the type variables within the type [ty]. *)
-let get_vars ty =
-  let tbl = Hashtbl.create 100 in
-  let rec get_vars = function
-    | PTtyvar id -> Hashtbl.add tbl id.id_tag id
-    | PTtyapp (_, l) -> List.iter get_vars l
-    | PTarrow (arg, ret) ->
-        get_vars arg;
-        get_vars ret
-    | PTtuple l -> List.iter get_vars l
-  in
-  get_vars ty;
-  Hashtbl.to_seq_values tbl |> List.of_seq
-
 type env = {
   defs : mod_defs;
   (* Contains the top level definitions in the current module *)
@@ -446,19 +432,19 @@ let submodule env = { env with defs = empty_defs }
     top level definitions as well as the scope. *)
 let add_def f env = { defs = f env.defs; scope = f env.scope }
 
-let add_fun fid fty defs =
-  let info = { fid; fty; fparams = get_vars fty } in
+let add_fun fid tvars fty defs =
+  let info = { fid; fty; fparams = tvars } in
   let env = defs.fun_env in
   { defs with fun_env = Env.add fid.Ident.id_str info env }
 
-let add_fun env fty fid = add_def (add_fun fty fid) env
+let add_fun env fid tvars fty = add_def (add_fun fid tvars fty) env
 
-let add_ocaml_val vid vty defs =
-  let info = { fid = vid; fty = vty; fparams = get_vars vty } in
+let add_ocaml_val vid tvars vty defs =
+  let info = { fid = vid; fty = vty; fparams = tvars } in
   let env = defs.ocaml_val_env in
   { defs with ocaml_val_env = Env.add vid.Ident.id_str info env }
 
-let add_ocaml_val env id ty = add_def (add_ocaml_val id ty) env
+let add_ocaml_val env tvars id ty = add_def (add_ocaml_val tvars id ty) env
 
 let add_mod mid mdefs defs =
   let menv = defs.mod_env in

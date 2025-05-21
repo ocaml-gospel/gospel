@@ -25,7 +25,7 @@ val add_tvars : Ident.t list -> unit
 (** [add_tvars l] ensures that Inferno generated type variables will not have
     names equal to those in [l]. *)
 
-val clear_tvars : unit -> unit
+val clear_tvars : unit -> Ident.t list
 (** [clear_tvars ()] ensures that the next batch of Inferno generated type
     variables will have no restrictions. *)
 

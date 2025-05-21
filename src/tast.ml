@@ -10,6 +10,8 @@
 
 open Types
 
+type tvar = Ident.t
+
 type tsymbol = { ts_id : Ident.t; ts_ty : Types.ty }
 (** Typed variables *)
 
@@ -26,6 +28,7 @@ type term_node =
   | Tlet of tsymbol list * term * term
   | Tconst of Parse_uast.constant
   | Tapply of term * term
+  | Ttyapply of Id_uast.qualid * Id_uast.pty list
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
   | Ttuple of term list
@@ -46,6 +49,7 @@ let mk_term t_node t_ty t_loc = { t_node; t_ty; t_loc }
 type axiom = {
   ax_name : Ident.t;  (** Name *)
   ax_term : term;  (** Definition *)
+  ax_tvars : tvar list;  (** Type variables *)
   ax_loc : Location.t;  (** Location *)
   ax_text : string;
       (** String containing the original specificaion as written by the user *)
@@ -64,6 +68,7 @@ type function_ = {
   fun_name : Ident.t;  (** Function symbol *)
   fun_rec : bool;  (** Recursive *)
   fun_params : tsymbol list;  (** Arguments *)
+  fun_tvars : tvar list;  (** *)
   fun_ret : ty;
   fun_def : term option;  (** Definition *)
   fun_spec : fun_spec;  (** Specification *)
@@ -85,7 +90,7 @@ let empty_tspec = mk_type_spec false None No_model "" Location.none
 
 type s_type_declaration = {
   tname : Id_uast.id;
-  tparams : Id_uast.id list;
+  tparams : tvar list;
   tkind : Id_uast.type_kind;
   tmanifest : Id_uast.pty option;
   tattributes : Ppxlib.attributes;
@@ -123,6 +128,7 @@ type val_spec = {
 type s_val_description = {
   vname : Ident.t;
   vtype : ty;
+  vtvars : tvar list;
   (* OCaml type of the value *)
   vattributes : Ppxlib.attributes;
   (* ... [@@id1] [@@id2] *)
@@ -171,6 +177,7 @@ let mk_function f fun_params fun_def fun_ret fun_spec =
     fun_name = f.Id_uast.fun_name;
     fun_rec = f.fun_rec;
     fun_params;
+    fun_tvars = [];
     fun_def;
     fun_ret;
     fun_spec;
@@ -181,4 +188,4 @@ let fun_to_arrow args ret =
   List.fold_right (fun arg ret -> Types.ty_arrow arg.ts_ty ret) args ret
 
 let mk_axiom ax_name ax_term ax_loc ax_text =
-  { ax_name; ax_term; ax_loc; ax_text }
+  { ax_name; ax_term; ax_tvars = []; ax_loc; ax_text }

@@ -41,8 +41,8 @@ type record_info = {
     added as well as an entry of [type_info]. *)
 
 (* Functions to update the environment by adding a top level definition *)
-val add_fun : env -> Ident.t -> Id_uast.pty -> env
-val add_ocaml_val : env -> Ident.t -> Id_uast.pty -> env
+val add_fun : env -> Ident.t -> Ident.t list -> Id_uast.pty -> env
+val add_ocaml_val : env -> Ident.t -> Ident.t list -> Id_uast.pty -> env
 
 val add_gospel_type :
   env -> Ident.t -> Ident.t list -> Id_uast.pty option -> env

@@ -37,7 +37,8 @@ val spec :
   (* Pre conditions *)
   Id_uast.term list ->
   (* Post conditions *)
-  Tast.term list * Tast.term list
+  Tast.term list * Tast.term list * Ident.t list
+(* Pre conditions, post conditions, exceptional post conditions, Type variables used within each term *)
 
 val invariant :
   Ident.t list -> Ident.t -> Id_uast.pty -> Id_uast.term -> Tast.term
