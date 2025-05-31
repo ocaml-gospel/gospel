@@ -12,6 +12,9 @@ open Gospel_checker
 open Bin_utils
 module W = Warnings
 
+let fmt = Format.std_formatter
+let pp = Format.fprintf
+
 type 'a file = { fname : string; fmodule : string; fdefs : 'a }
 
 (** Directory in which compiled Gospel files will be placed. *)
@@ -79,6 +82,11 @@ let rec check ~verbose tasts env = function
           (tasts, read_gospel_file file)
         else
           let tast, mods = check_file ~verbose ~comp_dir ~env file in
+          if verbose then (
+            pp fmt "@[@\n*******************************@]@.";
+            pp fmt "@[********** Typed GOSPEL *******@]@.";
+            pp fmt "@[*******************************@]@.";
+            pp fmt "@[%a@]@." (Tast_printer.signature ~verbose) tast);
           let file = { fname = file; fmodule = module_nm; fdefs = tast } in
           (file :: tasts, mods)
       in
