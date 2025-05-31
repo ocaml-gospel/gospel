@@ -43,6 +43,8 @@ val mk_info :
   Id_uast.qualid ->
   Id_uast.app_info
 
+val print_ty : Format.formatter -> Id_uast.pty -> unit
+
 (* The following functions are used to emit errors when it is necessary to print
    a type. *)
 
