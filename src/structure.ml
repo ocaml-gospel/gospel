@@ -19,15 +19,13 @@ type 'a structure =
   | Tytuple of 'a list
   | Tvar of Ident.t
 
-let create_id s = Ident.mk_id s Location.none
-
 (* Built in Gospel types *)
-let bool_id = create_id "bool"
-let prop_id = create_id "prop"
-let integer_id = create_id "integer"
-let char_id = create_id "char"
-let string_id = create_id "string"
-let float_id = create_id "float"
+let bool_id = Ident.mk_id "bool"
+let prop_id = Ident.mk_id "prop"
+let integer_id = Ident.mk_id "integer"
+let char_id = Ident.mk_id "char"
+let string_id = Ident.mk_id "string"
+let float_id = Ident.mk_id "float"
 let ty_bool = Tyapp (Qid bool_id, [])
 let ty_prop = Tyapp (Qid prop_id, [])
 let ty_integer = Tyapp (Qid integer_id, [])

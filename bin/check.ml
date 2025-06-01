@@ -86,7 +86,7 @@ let run verbose files =
       else check_file ~verbose ~comp_dir ~env file
     in
     let module_nm = path2module file in
-    let id = Ident.mk_id module_nm Location.none in
+    let id = Ident.mk_id module_nm in
     Namespace.add_mod env id mods
   in
   (* Un-marshal the gospel standard library that is created in compile time. *)
