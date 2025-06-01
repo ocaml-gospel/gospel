@@ -58,7 +58,7 @@ let generate_name () =
     else candidate
   in
   let nm = loop "a" in
-  let v = Ident.tvar nm in
+  let v = Ident.mk_id nm in
   (* Add the generated name to the used table. *)
   Hashtbl.add used_names nm ();
   v

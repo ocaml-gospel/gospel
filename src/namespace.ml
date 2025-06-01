@@ -559,8 +559,8 @@ let fun_env =
   let op_info fid = { fid; fparams = []; fty = op_ty } in
   let conj = "infix /\\" in
   let disj = "infix \\/" in
-  let conj_id = Ident.mk_id conj Location.none in
-  let disj_id = Ident.mk_id disj Location.none in
+  let conj_id = Ident.mk_id conj in
+  let disj_id = Ident.mk_id disj in
   Env.empty |> Env.add conj (op_info conj_id) |> Env.add disj (op_info disj_id)
 
 (** The empty environment. The only names that it contains with are primitive
@@ -568,7 +568,7 @@ let fun_env =
 let empty_env =
   { defs = empty_defs; scope = { empty_defs with type_env; fun_env } }
 
-let unit_id = Ident.mk_id "unit" Location.none
+let unit_id = Ident.mk_id "unit"
 
 (** The initial environment for every Gospel file. The only names in scope are
     primitive Gospel and OCaml type definitions and the definitions within the

@@ -12,25 +12,18 @@
 
 (** Signature for a module of unique identifiers where new values can only be
     generated via the [gen_id] function. *)
+
+let primitive_project = "##PRIMITIVES##"
+let stdlib_project = "##STDLIB##"
+
 module type ID = sig
   type t
-  (** The type of unique identifiers. *)
 
   val equal : t -> t -> bool
-  (** Equality over identifiers. *)
-
   val hash : t -> int
-  (** Hash function for identifiers. *)
-
   val set_project_name : string -> unit
-  (** This function should be called exactly once so that the type checker
-      generates identifiers that are unique to this project. This means that
-      when we use files from this project in other projects, there will be no
-      clashes with regards to identifiers as long as both projects are named
-      differently. *)
-
+  val is_project : t -> string -> bool
   val gen_id : unit -> t
-  (** Generates a fresh identifier. *)
 end
 
 (** This implementation of the [Id] defines identifiers as a record consisting
@@ -43,10 +36,11 @@ module Tag : ID = struct
   (** Invariant : two identifiers belong to the same [project] , they cannot
       have the same integer identifier. *)
 
-  let project_name = ref "##PRIMITIVES##"
+  let project_name = ref primitive_project
   let equal x y = x.id = y.id && x.project = y.project
   let hash x = x.id
   let set_project_name nm = project_name := nm
+  let is_project id nm = id.project = nm
 
   let gen_id : unit -> t =
     let r = ref 0 in
@@ -58,12 +52,10 @@ end
 module IdTable = Hashtbl.Make (Tag)
 
 type t = {
-  id_str : string; (* Variable name. Not used internally. *)
-  id_attrs : string list; (* Variable attributes *)
+  id_str : string;
+  id_attrs : string list;
   id_loc : Location.t;
   id_tag : Tag.t;
-      (* Unique identifier. During typechecking, this is what
-       Inferno uses to check if two variables are the same. *)
 }
 
 let pp ppf id =
@@ -79,13 +71,12 @@ let to_string id = id.id_str
 let equal x y = Tag.equal x.id_tag y.id_tag
 let hash x = Tag.hash x.id_tag
 
-let mk_id id_str id_loc =
+let mk_id ?loc:(id_loc = Location.none) id_str =
   { id_str; id_attrs = []; id_loc; id_tag = Tag.gen_id () }
 
-let stdlib_id = mk_id "Gospelstdlib" Location.none
-
-let tvar nm =
-  { id_str = nm; id_attrs = []; id_loc = Location.none; id_tag = Tag.gen_id () }
+let stdlib_id = mk_id "Gospelstdlib"
+let is_stdlib id = Tag.is_project id.id_tag stdlib_project
+let is_primitive id = Tag.is_project id.id_tag primitive_project
 
 let from_preid p =
   {
