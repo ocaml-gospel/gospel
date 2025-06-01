@@ -2,3 +2,5 @@
 (name gospel)
 (version 0.3.0)
 (using menhir 2.0)
+(package (name gospel_checker))
+(package (name gospel))

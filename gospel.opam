@@ -24,7 +24,7 @@ build: [
     "dune"
     "build"
     "-p"
-    name
+    "%{name}%,gospel_checker"
     "-j"
     jobs
     "@install"
