@@ -8,7 +8,7 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-open Gospel
+open Gospel_checker
 
 module W = Warnings
 (** Simple script to type check the Gospel and OCaml standard library and
@@ -16,13 +16,12 @@ module W = Warnings
 
 let () =
   let _ =
-    let () = Ident.Tag.set_project_name "##stdlib##" in
-    try
-      let defs = Bin_utils.check_file ~verbose:false "gospelstdlib.mli" in
-      let env = Namespace.init_env defs in
+    let () = Ident.Tag.set_project_name Ident.stdlib_project in
+    let _, defs = Bin_utils.check_file ~verbose:false "gospelstdlib.mli" in
+    let env = Namespace.init_env defs in
+    let _, defs =
       Bin_utils.check_file ~verbose:false ~env "ocamlprimitives.mli"
-    with W.Error e ->
-      Fmt.epr "%a@." W.pp e;
-      exit 1
+    in
+    defs
   in
   ()

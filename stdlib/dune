@@ -11,12 +11,7 @@
  (action
   (run %{check})))
 
-(library
- (name bin_utils)
- (modules bin_utils)
- (libraries gospel))
-
 (executable
  (name checklib)
  (modules checklib)
- (libraries gospel bin_utils))
+ (libraries gospel_checker))
