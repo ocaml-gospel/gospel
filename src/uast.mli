@@ -128,7 +128,9 @@ type fun_spec = {
   fun_loc : Location.t;
 }
 
-type loop_spec = { loop_invariant : term list; loop_variant : term list }
+type loop_spec = { loop_invariant : term list;
+                   loop_checks_invariant: term list;
+                   loop_variant : term list }
 
 (* type param  = Location.t * Preid.t * pty *)
 type function_ = {

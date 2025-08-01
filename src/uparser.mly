@@ -287,16 +287,20 @@ _with_constraint:
   { Wfunction (id, qr) }
 
 loop_spec: _loop_spec EOF
-  { let inv, var = $1 in
-    { loop_invariant = inv; loop_variant = var } }
+  { let inv, checks, var = $1 in
+    { loop_invariant = inv;
+      loop_checks_invariant = checks;
+      loop_variant = var } }
 
 _loop_spec:
 | (* epsilon *)
-    { [], [] }
+    { [], [], [] }
 | INVARIANT t = term _loop_spec
-    { let inv, var = $3 in t :: inv, var }
+    { let inv, checks, var = $3 in t :: inv, checks, var }
+| CHECKS t = term _loop_spec
+    { let inv, checks, var = $3 in inv, t :: checks, var }
 | VARIANT   t = comma_list1(term) _loop_spec
-    { let inv, var = $3 in inv, t @ var }
+    { let inv, checks, var = $3 in inv, checks, t @ var }
 
 fun_arg:
 | LEFTPAR RIGHTPAR
