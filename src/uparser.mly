@@ -513,6 +513,8 @@ term_block_:
 | LEFTBRCCOLON t=term COLONRIGHTBRC
     { let id = mk_pid ~fixity:Mixfix ("{:_:}") $loc in
       mk_op_apply id [t] }
+| LEFTBRC id=lident BAR t=term RIGHTBRC
+    { Tset (id, t) }
 ;
 
 term_sub_:

@@ -39,6 +39,7 @@ type term_node =
   | Ttyapply of Id_uast.qualid * Id_uast.pty list
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
+  | Tset of tsymbol * term
   | Ttuple of term list
   | Tlambda of pat list * term * Id_uast.pty option
   | Trecord of (Id_uast.qualid * term) list

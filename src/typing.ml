@@ -234,6 +234,11 @@ let rec unique_post_term defs old_env env t =
         let then_b = unique_term then_b in
         let else_b = unique_term else_b in
         Tif (g, then_b, else_b)
+    | Tset (v, t) ->
+        let v = Ident.from_preid v in
+        let old_env, env = add_spec_var v old_env env in
+        let t = unique_term_let old_env env t in
+        Tset (v, t)
     | Ttuple l -> Ttuple (List.map unique_term l)
     | Tlambda (args, t, pty) ->
         let old_env = ref old_env in

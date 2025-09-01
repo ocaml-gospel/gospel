@@ -92,6 +92,7 @@ and term fmt t =
     | Tapply (t1, t2) -> print_app fmt t1 t2
     | Tif (t1, t2, t3) ->
         pp fmt "if %a@ then@ %a else@ %a" term t1 term t2 term t3
+    | Tset (v, t) -> pp fmt "@[{ %a | %a }@]" ts v term t
     | Tquant (q, tids, t) ->
         pp fmt "%a %a.@ @[%a@]" Uast_printer.print_quantifier q
           (list ~sep:sp ts) tids term t

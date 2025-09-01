@@ -362,6 +362,18 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         and+ then_b = hastype then_b r
         and+ else_b = hastype else_b r in
         Tif (g, then_b, else_b)
+    | Tset (v, p) ->
+        (* { v | p }*)
+        let@ v_var = exist in
+        let c = lift hastype p S.ty_prop in
+        (* The proposition [p] must have type [prop] *)
+        let+ t = def v v_var c
+        (* The variable [v] is defined in the constraint [c] *)
+        and+ v_ty = decode v_var
+        and+ () = r --- S.ty_set v_var in
+        (* The return type is a set of [v_ty] where [v_ty] is the
+           type of [v] *)
+        Tset (mk_ts v v_ty, t)
     | Ttuple l ->
         (* Given a term [t], returns a binder that returns a fresh Inferno
             variable [v] and a constraint stating that the type of the term is
