@@ -292,6 +292,10 @@ module Sequence : sig
         in_range s i ->
         (map f s)[i] = f (s[i]) *)
 
+  (*@ axiom map_length :
+        forall f s.
+        length (map f s) = length s *)
+
   (*@ function filter (f: 'a -> prop) (s: 'a t) : 'a t *)
   (** [filter f s] is a sequence whose elements are the elements of [s], that
       satisfy [f]. *)
