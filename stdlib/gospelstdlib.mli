@@ -21,12 +21,8 @@
     - [type char]
     - [type float]
     - [type prop]
-    - [type integer]
-    - [type int]
-
-    - [type 'a option]
-    - [function None: 'a option]
-    - [function Some (x: 'a) : 'a option] *)
+    - [type bool]
+    - [type integer] *)
 
 (*@ predicate (=) (x : 'a) (y : 'a) *)
 (*@ predicate (<>) (x : 'a) (y : 'a) *)
