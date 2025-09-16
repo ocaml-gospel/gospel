@@ -768,7 +768,8 @@ let valid_header loc header val_nm types rets xspecs =
   let header_nm = header.sp_hd_nm in
   if not (Preid.eq header_nm val_nm) then
     raise
-      (W.error ~loc:header_nm.pid_loc (W.Invalid_header_name header_nm.pid_str));
+      (W.error ~loc:header_nm.pid_loc
+         (W.Invalid_header_name (header_nm.pid_str, val_nm.pid_str)));
   (* Function for raising an error for a duplicate variable. *)
   let dup_var_error l =
     let l = Option.get (Uast_utils.get_name l) in
