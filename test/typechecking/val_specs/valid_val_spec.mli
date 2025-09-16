@@ -16,10 +16,3 @@ type t
 
 val x : t
 (*@ ensures x = Sequence.empty *)
-(* {gospel_expected|
-[1] File "valid_val_spec.mli", line 12, characters 4-11:
-    12 | (*@ ensures n = 0 *)
-             ^^^^^^^
-    Error: Syntax error
-
-|gospel_expected} *)
