@@ -21,6 +21,7 @@
       [
 	"and", AND;
         "axiom", AXIOM;
+	"checks", CHECKS;
         "consumes", CONSUMES;
         "diverges", DIVERGES;
         "else", ELSE;

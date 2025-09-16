@@ -25,6 +25,7 @@
 
   let empty_pre_vspec = {
     sp_pre = [];
+    sp_checks = [];
     sp_modifies = [];
     sp_preserves = [];
     sp_consumes = [];
@@ -74,7 +75,7 @@
 
 (* Spec Tokens *)
 
-%token REQUIRES ENSURES CONSUMES PRODUCES PRESERVES VARIANT
+%token REQUIRES ENSURES CONSUMES PRODUCES PRESERVES VARIANT CHECKS
 
 (* keywords *)
 
@@ -309,6 +310,8 @@ val_spec_pre:
   { { bd with sp_consumes = cs @ bd.sp_consumes } }
 | REQUIRES t=term bd=val_spec_pre_empty
   { { bd with sp_pre = t :: bd.sp_pre } }
+| CHECKS t=term bd=val_spec_pre_empty
+  { { bd with sp_pre = t :: bd.sp_checks } }
 | PURE bd=val_spec_pre_empty
   { { bd with sp_pure = true } }
 | DIVERGES bd=val_spec_pre_empty

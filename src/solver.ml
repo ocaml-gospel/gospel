@@ -484,24 +484,37 @@ let sp_var = function
       Option.map (mk_ts id) v.ty_gospel
   | _ -> None
 
+let xspec (spec : Id_uast.xpost_spec) =
+  let spec_cstr =
+    let+ sp_xpost = map_constraints fmla spec.sp_xpost in
+    mk_xpost spec.sp_exn spec.sp_xargs spec.sp_xrets spec.sp_xtops sp_xpost
+      spec.sp_xloc
+  in
+  let args = List.filter_map sp_var spec.sp_xargs in
+  let rets = List.filter_map sp_var spec.sp_xrets in
+  build_def (args @ rets) spec_cstr
+
 (** Creates a constraint ensuring that the terms within [pre] and [post] are
     well typed. *)
-let spec_cstr args rets pre post =
+let spec_cstr (spec : Id_uast.val_spec) =
   (* Constraint that solves each pre and post condition. *)
   let spec_cstr =
-    let+ pre = map_constraints fmla pre and+ post = map_constraints fmla post in
-    (pre, post)
+    let+ sp_pre = map_constraints fmla spec.sp_pre
+    and+ sp_post = map_constraints fmla spec.sp_post
+    and+ sp_checks = map_constraints fmla spec.sp_checks
+    and+ xpost_spec = map_constraints xspec spec.sp_xpost in
+    Tast.mk_vspec spec.sp_args spec.sp_rets spec.sp_tops sp_pre sp_post
+      sp_checks xpost_spec spec.sp_diverge spec.sp_pure spec.sp_text spec.sp_loc
   in
-  let args = List.filter_map sp_var args in
-  let rets = List.filter_map sp_var rets in
+  let args = List.filter_map sp_var spec.sp_args in
+  let rets = List.filter_map sp_var spec.sp_rets in
 
   (* Remark: Return values are added to the scope of both the pre and
      post conditions, although return values are not allowed to be
      used in the former.  This is fine since we have already performed
      name resolution before calling the solver meaning that this case
      will never happen. *)
-  let+ pre, post = build_def (args @ rets) spec_cstr in
-  (pre, post)
+  build_def (args @ rets) spec_cstr
 
 let axiom tvars ax =
   let ax, vars = typecheck tvars (axiom_cstr ax) in
@@ -511,9 +524,9 @@ let function_ tvars f =
   let (f, pty), vars = typecheck tvars (function_cstr f) in
   ({ f with fun_tvars = tvars @ vars }, pty)
 
-let spec tvars args rets pre post =
-  let (pre, post), vars = typecheck tvars (spec_cstr args rets pre post) in
-  (pre, post, vars)
+let spec tvars spec =
+  let spec, vars = typecheck tvars (spec_cstr spec) in
+  (spec, vars)
 
 let invariant tvars id ty inv =
   (* TODO: What to do about type variables defined in type invariants. *)
