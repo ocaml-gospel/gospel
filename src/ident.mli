@@ -40,6 +40,7 @@ module IdTable : Hashtbl.S with type key = Tag.t
 
 type t = {
   id_str : string; (* Variable name. Not used internally. *)
+  id_fixity : Preid.fixity;
   id_attrs : string list; (* Variable attributes *)
   id_loc : Location.t;
   id_tag : Tag.t;
