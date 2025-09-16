@@ -31,6 +31,8 @@
   [\#404](https://github.com/ocaml-gospel/gospel/pull/404)
 - Changed the gospel typechecker to use bool as the type of logical formulae
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
+- Add nested exceptional specifications
+  [#452](https://github.com/ocaml-gospel/gospel/pull/452)
 
 ## Internals
 
