@@ -9,13 +9,13 @@
 (**************************************************************************)
 
 val f : int -> unit
-(*@ let () = f x in
-      ensures True *)
+(*@ f x
+    ensures True *)
 
 (* {gospel_expected|
-[1] File "cant_return_unit1.mli", line 12, characters 3-39:
-    12 | ... let () = f x in
-    13 |       ensures True ..
+[1] File "cant_return_unit1.mli", line 12, characters 3-25:
+    12 | ... f x
+    13 |     ensures True ..
     Error: This function has no listed side effects, it cannot return unit
     
 |gospel_expected} *)

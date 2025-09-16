@@ -117,6 +117,7 @@ type val_spec = {
   sp_rets : Id_uast.sp_var list;
   sp_tops : Id_uast.ocaml_sp_var list;
   sp_pre : term list;
+  sp_checks : term list;
   sp_post : term list;
   sp_xspec : xpost_spec list;
   sp_diverge : bool;
@@ -189,3 +190,22 @@ let fun_to_arrow args ret =
 
 let mk_axiom ax_name ax_term ax_loc ax_text =
   { ax_name; ax_term; ax_tvars = []; ax_loc; ax_text }
+
+let mk_xpost sp_exn sp_xargs sp_xrets sp_xtops sp_xpost sp_xloc =
+  { sp_exn; sp_xargs; sp_xrets; sp_xtops; sp_xpost; sp_xloc }
+
+let mk_vspec sp_args sp_rets sp_tops sp_pre sp_checks sp_post sp_xspec
+    sp_diverge sp_pure sp_text sp_loc =
+  {
+    sp_args;
+    sp_rets;
+    sp_tops;
+    sp_pre;
+    sp_checks;
+    sp_post;
+    sp_xspec;
+    sp_diverge;
+    sp_pure;
+    sp_text;
+    sp_loc;
+  }

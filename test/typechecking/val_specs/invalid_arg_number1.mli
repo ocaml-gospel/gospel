@@ -9,14 +9,14 @@
 (**************************************************************************)
 
 val f : int -> unit
-(*@ let () = f x y in
-      ensures True *)
+(*@ f x y
+    ensures True *)
 
 (* {gospel_expected|
-[1] File "invalid_arg_number1.mli", line 11, characters 0-63:
+[1] File "invalid_arg_number1.mli", line 11, characters 0-49:
     11 | val f : int -> unit
-    12 | (*@ let () = f x y in
-    13 |       ensures True *)
+    12 | (*@ f x y
+    13 |     ensures True *)
     Error: This header has 2 arguments but expected 1
     
 |gospel_expected} *)

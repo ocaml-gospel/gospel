@@ -9,14 +9,14 @@
 (**************************************************************************)
 
 val f : unit -> int
-(*@ let x, y, z = f () in
-      ensures True *)
+(*@ x, y, z = f ()
+    ensures True *)
 
 (* {gospel_expected|
-[1] File "invalid_ret_number2.mli", line 11, characters 0-67:
+[1] File "invalid_ret_number2.mli", line 11, characters 0-58:
     11 | val f : unit -> int
-    12 | (*@ let x, y, z = f () in
-    13 |       ensures True *)
+    12 | (*@ x, y, z = f ()
+    13 |     ensures True *)
     Error: This header has 3 return values but expected 1
     
 |gospel_expected} *)

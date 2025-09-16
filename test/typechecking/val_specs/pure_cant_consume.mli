@@ -9,16 +9,16 @@
 (**************************************************************************)
 
 val f : int ref -> unit
-(*@ pure
-    consumes x
-    let () = f x *)
+(*@ f x
+    pure
+    consumes x *)
 
 (* {gospel_expected|
-[1] File "pure_cant_consume.mli", line 11, characters 0-67:
+[1] File "pure_cant_consume.mli", line 11, characters 0-58:
     11 | val f : int ref -> unit
-    12 | (*@ pure
-    13 |     consumes x
-    14 |     let () = f x *)
+    12 | (*@ f x
+    13 |     pure
+    14 |     consumes x *)
     Error: A function annotated as pure cannot modify a variable.
     
 |gospel_expected} *)

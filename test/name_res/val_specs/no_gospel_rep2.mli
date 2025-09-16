@@ -12,13 +12,14 @@ type t
 (*@ mutable *)
 
 val f : unit -> t
-(*@ let x = f () in
-      ensures x = x *)
+(*@ x = f ()
+    produces x
+    ensures x = x *)
 
 (* {gospel_expected|
-[1] File "no_gospel_rep2.mli", line 16, characters 18-19:
-    16 |       ensures x = x *)
-                           ^
+[1] File "no_gospel_rep2.mli", line 17, characters 16-17:
+    17 |     ensures x = x *)
+                         ^
     Error: Unbound value x
     
 |gospel_expected} *)

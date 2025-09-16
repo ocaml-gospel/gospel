@@ -9,5 +9,5 @@
 (**************************************************************************)
 
 val f : unit -> int * int
-(*@ let x, [y : integer] = f () in
-      ensures True *)
+(*@ x, [y : integer] = f ()
+    ensures True *)

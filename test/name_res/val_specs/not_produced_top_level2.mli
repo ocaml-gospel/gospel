@@ -10,14 +10,14 @@
 
 val x : int
 val f : int -> int
-(*@ let _ = f y in
-      ensures x = y
+(*@ f y
+    ensures x = y
  *)
 
 (* {gospel_expected|
-[1] File "not_produced_top_level2.mli", line 14, characters 14-15:
-    14 |       ensures x = y
-                       ^
+[1] File "not_produced_top_level2.mli", line 14, characters 12-13:
+    14 |     ensures x = y
+                     ^
     Error: Unbound value x
     
 |gospel_expected} *)

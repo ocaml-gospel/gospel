@@ -9,12 +9,12 @@
 (**************************************************************************)
 
 val f : int -> int
-(*@ modifies x
-    let z = f [x : integer] y *)
+(*@ z = f [x : integer] y
+    modifies x *)
 
 (* {gospel_expected|
-[1] File "own_ghost2.mli", line 12, characters 13-14:
-    12 | (*@ modifies x
+[1] File "own_ghost2.mli", line 13, characters 13-14:
+    13 |     modifies x *)
                       ^
     Error: Unbound value x
     

@@ -11,13 +11,14 @@
 exception E of int * int
 
 val f : int -> unit
-(*@ match f x with
-    |exception E (x, y) -> ensures True *)
+(*@ f x
+    raises E (x, y)
+      ensures True *)
 
 (* {gospel_expected|
-[1] File "duplicate_exn_ret2.mli", line 14, characters 12-13:
-    14 | (*@ match f x with
-                     ^
+[1] File "duplicate_exn_ret2.mli", line 14, characters 6-7:
+    14 | (*@ f x
+               ^
     Error: The variable x is defined twice in this header
     
 |gospel_expected} *)

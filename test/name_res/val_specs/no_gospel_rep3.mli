@@ -12,13 +12,13 @@ type t
 (*@ mutable *)
 
 val f : t -> unit
-(*@ modifies x
-    requires x = x
-    let () = f x *)
+(*@ f x
+    modifies x
+    requires x = x *)
 
 (* {gospel_expected|
-[1] File "no_gospel_rep3.mli", line 16, characters 17-18:
-    16 |     requires x = x
+[1] File "no_gospel_rep3.mli", line 17, characters 17-18:
+    17 |     requires x = x *)
                           ^
     Error: Unbound value x
     

@@ -9,15 +9,15 @@
 (**************************************************************************)
 
 val f : int ref -> unit
-(*@ pure
-    preserves x
-    let () = f x *)
+(*@ () = f x
+    pure
+    preserves x *)
 
 (* {gospel_expected|
-[1] File "cant_return_unit4.mli", line 12, characters 3-42:
-    12 | ... pure
-    13 |     preserves x
-    14 |     let () = f x ..
+[1] File "cant_return_unit4.mli", line 12, characters 3-38:
+    12 | ... () = f x
+    13 |     pure
+    14 |     preserves x ..
     Error: This function has no listed side effects, it cannot return unit
     
 |gospel_expected} *)

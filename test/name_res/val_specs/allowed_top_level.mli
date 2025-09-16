@@ -10,22 +10,22 @@
 
 val x : int ref
 val f1 : int -> unit
-(*@ modifies x
+(*@ f1 y
+    modifies x
     requires x = 0
-    let () = f1 y in
-      ensures x = y *)
+    ensures x = y *)
 
 val f2 : unit -> int
-(*@ preserves x
+(*@ y = f2 ()
+    preserves x
     requires x >= 0
-    let y = f2 () in
-      ensures y = x *)
+    ensures y = x *)
 
 val f3 : int -> unit
-(*@ consumes x
+(*@ f3 y
+    consumes x
     requires x = 0
-      let () = f3 y in
-      ensures x = 0 *)
+    ensures x = 0 *)
 
 module M : sig
   type t
@@ -35,17 +35,17 @@ module M : sig
 end
 
 val f5 : M.t -> int
-(*@ preserves x
-    let _ = f5 y in
-      ensures y = y *)
+(*@ _ = f5 y
+    preserves x
+    ensures y = y *)
 
 val f6 : unit -> int
-(*@ preserves M.x
-    let x = f6 () in
-      ensures M.x = x *)
+(*@ x = f6 ()
+    preserves M.x
+    ensures M.x = x *)
 
 val f8 : unit -> bool
-(*@ preserves M.x
+(*@ b = f8 ()
+    preserves M.x
     preserves x
-    let b = f8 () in
-      ensures b <-> x = M.x *)
+    ensures b <-> x = M.x *)

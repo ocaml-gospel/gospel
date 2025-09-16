@@ -9,12 +9,12 @@
 (**************************************************************************)
 
 val f : int -> int
-(*@ let () = f x in ensures True *)
-
+(*@ () = f x
+    ensures True *)
 (* {gospel_expected|
-[1] File "invalid_unit1.mli", line 12, characters 8-10:
-    12 | (*@ let () = f x in ensures True *)
-                 ^^
+[1] File "invalid_unit1.mli", line 12, characters 4-6:
+    12 | (*@ () = f x
+             ^^
     Error: This pattern matches on values of type unit, which is incompatible with int
     
 |gospel_expected} *)

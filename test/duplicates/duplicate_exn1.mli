@@ -11,14 +11,14 @@
 exception E1
 
 val f : unit -> unit
-(*@ match f () with
-    |exception E1 -> ensures True
-    |exception E1 -> ensures True *)
+(*@ f ()
+    raises E1
+    raises E1 *)
 
 (* {gospel_expected|
-[1] File "duplicate_exn1.mli", line 16, characters 4-33:
-    16 |     |exception E1 -> ensures True *)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[1] File "duplicate_exn1.mli", line 16, characters 4-13:
+    16 |     raises E1 *)
+             ^^^^^^^^^
     Error: The exception E1 is listed twice in this specification
     
 |gospel_expected} *)

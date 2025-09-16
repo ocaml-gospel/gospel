@@ -26,19 +26,7 @@ val axiom : Ident.t list -> Id_uast.axiom -> Tast.axiom
 val function_ :
   Ident.t list -> Id_uast.function_ -> Tast.function_ * Id_uast.pty
 
-val spec :
-  Ident.t list ->
-  (* Type variables *)
-  Id_uast.sp_var list ->
-  (* Arguments*)
-  Id_uast.sp_var list ->
-  (* Return values *)
-  Id_uast.term list ->
-  (* Pre conditions *)
-  Id_uast.term list ->
-  (* Post conditions *)
-  Tast.term list * Tast.term list * Ident.t list
-(* Pre conditions, post conditions, exceptional post conditions, Type variables used within each term *)
+val spec : Ident.t list -> Id_uast.val_spec -> Tast.val_spec * Tast.tvar list
 
 val invariant :
   Ident.t list -> Ident.t -> Id_uast.pty -> Id_uast.term -> Tast.term

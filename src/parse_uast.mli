@@ -80,6 +80,7 @@ type spec_header = {
 
 type pre_spec = {
   sp_pre : term list;
+  sp_checks : term list;
   sp_consumes : qualid list;
   sp_modifies : qualid list;
   sp_preserves : qualid list;

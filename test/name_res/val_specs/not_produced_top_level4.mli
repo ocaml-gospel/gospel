@@ -14,14 +14,14 @@ end
 open M
 
 val f : int -> int
-(*@ let _ = f y in
-      ensures x = y
+(*@ f y
+    ensures x = y
  *)
 
 (* {gospel_expected|
-[1] File "not_produced_top_level4.mli", line 18, characters 14-15:
-    18 |       ensures x = y
-                       ^
+[1] File "not_produced_top_level4.mli", line 18, characters 12-13:
+    18 |     ensures x = y
+                     ^
     Error: Unbound value x
     
 |gospel_expected} *)

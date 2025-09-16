@@ -13,6 +13,6 @@ type t
     model contents : integer sequence *)
 
 val init : int -> (int -> int) -> t
-(*@ let t = init n f in
+(*@ t = init n f
     ensures t.size = n
     ensures t.contents = Sequence.init n f *)
