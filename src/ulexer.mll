@@ -24,7 +24,6 @@
         "consumes", CONSUMES;
         "diverges", DIVERGES;
         "else", ELSE;
-	"exception", EXCEPTION;
         "exists", EXISTS;
         "ensures", ENSURES;
 	"false", FALSE;
@@ -35,7 +34,6 @@
         "in", IN;
         "invariant", INVARIANT;
         "let", LET;
-	"match", MATCH;
 	"model", MODEL;
         "modifies", MODIFIES;
         "mutable", MUTABLE;
@@ -46,6 +44,7 @@
 	"preserves", PRESERVES;
 	"produces", PRODUCES;
         "pure", PURE;
+	"raises", RAISES;
         "rec", REC;
         "requires", REQUIRES;
         "then", THEN;

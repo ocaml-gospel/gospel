@@ -88,9 +88,9 @@
 %token TRUEPROP FALSEPROP
 %token OPEN
 
-%token LET MATCH PREDICATE
+%token LET PREDICATE
 %token WITH
-%token TYPE EXCEPTION
+%token TYPE RAISES
 
 (* symbols *)
 
@@ -191,42 +191,32 @@ type_decl(X):
 }
 
 val_spec:
-| h=val_spec_header IN s=val_spec_post EOF
-  { mk_spec (Some h) empty_pre_vspec s [] }
-| s1=val_spec_pre h=val_spec_header IN s2=val_spec_post EOF
-  { mk_spec (Some h) s1 s2 [] }
-| s1=val_spec_pre_empty h=val_spec_match s2=val_spec_case EOF
-  { let post, exn = s2 in
-    let h, post =
-      match post with
-      |None -> h, empty_post_vspec
-      |Some (sp_hd_ret, post) -> { h with sp_hd_ret }, post in
-    mk_spec (Some h) s1 post exn }
-| s=val_spec_pre h=val_spec_header EOF
-  { mk_spec (Some h) s empty_post_vspec [] }
-| s=val_spec_pre_empty EOF
-  { mk_spec None s empty_post_vspec [] }
+| pre=val_spec_pre EOF
+   { mk_spec None pre empty_post_vspec [] }
+| h=val_spec_header pre=val_spec_pre_empty post=val_spec_post_empty exn=val_spec_exn_empty EOF
+  { mk_spec (Some h) pre post exn }
 ;
 
-val_spec_case:
-| (* epsilon*)
-  { None, [] }
-| BAR rets=ret_name ARROW post = val_spec_post l = val_spec_case
-   { let next_post, x = l in
-     let loc = mk_loc $loc in
-     match next_post with
-     | None -> Some (rets, post), x
-     | Some _ -> W.error ~loc W.Repeated_ret_case }
-| BAR EXCEPTION e = uqualid r = ret_pat ARROW
-    post = val_spec_post spec = val_spec_case
-  { let p, xpost_list = spec in
-      let xpost =
-	{ sp_exn = e;
-	  sp_xrets = r;
-	  sp_xpost = post.sp_post;
-	  sp_xproduces = post.sp_produces;
-	  sp_xloc = mk_loc $loc } in
-      p, xpost :: xpost_list}
+val_spec_exn_empty:
+| (* epsilon *)
+  { [] }
+| RAISES e = uqualid xpost_list = val_spec_exn_empty
+  { let xpost =
+      { sp_exn = e;
+        sp_xrets = [];
+        sp_xpost = [];
+        sp_xproduces = [];
+        sp_xloc = mk_loc $loc } in
+    xpost :: xpost_list }
+| RAISES e = uqualid r = ret_pat
+    post = val_spec_post xpost_list = val_spec_exn_empty
+  { let xpost =
+      { sp_exn = e;
+        sp_xrets = r;
+        sp_xpost = post.sp_post;
+        sp_xproduces = post.sp_produces;
+        sp_xloc = mk_loc $loc } in
+    xpost :: xpost_list }
 
 axiom:
 | AXIOM id=lident COLON t=term
@@ -339,21 +329,20 @@ val_spec_app:
         nm, [arg1; arg2] }
 
 val_spec_header:
-| LET ret=ret_name EQUAL app = val_spec_app
+| ret=ret_name EQUAL app = val_spec_app
   { let nm, args = app in
     { sp_hd_nm = nm; sp_hd_ret = ret; sp_hd_args = args } }
+| app = val_spec_app
+  { let nm, args = app in
+    { sp_hd_nm = nm; sp_hd_ret = [ Lwild ]; sp_hd_args = args } }
 ;
-
-val_spec_match:
-| MATCH app = val_spec_app WITH
-   { let nm, args = app in
-     { sp_hd_nm = nm; sp_hd_ret = [ Lwild ]; sp_hd_args = args} }
 
 val_spec_post:
 | ENSURES t=term bd=val_spec_post_empty
   { { bd with sp_post = t :: bd.sp_post} }
 | PRODUCES pr=val_spec_own bd=val_spec_post_empty
   { { bd with sp_produces = pr @ bd.sp_produces } }
+
 
 val_spec_post_empty:
 | (* epsilon *) { empty_post_vspec }

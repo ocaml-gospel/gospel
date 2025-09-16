@@ -9,14 +9,14 @@
 (**************************************************************************)
 
 val f : int -> int -> unit
-(*@ let () = f x [y : integer] in
-      ensures True *)
+(*@ f x [y : integer]
+    ensures True *)
 
 (* {gospel_expected|
-[1] File "invalid_arg_number5.mli", line 11, characters 0-82:
+[1] File "invalid_arg_number5.mli", line 11, characters 0-68:
     11 | val f : int -> int -> unit
-    12 | (*@ let () = f x [y : integer] in
-    13 |       ensures True *)
+    12 | (*@ f x [y : integer]
+    13 |     ensures True *)
     Error: This header has 1 argument but expected 2
     
 |gospel_expected} *)

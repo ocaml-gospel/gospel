@@ -9,12 +9,13 @@
 (**************************************************************************)
 
 val f : int -> int * int
-(*@ let x, y = f x in ensures True *)
+(*@ x, y = f x
+    ensures True *)
 
 (* {gospel_expected|
-[1] File "duplicate_header_vars4.mli", line 12, characters 17-18:
-    12 | (*@ let x, y = f x in ensures True *)
-                          ^
+[1] File "duplicate_header_vars4.mli", line 12, characters 13-14:
+    12 | (*@ x, y = f x
+                      ^
     Error: The variable x is defined twice in this header
     
 |gospel_expected} *)

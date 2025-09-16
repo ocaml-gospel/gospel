@@ -12,15 +12,15 @@ type t
 (*@ mutable *)
 
 val free : t -> unit
-(*@ consumes x
-      let () = free x in
-      ensures x = x
+(*@ free x
+    consumes x
+    ensures x = x
 *)
 
 (* {gospel_expected|
-[1] File "not_produced.mli", line 17, characters 18-19:
-    17 |       ensures x = x
-                           ^
+[1] File "not_produced.mli", line 17, characters 16-17:
+    17 |     ensures x = x
+                         ^
     Error: Unbound value x
     
 |gospel_expected} *)
