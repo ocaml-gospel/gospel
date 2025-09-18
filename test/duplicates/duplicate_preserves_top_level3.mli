@@ -16,9 +16,9 @@ val f : unit -> unit
     preserves y *)
 
 (* {gospel_expected|
-[1] File "duplicate_preserves_top_level3.mli", line 11, characters 4-5:
-    11 | val x : int ref
-             ^
+[1] File "duplicate_preserves_top_level3.mli", line 15, characters 14-15:
+    15 |     preserves x
+                       ^
     Error: The variable x is listed as preserved twice
     
 |gospel_expected} *)

@@ -651,48 +651,6 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
-  (with-outputs-to duplicate_produces_top_level1.mli.output
-   (run %{checker} %{dep:duplicate_produces_top_level1.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff duplicate_produces_top_level1.mli duplicate_produces_top_level1.mli.output)))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe)
-       _gospel)
- (action
-  (with-outputs-to duplicate_produces_top_level2.mli.output
-   (run %{checker} %{dep:duplicate_produces_top_level2.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff duplicate_produces_top_level2.mli duplicate_produces_top_level2.mli.output)))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe)
-       _gospel)
- (action
-  (with-outputs-to duplicate_produces_top_level3.mli.output
-   (run %{checker} %{dep:duplicate_produces_top_level3.mli}))))
-
-(rule
- (alias runtest)
- (action
-  (diff duplicate_produces_top_level3.mli duplicate_produces_top_level3.mli.output)))
-
-(rule
- (deps
-  %{bin:gospel}
-  (:checker %{project_root}/test/utils/testchecker.exe)
-       _gospel)
- (action
   (with-outputs-to duplicate_type_vars1.mli.output
    (run %{checker} %{dep:duplicate_type_vars1.mli}))))
 

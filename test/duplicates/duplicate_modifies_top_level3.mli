@@ -16,9 +16,9 @@ val f : unit -> unit
     modifies y *)
 
 (* {gospel_expected|
-[1] File "duplicate_modifies_top_level3.mli", line 11, characters 4-5:
-    11 | val x : int ref
-             ^
+[1] File "duplicate_modifies_top_level3.mli", line 15, characters 13-14:
+    15 |     modifies x
+                      ^
     Error: The variable x is listed as modified twice
     
 |gospel_expected} *)
