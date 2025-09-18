@@ -160,7 +160,7 @@ let rec incompatible ~shallow t1 t2 =
   in
   match (expand_alias t1, expand_alias t2) with
   | PTtyapp (app1, l1), PTtyapp (app2, l2) ->
-      if leaf app1.app_qid = leaf app2.app_qid then traverse l1 l2
+      if Uast_utils.eq_qualid app1.app_qid app2.app_qid then traverse l1 l2
       else Some (t1, t2)
   | PTtyvar v1, PTtyvar v2 -> if Ident.equal v1 v2 then None else Some (t1, t2)
   | PTarrow (arg1, ret1), PTarrow (arg2, ret2) ->
