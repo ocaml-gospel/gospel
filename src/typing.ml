@@ -1049,14 +1049,32 @@ let valid_pure loc args tops xspec ~diverge ~pure =
     list composed of the [unit] type. *)
 let returns_unit = function [ r ] when is_unit r -> true | _ -> false
 
-let type_val_spec spec defs args rets pre_env post_env =
+let type_val_spec spec defs args rets tops xspec pre_env post_env =
   let pre =
     List.map (unique_term defs pre_env) spec.Parse_uast.sp_pre_spec.sp_pre
+  in
+  let checks =
+    List.map (unique_term defs pre_env) spec.Parse_uast.sp_pre_spec.sp_checks
   in
   let post =
     List.map (unique_post_term defs pre_env post_env) spec.sp_post_spec.sp_post
   in
-  Solver.spec (get_tvars pre_env) args rets pre post
+  let spec =
+    {
+      sp_args = args;
+      sp_rets = rets;
+      sp_tops = tops;
+      sp_pre = pre;
+      sp_checks = checks;
+      sp_post = post;
+      sp_xpost = xspec;
+      sp_diverge = spec.sp_pre_spec.sp_diverge;
+      sp_pure = spec.sp_pre_spec.sp_pure;
+      sp_text = spec.sp_text;
+      sp_loc = spec.sp_loc;
+    }
+  in
+  Solver.spec (get_tvars pre_env) spec
 
 (** [global_values pre_tbl post_tbl consumes produces modifies preserves]
     returns the list of top level variables that are used in ownership clauses.
@@ -1153,21 +1171,10 @@ let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
     process_produces defs lenv xspec.sp_xproduces hd_args xspec.sp_xrets
       consumes modifies preserves args xrets
   in
-  let xpost =
+  let sp_xpost =
     List.map (unique_post_term defs pre_env post_env) xspec.sp_xpost
   in
-  let _, sp_xpost, tvars =
-    Solver.spec (get_tvars lenv) sp_xargs sp_xrets [] xpost
-  in
-  ( tvars,
-    {
-      Tast.sp_exn;
-      sp_xargs;
-      sp_xrets;
-      sp_xtops;
-      sp_xpost;
-      sp_xloc = xspec.sp_xloc;
-    } )
+  { sp_exn; sp_xargs; sp_xrets; sp_xtops; sp_xpost; sp_xloc = xspec.sp_xloc }
 
 (** [ocaml_value env v] Translates an OCaml value description to a Gospel value
     description. This is done by:
@@ -1248,12 +1255,9 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
       (type_xspec defs lenv modifies preserves consumes header.sp_hd_args args)
       spec.sp_xpost_spec
   in
-  let xtvars, sp_xspec = List.split sp_xspec in
-  let xtvars = List.concat xtvars in
-  (* Check if any exception is listed twice. *)
   let () =
     Utils.duplicate
-      (fun x y -> Uast_utils.eq_qualid x.Tast.sp_exn y.Tast.sp_exn)
+      (fun x y -> Uast_utils.eq_qualid x.sp_exn y.sp_exn)
       (fun x ->
         W.error ~loc:x.sp_xloc
           (Duplicate_exceptional_spec (Uast_utils.flatten_ident x.sp_exn)))
@@ -1272,22 +1276,7 @@ let value_spec ~loc defs lenv name ocaml_ty spec =
       W.error ~loc:spec.sp_loc W.Cant_return_unit
   in
   (* Type checks the pre and post conditions. *)
-  let pre, post, tvars =
-    type_val_spec spec defs sp_args sp_rets pre_env post_env
-  in
-  ( tvars @ xtvars,
-    {
-      Tast.sp_args;
-      sp_rets;
-      sp_tops = tops;
-      sp_pre = pre;
-      sp_post = post;
-      sp_xspec;
-      sp_diverge = spec.sp_pre_spec.sp_diverge;
-      sp_pure = spec.sp_pre_spec.sp_pure;
-      sp_text = spec.sp_text;
-      sp_loc = spec.sp_loc;
-    } )
+  type_val_spec spec defs sp_args sp_rets tops sp_xspec pre_env post_env
 
 let ocaml_val env v =
   let lenv = empty_local_env () in
@@ -1296,14 +1285,14 @@ let ocaml_val env v =
   let vspec =
     Option.map (value_spec ~loc:v.vloc (scope env) lenv v.vname vtype) v.vspec
   in
-  let vtvars = get_tvars lenv @ Option.fold ~none:[] ~some:fst vspec in
+  let vtvars = get_tvars lenv @ Option.fold ~none:[] ~some:snd vspec in
   let v =
     {
       Tast.vname = Ident.from_preid v.vname;
       vtype;
       vattributes = v.vattributes;
       vtvars;
-      vspec = Option.map snd vspec;
+      vspec = Option.map fst vspec;
       vloc = v.vloc;
     }
   in

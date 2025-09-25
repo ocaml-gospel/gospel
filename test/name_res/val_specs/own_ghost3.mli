@@ -9,12 +9,12 @@
 (**************************************************************************)
 
 val f : int -> int
-(*@ consumes x
-    let z, [x : integer] = f y *)
+(*@ z, [x : integer] = f y
+    consumes x *)
 
 (* {gospel_expected|
-[1] File "own_ghost3.mli", line 12, characters 13-14:
-    12 | (*@ consumes x
+[1] File "own_ghost3.mli", line 13, characters 13-14:
+    13 |     consumes x *)
                       ^
     Error: Unbound value x
     

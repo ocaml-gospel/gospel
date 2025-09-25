@@ -12,14 +12,14 @@ module M : sig
 end
 
 val f : int -> int
-(*@ let _ = f y in
-      ensures M.x = y
+(*@ f y
+    ensures M.x = y
  *)
 
 (* {gospel_expected|
-[1] File "not_produced_top_level3.mli", line 16, characters 16-17:
-    16 |       ensures M.x = y
-                         ^
+[1] File "not_produced_top_level3.mli", line 16, characters 14-15:
+    16 |     ensures M.x = y
+                       ^
     Error: Unbound value M.x
     
 |gospel_expected} *)

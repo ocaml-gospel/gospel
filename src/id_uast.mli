@@ -101,11 +101,23 @@ type sp_var =
   | Ghost of id * pty (* Ghost variable *)
   | OCaml of ocaml_sp_var
 
+type xpost_spec = {
+  sp_exn : qualid;
+  sp_xargs : sp_var list;
+  sp_xrets : sp_var list;
+  sp_xtops : ocaml_sp_var list;
+  sp_xpost : term list;
+  sp_xloc : Location.t;
+}
+
 type val_spec = {
   sp_args : sp_var list;
   sp_rets : sp_var list;
+  sp_tops : ocaml_sp_var list;
   sp_pre : term list;
+  sp_checks : term list;
   sp_post : term list;
+  sp_xpost : xpost_spec list;
   sp_diverge : bool;
   sp_pure : bool;
   sp_text : string;
@@ -150,17 +162,6 @@ type axiom = {
 
 (* Modified OCaml constructs with specification attached *)
 
-type s_val_description = {
-  vname : string loc;
-  vtype : core_type;
-  vprim : string list;
-  vattributes : attributes;
-  (* ... [@@id1] [@@id2] *)
-  vspec : val_spec option;
-  (* specification *)
-  vloc : Location.t;
-}
-
 type label_declaration = {
   pld_name : id;
   pld_mutable : Parse_uast.mutable_flag;
@@ -196,11 +197,6 @@ type exception_decl = {
 }
 
 type s_signature_item_desc =
-  | Sig_val of s_val_description
-  (*
-          val x: T
-          external x: T = "s1" ... "sn"
-         *)
   | Sig_type of rec_flag * s_type_declaration list
   (* type t1 = ... and ... and tn = ... *)
   | Sig_module of s_module_declaration
