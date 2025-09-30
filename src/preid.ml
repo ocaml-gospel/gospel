@@ -11,7 +11,7 @@
 let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr
 let pp_attrs = Format.pp_print_list pp_attr
 
-type fixity = Normal | Infix | Mixfix | Prefix
+type fixity = Normal | Infix | Mixfix | Prefix | Let
 
 type t = {
   pid_str : string;
