@@ -169,3 +169,12 @@ let rec can_own ty =
       (* For now, we assume that all OCaml functions are pure. *) false
 
 let qualid_loc = function Id_uast.Qid id | Qdot (_, id) -> id.id_loc
+
+(** [mk_let op loc] creates an identifier [op] with fixity [Let] *)
+let mk_let op loc = Preid.create ~loc:(mk_loc loc) ~fixity:Let op
+
+let mk_let_apply l args bind body =
+  let args = List.map (fun x -> (x, None)) args in
+  let lam = mk_term (Tlambda (args, body, None)) body.term_loc in
+  let tid = mk_term (Tvar (Qid l)) l.pid_loc in
+  Tapply (mk_term (Tapply (tid, bind)) l.pid_loc, lam)

@@ -253,6 +253,14 @@ rule token = parse
       { OP3 s }
   | op_char_4+ as s
       { OP4 s }
+  | "let" op_char_1234* op_char_1 op_char_1234* as s
+      { LET1 s }
+  | "let" op_char_234*  op_char_2 op_char_234*  as s
+      { LET2 s }
+  | "let" op_char_34*   op_char_3 op_char_34*  as s
+      { LET3 s }
+  | "let" op_char_4+ as s
+      { LET4 s }
   | "\""
       { STRING (string (Buffer.create 128) lexbuf) }
   | eof
