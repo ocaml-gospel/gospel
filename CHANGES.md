@@ -44,6 +44,8 @@
   [\#442](https://github.com/ocaml-gospel/gospel/pull/442)
 - Gospel type checker rewrite
   [#449](https://github.com/ocaml-gospel/gospel/pull/449#issuecomment-2865879545)
+- Fixity now appears in the identifier object
+  [#453](https://github.com/ocaml-gospel/gospel/pull/453)
 
 # 0.3
 
