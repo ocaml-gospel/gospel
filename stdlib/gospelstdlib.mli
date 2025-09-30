@@ -106,6 +106,17 @@
 (*@ function ([_..]) (s: 'a sequence) (i: integer): 'a sequence *)
 (*@ function ([.._]) (s: 'a sequence) (i: integer): 'a sequence *)
 
+(*@ function ( let* ) (x : 'a option) (p : 'a -> prop) : prop *)
+
+(*@ axiom let_some :
+      forall x p.
+      ( let* ) x p <->
+        exists y. Some y = x /\ p y *)
+
+(*@ function get (x : 'a option) : 'a *)
+
+(*@ axiom get_def : forall x y. x = Some y -> get x = y *)
+
 (*@ predicate monoid (f : 'a -> 'a -> 'a) (neutral : 'a) *)
 
 (*@ axiom monoid_def :
