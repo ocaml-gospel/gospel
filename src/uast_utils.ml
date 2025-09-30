@@ -171,7 +171,7 @@ let rec can_own ty =
 let qualid_loc = function Id_uast.Qid id | Qdot (_, id) -> id.id_loc
 
 (** [mk_let op] concatenates "let" to [op] *)
-let mk_let op loc = Preid.create ~loc:(mk_loc loc) ("let" ^ op)
+let mk_let op loc = Preid.create ~loc:(mk_loc loc) ~fixity:Let ("let" ^ op)
 
 let mk_let_apply l args bind body =
   let args = List.map (fun x -> (x, None)) args in
