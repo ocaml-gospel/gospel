@@ -41,18 +41,13 @@ let print_tids fmt = function
   | l -> parens (list ~sep:comma (ts ~top_level:false)) fmt l
 
 let is_symbol ~prefix = function
-  | Tvar (Qid v) when String.starts_with ~prefix v.id_str -> true
+  | Tvar (Qid v) when prefix = v.id_fixity -> true
   | _ -> false
 
-let sans_prefix v =
-  match String.split_on_char ' ' v.Ident.id_str with
-  | [ _; id ] -> id
-  | _ -> assert false
-
-let symbol s = match s with Tvar (Qid v) -> sans_prefix v | _ -> assert false
-let is_infix = is_symbol ~prefix:"infix "
-let is_prefix = is_symbol ~prefix:"prefix "
-let is_mixfix = is_symbol ~prefix:"mixfix "
+let symbol s = match s with Tvar (Qid v) -> v.id_str | _ -> assert false
+let is_infix = is_symbol ~prefix:Preid.Infix
+let is_prefix = is_symbol ~prefix:Preid.Prefix
+let is_mixfix = is_symbol ~prefix:Preid.Mixfix
 
 let needs_paren arg =
   match arg.t_node with

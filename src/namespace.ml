@@ -557,8 +557,8 @@ let fun_env =
   let open Types in
   let op_ty = ty_arrow ty_prop (ty_arrow ty_prop ty_prop) in
   let op_info fid = { fid; fparams = []; fty = op_ty } in
-  let conj = "infix /\\" in
-  let disj = "infix \\/" in
+  let conj = "/\\" in
+  let disj = "\\/" in
   let conj_id = Ident.mk_id conj in
   let disj_id = Ident.mk_id disj in
   Env.empty |> Env.add conj (op_info conj_id) |> Env.add disj (op_info disj_id)

@@ -48,8 +48,10 @@ let rec chain t =
              operators. In this case, we create the conjunction [t1 < t3 /\
              t2] *)
           let t = chain t2 in
-          let mk_pid = Preid.create ~attrs:[] ~loc:Location.none in
-          let qconj = mk_pid "infix /\\" in
+          let mk_pid =
+            Preid.create ~fixity:Preid.Infix ~attrs:[] ~loc:Location.none
+          in
+          let qconj = mk_pid "/\\" in
           let infix = mk_term (mk_op_apply o [ t1; t3 ]) t.term_loc in
           mk_term (mk_op_apply qconj [ infix; t ]) Location.none
       | _ ->
@@ -103,10 +105,6 @@ let v_eq v1 v2 =
 
 (** Same behaviour as [chain] but receives and retruns a [term_desc] *)
 let chain_desc t = (chain { term_desc = t; term_loc = Location.none }).term_desc
-
-let prefix s = "prefix " ^ s
-let infix s = "infix " ^ s
-let mixfix s = "mixfix " ^ s
 
 (** Location smart constructor *)
 let mk_loc (s, e) =
