@@ -71,12 +71,12 @@ let constant fmt = function
   | Pconst_char c -> pp fmt "%C" c
 
 let is_symbol ~prefix = function
-  | Tvar (Qid v) when String.starts_with ~prefix v.pid_str -> true
+  | Tvar (Qid v) when prefix = v.pid_fixity -> true
   | _ -> false
 
-let is_infix = is_symbol ~prefix:"infix "
-let is_prefix = is_symbol ~prefix:"prefix "
-let is_mixfix = is_symbol ~prefix:"mixfix "
+let is_infix = is_symbol ~prefix:Infix
+let is_prefix = is_symbol ~prefix:Prefix
+let is_mixfix = is_symbol ~prefix:Mixfix
 
 let sans_prefix v =
   match String.split_on_char ' ' v.Preid.pid_str with

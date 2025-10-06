@@ -14,14 +14,14 @@
   open Parse_uast
   open Uast_utils
 
-  let mk_pid pid l = Preid.create pid ~attrs:[] ~loc:(mk_loc l)
+  let mk_pid pid ?(fixity = Normal) l = Preid.create pid ~fixity ~attrs:[] ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
 
-  let get_op l = mk_pid (mixfix "[_]") l
-  let set_op l = mk_pid (mixfix "[->]") l
-  let sub_op l = mk_pid (mixfix "[_.._]") l
-  let above_op l = mk_pid (mixfix "[_..]") l
-  let below_op l = mk_pid (mixfix "[.._]") l
+  let get_op l = mk_pid ~fixity:Preid.Mixfix "[_]" l
+  let set_op l = mk_pid ~fixity:Preid.Mixfix "[->]" l
+  let sub_op l = mk_pid ~fixity:Preid.Mixfix "[_.._]" l
+  let above_op l = mk_pid ~fixity:Preid.Mixfix "[_..]" l
+  let below_op l = mk_pid ~fixity:Preid.Mixfix "[.._]" l
 
   let empty_pre_vspec = {
     sp_pre = [];
@@ -244,9 +244,9 @@ func_name:
 | id = lident_fun_id { id }
 | NOT { mk_pid "not" $loc }
 | LEFTPAR LEFTBRCRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{}") $loc }
+  { mk_pid ~fixity:Mixfix "{}" $loc }
 | LEFTPAR LEFTBRCCOLON UNDERSCORE COLONRIGHTBRC RIGHTPAR
-  { mk_pid (mixfix "{:_:}") $loc }
+  { mk_pid ~fixity:Mixfix "{:_:}" $loc }
 
 func_spec:
 | (* epsilon*)              { empty_fspec }
@@ -417,7 +417,7 @@ term_:
 | l = term ; o = infix_op_234 ; r = term
     { mk_op_apply o [l; r] }
 | l = term ; COLONCOLON ; r = term
-    { mk_op_apply (mk_pid (infix "::") $loc) [l; r] }
+    { mk_op_apply (mk_pid ~fixity:Mixfix "::" $loc) [l; r] }
 | l = term ; o = BACKQUOTE_LIDENT ; r = term
     { mk_op_apply (mk_pid o $loc) [l; r] }
 | term_arg located(term_arg)+
@@ -496,9 +496,9 @@ term_block_:
     { Tvar (Qid (mk_pid "[]"  $loc)) }
 | LEFTBRC r = field_list1(term) RIGHTBRC            { Trecord r }
 | LEFTBRCRIGHTBRC
-    { Tvar (Qid (mk_pid (mixfix "{}") $loc)) }
+    { Tvar (Qid (mk_pid ~fixity:Mixfix ( "{}") $loc)) }
 | LEFTBRCCOLON t=term COLONRIGHTBRC
-    { let id = mk_pid (mixfix "{:_:}") $loc in
+    { let id = mk_pid ~fixity:Mixfix ("{:_:}") $loc in
       mk_op_apply id [t] }
 ;
 
@@ -599,28 +599,28 @@ op_symbol:
 ;
 
 %inline oppref:
-| o = OPPREF { mk_pid (prefix o) $loc }
+| o = OPPREF { mk_pid ~fixity:Prefix o $loc }
 ;
 
 prefix_op:
-| o = op_symbol { mk_pid (prefix o) $loc }
+| o = op_symbol { mk_pid ~fixity:Prefix o $loc }
 ;
 
 %inline infix_op_1:
-| o = OP1   { mk_pid (infix o) $loc }
-| EQUAL     { mk_pid (infix "=") $loc }
-| LTGT      { mk_pid (infix "<>") $loc }
+| o = OP1   { mk_pid ~fixity:Infix o $loc }
+| EQUAL     { mk_pid ~fixity:Infix "=" $loc }
+| LTGT      { mk_pid ~fixity:Infix "<>" $loc }
 %inline infix_op_234:
-| o = OP2   { mk_pid (infix o) $loc }
-| o = OP3   { mk_pid (infix o) $loc }
-| STAR      { mk_pid (infix "*") $loc }
-| o = OP4   { mk_pid (infix o) $loc }
-| ARROW     { mk_pid (infix "->")  $loc }
-| LRARROW   { mk_pid (infix "<->") $loc }
-| DISJ      { mk_pid (infix "\\/") $loc }
-| BARBAR    { mk_pid (infix "||")  $loc }
-| CONJ      { mk_pid (infix "/\\") $loc }
-| AMPAMP    { mk_pid (infix "&&")  $loc }
+| o = OP2   { mk_pid ~fixity:Infix o $loc }
+| o = OP3   { mk_pid ~fixity:Infix o $loc }
+| STAR      { mk_pid ~fixity:Infix "*" $loc }
+| o = OP4   { mk_pid ~fixity:Infix o $loc }
+| ARROW     { mk_pid ~fixity:Infix "->"  $loc }
+| LRARROW   { mk_pid ~fixity:Infix "<->" $loc }
+| DISJ      { mk_pid ~fixity:Infix "\\/" $loc }
+| BARBAR    { mk_pid ~fixity:Infix "||"  $loc }
+| CONJ      { mk_pid ~fixity:Infix "/\\" $loc }
+| AMPAMP    { mk_pid ~fixity:Infix "&&"  $loc }
 ;
 
 (* Idents *)
@@ -652,22 +652,22 @@ lident_fun_id:
 
 lident_op_id:
 | id = lident_fun_id               { id }
-| LEFTPAR DISJ RIGHTPAR              { mk_pid (infix "\\/") $loc }
-| LEFTPAR CONJ RIGHTPAR             { mk_pid (infix "/\\") $loc }
+| LEFTPAR DISJ RIGHTPAR            { mk_pid ~fixity:Infix "\\/" $loc }
+| LEFTPAR CONJ RIGHTPAR            { mk_pid  ~fixity:Infix "/\\" $loc }
 ;
 
 lident_op:
-| op = op_symbol                              { infix op }
-| op = op_symbol UNDERSCORE                   { prefix op }
-| EQUAL                                       { infix "=" }
-| LTGT                                        { infix "<>" }
-| op = OPPREF UNDERSCORE?                     { prefix op }
-| DOT LEFTPAR RIGHTPAR                        { mixfix ".()" }
-| LEFTSQ UNDERSCORE RIGHTSQ                   { mixfix "[_]" }
-| LEFTSQ ARROW RIGHTSQ                        { mixfix "[->]" }
-| LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { mixfix "[_.._]" }
-| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { mixfix "[.._]" }
-| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { mixfix "[_..]" }
+| op = op_symbol                              { op }
+| op = op_symbol UNDERSCORE                   { op }
+| EQUAL                                       { "=" }
+| LTGT                                        { "<>" }
+| op = OPPREF UNDERSCORE?                     { op }
+| DOT LEFTPAR RIGHTPAR                        { ".()" }
+| LEFTSQ UNDERSCORE RIGHTSQ                   { "[_]" }
+| LEFTSQ ARROW RIGHTSQ                        { "[->]" }
+| LEFTSQ UNDERSCORE DOTDOT UNDERSCORE RIGHTSQ { "[_.._]" }
+| LEFTSQ            DOTDOT UNDERSCORE RIGHTSQ { "[.._]" }
+| LEFTSQ UNDERSCORE DOTDOT            RIGHTSQ { "[_..]" }
 ;
 
 (* Qualified idents *)
