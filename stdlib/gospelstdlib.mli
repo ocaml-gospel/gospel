@@ -204,6 +204,13 @@ module Sequence : sig
         forall x s.
         cons x s = (singleton x) ++ s *)
 
+  (*@ function ( let+ ) (s : 'a t) (f : 'a * 'a sequence -> prop) : prop *)
+
+  (*@ axiom let_cons :
+        forall s r f.
+        ( let+ ) s f <->
+          exists h t. s = cons h t /\ f (h, t) = r *)
+
   (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
   (** [snoc s x] is the sequence containing the elements of [s] followed by [x].
   *)
