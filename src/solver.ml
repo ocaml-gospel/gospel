@@ -189,6 +189,17 @@ let build_def_opt vars c =
   in
   List.fold_right loop vars acc
 
+(** [fold_binders f l r] is effectively a [List.fold_right] but the accumulating
+    function returns a binder. *)
+let fold_right_binders f l r =
+  List.fold_right
+    (fun x r k ->
+      let@ r = r in
+      let@ r = f x r in
+      k r)
+    l
+    (fun k -> k r)
+
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
     [ts] is used to ensure that all type annotations are valid. *)
@@ -333,12 +344,23 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         and+ () = r --- Tytuple (List.map snd vars) in
         Ttuple l
     | Tlambda (args, t, pty) ->
-        let@ r, annot = pty_opt_to_deep pty in
-
-        let c = hastype t r in
-        (* Transform the list of Gospel type annotation into a list of
-            Inferno binders *)
-        let+ l, t = build_def_opt args c and+ annot_ty = annot in
+        (* The return of the function as an inferno variable *)
+        let@ res, annot = pty_opt_to_deep pty in
+        (* The function's type as an inferno variable. *)
+        let@ ty_fun =
+          fold_right_binders
+            (fun (_, ty) acc k ->
+              let@ v, _ = pty_opt_to_deep ty in
+              let@ x = shallow (S.Tyarrow (v, acc)) in
+              k x)
+            args res
+        in
+        let c = hastype t res in
+        (* Build a constraint with all the function's arguments in
+           scope. *)
+        let+ () = r -- ty_fun
+        and+ l, t = build_def_opt args c
+        and+ annot_ty = annot in
         Tlambda (l, t, Option.map (fun _ -> annot_ty) pty)
     | Trecord (l, rec_ty) ->
         (* Gets the record type as well as the list of type parameters used as
