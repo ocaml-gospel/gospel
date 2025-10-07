@@ -147,6 +147,63 @@ let pty_opt_to_deep = function
         let@ v = pty_to_deep_rigid ty in
         k (v, pure ty)
 
+(** [ids_of_pat pat] returns a binder for an associative list that maps
+    identifier tags with their respective inferno variables. *)
+let rec ids_of_pat pat k =
+  match pat.Id_uast.pat_desc with
+  | Pwild -> k []
+  | Pid id ->
+      let@ v = exist in
+      k [ (id.id_tag, (id, v)) ]
+  | Ptuple l ->
+      let@ l = map_binders ids_of_pat l in
+      k (List.concat l)
+  | Pcast (p, _) -> ids_of_pat p k
+
+(** [pat_to_deep ids pat] returns a binder for a pair of an inferno variable for
+    a type that matches the pattern and a constraint for the pattern. *)
+let rec pat_desc_to_deep ids pat k =
+  match pat.Id_uast.pat_desc with
+  | Pwild ->
+      let@ v, _ = pty_opt_to_deep None in
+      k (v, pure Tast.Pwild)
+  | Pid id ->
+      let _, v = List.assoc id.id_tag ids in
+      let pat =
+        let+ annot = decode v in
+        Pid (mk_ts id annot)
+      in
+      k (v, pat)
+  | Ptuple l ->
+      let@ l = map_binders (pat_to_deep ids) l in
+      let vl, pl = List.split l in
+      let@ v = shallow (S.Tytuple vl) in
+      let pat =
+        let+ l = map_constraints (fun x -> x) pl in
+        Tast.Ptuple l
+      in
+      k (v, pat)
+  | Pcast (p, ty) ->
+      let@ v, c = pat_to_deep ids p in
+      let loc = pat.pat_loc in
+      let c =
+        Solver.correlate (loc.loc_start, loc.loc_end)
+        @@
+        let@ ty_var = pty_to_deep_rigid ty in
+        let+ pat = c and+ () = ty_var -- v in
+        Pcast (pat, ty)
+      in
+      k (v, c)
+
+and pat_to_deep ids p =
+ fun k ->
+  let@ v, c = pat_desc_to_deep ids p in
+  let c =
+    let+ pat_desc = c in
+    { pat_desc; pat_loc = p.pat_loc }
+  in
+  k (v, c)
+
 (** [build_def vars c] Creates a constraint that adds the variables in [vars] to
     the scope of constraint [c] via a chain of [def] constraints. *)
 let build_def vars c =
@@ -256,40 +313,20 @@ let rec hastype (t : Id_uast.term) (r : variable) =
            variables that were not unified, then we create an explicit
            application of [q] to the types it receives as argument. *)
         if params = [] then Tvar q else Ttyapply (q, ptys)
-    | Tlet (ids, t1, t2) ->
+    | Tlet (pat, t1, t2) ->
         (* let id1, id2, ... = t1 in t2 *)
-        (* Create an inferno type variable for each variable in [ids].
-            For now, we ignore the name of the variable. *)
-        let@ tl = map_binders (fun _ -> exist) ids in
-        (* The type of [t1].  If there is more than 1, then [t1] must
-            evaluate to a tuple. *)
-        let@ v_type =
-          match ids with
-          | [] ->
-              (* If there are no variables in [ids], the
-                 type of [t1] is unbounded. *)
-              exist
-          | [ _ ] ->
-              (* If there is one variable in [ids], [tl] is a
-                 singleton list and the type of [t1] must be equal to
-                 the value in that list. *)
-              fun k -> k (List.hd tl)
-          | _ ->
-              (* If there are more than one variables, then [t1] must
-                 be evaluate to a tuple where the type of each value
-                 corresponds to [tl]. *)
-              shallow (Tytuple tl)
-        in
+        (* Associative list that maps each identifier in [pat] to an
+            inferno variable. *)
+        let@ ids = ids_of_pat pat in
+        let@ v_type, pat = pat_to_deep ids pat in
         let+ t1 = hastype t1 v_type
         and+ t2 =
-          (* Create a constraint for the term [t2] where we match each
-              variable in [ids] with its respective type in [tl]. *)
+          (* Create a constraint for the term [t2] where we add to
+              the scope every variable in [ids]. *)
           let t2 = hastype t2 r in
-          List.fold_left2 (fun t2 id ty -> def id ty t2) t2 ids tl
-        (* Pair each variable with its type*)
-        and+ types = map_constraints decode tl in
-        let tids = List.map2 mk_ts ids types in
-        Tlet (tids, t1, t2)
+          List.fold_left (fun r (_, (id, v)) -> def id v r) t2 ids
+        and+ pat = pat in
+        Tlet (pat, t1, t2)
     | Tapply (t1, t2) ->
         (* t1 t2 (Function application)*)
         (* Inferno variables for the function's argument and return type. *)
@@ -347,21 +384,23 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         (* The return of the function as an inferno variable *)
         let@ res, annot = pty_opt_to_deep pty in
         (* The function's type as an inferno variable. *)
-        let@ ty_fun =
+        let@ all_ids, args, ty_fun =
           fold_right_binders
-            (fun (_, ty) acc k ->
-              let@ v, _ = pty_opt_to_deep ty in
-              let@ x = shallow (S.Tyarrow (v, acc)) in
-              k x)
-            args res
+            (fun arg (all_ids, args, r) k ->
+              let@ ids = ids_of_pat arg in
+              let@ v, pat = pat_to_deep ids arg in
+              let@ x = shallow (S.Tyarrow (v, r)) in
+              k (ids @ all_ids, pat :: args, x))
+            args ([], [], res)
         in
         let c = hastype t res in
         (* Build a constraint with all the function's arguments in
-           scope. *)
+            scope. *)
         let+ () = r -- ty_fun
-        and+ l, t = build_def_opt args c
-        and+ annot_ty = annot in
-        Tlambda (l, t, Option.map (fun _ -> annot_ty) pty)
+        and+ t = List.fold_left (fun c (_, (v, id)) -> def v id c) c all_ids
+        and+ annot_ty = annot
+        and+ args = map_constraints (fun x -> x) args in
+        Tlambda (args, t, Option.map (fun _ -> annot_ty) pty)
     | Trecord (l, rec_ty) ->
         (* Gets the record type as well as the list of type parameters used as
             inferno variables. *)
