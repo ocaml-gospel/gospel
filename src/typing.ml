@@ -154,16 +154,32 @@ let unique_var env ocaml_vals defs q =
       let q, params, pty = fun_qualid ocaml_vals defs q in
       Tvar (q, params, pty)
 
-(** [binder (pid, pty)] maps the string [pid.pid_str] to a fresh tagged
-    variable, adds all the type variables present in [pty] to the local scope
-    and turns [pty] into a tagged annotation. *)
-let binder defs old_env env (pid, pty) =
+let preid pid old_env env =
   let id = Ident.from_preid pid in
   let old_env', env' = add_spec_var id !old_env !env in
   old_env := old_env';
   env := env';
+  id
+
+(** [binder (pid, pty)] maps the string [pid.pid_str] to a fresh tagged
+    variable, adds all the type variables present in [pty] to the local scope
+    and turns [pty] into a tagged annotation. *)
+let binder defs old_env env (pid, pty) =
+  let id = preid pid old_env env in
   let pty = Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty in
   (id, pty)
+
+let rec pat_desc defs old_env env p =
+  match p.Parse_uast.pat_desc with
+  | Pwild -> Pwild
+  | Pid pid -> Pid (preid pid old_env env)
+  | Pcast (p, pty) ->
+      let pty = unique_pty ~ocaml:false ~bind:true defs !env pty in
+      Pcast (pat defs old_env env p, pty)
+  | Ptuple l -> Ptuple (List.map (pat defs old_env env) l)
+
+and pat defs old_env env p =
+  { pat_desc = pat_desc defs old_env env p; pat_loc = p.pat_loc }
 
 (** [unique_term top defs old_env env t] returns a term where every variable in
     [t] has been replaced with a uniquely tagged variable. When we find a free
@@ -198,15 +214,12 @@ let rec unique_post_term defs old_env env t =
     | Tconst c -> Tconst c
     | Tvar q -> unique_var env.term_var env.ocaml_vals defs q
     | Tlet (v, t1, t2) ->
-        let ids = List.map Ident.from_preid v in
+        let env = ref env in
+        let old_env = ref old_env in
+        let ids = pat defs old_env env v in
         let t1 = unique_term t1 in
         (* Add the identifier to the local environment *)
-        let old_env, env =
-          List.fold_left
-            (fun (old_env, env) id -> add_spec_var id old_env env)
-            (old_env, env) ids
-        in
-        let t2 = unique_term_let old_env env t2 in
+        let t2 = unique_term_let !old_env !env t2 in
         Tlet (ids, t1, t2)
     | Tapply (t1, t2) -> Tapply (unique_term t1, unique_term t2)
     | Tinfix _ -> (unique_term (Uast_utils.chain t)).term_desc
@@ -228,7 +241,7 @@ let rec unique_post_term defs old_env env t =
         let pty =
           Option.map (unique_pty ~ocaml:false ~bind:true defs !env) pty
         in
-        let args = List.map (binder defs old_env env) args in
+        let args = List.map (pat defs old_env env) args in
         let t = unique_term_let !old_env !env t in
         Tlambda (args, t, pty)
     | Trecord l ->

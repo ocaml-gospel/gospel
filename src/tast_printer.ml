@@ -31,6 +31,15 @@ let ts ~top_level fmt v =
   in
   if type_is_printed then pp fmt "@[%a@]" cast v
 
+let rec pat fmt p =
+  match p.pat_desc with
+  | Pwild -> pp fmt "_"
+  | Pid id -> ts ~top_level:false fmt id
+  | Pcast (p, t) -> pp fmt "(%a :@ %a)" pat p print_ty t
+  | Ptuple l -> list ~sep:comma (parens pat) fmt l
+
+let print_pats fmt l = list ~sep:sp pat fmt l
+
 let rec qualid fmt = function
   | Qid id -> Ident.pp fmt id
   | Qdot (q, pid) -> pp fmt "@[%a.%a@]" qualid q Ident.pp pid
@@ -77,8 +86,8 @@ and term fmt t =
     | TTrue -> pp fmt "True"
     | TFalse -> pp fmt "False"
     | Tvar q | Ttyapply (q, _) -> qualid fmt q
-    | Tlet (ids, t1, t2) ->
-        pp fmt "let %a =@ %a in@ @[%a@]" print_tids ids term t1 term t2
+    | Tlet (pats, t1, t2) ->
+        pp fmt "let %a =@ %a in@ @[%a@]" pat pats term t1 term t2
     | Tconst c -> Uast_printer.constant fmt c
     | Tapply (t1, t2) -> print_app fmt t1 t2
     | Tif (t1, t2, t3) ->
@@ -87,7 +96,7 @@ and term fmt t =
         pp fmt "%a %a.@ @[%a@]" Uast_printer.print_quantifier q
           (list ~sep:sp ts) tids term t
     | Tlambda (pl, t, ty) ->
-        pp fmt "fun %a%a -> %a" (list ~sep:sp ts) pl
+        pp fmt "fun %a%a -> %a" print_pats pl
           (option (fun fmt -> pp fmt " : %a" print_ty))
           ty term t
     | Tattr (_, t) -> term fmt t
