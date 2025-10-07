@@ -44,6 +44,9 @@ and app_info = {
 type binder = id * pty option
 type param = id * pty
 
+type pat = { pat_desc : pat_desc; pat_loc : Location.t }
+and pat_desc = Pwild | Pid of id | Ptuple of pat list | Pcast of pat * pty
+
 type ty_app = { params : id list; name : id }
 (** Name of a type coupled with its type variables. *)
 
@@ -68,9 +71,9 @@ and term_desc =
   | Tapply of term * term
   | Tif of term * term * term
   | Tquant of Parse_uast.quant * binder list * term
-  | Tlambda of binder list * term * pty option
+  | Tlambda of pat list * term * pty option
   | Tattr of string * term
-  | Tlet of id list * term * term
+  | Tlet of pat * term * term
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term * pty) list * ty_app
