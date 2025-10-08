@@ -62,6 +62,13 @@ let param =
 let binder fmt (id, pty) =
   match pty with None -> Preid.pp fmt id | Some pty -> param fmt (id, pty)
 
+let rec pat fmt p =
+  match p.pat_desc with
+  | Pwild -> pp fmt "_"
+  | Pid id -> Preid.pp fmt id
+  | Pcast (p, ty) -> pp fmt "%a :@ %a" pat p print_ty ty
+  | Ptuple l -> list ~sep:comma (parens pat) fmt l
+
 (* Terms *)
 
 let constant fmt = function
@@ -134,12 +141,12 @@ and term fmt { term_desc; _ } =
         pp fmt "%a %a.@ @[%a@]" print_quantifier q (list ~sep:sp binder) vsl
           term t
     | Tlambda (pl, t, ty) ->
-        pp fmt "fun %a%a -> %a" (list ~sep:sp binder) pl
+        pp fmt "fun %a%a -> %a" (list ~sep:sp pat) pl
           (option (fun fmt -> pp fmt " : %a" print_ty))
           ty term t
     | Tattr (_, t) -> term fmt t
     | Tlet (ids, t1, t2) ->
-        pp fmt "let %a =@ %a in@ @[%a@]" print_ids ids term t1 term t2
+        pp fmt "let %a =@ %a in@ @[%a@]" pat ids term t1 term t2
     | Tcast (t, ty) -> pp fmt "%a :@ %a" term t print_ty ty
     | Ttuple l -> parens (list ~sep:comma term) fmt l
     | Trecord l -> braces (list ~sep:semi print_field) fmt l

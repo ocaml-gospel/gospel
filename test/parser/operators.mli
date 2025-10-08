@@ -48,3 +48,7 @@ module M : sig
 end
 
 (*@ axiom sub_add : forall m n. M.(-) m (M.(+) n m) = M.(-) (M.(+) n m) m *)
+
+(*@ axiom let_some :
+      forall o1 o2.
+      ( let* ) o1 (fun x -> x) = ( let* ) o2 (fun x -> x) *)

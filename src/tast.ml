@@ -18,6 +18,14 @@ type tsymbol = { ts_id : Ident.t; ts_ty : Types.ty }
 (** Typed variables *)
 let mk_ts ts_id ts_ty = { ts_id; ts_ty }
 
+type pat = { pat_desc : pat_desc; pat_loc : Location.t }
+
+and pat_desc =
+  | Pwild
+  | Pid of tsymbol
+  | Ptuple of pat list
+  | Pcast of pat * Types.ty
+
 (** Typed terms *)
 type term_node =
   | Ttrue
@@ -25,14 +33,14 @@ type term_node =
   | TTrue
   | TFalse
   | Tvar of Id_uast.qualid
-  | Tlet of tsymbol list * term * term
+  | Tlet of pat * term * term
   | Tconst of Parse_uast.constant
   | Tapply of term * term
   | Ttyapply of Id_uast.qualid * Id_uast.pty list
   | Tquant of Parse_uast.quant * tsymbol list * term
   | Tif of term * term * term
   | Ttuple of term list
-  | Tlambda of tsymbol list * term * Id_uast.pty option
+  | Tlambda of pat list * term * Id_uast.pty option
   | Trecord of (Id_uast.qualid * term) list
   | Tfield of term * Id_uast.qualid
   | Tattr of string * term
