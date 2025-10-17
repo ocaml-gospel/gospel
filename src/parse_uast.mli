@@ -30,6 +30,10 @@ type labelled_arg =
 (* Logical terms and formulas *)
 
 type binder = id * pty option
+
+type pat = { pat_desc : pat_desc; pat_loc : Location.t }
+and pat_desc = Pwild | Pid of id | Ptuple of pat list | Pcast of pat * pty
+
 type param = id * pty
 type quant = Tforall | Texists
 
@@ -59,9 +63,9 @@ and term_desc =
        same way as [Tapply] *)
   | Tif of term * term * term
   | Tquant of quant * binder list * term
-  | Tlambda of binder list * term * pty option
+  | Tlambda of pat list * term * pty option
   | Tattr of string * term
-  | Tlet of id list * term * term
+  | Tlet of pat * term * term
   | Tcast of term * pty
   | Ttuple of term list
   | Trecord of (qualid * term) list

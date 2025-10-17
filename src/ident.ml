@@ -62,11 +62,7 @@ type t = {
 let pp ppf id =
   let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr in
   let pp_attrs = Format.pp_print_list pp_attr in
-  let l = String.split_on_char ' ' id.id_str in
-  match l with
-  | [ v ] -> Format.fprintf ppf "%s%a" v pp_attrs id.id_attrs
-  | [ _; v ] -> Format.fprintf ppf "(%s)%a" v pp_attrs id.id_attrs
-  | _ -> assert false
+  Format.fprintf ppf "%s%a" id.id_str pp_attrs id.id_attrs
 
 let to_string id = id.id_str
 let equal x y = Tag.equal x.id_tag y.id_tag

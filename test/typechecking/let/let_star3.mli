@@ -8,25 +8,14 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
-let pp_attr ppf attr = Format.fprintf ppf "[@%s]" attr
-let pp_attrs = Format.pp_print_list pp_attr
+(*@ axiom test : forall x. let* y, z = x in True *)
 
-type fixity = Normal | Infix | Mixfix | Prefix | Let
-
-type t = {
-  pid_str : string;
-  pid_fixity : fixity;
-  pid_attrs : string list;
-  pid_loc : Location.t;
-}
-
-let pp ppf pid =
-  match pid.pid_fixity with
-  | Normal -> Format.fprintf ppf "%s%a" pid.pid_str pp_attrs pid.pid_attrs
-  | _ -> Format.fprintf ppf "(%s)%a" pid.pid_str pp_attrs pid.pid_attrs
-
-let add_attr t attr = { t with pid_attrs = attr :: t.pid_attrs }
-let eq id1 id2 = id1.pid_str = id2.pid_str
-
-let create ?(fixity = Normal) ?(attrs = []) ~loc str =
-  { pid_str = str; pid_fixity = fixity; pid_attrs = attrs; pid_loc = loc }
+(* {gospel_expected|
+[1] File "let_star3.mli", line 11, characters 44-48:
+    11 | (*@ axiom test : forall x. let* y, z = x in True *)
+                                                     ^^^^
+    Error: Mismatch between a type 'd -> prop
+           and type 'c -> 'b -> 'a
+           Mismatch between arity 1 and arity 2
+    
+|gospel_expected} *)

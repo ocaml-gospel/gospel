@@ -7,6 +7,20 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to function_invalid_let.mli.output
+   (run %{checker} %{dep:function_invalid_let.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff function_invalid_let.mli function_invalid_let.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to function_invalid_operator1.mli.output
    (run %{checker} %{dep:function_invalid_operator1.mli}))))
 

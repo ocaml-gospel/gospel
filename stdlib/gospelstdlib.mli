@@ -106,6 +106,17 @@
 (*@ function ([_..]) (s: 'a sequence) (i: integer): 'a sequence *)
 (*@ function ([.._]) (s: 'a sequence) (i: integer): 'a sequence *)
 
+(*@ function ( let* ) (x : 'a option) (p : 'a -> prop) : prop *)
+
+(*@ axiom let_some :
+      forall x p.
+      ( let* ) x p <->
+        exists y. Some y = x /\ p y *)
+
+(*@ function get (x : 'a option) : 'a *)
+
+(*@ axiom get_def : forall x y. x = Some y -> get x = y *)
+
 (*@ predicate monoid (f : 'a -> 'a -> 'a) (neutral : 'a) *)
 
 (*@ axiom monoid_def :
@@ -192,6 +203,13 @@ module Sequence : sig
   (*@ axiom cons_def :
         forall x s.
         cons x s = (singleton x) ++ s *)
+
+  (*@ function ( let+ ) (s : 'a t) (f : 'a * 'a sequence -> prop) : prop *)
+
+  (*@ axiom let_cons :
+        forall s r f.
+        ( let+ ) s f <->
+          exists h t. s = cons h t /\ f (h, t) = r *)
 
   (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
   (** [snoc s x] is the sequence containing the elements of [s] followed by [x].

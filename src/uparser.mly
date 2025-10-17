@@ -16,6 +16,7 @@
 
   let mk_pid pid ?(fixity = Normal) l = Preid.create pid ~fixity ~attrs:[] ~loc:(mk_loc l)
   let mk_term d l = { term_desc = d; term_loc = mk_loc l }
+  let mk_pat p l = { pat_desc = p; pat_loc = mk_loc l }
 
   let get_op l = mk_pid ~fixity:Preid.Mixfix "[_]" l
   let set_op l = mk_pid ~fixity:Preid.Mixfix "[->]" l
@@ -64,6 +65,7 @@
 
 %token <string> LIDENT UIDENT
 %token <string> OP1 OP2 OP3 OP4 OPPREF
+%token <string> LET1 LET2 LET3 LET4
 %token <string> QUOTE_LIDENT
 %token <string> BACKQUOTE_LIDENT
 %token <string> ATTRIBUTE
@@ -403,6 +405,12 @@ cast:
 term: t = mk_term(term_) { t }
 ;
 
+let_bind:
+| ids = pat EQUAL t1 = term IN t2 = term
+   { (ids, t1, t2) }
+| id = attrs(lident_op_id) EQUAL t1 = term IN t2 = term
+   { (mk_pat (Pid id) $loc(id), t1, t2) }
+
 term_:
 | term_arg_
     { chain_desc $1 }
@@ -425,15 +433,14 @@ term_:
       (List.fold_left join $1 $2).term_desc }
 | IF g = term THEN t1 = term ELSE t2 = term
     { Tif (g, t1, t2) }
-| LET ids = separated_nonempty_list(COMMA, lident) EQUAL t1 = term IN t2 = term
-    { Tlet (ids, t1, t2) }
-| LET UNDERSCORE EQUAL t1 = term IN t2 = term
-    { Tlet ([], t1, t2) }
-| LET id = attrs(lident_op_id) EQUAL t1 = term IN t2 = term
-    { Tlet ([id], t1, t2) }
+| LET b = let_bind
+    { let ids, t1, t2 = b in Tlet (ids, t1, t2) }
+| l=let_symbol b = let_bind
+    { let ids, bind, body = b in
+      mk_let_apply l ids bind body }
 | q = quant l = comma_list1(quant_vars) DOT t = term
     { Tquant (q, List.concat l, t) }
-| FUN args = fun_vars+ ty = preceded(COLON,fun_typ)? ARROW t = term
+| FUN args = pat_arg+ ty = preceded(COLON,fun_typ)? ARROW t = term
     { Tlambda (args, t, ty) }
 | a = attr t = term %prec prec_named
     { Tattr (a, t) }
@@ -453,9 +460,21 @@ term_rec_field(X):
           }
 ;
 
-fun_vars:
-| v=binder_var { v, None }
-| LEFTPAR v=binder_var t=cast RIGHTPAR { v, Some t }
+pat_arg:
+| p = pat_arg_ { mk_pat p $loc }
+
+pat_arg_:
+| UNDERSCORE { Pwild }
+| v=lident { Pid v }
+| LEFTPAR p=pat_ RIGHTPAR { p }
+
+pat:
+| p=pat_ { mk_pat p $loc }
+
+pat_:
+| p=pat_arg_ { p }
+| l=comma_list2(pat_arg) { Ptuple l }
+| p=pat_arg t=cast { Pcast (p, t) }
 
 quant_vars:
 | l = binder_var+ ty = cast? { List.map (fun id -> id, ty) l }
@@ -598,6 +617,12 @@ op_symbol:
 | STAR    { "*"  }
 ;
 
+let_symbol:
+| o = LET1 { mk_let o $loc }
+| o = LET2 { mk_let o $loc }
+| o = LET3 { mk_let o $loc }
+| o = LET4 { mk_let o $loc }
+
 %inline oppref:
 | o = OPPREF { mk_pid ~fixity:Prefix o $loc }
 ;
@@ -649,6 +674,7 @@ lident_rich:
 
 lident_fun_id:
 | LEFTPAR id = lident_op RIGHTPAR  { mk_pid id $loc }
+| LEFTPAR id = let_symbol RIGHTPAR { id }
 
 lident_op_id:
 | id = lident_fun_id               { id }
