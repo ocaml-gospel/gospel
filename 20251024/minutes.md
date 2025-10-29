@@ -32,7 +32,43 @@ val f : t -> t option
 ```
 
 Nicolas is not sure how to use this specification in Ortac. But it is OCaml
-valid syntax, with the same semantic.
+valid syntax, with the same semantics.
+
+Tiago notes that this is not exactly the same as an OCaml
+specification since `None` and `Some` are functions and not ADT
+constructors.  Furthermore, it is unclear how we differentiate between
+functions the used in the pattern and the fresh variables the pattern
+binds.  In this case it is simple since the functions we use in the
+patterns start with uppercase letters, however it can get confusing if
+we use functions with lowercase letters.  For instance:
+
+``` ocaml
+let s : 'a sequence = ... in
+let cons x empty = s in x > 0
+```
+
+In this term, we are trying to state that the sequence `s` is equal to a
+singleton sequence `[x]` where `x` is greater than `0`.  However, how do we
+know that `empty` refers to the empty sequence and is not another
+variable the user wants bind in this pattern?  There seem to be
+a two options:
+
+- Any variable that is not capitalized is bound by the pattern.
+  Although it makes this more inline with OCaml since constructors
+  must be uppercase, it removes expressivity and forces users to
+  capitalize any function they may want to use with this pattern
+  matching.  For instance, in the previous example, we would have to
+  rename our `cons` and `empty` functions to be uppercase.
+
+- Any variable that is not in scope is considered to be bound by the
+  pattern.  Although this gives more expressivity, it would be a bit
+  awkward since users could accidentally use variables that are in
+  scope in patterns unknowingly that could result in strange terms.
+  For instance, if in the previous example there was a value in scope
+  named `x` of type `integer`, then the term would still type check but
+  would have a different meaning: instead of saying "there exists some
+  `x` where `s = cons x empty`" it states "`s = cons x empty`" without
+  binding a new name.
 
 Action items:
 
