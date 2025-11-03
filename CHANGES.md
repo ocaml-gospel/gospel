@@ -46,6 +46,8 @@
   [#449](https://github.com/ocaml-gospel/gospel/pull/449#issuecomment-2865879545)
 - Fixity now appears in the identifier object
   [#453](https://github.com/ocaml-gospel/gospel/pull/453)
+- Fix bug in building constraints for lambdas
+  [#455](https://github.com/ocaml-gospel/gospel/pull/455)
 
 # 0.3
 
