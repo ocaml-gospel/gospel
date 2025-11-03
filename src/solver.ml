@@ -189,6 +189,17 @@ let build_def_opt vars c =
   in
   List.fold_right loop vars acc
 
+(** [fold_right_binders f l r] is effectively a [List.fold_right] but the
+    accumulating function returns a binder. *)
+let rec fold_right_binders f l r =
+  match l with
+  | [] -> fun k -> k r
+  | x :: t ->
+      fun k ->
+        let@ r = fold_right_binders f t r in
+        let@ r = f x r in
+        k r
+
 (** [hastype ts t r] receives an untyped term [t] and the expected type [r] and
     produces a constraint whose semantic value is a typed term. The environment
     [ts] is used to ensure that all type annotations are valid. *)
@@ -333,12 +344,39 @@ let rec hastype (t : Id_uast.term) (r : variable) =
         and+ () = r --- Tytuple (List.map snd vars) in
         Ttuple l
     | Tlambda (args, t, pty) ->
-        let@ r, annot = pty_opt_to_deep pty in
-
-        let c = hastype t r in
-        (* Transform the list of Gospel type annotation into a list of
-            Inferno binders *)
-        let+ l, t = build_def_opt args c and+ annot_ty = annot in
+        (* The return of the function as an inferno variable. *)
+        let@ res, annot = pty_opt_to_deep pty in
+        (* The types of the function's argument. *)
+        let@ args_ty = map_binders (fun (_, ty) -> pty_opt_to_deep ty) args in
+        let vars, ptys = List.split args_ty in
+        (* The function's type as an inferno variable. *)
+        let@ ty_fun =
+          fold_right_binders
+            (fun v acc -> shallow (S.Tyarrow (v, acc)))
+            vars res
+        in
+        let c = hastype t res in
+        (* Pair each variable with its decoded type. *)
+        let l =
+          List.map2
+            (fun pty (id, _) ->
+              let+ pty = pty in
+              (id, pty))
+            ptys args
+        in
+        (* Add each variable to the scope of the term. *)
+        let+ t =
+          List.fold_right2 (fun v (id, _) acc -> def id v acc) vars args c
+        (* Create the list of typed arguments. *)
+        and+ l =
+          map_constraints
+            (fun c ->
+              let+ x, y = c in
+              mk_ts x y)
+            l
+        (* The type of this term is the type of the function. *)
+        and+ () = r -- ty_fun
+        and+ annot_ty = annot in
         Tlambda (l, t, Option.map (fun _ -> annot_ty) pty)
     | Trecord (l, rec_ty) ->
         (* Gets the record type as well as the list of type parameters used as
