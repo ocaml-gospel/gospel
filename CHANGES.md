@@ -33,6 +33,8 @@
   [\#391](https://github.com/ocaml-gospel/gospel/pull/391)
 - Add nested exceptional specifications
   [#452](https://github.com/ocaml-gospel/gospel/pull/452)
+- More expressive let pattern matching
+  [#457](https://github.com/ocaml-gospel/gospel/pull/457)
 
 ## Internals
 
