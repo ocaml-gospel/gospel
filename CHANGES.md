@@ -7,6 +7,8 @@
 
 ## Improved
 
+- Add `option` as an OCaml primitive type constructor
+  [\#464](https://github.com/ocaml-gospel/gospel/pull/464)
 - Check for repeated name of module and module types
   [\#444](https://github.com/ocaml-gospel/gospel/pull/444)
 - Fix bug in creation of fresh type variables
