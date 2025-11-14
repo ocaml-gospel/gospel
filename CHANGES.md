@@ -6,6 +6,8 @@
   [\#466](https://github.com/ocaml-gospel/gospel/pull/466)
 - Adapt to cmdliner.2.0.0
   [\#470](https://github.com/ocaml-gospel/gospel/pull/470)
+- Add back type checking of README's example
+  [\#463](https://github.com/ocaml-gospel/gospel/pull/463)
 - Add support for mutually recursive ghost types
   [\#403](https://github.com/ocaml-gospel/gospel/pull/403)
 - Add syntax for building sets
