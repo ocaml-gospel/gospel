@@ -1,0 +1,8 @@
+(library
+ (name stack)
+ (modules_without_implementation stack))
+
+(rule
+ (alias ortac)
+ (action
+  (run gospel check %{dep:stack.mli})))
