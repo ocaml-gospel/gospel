@@ -273,6 +273,20 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to return_option.mli.output
+   (run %{checker} %{dep:return_option.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff return_option.mli return_option.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to valid_exn_match.mli.output
    (run %{checker} %{dep:valid_exn_match.mli}))))
 
