@@ -22,6 +22,9 @@ type float
 type char
 (*@ model : char *)
 
+type 'a option
+(*@ model : 'a option *)
+
 type 'a list
 (*@ model : 'a sequence *)
 
