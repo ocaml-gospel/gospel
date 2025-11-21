@@ -9,7 +9,7 @@ val f : 'a t -> unit
 
 (* The following error was tracked down to src/typing.ml:107 *)
 (* {gospel_expected|
-   [125] gospel: internal error, uncaught exception:
+   [125] gospel: internal error, [31muncaught exception[m:
                  Not_found
                  
    |gospel_expected} *)
