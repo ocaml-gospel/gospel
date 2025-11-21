@@ -1,3 +1,7 @@
+# Unreleased
+
+- Bump AST to 5.2 for ppxlib.0.36.0
+
 # 0.3
 
 ## Added
