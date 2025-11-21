@@ -149,10 +149,12 @@ module Sequence : sig
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f n]. *)
 
   (*@ function cons (x: 'a) (s: 'a t): 'a t *)
-  (** [cons x s] is the sequence containing [x] followed by the elements of [s]. *)
+  (** [cons x s] is the sequence containing [x] followed by the elements of [s].
+  *)
 
   (*@ function snoc (s: 'a t) (x: 'a): 'a t *)
-  (** [snoc s x] is the sequence containing the elements of [s] followed by [x]. *)
+  (** [snoc s x] is the sequence containing the elements of [s] followed by [x].
+  *)
 
   (*@ function hd (s: 'a t) : 'a *)
   (** When [s] contains one or more elements, [hd s] is the first element of
@@ -386,26 +388,22 @@ module Bag : sig
 
   (*@ function union (b b': 'a t) : 'a t *)
   (** [union b b'] is a bag [br] where for all element [x],
-      [occurences x br = max
-      (occurences x b) (occurences x b')]. *)
+      [occurences x br = max (occurences x b) (occurences x b')]. *)
 
   (*@ function sum (b b': 'a t) : 'a t *)
   (** [sum b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      (occurences x b) + (occurences x b')]. *)
+      [occurences x br = (occurences x b) + (occurences x b')]. *)
 
   (*@ function inter (b b': 'a t) : 'a t *)
   (** [inter b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      min (occurences x b) (occurences x b')]. *)
+      [occurences x br = min (occurences x b) (occurences x b')]. *)
 
   (*@ predicate disjoint (b b': 'a t) *)
   (** [disjoint b b'] holds iff [b] and [b'] have no element in common. *)
 
   (*@ function diff (b b': 'a t) : 'a t *)
   (** [diff b b'] is a bag [br] where for all element [x],
-      [occurences x br =
-      max 0 (occurences x b - occurences x b')]. *)
+      [occurences x br = max 0 (occurences x b - occurences x b')]. *)
 
   (*@ predicate subset (b b': 'a t) *)
   (** [subset b b'] holds iff for all element [x],
@@ -415,7 +413,8 @@ module Bag : sig
   (** [choose b] is an arbitrary element of [b]. *)
 
   (*@ function choose_opt (b: 'a t) : 'a option *)
-  (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty. *)
+  (** [choose_opt b] is an arbitrary element of [b] or [None] if [b] is empty.
+  *)
 
   (*@ function map (f: 'a -> 'b) (b: 'a t) : 'b t *)
   (** [map f b] is a fresh bag which elements are [f x1 ... f xN], where
@@ -429,7 +428,8 @@ module Bag : sig
   (** [for_all f b] holds iff [f x] is [true] for all elements in [b]. *)
 
   (*@ predicate _exists (f: 'a -> bool) (b: 'a t) *)
-  (** [for_all f b] holds iff [f x] is [true] for at least one element in [b]. *)
+  (** [for_all f b] holds iff [f x] is [true] for at least one element in [b].
+  *)
 
   (*@ function filter (f: 'a -> bool) (b: 'a t) : 'a t *)
   (** [filter f b] is the bag of all elements in [b] that satisfy [f]. *)
@@ -506,7 +506,8 @@ module Set : sig
   (** [choose s] is an arbitrary element of [s]. *)
 
   (*@ function choose_opt: 'a t -> 'a option *)
-  (** [choose_opt s] is an arbitrary element of [s] or [None] if [s] is empty. *)
+  (** [choose_opt s] is an arbitrary element of [s] or [None] if [s] is empty.
+  *)
 
   (*@ function map (f: 'a -> 'b) (s: 'a t) : 'b t *)
   (** [map f s] is a fresh set which elements are [f x1 ... f xN], where
@@ -520,7 +521,8 @@ module Set : sig
   (** [for_all f s] holds iff [f x] is [true] for all elements in [s]. *)
 
   (*@ predicate _exists (f: 'a -> bool) (s: 'a t) *)
-  (** [_exists f s] holds iff [f x] is [true] for at least one element in [s]. *)
+  (** [_exists f s] holds iff [f x] is [true] for at least one element in [s].
+  *)
 
   (*@ function filter (f: 'a -> bool) (s: 'a t) : 'a t *)
   (** [filter f s] is the set of all elements in [s] that satisfy [f]. *)
@@ -557,6 +559,7 @@ module Order : sig
          (cmp x y <= 0 -> cmp y z <  0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <= 0 -> cmp x z <  0) /\
          (cmp x y <  0 -> cmp y z <  0 -> cmp x z <  0)) *)
+
 end
 
 (** Other OCaml built-in stuff *)

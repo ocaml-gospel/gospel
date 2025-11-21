@@ -200,7 +200,8 @@ module Sigma : sig
   (** From Map *)
 
   val other_one : ty -> t -> Pmatrix.t -> pattern_node
-  (** Returns a constructor of type ty such that it is absent from the sigma set *)
+  (** Returns a constructor of type ty such that it is absent from the sigma set
+  *)
 
   val get_typ_cols : ty list -> lsymbol -> ty list
   (** Instanciate type variables *)
