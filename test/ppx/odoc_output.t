@@ -7,6 +7,28 @@ First, we compile the file, running the source preprocessor and the ppx:
 Then run Odoc
 
   $ odoc compile odoc_of_gospel.cmti
+  File "odoc_of_gospel.mli", line 5, character 6 to line 7, character 21:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 9, character 6 to line 11, character 38:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 13, character 6 to line 15, character 49:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 17, character 6 to line 21, character 26:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 23, character 6 to line 25, character 41:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 27, character 6 to line 29, character 18:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 31, character 6 to line 35, character 21:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 37, character 6 to line 41, character 19:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 42, character 6 to line 44, character 38:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 43, character 6 to line 45, character 20:
+  Warning: Code blocks should be indented at the opening `{`.
+  File "odoc_of_gospel.mli", line 44, character 6 to line 46, character 19:
+  Warning: Code blocks should be indented at the opening `{`.
 
 We test the html and the latex outputs
 

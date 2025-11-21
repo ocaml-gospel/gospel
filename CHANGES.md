@@ -1,5 +1,6 @@
 # Unreleased
 
+- Update cmdliner
 - Bump AST to 5.2 for ppxlib.0.36.0
 - Display an error message when encoutering a Functor application
   cherry picked from:
