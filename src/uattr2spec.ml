@@ -110,8 +110,8 @@ let ghost_spec ~filename attr =
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.type_spec)
           |> Option.map (fun (ty_text, spec) ->
-                 let ty_loc = get_spec_loc attr in
-                 { spec with ty_text; ty_loc })
+              let ty_loc = get_spec_loc attr in
+              { spec with ty_text; ty_loc })
         in
         let tloc = get_spec_loc attr in
         Sig_ghost_type (r, [ { type_ with tspec; tloc } ])
@@ -124,8 +124,8 @@ let ghost_spec ~filename attr =
           |> fst
           |> Option.map (parse_gospel ~filename Uparser.val_spec)
           |> Option.map (fun (sp_text, spec) ->
-                 let sp_loc = get_spec_loc attr in
-                 { spec with sp_text; sp_loc })
+              let sp_loc = get_spec_loc attr in
+              { spec with sp_text; sp_loc })
         in
         let vloc = get_spec_loc attr in
         Sig_ghost_val { val_ with vspec; vloc }
@@ -145,8 +145,8 @@ let floating_spec ~filename a =
         |> fst
         |> Option.map (parse_gospel ~filename Uparser.func_spec)
         |> Option.map (fun (fun_text, (spec : fun_spec)) ->
-               let fun_loc = get_spec_loc a in
-               { spec with fun_text; fun_loc })
+            let fun_loc = get_spec_loc a in
+            { spec with fun_text; fun_loc })
       in
       Sig_function { fun_ with fun_spec }
     else Sig_function fun_
