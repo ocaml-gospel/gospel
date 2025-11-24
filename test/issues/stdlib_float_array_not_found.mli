@@ -3,7 +3,7 @@
 open Stdlib.Float.Array
 
 (* {gospel_expected|
-   [125] gospel: internal error, [31muncaught exception[m:
+   [125] gospel: internal error, uncaught exception:
                  Not_found
                  
    |gospel_expected} *)
