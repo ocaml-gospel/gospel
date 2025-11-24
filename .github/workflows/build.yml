@@ -13,7 +13,7 @@ jobs:
       - name: Install OCaml compiler
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: 5.0
+          ocaml-compiler: 5.3
           dune-cache: true
 
       - name: Install dependencies
