@@ -17,14 +17,14 @@ let test test =
   let parse s =
     match Sys.file_exists s with
     | true ->
-        if test s then `Ok s
-        else `Error (Printf.sprintf "don't know what to do with %s" s)
-    | false -> `Error (Printf.sprintf "Error: `%s' not found" s)
+        if test s then Ok s
+        else Error (Printf.sprintf "don't know what to do with %s" s)
+    | false -> Error (Printf.sprintf "Error: `%s' not found" s)
   in
   (parse, Format.pp_print_string)
 
-let test_intf = test intf
-let test_file = test file
+let test_intf = Arg.conv' ~docv:"INTF" @@ test intf
+let test_file = Arg.conv' ~docv:"FILE" @@ test file
 
 let intfs =
   let doc = "File to be processed, expect a .mli or a .gospel file" in
