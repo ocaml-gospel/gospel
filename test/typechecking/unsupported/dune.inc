@@ -7,6 +7,20 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to polymorphic_variant.mli.output
+   (run %{checker} %{dep:polymorphic_variant.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff polymorphic_variant.mli polymorphic_variant.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to type_extension.mli.output
    (run %{checker} %{dep:type_extension.mli}))))
 
