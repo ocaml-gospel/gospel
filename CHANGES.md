@@ -2,6 +2,8 @@
 
 ## Added
 
+- Add test cases for some unsupported contructs
+  [\#466](https://github.com/ocaml-gospel/gospel/pull/466)
 - Add support for mutually recursive ghost types
   [\#403](https://github.com/ocaml-gospel/gospel/pull/403)
 
