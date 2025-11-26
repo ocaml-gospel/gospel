@@ -52,6 +52,8 @@
   [#453](https://github.com/ocaml-gospel/gospel/pull/453)
 - Fix bug in building constraints for lambdas
   [#455](https://github.com/ocaml-gospel/gospel/pull/455)
+- Fix print function for tagged identifiers
+  [#458](https://github.com/ocaml-gospel/gospel/pull/458)
 
 # 0.3
 
