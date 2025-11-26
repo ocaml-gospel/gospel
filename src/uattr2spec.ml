@@ -130,7 +130,8 @@ let type_declaration ~filename t =
     { spec with ty_text; ty_loc }
   in
   let spec = Option.map parse spec_attr in
-  mk_tdecl t other_attrs spec
+  let decl = mk_tdecl t other_attrs spec in
+  if Option.(is_some spec && is_none decl) then raise Unsupported else decl
 
 let val_description ~filename v =
   let spec_attr, other_attrs = get_spec_attr v.pval_attributes in
@@ -140,14 +141,17 @@ let val_description ~filename v =
     { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
-  let* vtype = core_to_pty v.pval_type in
-  {
-    vname = preid_of_loc v.pval_name;
-    vtype;
-    vattributes = other_attrs;
-    vspec = spec;
-    vloc = v.pval_loc;
-  }
+  let vtype = core_to_pty v.pval_type in
+  if Option.(is_some spec && is_none vtype) then raise Unsupported
+  else
+    let* vtype = vtype in
+    {
+      vname = preid_of_loc v.pval_name;
+      vtype;
+      vattributes = other_attrs;
+      vspec = spec;
+      vloc = v.pval_loc;
+    }
 
 let floating_spec ~filename a =
   let txt, s = parse_gospel ~filename Uparser.top a in
