@@ -2,6 +2,8 @@
 
 ## Added
 
+- Add back type checking of README's example
+  [\#463](https://github.com/ocaml-gospel/gospel/pull/463)
 - Add support for mutually recursive ghost types
   [\#403](https://github.com/ocaml-gospel/gospel/pull/403)
 
