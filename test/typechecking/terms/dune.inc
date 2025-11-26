@@ -7,6 +7,20 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to conditional.mli.output
+   (run %{checker} %{dep:conditional.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff conditional.mli conditional.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to ho1.mli.output
    (run %{checker} %{dep:ho1.mli}))))
 
