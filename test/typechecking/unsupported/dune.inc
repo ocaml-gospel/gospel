@@ -71,3 +71,17 @@
  (action
   (diff type_parameter_with_spec.mli type_parameter_with_spec.mli.output)))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to value_first_class_module.mli.output
+   (run %{checker} %{dep:value_first_class_module.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff value_first_class_module.mli value_first_class_module.mli.output)))
+
