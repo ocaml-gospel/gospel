@@ -74,6 +74,8 @@ let rec preid_of_long (loc : location) (s : longident) =
   | Ldot (id, s) -> Qdot (preid_of_long id, Preid.create ~loc s)
   | _ -> assert false
 
+exception Unsupported
+
 let rec core_to_pty cty =
   let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
@@ -82,7 +84,7 @@ let rec core_to_pty cty =
       PTtyapp (preid_of_long id.loc id.txt, List.map core_to_pty l)
   | Ptyp_arrow (_, t1, t2) -> PTarrow (core_to_pty t1, core_to_pty t2)
   | Ptyp_tuple l -> PTtuple (List.map core_to_pty l)
-  | _ -> assert false (* TODO replace with unsupported*)
+  | _ -> raise Unsupported
 
 let ptype_kind = function
   | Ptype_abstract -> PTtype_abstract
@@ -99,15 +101,22 @@ let ptype_kind = function
         }
       in
       PTtype_record (List.map to_gospel_label l)
-  | _ -> assert false
+  | _ -> raise Unsupported
+
+let core_to_pty cty =
+  try Option.some @@ core_to_pty cty with Unsupported -> None
+
+let ptype_kind tk = try Option.some @@ ptype_kind tk with Unsupported -> None
 
 let mk_tdecl t attrs spec =
-  let* tparams = params_to_id t.ptype_params in
+  let* tparams = params_to_id t.ptype_params
+  and* tkind = ptype_kind t.ptype_kind in
+  let tmanifest = Option.bind t.ptype_manifest core_to_pty in
   {
     tname = preid_of_loc t.ptype_name;
     tparams;
-    tkind = ptype_kind t.ptype_kind;
-    tmanifest = Option.map core_to_pty t.ptype_manifest;
+    tkind;
+    tmanifest;
     tattributes = attrs;
     tspec = spec;
     tloc = t.ptype_loc;
@@ -131,9 +140,10 @@ let val_description ~filename v =
     { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
+  let* vtype = core_to_pty v.pval_type in
   {
     vname = preid_of_loc v.pval_name;
-    vtype = core_to_pty v.pval_type;
+    vtype;
     vattributes = other_attrs;
     vspec = spec;
     vloc = v.pval_loc;
@@ -148,9 +158,9 @@ let sig_exception exn =
   let exn_id = preid_of_loc c.pext_name in
   let exn_loc = c.pext_loc in
   let exn_attributes = c.pext_attributes in
-  let exn_args =
+  let* exn_args =
     match c.pext_kind with
-    | Pext_decl ([], Pcstr_tuple args, _) -> List.map core_to_pty args
+    | Pext_decl ([], Pcstr_tuple args, _) -> map_option core_to_pty args
     | Pext_rebind _ -> assert false (* Cannot occur on an interface file. *)
     | _ -> assert false
   in
@@ -162,8 +172,8 @@ let sig_exception exn =
 *)
 let rec signature_item_desc ~filename = function
   | Psig_value v ->
-      let v = val_description ~filename v in
-      Some (Sig_val v)
+      let* v = val_description ~filename v in
+      Sig_val v
   | Psig_type (_, tl) ->
       let* tl = map_option (type_declaration ~filename) tl in
       Sig_type tl
@@ -173,7 +183,9 @@ let rec signature_item_desc ~filename = function
   | Psig_module m ->
       let* decl = module_declaration ~filename m in
       Sig_module decl
-  | Psig_exception e -> Some (Sig_exception (sig_exception e))
+  | Psig_exception e ->
+      let* exn = sig_exception e in
+      Sig_exception exn
   (* Unsupported *)
   | Psig_recmodule _ -> None
   | Psig_modtype _ -> None
