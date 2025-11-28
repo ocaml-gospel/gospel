@@ -39,6 +39,8 @@
   [#452](https://github.com/ocaml-gospel/gospel/pull/452)
 - More expressive let pattern matching
   [#457](https://github.com/ocaml-gospel/gospel/pull/457)
+- Warning for invalid header name states expected name
+  [#471](https://github.com/ocaml-gospel/gospel/pull/471)
 
 ## Internals
 
