@@ -136,95 +136,110 @@ let empty_defs =
     mod_env = Env.empty;
   }
 
-(** [lookup f defs pid] accesses the namespace [f defs] and returns the data
-    associated with [pid].
-    @raise Not_found
-      when there is no identifer with name [pid.pid_str] in the namespace
-      associated with [f defs] *)
-let lookup f (defs : mod_defs) pid =
-  let env = f defs in
-  let str = pid.Preid.pid_str in
-  Env.find str env
+(* -------------------------------------------------------------------------- *)
 
-(* Helper functions for field accesses *)
+(* The following section defines a functor [Lookup] for finding names in a
+    [mod_defs] object. Regardless of whether an identifier [M1.M2...id] denotes
+    a type, function, exception, etc... the logic is always the same: find the
+    namespace denoted by [M1.M2...] and in that namespace find the identifier
+    [id]. There are a few things that vary: notably the [mod_defs] field we use
+    to lookup the name. *)
 
-let find_fun ~ocaml = fun d -> if ocaml then d.ocaml_val_env else d.fun_env
-let find_type ~ocaml = fun d -> if ocaml then d.ocaml_type_env else d.type_env
-let find_exn = fun d -> d.exn_env
-let find_mod = fun d -> d.mod_env
-let find_fields = fun d -> d.field_env
+module type LDeps = sig
+  type info
+  (** The data associated with the identifier *)
 
-(** [access_mod defs q] returns a qualified identifer where the identifiers used
-    in [q] have been replaced with uniquely tagged identifiers. This function
-    assumes that all the identifiers in [q] are belong to the module namespace.
-    This function also returns the definitions contained in the module
-    associated with [q]. *)
-let rec access_mod defs =
-  (* Looks up a module identifier and throws an error in case it is not in
-     scope. *)
-  let lookup defs pid =
-    try lookup find_mod defs pid
-    with Not_found -> W.error ~loc:pid.pid_loc (W.Unbound_module pid.pid_str)
-  in
-  function
-  | Parse_uast.Qid pid ->
-      let info = lookup defs pid in
-      let id = info.mid in
-      (Qid id, info.mdefs)
-  | Qdot (q, pid) ->
-      let q, defs = access_mod defs q in
-      let info = lookup defs pid in
-      let id = info.mid in
-      let defs = info.mdefs in
-      (Qdot (q, id), defs)
+  val id_lookup : info -> Ident.t
+  (** [id_lookup info] returns the unique identifier from [info]. *)
 
-(** [unique_toplevel f defs q] returns the information associated with the name
-    [q] in the environment [f defs]. Additionally, if [q] is of the type
-    [M1.M2...Mn.id], returns an optional whose value is the prefix [M1.M2...Mn],
-    where every module access has been resolved. Otherwise, returns [None] *)
-let unique_toplevel f defs = function
-  | Parse_uast.Qid pid ->
-      (* If there are no module accesses, we lookup [id] in the
-       environment [f defs]. *)
-      (None, lookup f defs pid)
-  | Qdot (q, pid) ->
-      (* If there are module accesses, we first get the environment
-       associated with the module represented by [q], and then lookup
-       [id] in that environment. *)
-      let q, defs = access_mod defs q in
-      (Some q, lookup f defs pid)
+  val env : ocaml:bool -> mod_defs -> info Env.t
+  (** [env ~ocaml defs] returns the environment in which the lookup will be
+      performed. The [ocaml] parameter can be used to differentiate between the
+      Gospel and OCaml namespace if such a distinction is necessary. *)
 
-let mk_qid q id = match q with None -> Qid id | Some q -> Qdot (q, id)
+  val err : string list -> W.kind
+  (** [err s] returns (not raises!) the Gospel error for the case in which the
+      lookup fails. *)
+end
 
-(** [unique_toplevel_qualid field env err defs q] returns the information
-    associated with identifier [q] in the environment [env defs] and returns [q]
-    as a fully resolved identifier. This identifier is built by applying [field]
-    to the [info] object associated with [q]. If no identifier is found with
-    this name, we call the [err] function to produce an appropriate error. *)
-let unique_toplevel_qualid field env err defs q =
-  try
-    let q, info = unique_toplevel env defs q in
-    let id = field info in
-    (mk_qid q id, info)
-  with Not_found ->
-    let id = Uast_utils.flatten q in
-    let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
-    W.error ~loc (err id)
+(** The signature for refinements of [Lookup]. *)
+module type L = sig
+  type info
 
-let type_info ~ocaml =
-  unique_toplevel_qualid
-    (fun x -> x.tid)
-    (find_type ~ocaml)
-    (fun id -> W.Unbound_type id)
+  val unique_toplevel_qualid :
+    ocaml:bool -> mod_defs -> Parse_uast.qualid -> Id_uast.qualid * info
+  (** [unique_toplevel_qualid ~ocaml defs q] returns the fully resolved
+      identifier for [q] in the namespace [mod_defs] as well as the data
+      associated with it. The [ocaml] flag can be used to check to differentiate
+      between the OCaml and Gospel namespace.
 
-let exn_info =
-  unique_toplevel_qualid
-    (fun x -> x.eid)
-    find_exn
-    (fun id -> W.Unbound_exception id)
+      @raise Warnings.Error
+        if there is no identifier named [q] in namespace [mod_defs]. *)
+end
+
+module rec Lookup : functor (M : LDeps) -> L with type info = M.info =
+functor
+  (M : LDeps)
+  ->
+  struct
+    type info = M.info
+
+    let mk_qid pre id = match pre with None -> Qid id | Some q -> Qdot (q, id)
+
+    let unique_toplevel_qualid ~ocaml defs q =
+      try
+        let pre, pid, defs =
+          match q with
+          | Parse_uast.Qid pid -> (None, pid, defs)
+          | Qdot (q, pid) ->
+              let q, defs =
+                Lookup_module.unique_toplevel_qualid ~ocaml defs q
+              in
+              (Some q, pid, defs.mdefs)
+        in
+        let info = Env.find pid.pid_str (M.env ~ocaml defs) in
+        let id = M.id_lookup info in
+        (mk_qid pre id, info)
+      with Not_found ->
+        let id = Uast_utils.flatten q in
+        let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
+        W.error ~loc (M.err id)
+  end
+
+and Lookup_module : (L with type info = mod_info) = Lookup (struct
+  type info = mod_info
+
+  let id_lookup info = info.mid
+  let env ~ocaml:_ defs = defs.mod_env
+  let err l = W.Unbound_module l
+end)
+
+(* -------------------------------------------------------------------------- *)
+
+let access_mod defs q =
+  let q, info = Lookup_module.unique_toplevel_qualid ~ocaml:true defs q in
+  (q, info.mdefs)
+
+module Lookup_type = Lookup (struct
+  type info = ty_info
+
+  let id_lookup info = info.tid
+  let env ~ocaml defs = if ocaml then defs.ocaml_type_env else defs.type_env
+  let err id = W.Unbound_type id
+end)
+
+let type_info = Lookup_type.unique_toplevel_qualid
+
+module Lookup_exn = Lookup (struct
+  type info = exn_info
+
+  let id_lookup info = info.eid
+  let env ~ocaml:_ defs = defs.exn_env
+  let err id = W.Unbound_exception id
+end)
 
 let get_exn_info env id =
-  let id, info = exn_info env id in
+  let id, info = Lookup_exn.unique_toplevel_qualid ~ocaml:true env id in
   (id, info.eargs)
 
 module Tbl = Ident.IdTable
@@ -281,11 +296,15 @@ let resolve_application ~ocaml env q l =
   in
   Types.mk_info q ~alias ~model ~mut:info.tmut
 
-let fun_info ~ocaml =
-  unique_toplevel_qualid
-    (fun x -> x.fid)
-    (find_fun ~ocaml)
-    (fun id -> W.Unbound_variable id)
+module Lookup_fun = Lookup (struct
+  type info = fun_info
+
+  let id_lookup info = info.fid
+  let env ~ocaml defs = if ocaml then defs.ocaml_val_env else defs.fun_env
+  let err id = W.Unbound_variable id
+end)
+
+let fun_info = Lookup_fun.unique_toplevel_qualid
 
 let ocaml_val_check ocaml_vals env q =
   (* If there are no valid ocaml values, then no lookup is performed. *)
@@ -402,14 +421,16 @@ let fields_qualid ~loc defs fields =
   let ty = { params = record.rparams; name = record.rid } in
   (l, ty)
 
+module Lookup_field = Lookup (struct
+  type info = field_info
+
+  let id_lookup info = info.rfid
+  let env ~ocaml:_ defs = defs.field_env
+  let err id = W.Unbound_record_label id
+end)
+
 let get_field_info defs q =
-  let q, info =
-    unique_toplevel_qualid
-      (fun x -> x.rfid)
-      find_fields
-      (fun id -> Warnings.Unbound_record_label id)
-      defs q
-  in
+  let q, info = Lookup_field.unique_toplevel_qualid ~ocaml:false defs q in
   (q, info.rfty, { params = info.rfrecord.rparams; name = info.rfrecord.rid })
 
 type env = {

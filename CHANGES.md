@@ -39,6 +39,8 @@
   [#452](https://github.com/ocaml-gospel/gospel/pull/452)
 - More expressive let pattern matching
   [#457](https://github.com/ocaml-gospel/gospel/pull/457)
+- Better error message for unbound modules
+  [#473](https://github.com/ocaml-gospel/gospel/pull/473)
 
 ## Internals
 
@@ -56,6 +58,8 @@
   [#455](https://github.com/ocaml-gospel/gospel/pull/455)
 - Fix print function for tagged identifiers
   [#458](https://github.com/ocaml-gospel/gospel/pull/458)
+- Refactor name lookup
+  [#473](https://github.com/ocaml-gospel/gospel/pull/473)
 
 # 0.3
 
