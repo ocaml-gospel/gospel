@@ -2,6 +2,8 @@
 
 ## Added
 
+- Add test cases for some unsupported contructs
+  [\#466](https://github.com/ocaml-gospel/gospel/pull/466)
 - Adapt to cmdliner.2.0.0
   [\#470](https://github.com/ocaml-gospel/gospel/pull/470)
 - Add support for mutually recursive ghost types
