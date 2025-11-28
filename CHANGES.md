@@ -43,6 +43,8 @@
   [#457](https://github.com/ocaml-gospel/gospel/pull/457)
 - Warning for invalid header name states expected name
   [#471](https://github.com/ocaml-gospel/gospel/pull/471)
+- Better error message for unbound modules
+  [#473](https://github.com/ocaml-gospel/gospel/pull/473)
 
 ## Internals
 
@@ -60,6 +62,8 @@
   [#455](https://github.com/ocaml-gospel/gospel/pull/455)
 - Fix print function for tagged identifiers
   [#458](https://github.com/ocaml-gospel/gospel/pull/458)
+- Refactor name lookup
+  [#473](https://github.com/ocaml-gospel/gospel/pull/473)
 
 # 0.3
 
