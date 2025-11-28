@@ -16,6 +16,6 @@ val inc : int -> int
 [1] File "invalid_header_nm.mli", line 12, characters 8-11:
     12 | (*@ y = dec x
                  ^^^
-    Error: Header name dec does not match the declared value in the OCaml interface
+    Error: Header name dec does not match the declared value inc in the OCaml interface
     
 |gospel_expected} *)

@@ -29,7 +29,7 @@ type kind =
   | Incompatible_field of string list * string list * string
   | Invalid_arg_number of int * int
   | Invalid_exn_ret_number of int * int
-  | Invalid_header_name of string
+  | Invalid_header_name of string * string
   | Invalid_header_unit of string
   | Invalid_old
   | Invalid_record_labels
@@ -129,11 +129,11 @@ let pp_kind ppf = function
   | Invalid_exn_ret_number (expected, got) ->
       pf ppf "This exceptional case expected %d return value%a but got %d" got
         plural got expected
-  | Invalid_header_name s ->
+  | Invalid_header_name (s1, s2) ->
       pf ppf
-        "Header name %s does not match the declared value in the OCaml \
+        "Header name %s does not match the declared value %s in the OCaml \
          interface"
-        s
+        s1 s2
   | Invalid_header_unit v ->
       pf ppf
         "This pattern matches on values of type unit, which is incompatible \
