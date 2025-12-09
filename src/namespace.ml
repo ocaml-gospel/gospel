@@ -185,6 +185,10 @@ functor
 
     let mk_qid pre id = match pre with None -> Qid id | Some q -> Qdot (q, id)
 
+    let id_lookup info pid_loc =
+      let id = M.id_lookup info in
+      { id with id_loc = pid_loc }
+
     let unique_toplevel_qualid defs q =
       try
         let pre, pid, defs =
@@ -195,7 +199,7 @@ functor
               (Some q, pid, defs.mdefs)
         in
         let info = Env.find pid.pid_str (M.env defs) in
-        let id = M.id_lookup info in
+        let id = id_lookup info pid.pid_loc in
         (mk_qid pre id, info)
       with Not_found ->
         let id = Uast_utils.flatten q in
