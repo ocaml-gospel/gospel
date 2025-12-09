@@ -7,6 +7,48 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to duplicate_consumes_top_level1.mli.output
+   (run %{checker} %{dep:duplicate_consumes_top_level1.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_consumes_top_level1.mli duplicate_consumes_top_level1.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_consumes_top_level2.mli.output
+   (run %{checker} %{dep:duplicate_consumes_top_level2.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_consumes_top_level2.mli duplicate_consumes_top_level2.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_consumes_top_level3.mli.output
+   (run %{checker} %{dep:duplicate_consumes_top_level3.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_consumes_top_level3.mli duplicate_consumes_top_level3.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to duplicate_exn1.mli.output
    (run %{checker} %{dep:duplicate_exn1.mli}))))
 
@@ -469,6 +511,48 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to duplicate_modifies_top_level1.mli.output
+   (run %{checker} %{dep:duplicate_modifies_top_level1.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_modifies_top_level1.mli duplicate_modifies_top_level1.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_modifies_top_level2.mli.output
+   (run %{checker} %{dep:duplicate_modifies_top_level2.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_modifies_top_level2.mli duplicate_modifies_top_level2.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_modifies_top_level3.mli.output
+   (run %{checker} %{dep:duplicate_modifies_top_level3.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_modifies_top_level3.mli duplicate_modifies_top_level3.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to duplicate_pred_args1.mli.output
    (run %{checker} %{dep:duplicate_pred_args1.mli}))))
 
@@ -518,6 +602,90 @@
  (alias runtest)
  (action
   (diff duplicate_pred_args4.mli duplicate_pred_args4.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_preserves_top_level1.mli.output
+   (run %{checker} %{dep:duplicate_preserves_top_level1.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_preserves_top_level1.mli duplicate_preserves_top_level1.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_preserves_top_level2.mli.output
+   (run %{checker} %{dep:duplicate_preserves_top_level2.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_preserves_top_level2.mli duplicate_preserves_top_level2.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_preserves_top_level3.mli.output
+   (run %{checker} %{dep:duplicate_preserves_top_level3.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_preserves_top_level3.mli duplicate_preserves_top_level3.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_produces_top_level1.mli.output
+   (run %{checker} %{dep:duplicate_produces_top_level1.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_produces_top_level1.mli duplicate_produces_top_level1.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_produces_top_level2.mli.output
+   (run %{checker} %{dep:duplicate_produces_top_level2.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_produces_top_level2.mli duplicate_produces_top_level2.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to duplicate_produces_top_level3.mli.output
+   (run %{checker} %{dep:duplicate_produces_top_level3.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff duplicate_produces_top_level3.mli duplicate_produces_top_level3.mli.output)))
 
 (rule
  (deps
