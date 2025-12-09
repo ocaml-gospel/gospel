@@ -45,6 +45,8 @@
   [#471](https://github.com/ocaml-gospel/gospel/pull/471)
 - Better error message for unbound modules
   [#473](https://github.com/ocaml-gospel/gospel/pull/473)
+- Fix bug regarding location of top level variables
+  [#474](https://github.com/ocaml-gospel/gospel/pull/474)
 
 ## Internals
 
