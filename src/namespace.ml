@@ -166,11 +166,21 @@ end
 module type L = sig
   type info
 
-  val unique_toplevel_qualid :
+  val lookup_toplevel_qualid :
     mod_defs -> Parse_uast.qualid -> Id_uast.qualid * info
-  (** [unique_toplevel_qualid ~ocaml defs q] returns the fully resolved
+  (** [lookup_toplevel_qualid ~ocaml defs q] returns the fully resolved
       identifier for [q] in the namespace [mod_defs] as well as the data
       associated with it.
+
+      @raise Warnings.Error
+        if there is no identifier named [q] in namespace [mod_defs]. *)
+
+  val unique_toplevel_qualid :
+    mod_defs -> Parse_uast.qualid -> Id_uast.qualid * info
+  (** [unique_toplevel_qualid ~ocaml defs q] returns an identifier and an [info]
+      object similar to [lookup_toplevel_qualid]. The only difference is that
+      the location in the resolved identifier are the same as the location in
+      [q].
 
       @raise Warnings.Error
         if there is no identifier named [q] in namespace [mod_defs]. *)
@@ -185,13 +195,13 @@ functor
 
     let mk_qid pre id = match pre with None -> Qid id | Some q -> Qdot (q, id)
 
-    let unique_toplevel_qualid defs q =
+    let lookup_toplevel_qualid defs q =
       try
         let pre, pid, defs =
           match q with
           | Parse_uast.Qid pid -> (None, pid, defs)
           | Qdot (q, pid) ->
-              let q, defs = Lookup_module.unique_toplevel_qualid defs q in
+              let q, defs = Lookup_module.lookup_toplevel_qualid defs q in
               (Some q, pid, defs.mdefs)
         in
         let info = Env.find pid.pid_str (M.env defs) in
@@ -201,6 +211,18 @@ functor
         let id = Uast_utils.flatten q in
         let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
         W.error ~loc (M.err id)
+
+    let unique_toplevel_qualid defs q =
+      let resolved_q, info = lookup_toplevel_qualid defs q in
+      let rec replace_locs idq pidq =
+        match (idq, pidq) with
+        | Id_uast.Qid id, Parse_uast.Qid pid ->
+            Qid { id with id_loc = pid.pid_loc }
+        | Id_uast.Qdot (q, id), Parse_uast.Qdot (pq, pid) ->
+            Qdot (replace_locs q pq, { id with id_loc = pid.pid_loc })
+        | _ -> assert false
+      in
+      (replace_locs resolved_q q, info)
   end
 
 and Lookup_module : (L with type info = mod_info) = Lookup (struct
