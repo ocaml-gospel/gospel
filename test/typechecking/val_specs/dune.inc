@@ -323,3 +323,17 @@
  (action
   (diff valid_ret_number.mli valid_ret_number.mli.output)))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to valid_val_spec.mli.output
+   (run %{checker} %{dep:valid_val_spec.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff valid_val_spec.mli valid_val_spec.mli.output)))
+
