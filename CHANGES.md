@@ -47,6 +47,8 @@
   [#473](https://github.com/ocaml-gospel/gospel/pull/473)
 - Fix bug regarding location of top level variables
   [#474](https://github.com/ocaml-gospel/gospel/pull/474)
+- Fix bug where non-functional values could not be specified.
+  [#475](https://github.com/ocaml-gospel/gospel/pull/475)
 
 ## Internals
 
