@@ -193,6 +193,8 @@ type_decl(X):
 }
 
 val_spec:
+| post=val_spec_post EOF
+    { mk_spec None empty_pre_vspec post [] }
 | pre=val_spec_pre EOF
    { mk_spec None pre empty_post_vspec [] }
 | h=val_spec_header pre=val_spec_pre_empty post=val_spec_post_empty exn=val_spec_exn_empty EOF
