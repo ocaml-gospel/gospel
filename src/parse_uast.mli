@@ -62,6 +62,7 @@ and term_desc =
        desugared into a normal function application and handled the
        same way as [Tapply] *)
   | Tif of term * term * term
+  | Tset of id * term
   | Tquant of quant * binder list * term
   | Tlambda of pat list * term * pty option
   | Tattr of string * term
