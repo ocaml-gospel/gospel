@@ -1,4 +1,4 @@
-# Unreleased
+# 0.3.1
 
 - Update cmdliner
 - Bump AST to 5.2 for ppxlib.0.36.0
