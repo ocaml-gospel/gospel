@@ -190,3 +190,6 @@ The development is supported by:
   31/3/2021.
 - The HORIZON 2020 Cameleer project (Marie Skłodowska-Curie grant agreement
   ID:897873) and NOVA LINCS (Ref. UIDB/04516/2020).
+- The [GOSPEL project](https://github.com/ocaml-gospel). ANR grant No.
+  [ANR-22-CE48-0013](https://anr.fr/Projet-ANR-22-CE48-0013), 1/1/2023 -
+  31/12/2026.
