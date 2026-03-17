@@ -137,6 +137,7 @@ and term fmt { term_desc; _ } =
         pp fmt "%a %a %a" print_arg t1 pp_symbol id print_arg t2
     | Tif (t1, t2, t3) ->
         pp fmt "if %a@ then@ %a else@ %a" term t1 term t2 term t3
+    | Tset (v, t) -> pp fmt "@[{ %a | %a }@]" Preid.pp v term t
     | Tquant (q, vsl, t) ->
         pp fmt "%a %a.@ @[%a@]" print_quantifier q (list ~sep:sp binder) vsl
           term t

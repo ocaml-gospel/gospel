@@ -21,12 +21,9 @@
     - [type char]
     - [type float]
     - [type prop]
+    - [type bool]
     - [type integer]
-    - [type int]
-
-    - [type 'a option]
-    - [function None: 'a option]
-    - [function Some (x: 'a) : 'a option] *)
+    - [type set] *)
 
 (*@ predicate (=) (x : 'a) (y : 'a) *)
 (*@ predicate (<>) (x : 'a) (y : 'a) *)
@@ -53,9 +50,6 @@
 
 (*@ type 'a bag *)
 (** The type for multisets. *)
-
-(*@ type 'a set *)
-(** The type for sets. *)
 
 (*@ type 'a option *)
 

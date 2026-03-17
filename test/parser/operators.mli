@@ -48,3 +48,5 @@ module M : sig
 end
 
 (*@ axiom sub_add : forall m n. M.(-) m (M.(+) n m) = M.(-) (M.(+) n m) m *)
+
+(*@ function set : 'a set = { v | True } *)

@@ -19,12 +19,14 @@ val char_id : Ident.t
 val string_id : Ident.t
 val float_id : Ident.t
 val prop_id : Ident.t
+val set_id : Ident.t
 val ty_bool : 'a structure
 val ty_integer : 'a structure
 val ty_char : 'a structure
 val ty_string : 'a structure
 val ty_float : 'a structure
 val ty_prop : 'a structure
+val ty_set : 'a -> 'a structure
 val primitive_list : (string * Ident.t) list
 val ty_arrow : 'a -> 'a -> 'a structure
 val iter : ('a -> unit) -> 'a structure -> unit

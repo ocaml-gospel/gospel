@@ -71,3 +71,17 @@
  (action
   (diff fmla_not_record.mli fmla_not_record.mli.output)))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to fmla_not_set.mli.output
+   (run %{checker} %{dep:fmla_not_set.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff fmla_not_set.mli fmla_not_set.mli.output)))
+

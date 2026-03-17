@@ -608,8 +608,11 @@ let gospel_open env qid =
 let type_env =
   List.fold_left
     (fun tenv (x, y) ->
+      let tparams =
+        if Ident.equal Structure.set_id y then [ Ident.mk_id "a" ] else []
+      in
       Env.add x
-        { tid = y; tparams = []; tmut = false; talias = None; tmodel = None }
+        { tid = y; tparams; tmut = false; talias = None; tmodel = None }
         tenv)
     Env.empty Structure.primitive_list
 
