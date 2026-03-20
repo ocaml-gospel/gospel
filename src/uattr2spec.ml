@@ -322,13 +322,21 @@ and s_expression ~filename expr =
   let loc = expr.pexp_loc in
   let loc_stack = expr.pexp_loc_stack in
   let attributes = expr.pexp_attributes in
+  let fun_spec spec =
+    Option.map (parse_gospel ~filename Uparser.func_spec) spec
+    |> Option.map snd
+  in
   let lbl_expr (lbl, expr) = (lbl, s_expression expr) in
   let longid_expr (id, expr) = (id, s_expression expr) in
+  let spec_of_ppat {ppat_attributes; _} =
+    let spec, _ = get_spec_attr ppat_attributes in
+    fun_spec spec in
   let case { pc_lhs; pc_guard; pc_rhs } =
     let spc_lhs = pc_lhs in
     let spc_guard = Option.map s_expression pc_guard in
     let spc_rhs = s_expression pc_rhs in
-    { spc_lhs; spc_guard; spc_rhs }
+    let spc_spec = spec_of_ppat spc_lhs in
+    { spc_lhs; spc_guard; spc_rhs; spc_spec }
   in
   let spexp_desc = function
     | Pexp_ident id -> Sexp_ident id
@@ -339,10 +347,7 @@ and s_expression ~filename expr =
     | Pexp_function case_list -> Sexp_function (List.map case case_list)
     | Pexp_fun (arg, expr_arg, pat, expr_body) ->
         let spec, _ = get_spec_attr attributes in
-        let fun_spec =
-          Option.map (parse_gospel ~filename Uparser.func_spec) spec
-          |> Option.map snd
-        in
+        let fun_spec = fun_spec spec in
         let expr_arg = Option.map s_expression expr_arg in
         let expr_body = s_expression expr_body in
         Sexp_fun (arg, expr_arg, pat, expr_body, fun_spec)

@@ -467,6 +467,7 @@ and s_case = {
   spc_lhs : Parsetree.pattern;
   spc_guard : s_expression option;
   spc_rhs : s_expression;
+  spc_spec: fun_spec option;
 }
 
 and s_module_expr_desc =

@@ -357,3 +357,6 @@ and s_module_type1 f x =
     | Mod_typeof me -> pp f "@[<hov2>module@ type@ of@ %a@]" module_expr me
     | Mod_extension e -> extension reset_ctxt f e
     | _ -> paren true s_module_type f x
+
+and s_structure _fmt _str =
+  assert false (* TODO *)
