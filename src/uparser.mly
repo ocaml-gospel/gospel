@@ -112,7 +112,7 @@
 
 (* symbols *)
 
-%token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT
+%token AND AMPAMP ARROW BAR BARBAR COLON COLONCOLON COMMA DOT DOTDOT BANGBANG
 %token EOF EQUAL
 %token MUTABLE MODEL
 %token LRARROW LEFTBRC LEFTBRCCOLON LEFTPAR LEFTBRCRIGHTBRC
@@ -402,6 +402,8 @@ term_:
     { Tattr ($1, $2) }
 | term cast
     { Tcast ($1, $2) }
+| BANGBANG
+    { Tbang }
 ;
 
 field_list1(X):

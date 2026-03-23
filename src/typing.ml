@@ -270,6 +270,7 @@ let rec dterm kid crcm ns denv { term_desc; term_loc = loc } : dterm =
   match term_desc with
   | Uast.Ttrue -> mk_dterm ~loc DTtrue (Some dty_bool)
   | Uast.Tfalse -> mk_dterm ~loc DTfalse (Some dty_bool)
+  | Uast.Tbang -> assert false
   | Uast.Tconst c ->
       let dty =
         match c with

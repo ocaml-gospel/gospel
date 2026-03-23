@@ -56,6 +56,7 @@ type term = { term_desc : term_desc; term_loc : Location.t }
 and term_desc =
   | Ttrue
   | Tfalse
+  | Tbang
   | Tconst of constant
   | Tpreid of qualid
   | Tidapp of qualid * term list
