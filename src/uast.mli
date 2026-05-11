@@ -331,6 +331,7 @@ and s_expression = {
   spexp_loc : Location.t;
   spexp_loc_stack : Location.t list;
   spexp_attributes : attributes; (* ... [@id1] [@id2] *)
+  spexp_spec: fun_spec option; (* to use with the COMA backend *)
 }
 
 and s_expression_desc =
