@@ -1,0 +1,12 @@
+(rule
+ (alias runtest)
+ (enabled_if %{bin-available:awk})
+ (deps
+  (:md2mli %{project_root}/test/utils/md2mli.awk)
+  (sandbox always))
+ (action
+  (progn
+   (with-stdout-to
+    README.mli
+    (run awk -f %{md2mli} %{dep:README.md}))
+   (run gospel check README.mli))))
