@@ -181,6 +181,12 @@ module Sequence : sig
 
   (*@ axiom empty_length : length empty = 0 *)
 
+  (*@ predicate is_empty (s : 'a sequence) *)
+
+  (*@ axiom is_empty_def :
+        forall s.
+        is_empty s <-> s = empty *)
+
   (*@ function init (n: integer) (f: integer -> 'a) : 'a t *)
   (** [init n f] is the sequence containing [f 0], [f 1], [...] , [f (n - 1)].
   *)
