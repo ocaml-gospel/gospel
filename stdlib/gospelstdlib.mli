@@ -45,6 +45,24 @@
 
 (*@ function (||) (b1 : bool) (b2 : bool) : bool *)
 
+(** Prop to bool *)
+
+(*@ function decide (p : prop) : bool *)
+
+(*@ axiom decide_def_true :
+      forall p.
+      decide p = true -> p *)
+
+(*@ axiom decide_def_false :
+      forall p.
+      decide p = false -> not p *)
+
+(*@ axiom decide_true :
+      decide True = true *)
+
+(*@ axiom decide_false :
+      decide False = false *)
+
 (*@ type 'a sequence *)
 (** The type for finite sequences. *)
 
