@@ -116,6 +116,29 @@
         monoid f neutral /\
         (forall x y. f x y = f y x) *)
 
+module Option : sig
+  (*@ type 'a t = 'a option *)
+  (** An alias for {!option} *)
+
+  (*@ predicate is_none (o : 'a t) *)
+
+  (*@ axiom is_none_def :
+        forall o.
+        is_none o <-> o = None *)
+
+  (*@ predicate is_some (o : 'a t) *)
+
+  (*@ axiom is_some_def :
+        forall o.
+        is_some o <-> o <> None *)
+
+  (*@ function get (o : 'a t) : 'a *)
+
+  (*@ axiom get_def :
+        forall a.
+        get (Some a) = a *)
+end
+
 module Sequence : sig
   (*@ type 'a t = 'a sequence *)
   (** An alias for {!sequence} *)
