@@ -77,6 +77,20 @@
 (*@ type ('a, 'b) map = 'a -> 'b*)
 (** The type for total maps *)
 
+(** Pair *)
+
+(*@ function fst (p : 'a * 'b) : 'a *)
+
+(*@ axiom fst_def :
+      forall a b.
+      fst (a, b) = a *)
+
+(*@ function snd (p : 'a * 'b) : 'b *)
+
+(*@ axiom snd_def :
+      forall a b.
+      snd (a, b) = b *)
+
 (** {1 Arithmetic}
 
     The type [integer] is built-in. This is the type of arbitrary precision
