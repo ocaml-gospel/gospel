@@ -1,8 +1,13 @@
 (library
- (name stack)
- (modules_without_implementation stack))
+ (name ortac_examples)
+ (modules_without_implementation stack hashtbl))
 
 (rule
  (alias ortac)
  (action
   (run gospel check %{dep:stack.mli})))
+
+(rule
+ (alias ortac)
+ (action
+  (run gospel check %{dep:hashtbl.mli})))
