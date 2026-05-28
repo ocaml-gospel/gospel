@@ -13,6 +13,8 @@
 
 ## Improved
 
+- Fix filename for `check_file` output
+  [\#478](https://github.com/ocaml-gospel/gospel/pull/478)
 - Add `option` as an OCaml primitive type constructor
   [\#464](https://github.com/ocaml-gospel/gospel/pull/464)
 - Check for repeated name of module and module types

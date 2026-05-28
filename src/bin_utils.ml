@@ -64,9 +64,12 @@ let read_gospel_file f =
     @raise Warnings.Error if there is a parsing or typing error in [file]. *)
 let check_file ?(comp_dir = "") ?(env = Namespace.empty_env) ~verbose file =
   let module_nm, tast, mods = type_sigs ~verbose env file in
-  let comp =
-    open_out_bin (Format.sprintf "%s%s%s" comp_dir module_nm gospel_ext)
+  let out =
+    match comp_dir with
+    | "" -> Format.sprintf "%s%s" module_nm gospel_ext
+    | dir -> Format.sprintf "%s/%s%s" dir module_nm gospel_ext
   in
+  let comp = open_out_bin out in
   Marshal.to_channel comp mods [];
   close_out comp;
   (tast, mods)
