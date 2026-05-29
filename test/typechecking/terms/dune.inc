@@ -71,3 +71,17 @@
  (action
   (diff ho4.mli ho4.mli.output)))
 
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to map.mli.output
+   (run %{checker} %{dep:map.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff map.mli map.mli.output)))
+
