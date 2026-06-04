@@ -113,15 +113,32 @@ let ptype_kind ~loc = function
   | Ptype_variant _ -> raise @@ Unsupported ("variant type", loc)
 
 let core_to_pty cty =
-  try Option.some @@ core_to_pty cty with Unsupported _ -> None
+  try Result.ok @@ core_to_pty cty with Unsupported info -> Result.Error info
 
 let ptype_kind ~loc tk =
-  try Option.some @@ ptype_kind ~loc tk with Unsupported _ -> None
+  try Result.ok @@ ptype_kind ~loc tk
+  with Unsupported info -> Result.Error info
+
+let unwrap_unsupported opt res =
+  match res with
+  | Ok x -> Some x (* the construction is supported *)
+  | Error (str, loc) ->
+      (* the construction is unsupported, raise an error if there are some
+         specifications attached to it, ignore it otherwise *)
+      if Option.is_some opt then W.(error ~loc (Unsupported str)) else None
+
+let unwrap_core_to_pty spec_opt cty =
+  unwrap_unsupported spec_opt (core_to_pty cty)
+
+let unwrap_ptyp_kind ~loc spec_opt tk =
+  unwrap_unsupported spec_opt (ptype_kind ~loc tk)
 
 let mk_tdecl t attrs spec =
   let* tparams = params_to_id t.ptype_params
-  and* tkind = ptype_kind ~loc:t.ptype_loc t.ptype_kind in
-  let tmanifest = Option.bind t.ptype_manifest core_to_pty in
+  and* tkind = unwrap_ptyp_kind ~loc:t.ptype_loc spec t.ptype_kind in
+  let tmanifest =
+    Option.(join @@ map (unwrap_core_to_pty spec) t.ptype_manifest)
+  in
   {
     tname = preid_of_loc t.ptype_name;
     tparams;
@@ -150,7 +167,7 @@ let val_description ~filename v =
     { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
-  let* vtype = core_to_pty v.pval_type in
+  let* vtype = unwrap_core_to_pty spec v.pval_type in
   {
     vname = preid_of_loc v.pval_name;
     vtype;
@@ -170,7 +187,9 @@ let sig_exception exn =
   let exn_attributes = c.pext_attributes in
   let* exn_args =
     match c.pext_kind with
-    | Pext_decl ([], Pcstr_tuple args, _) -> map_option core_to_pty args
+    | Pext_decl ([], Pcstr_tuple args, _) ->
+        (* Exception specification is not supported *)
+        map_option (unwrap_core_to_pty None) args
     | Pext_rebind _ -> assert false (* Cannot occur on an interface file. *)
     | _ -> assert false
   in
