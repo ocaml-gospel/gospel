@@ -74,7 +74,7 @@ let rec preid_of_long (loc : location) (s : longident) =
   | Ldot (id, s) -> Qdot (preid_of_long id, Preid.create ~loc s)
   | _ -> assert false
 
-exception Unsupported
+exception Unsupported of (string * Location.t)
 
 let rec core_to_pty cty =
   let loc = cty.ptyp_loc in
@@ -84,9 +84,17 @@ let rec core_to_pty cty =
       PTtyapp (preid_of_long id.loc id.txt, List.map core_to_pty l)
   | Ptyp_arrow (_, t1, t2) -> PTarrow (core_to_pty t1, core_to_pty t2)
   | Ptyp_tuple l -> PTtuple (List.map core_to_pty l)
-  | _ -> raise Unsupported
+  | Ptyp_open (_, _) -> raise @@ Unsupported ("local open", loc)
+  | Ptyp_any -> raise @@ Unsupported ("type parameter wild pattern", loc)
+  | Ptyp_object _ -> raise @@ Unsupported ("object", loc)
+  | Ptyp_class _ -> raise @@ Unsupported ("class", loc)
+  | Ptyp_alias _ -> raise @@ Unsupported ("type alias", loc)
+  | Ptyp_variant _ -> raise @@ Unsupported ("polymorphic variant", loc)
+  | Ptyp_poly _ -> raise @@ Unsupported ("polymorhic type variable", loc)
+  | Ptyp_package _ -> raise @@ Unsupported ("first class module", loc)
+  | Ptyp_extension _ -> raise @@ Unsupported ("extension point", loc)
 
-let ptype_kind = function
+let ptype_kind ~loc = function
   | Ptype_abstract -> PTtype_abstract
   | Ptype_record l ->
       let to_gospel_label l =
@@ -101,16 +109,18 @@ let ptype_kind = function
         }
       in
       PTtype_record (List.map to_gospel_label l)
-  | _ -> raise Unsupported
+  | Ptype_open -> raise @@ Unsupported ("extensible type", loc)
+  | Ptype_variant _ -> raise @@ Unsupported ("variant type", loc)
 
 let core_to_pty cty =
-  try Option.some @@ core_to_pty cty with Unsupported -> None
+  try Option.some @@ core_to_pty cty with Unsupported _ -> None
 
-let ptype_kind tk = try Option.some @@ ptype_kind tk with Unsupported -> None
+let ptype_kind ~loc tk =
+  try Option.some @@ ptype_kind ~loc tk with Unsupported _ -> None
 
 let mk_tdecl t attrs spec =
   let* tparams = params_to_id t.ptype_params
-  and* tkind = ptype_kind t.ptype_kind in
+  and* tkind = ptype_kind ~loc:t.ptype_loc t.ptype_kind in
   let tmanifest = Option.bind t.ptype_manifest core_to_pty in
   {
     tname = preid_of_loc t.ptype_name;
