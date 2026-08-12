@@ -63,6 +63,7 @@
     fun_coer = false;
     fun_text = "";
     fun_loc = Location.none;
+    fun_header = None
   }
 
   let empty_tspec = {
@@ -210,17 +211,22 @@ func_name:
   { mk_pid (mixfix "{:_:}") $loc }
 
 func_spec:
+| func_spec_no_header { $1 }
+| hd=val_spec_header bd=func_spec_no_header EOF
+  { { bd with fun_header = Some hd } }
+
+func_spec_no_header:
 | EOF { empty_fspec }
 | nonempty_func_spec EOF { $1 }
 
 nonempty_func_spec:
-| REQUIRES t=term bd=func_spec
+| REQUIRES t=term bd=func_spec_no_header
   { { bd with fun_req = t :: bd.fun_req } }
-| ENSURES t=term bd=func_spec
+| ENSURES t=term bd=func_spec_no_header
   { { bd with fun_ens = t :: bd.fun_ens } }
-| VARIANT t=term bd=func_spec
+| VARIANT t=term bd=func_spec_no_header
   { { bd with fun_variant = t :: bd.fun_variant } }
-| COERCION bd=func_spec
+| COERCION bd=func_spec_no_header
   { { bd with fun_coer = true } }
 ;
 

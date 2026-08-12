@@ -349,6 +349,10 @@ and s_expression ~filename expr =
     | Pexp_function case_list -> Sexp_function (List.map case case_list)
     | Pexp_fun (arg, expr_arg, pat, expr_body) ->
       let spec, _ = get_spec_attr attributes in
+      let spec2, _ = get_spec_attr pat.ppat_attributes in
+      let spec = match spec, spec2 with (* both cannot be present *)
+        | None, s | s, None -> s
+        | _ -> assert false in
       let fun_spec = fun_spec spec in
       let expr_arg = Option.map s_expression expr_arg in
       let expr_body = s_expression expr_body in

@@ -127,6 +127,7 @@ type fun_spec = {
   fun_coer : bool;
   fun_text : string;
   fun_loc : Location.t;
+  fun_header : spec_header option;
 }
 
 type loop_spec = { loop_invariant : term list;
