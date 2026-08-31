@@ -4,6 +4,8 @@
 
 - Add failing test case about map
   [\#480](https://github.com/ocaml-gospel/gospel/pull/480)
+- Add `Option.{get,is_none,is_some}` in Gospel stdlib
+  [\#479](https://github.com/ocaml-gospel/gospel/pull/479)
 - Add test cases for some unsupported constructs
   [\#466](https://github.com/ocaml-gospel/gospel/pull/466)
 - Adapt to cmdliner.2.0.0

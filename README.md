@@ -48,13 +48,19 @@ val push : 'a -> 'a t -> unit
     modifies s
     ensures s = Sequence.cons a (old s) *)
 
-val pop : 'a t -> 'a
-(*@ a = pop s
+val pop_exn : 'a t -> 'a
+(*@ a = pop_exn s
     modifies s
     ensures a = Sequence.hd (old s)
     ensures s = Sequence.tl (old s)
     raises Empty
       ensures old s = Sequence.empty = s *)
+
+val pop_opt : 'a t -> 'a option
+(*@ o = pop_opt s
+    modifies s
+    ensures Option.is_none o /\ old s = Sequence.empty = s
+            \/ Option.is_some o /\ let x = Option.get o in old s = Sequence.cons x s *)
 ```
 
 We designed Gospel to provide a tool-agnostic frontend for bringing formal
