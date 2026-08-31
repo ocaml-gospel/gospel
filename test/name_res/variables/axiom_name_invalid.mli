@@ -10,7 +10,7 @@
 
 (*@ axiom ax : ax *)
 (* {gospel_expected|
-[1] File "axiom_name_invalid.mli", line 11, characters 15-17:
+[1] File "./axiom_name_invalid.mli", line 11, characters 15-17:
     11 | (*@ axiom ax : ax *)
                         ^^
     Error: Unbound value ax

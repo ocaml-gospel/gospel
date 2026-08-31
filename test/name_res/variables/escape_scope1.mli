@@ -11,7 +11,7 @@
 (*@ axiom test : (let x = 0 in x) + x *)
 
 (* {gospel_expected|
-[1] File "escape_scope1.mli", line 11, characters 36-37:
+[1] File "./escape_scope1.mli", line 11, characters 36-37:
     11 | (*@ axiom test : (let x = 0 in x) + x *)
                                              ^
     Error: Unbound value x

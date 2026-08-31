@@ -15,7 +15,7 @@
     and t4 = (integer * integer) -> t3 sequence *)
 
 (* {gospel_expected|
-[1] File "cyclic_alias10.mli", line 12, characters 4-52:
+[1] File "./cyclic_alias10.mli", line 12, characters 4-52:
     12 | ....and t1 = (integer * integer) -> t2 sequence
     13 |     ...........................................
     Error: The type abbreviation t1 contains a cycle

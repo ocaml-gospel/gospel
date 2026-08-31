@@ -13,7 +13,7 @@
 (*@ axiom test : t *)
 
 (* {gospel_expected|
-[1] File "var_not_type.mli", line 13, characters 17-18:
+[1] File "./var_not_type.mli", line 13, characters 17-18:
     13 | (*@ axiom test : t *)
                           ^
     Error: Unbound value t

@@ -13,7 +13,7 @@
     and t3 = (integer * t1) *)
 
 (* {gospel_expected|
-[1] File "cyclic_alias7.mli", line 11, characters 4-33:
+[1] File "./cyclic_alias7.mli", line 11, characters 4-33:
     11 | ....type t1 = (integer * t2)
     12 |     .......................
     Error: The type abbreviation t1 contains a cycle

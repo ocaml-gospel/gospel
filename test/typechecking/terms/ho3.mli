@@ -11,7 +11,7 @@
 (*@ axiom fail : ((fun x -> x + x) (fun x -> x)) = 0 *)
 
 (* {gospel_expected|
-[1] File "ho3.mli", line 11, characters 35-47:
+[1] File "./ho3.mli", line 11, characters 35-47:
     11 | (*@ axiom fail : ((fun x -> x + x) (fun x -> x)) = 0 *)
                                             ^^^^^^^^^^^^
     Error: Mismatch between type integer and type 'a -> 'a

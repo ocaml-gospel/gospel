@@ -16,7 +16,7 @@ val f : int -> unit
       ensures True *)
 
 (* {gospel_expected|
-[1] File "duplicate_exn_ret4.mli", line 15, characters 17-18:
+[1] File "./duplicate_exn_ret4.mli", line 15, characters 17-18:
     15 |     raises E (x, x)
                           ^
     Error: The variable x is defined twice in this header

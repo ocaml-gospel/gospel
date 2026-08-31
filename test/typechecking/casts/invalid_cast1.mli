@@ -11,7 +11,7 @@
 (*@ function f (n : integer) : integer = (n : prop) *)
 
 (* {gospel_expected|
-[1] File "invalid_cast1.mli", line 11, characters 41-51:
+[1] File "./invalid_cast1.mli", line 11, characters 41-51:
     11 | (*@ function f (n : integer) : integer = (n : prop) *)
                                                   ^^^^^^^^^^
     Error: Mismatch between type integer and type prop

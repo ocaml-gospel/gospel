@@ -13,7 +13,7 @@
 (*@ axiom test : { x = 0 } *)
 
 (* {gospel_expected|
-[1] File "fmla_not_record.mli", line 13, characters 17-26:
+[1] File "./fmla_not_record.mli", line 13, characters 17-26:
     13 | (*@ axiom test : { x = 0 } *)
                           ^^^^^^^^^
     Error: Mismatch between type prop and type t

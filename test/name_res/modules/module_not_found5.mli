@@ -14,7 +14,7 @@ module N : sig end
 (*@ open M *)
 
 (* {gospel_expected|
-[1] File "module_not_found5.mli", line 14, characters 9-10:
+[1] File "./module_not_found5.mli", line 14, characters 9-10:
     14 | (*@ open M *)
                   ^
     Error: Unbound module M

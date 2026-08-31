@@ -12,7 +12,7 @@
       (((n : prop) + (n : integer)) : integer) *)
 
 (* {gospel_expected|
-[1] File "invalid_cast4.mli", line 12, characters 8-18:
+[1] File "./invalid_cast4.mli", line 12, characters 8-18:
     12 |       (((n : prop) + (n : integer)) : integer) *)
                  ^^^^^^^^^^
     Error: Mismatch between type integer and type prop

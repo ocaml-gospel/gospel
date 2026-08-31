@@ -17,7 +17,7 @@ end
 (*@ function f : t = { z = 0; M.y = 0 }*)
 
 (* {gospel_expected|
-[1] File "incompatible_fields5.mli", line 17, characters 21-39:
+[1] File "./incompatible_fields5.mli", line 17, characters 21-39:
     17 | (*@ function f : t = { z = 0; M.y = 0 }*)
                               ^^^^^^^^^^^^^^^^^^
     Error: No record found with the provided labels

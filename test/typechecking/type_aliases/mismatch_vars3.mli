@@ -13,7 +13,7 @@
 (*@ predicate test (x : 'a t1) (y : integer t1) = x = y *)
 
 (* {gospel_expected|
-[1] File "mismatch_vars3.mli", line 13, characters 54-55:
+[1] File "./mismatch_vars3.mli", line 13, characters 54-55:
     13 | (*@ predicate test (x : 'a t1) (y : integer t1) = x = y *)
                                                                ^
     Error: Mismatch between type integer sequence

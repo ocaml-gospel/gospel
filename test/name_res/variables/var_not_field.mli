@@ -13,7 +13,7 @@
 (*@ axiom test : field *)
 
 (* {gospel_expected|
-[1] File "var_not_field.mli", line 13, characters 17-22:
+[1] File "./var_not_field.mli", line 13, characters 17-22:
     13 | (*@ axiom test : field *)
                           ^^^^^
     Error: Unbound value field

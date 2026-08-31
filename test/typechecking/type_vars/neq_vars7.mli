@@ -14,7 +14,7 @@
       forall z. x = z = y *)
 
 (* {gospel_expected|
-[1] File "neq_vars7.mli", line 14, characters 24-25:
+[1] File "./neq_vars7.mli", line 14, characters 24-25:
     14 |       forall z. x = z = y *)
                                  ^
     Error: Mismatch between type 'b and type 'a

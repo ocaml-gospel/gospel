@@ -13,7 +13,7 @@
 (*@ type test = field *)
 
 (* {gospel_expected|
-[1] File "type_not_field.mli", line 13, characters 16-21:
+[1] File "./type_not_field.mli", line 13, characters 16-21:
     13 | (*@ type test = field *)
                          ^^^^^
     Error: Unbound type constructor field

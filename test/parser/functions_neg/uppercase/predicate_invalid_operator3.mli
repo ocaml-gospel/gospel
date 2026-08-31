@@ -10,7 +10,7 @@
 
 (*@ predicate (+G+) *)
 (* {gospel_expected|
-[1] File "predicate_invalid_operator3.mli", line 11, characters 16-17:
+[1] File "./predicate_invalid_operator3.mli", line 11, characters 16-17:
     11 | (*@ predicate (+G+) *)
                          ^
     Error: Syntax error

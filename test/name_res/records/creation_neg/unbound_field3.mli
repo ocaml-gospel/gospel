@@ -15,7 +15,7 @@ end
 (*@ axiom ax : forall r. { x = 0 } *)
 
 (* {gospel_expected|
-[1] File "unbound_field3.mli", line 15, characters 25-34:
+[1] File "./unbound_field3.mli", line 15, characters 25-34:
     15 | (*@ axiom ax : forall r. { x = 0 } *)
                                   ^^^^^^^^^
     Error: No record found with the provided labels

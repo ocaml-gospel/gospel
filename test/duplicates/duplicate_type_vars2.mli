@@ -11,7 +11,7 @@
 (*@ type ('b, 'a, 'a) t *)
 
 (* {gospel_expected|
-[1] File "duplicate_type_vars2.mli", line 11, characters 18-20:
+[1] File "./duplicate_type_vars2.mli", line 11, characters 18-20:
     11 | (*@ type ('b, 'a, 'a) t *)
                            ^^
     Error: The type parameter a occurs several times

@@ -13,7 +13,7 @@
 (*@ type test = t2 *)
 
 (* {gospel_expected|
-[1] File "unbound_type7.mli", line 13, characters 16-18:
+[1] File "./unbound_type7.mli", line 13, characters 16-18:
     13 | (*@ type test = t2 *)
                          ^^
     Error: Unbound type constructor t2

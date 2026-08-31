@@ -11,7 +11,7 @@
 (*@ type 'b t = { x : 'a } *)
 
 (* {gospel_expected|
-[1] File "unbound_var6.mli", line 11, characters 22-24:
+[1] File "./unbound_var6.mli", line 11, characters 22-24:
     11 | (*@ type 'b t = { x : 'a } *)
                                ^^
     Error: The type variable 'a is unbound in this type declaration

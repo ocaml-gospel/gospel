@@ -11,7 +11,7 @@
 (*@ axiom ax : if 0 then True else false *)
 
 (* {gospel_expected|
-[1] File "if.mli", line 11, characters 18-19:
+[1] File "./if.mli", line 11, characters 18-19:
     11 | (*@ axiom ax : if 0 then True else false *)
                            ^
     Error: Mismatch between type bool and type integer

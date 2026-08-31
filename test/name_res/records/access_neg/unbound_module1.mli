@@ -15,7 +15,7 @@ end
 (*@ predicate test (x : M.t) = x.x + x.x *)
 
 (* {gospel_expected|
-[1] File "unbound_module1.mli", line 15, characters 39-40:
+[1] File "./unbound_module1.mli", line 15, characters 39-40:
     15 | (*@ predicate test (x : M.t) = x.x + x.x *)
                                                 ^
     Error: Unbound record label x

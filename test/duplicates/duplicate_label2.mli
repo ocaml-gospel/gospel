@@ -11,7 +11,7 @@
 (*@ type t = { y : integer; x : integer; x : integer } *)
 
 (* {gospel_expected|
-[1] File "duplicate_label2.mli", line 11, characters 41-52:
+[1] File "./duplicate_label2.mli", line 11, characters 41-52:
     11 | (*@ type t = { y : integer; x : integer; x : integer } *)
                                                   ^^^^^^^^^^^
     Error: Two labels are named x

@@ -15,7 +15,7 @@ end
 (*@ type test = t *)
 
 (* {gospel_expected|
-[1] File "unbound_module1.mli", line 15, characters 16-17:
+[1] File "./unbound_module1.mli", line 15, characters 16-17:
     15 | (*@ type test = t *)
                          ^
     Error: Unbound type constructor t

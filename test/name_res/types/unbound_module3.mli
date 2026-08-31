@@ -15,7 +15,7 @@ module M : sig end
 (*@ type test = M.t *)
 
 (* {gospel_expected|
-[1] File "unbound_module3.mli", line 15, characters 18-19:
+[1] File "./unbound_module3.mli", line 15, characters 18-19:
     15 | (*@ type test = M.t *)
                            ^
     Error: Unbound type constructor M.t

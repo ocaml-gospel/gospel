@@ -16,7 +16,7 @@ val f : unit -> unit
     raises E1 *)
 
 (* {gospel_expected|
-[1] File "duplicate_exn1.mli", line 16, characters 4-13:
+[1] File "./duplicate_exn1.mli", line 16, characters 4-13:
     16 |     raises E1 *)
              ^^^^^^^^^
     Error: The exception E1 is listed twice in this specification

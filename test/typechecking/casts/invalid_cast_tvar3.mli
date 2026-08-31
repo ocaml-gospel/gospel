@@ -11,7 +11,7 @@
 (*@ function f (n : 'a) (f : 'a -> 'a) : 'a = ((f : ('a -> 'a)) (n : 'a)) : 'b *)
 
 (* {gospel_expected|
-[1] File "invalid_cast_tvar3.mli", line 11, characters 46-78:
+[1] File "./invalid_cast_tvar3.mli", line 11, characters 46-78:
     11 | (*@ function f (n : 'a) (f : 'a -> 'a) : 'a = ((f : ('a -> 'a)) (n : 'a)) : 'b *)
                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Error: Mismatch between type 'a and type 'b

@@ -14,7 +14,7 @@
 (*@ predicate test (x : 'a t1) (y : 'b t2) = x = y *)
 
 (* {gospel_expected|
-[1] File "mismatch_vars1.mli", line 14, characters 49-50:
+[1] File "./mismatch_vars1.mli", line 14, characters 49-50:
     14 | (*@ predicate test (x : 'a t1) (y : 'b t2) = x = y *)
                                                           ^
     Error: Mismatch between type 'b t1

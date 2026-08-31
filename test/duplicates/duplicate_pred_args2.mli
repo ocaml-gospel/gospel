@@ -11,7 +11,7 @@
 (*@ predicate f (y : integer) (x : integer) (x : integer) *)
 
 (* {gospel_expected|
-[1] File "duplicate_pred_args2.mli", line 11, characters 45-46:
+[1] File "./duplicate_pred_args2.mli", line 11, characters 45-46:
     11 | (*@ predicate f (y : integer) (x : integer) (x : integer) *)
                                                       ^
     Error: Duplicated argument x

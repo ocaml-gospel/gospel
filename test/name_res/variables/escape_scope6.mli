@@ -11,7 +11,7 @@
 (*@ axiom test : (exists x. True) /\ x *)
 
 (* {gospel_expected|
-[1] File "escape_scope6.mli", line 11, characters 37-38:
+[1] File "./escape_scope6.mli", line 11, characters 37-38:
     11 | (*@ axiom test : (exists x. True) /\ x *)
                                               ^
     Error: Unbound value x

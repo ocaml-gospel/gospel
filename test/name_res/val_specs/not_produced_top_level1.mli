@@ -15,7 +15,7 @@ val f : int -> int
  *)
 
 (* {gospel_expected|
-[1] File "not_produced_top_level1.mli", line 14, characters 12-13:
+[1] File "./not_produced_top_level1.mli", line 14, characters 12-13:
     14 |     ensures x = y
                      ^
     Error: Unbound value x

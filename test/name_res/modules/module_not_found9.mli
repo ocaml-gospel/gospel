@@ -16,7 +16,7 @@ module M : sig
   end
 end
 (* {gospel_expected|
-[1] File "module_not_found9.mli", line 15, characters 21-22:
+[1] File "./module_not_found9.mli", line 15, characters 21-22:
     15 |     (*@ axiom test : M.N.p *)
                               ^
     Error: Unbound module M

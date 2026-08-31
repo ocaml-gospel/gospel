@@ -13,7 +13,7 @@ val f : int -> int -> int
     ensures True *)
 
 (* {gospel_expected|
-[1] File "duplicate_header_vars2.mli", line 12, characters 10-11:
+[1] File "./duplicate_header_vars2.mli", line 12, characters 10-11:
     12 | (*@ x = f x y
                    ^
     Error: The variable x is defined twice in this header

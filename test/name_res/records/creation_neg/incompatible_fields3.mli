@@ -19,7 +19,7 @@ end
 (*@ function t : M1.t1 = { M1.x = 0; M2.y = 0 } *)
 
 (* {gospel_expected|
-[1] File "incompatible_fields3.mli", line 19, characters 25-47:
+[1] File "./incompatible_fields3.mli", line 19, characters 25-47:
     19 | (*@ function t : M1.t1 = { M1.x = 0; M2.y = 0 } *)
                                   ^^^^^^^^^^^^^^^^^^^^^^
     Error: No record found with the provided labels

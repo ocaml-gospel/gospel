@@ -13,7 +13,7 @@ val f : int -> int
     modifies x *)
 
 (* {gospel_expected|
-[1] File "own_ghost2.mli", line 13, characters 13-14:
+[1] File "./own_ghost2.mli", line 13, characters 13-14:
     13 |     modifies x *)
                       ^
     Error: Unbound value x

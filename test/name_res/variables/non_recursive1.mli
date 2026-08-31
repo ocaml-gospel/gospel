@@ -11,7 +11,7 @@
 (*@ function f : integer = f *)
 
 (* {gospel_expected|
-[1] File "non_recursive1.mli", line 11, characters 27-28:
+[1] File "./non_recursive1.mli", line 11, characters 27-28:
     11 | (*@ function f : integer = f *)
                                     ^
     Error: Unbound value f

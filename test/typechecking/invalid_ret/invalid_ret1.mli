@@ -10,7 +10,7 @@
 
 (*@ function f : integer = True *)
 (* {gospel_expected|
-[1] File "invalid_ret1.mli", line 11, characters 27-31:
+[1] File "./invalid_ret1.mli", line 11, characters 27-31:
     11 | (*@ function f : integer = True *)
                                     ^^^^
     Error: Mismatch between type integer and type prop

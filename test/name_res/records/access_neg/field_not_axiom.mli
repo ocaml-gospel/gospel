@@ -13,7 +13,7 @@
 (*@ axiom test : forall r. r.ax *)
 
 (* {gospel_expected|
-[1] File "field_not_axiom.mli", line 13, characters 29-31:
+[1] File "./field_not_axiom.mli", line 13, characters 29-31:
     13 | (*@ axiom test : forall r. r.ax *)
                                       ^^
     Error: Unbound record label ax

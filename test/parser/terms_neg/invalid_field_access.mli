@@ -12,7 +12,7 @@
 
 (*@ axiom test : forall x. x..f *)
 (* {gospel_expected|
-[1] File "invalid_field_access.mli", line 13, characters 28-30:
+[1] File "./invalid_field_access.mli", line 13, characters 28-30:
     13 | (*@ axiom test : forall x. x..f *)
                                      ^^
     Error: Syntax error

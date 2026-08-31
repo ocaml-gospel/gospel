@@ -12,7 +12,7 @@
                 (y : integer * (integer * integer)) = x = y *)
 
 (* {gospel_expected|
-[1] File "wrong_arity8.mli", line 12, characters 58-59:
+[1] File "./wrong_arity8.mli", line 12, characters 58-59:
     12 |                 (y : integer * (integer * integer)) = x = y *)
                                                                    ^
     Error: Mismatch between type integer * (integer * integer)

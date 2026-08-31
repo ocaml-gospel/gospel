@@ -10,7 +10,7 @@
 
 (*@ predicate F (n : integer) : prop *)
 (* {gospel_expected|
-[1] File "predicate_ret2.mli", line 11, characters 30-31:
+[1] File "./predicate_ret2.mli", line 11, characters 30-31:
     11 | (*@ predicate F (n : integer) : prop *)
                                        ^
     Error: Syntax error

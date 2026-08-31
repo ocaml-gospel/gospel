@@ -11,7 +11,7 @@
 (*@ open M *)
 
 (* {gospel_expected|
-[1] File "module_not_found1.mli", line 11, characters 9-10:
+[1] File "./module_not_found1.mli", line 11, characters 9-10:
     11 | (*@ open M *)
                   ^
     Error: Unbound module M

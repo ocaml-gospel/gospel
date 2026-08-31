@@ -10,7 +10,7 @@
 
 (*@ function f n : integer *)
 (* {gospel_expected|
-[1] File "function_invalid_parameter2.mli", line 11, characters 15-16:
+[1] File "./function_invalid_parameter2.mli", line 11, characters 15-16:
     11 | (*@ function f n : integer *)
                         ^
     Error: Syntax error

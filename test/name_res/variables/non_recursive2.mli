@@ -11,7 +11,7 @@
 (*@ predicate p = p *)
 
 (* {gospel_expected|
-[1] File "non_recursive2.mli", line 11, characters 18-19:
+[1] File "./non_recursive2.mli", line 11, characters 18-19:
     11 | (*@ predicate p = p *)
                            ^
     Error: Unbound value p

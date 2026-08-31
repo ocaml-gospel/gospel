@@ -13,7 +13,7 @@ val inc : int -> int
     ensures y = x - 1 *)
 
 (* {gospel_expected|
-[1] File "invalid_header_nm.mli", line 12, characters 8-11:
+[1] File "./invalid_header_nm.mli", line 12, characters 8-11:
     12 | (*@ y = dec x
                  ^^^
     Error: Header name dec does not match the declared value inc in the OCaml interface

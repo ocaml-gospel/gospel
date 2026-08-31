@@ -11,7 +11,7 @@
 (*@ type ('b, 'c) t = { x : 'a; y : 'b } *)
 
 (* {gospel_expected|
-[1] File "unbound_var9.mli", line 11, characters 28-30:
+[1] File "./unbound_var9.mli", line 11, characters 28-30:
     11 | (*@ type ('b, 'c) t = { x : 'a; y : 'b } *)
                                      ^^
     Error: The type variable 'a is unbound in this type declaration

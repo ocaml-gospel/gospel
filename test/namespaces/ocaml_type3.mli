@@ -13,7 +13,7 @@
 type t2 = t1
 
 (* {gospel_expected|
-[1] File "ocaml_type3.mli", line 13, characters 10-12:
+[1] File "./ocaml_type3.mli", line 13, characters 10-12:
     13 | type t2 = t1
                    ^^
     Error: Unbound type constructor t1

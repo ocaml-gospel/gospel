@@ -11,7 +11,7 @@
 (*@ function f (x : integer) (x :integer) (y : integer) : integer *)
 
 (* {gospel_expected|
-[1] File "duplicate_fun_args4.mli", line 11, characters 30-31:
+[1] File "./duplicate_fun_args4.mli", line 11, characters 30-31:
     11 | (*@ function f (x : integer) (x :integer) (y : integer) : integer *)
                                        ^
     Error: Duplicated argument x

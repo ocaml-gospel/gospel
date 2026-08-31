@@ -10,7 +10,7 @@
 
 (*@ function = 0*)
 (* {gospel_expected|
-[1] File "function_no_name.mli", line 11, characters 13-14:
+[1] File "./function_no_name.mli", line 11, characters 13-14:
     11 | (*@ function = 0*)
                       ^
     Error: Syntax error

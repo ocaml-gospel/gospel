@@ -11,7 +11,7 @@
 (*@ axiom wrong : forall x : integer. let y : bool = x in False *)
 
 (* {gospel_expected|
-[1] File "let_destruct3.mli", line 11, characters 42-50:
+[1] File "./let_destruct3.mli", line 11, characters 42-50:
     11 | (*@ axiom wrong : forall x : integer. let y : bool = x in False *)
                                                    ^^^^^^^^
     Error: Mismatch between type bool and type integer

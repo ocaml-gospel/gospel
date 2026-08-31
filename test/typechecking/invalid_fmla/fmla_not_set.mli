@@ -11,7 +11,7 @@
 (*@ axiom test : { v | True } *)
 
 (* {gospel_expected|
-[1] File "fmla_not_set.mli", line 11, characters 17-29:
+[1] File "./fmla_not_set.mli", line 11, characters 17-29:
     11 | (*@ axiom test : { v | True } *)
                           ^^^^^^^^^^^^
     Error: Mismatch between type prop and type 'a set

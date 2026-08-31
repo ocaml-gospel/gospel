@@ -11,7 +11,7 @@
 (*@ axiom fail : (fun x -> x) = 0 *)
 
 (* {gospel_expected|
-[1] File "ho2.mli", line 11, characters 32-33:
+[1] File "./ho2.mli", line 11, characters 32-33:
     11 | (*@ axiom fail : (fun x -> x) = 0 *)
                                          ^
     Error: Mismatch between type 'a -> 'a and type integer

@@ -11,7 +11,7 @@
 (*@ type test = t sequence *)
 
 (* {gospel_expected|
-[1] File "unbound_type2.mli", line 11, characters 16-17:
+[1] File "./unbound_type2.mli", line 11, characters 16-17:
     11 | (*@ type test = t sequence *)
                          ^
     Error: Unbound type constructor t

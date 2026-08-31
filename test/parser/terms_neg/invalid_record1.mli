@@ -12,7 +12,7 @@
 
 (*@ axiom test : { x = 0  *)
 (* {gospel_expected|
-[1] File "invalid_record1.mli", line 13, characters 26-26:
+[1] File "./invalid_record1.mli", line 13, characters 26-26:
     Error: Syntax error
     
 |gospel_expected} *)

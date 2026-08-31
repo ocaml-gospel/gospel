@@ -13,7 +13,7 @@ type t1
 (*@ type t2 = t1 sequence *)
 
 (* {gospel_expected|
-[1] File "ocaml_type2.mli", line 13, characters 14-16:
+[1] File "./ocaml_type2.mli", line 13, characters 14-16:
     13 | (*@ type t2 = t1 sequence *)
                        ^^
     Error: Unbound type constructor t1

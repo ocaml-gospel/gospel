@@ -11,7 +11,7 @@
 (*@ type t1 = t2 * integer and t2 = t3 * integer and t3 = t1 * integer *)
 
 (* {gospel_expected|
-[1] File "cyclic_alias4.mli", line 11, characters 4-27:
+[1] File "./cyclic_alias4.mli", line 11, characters 4-27:
     11 | (*@ type t1 = t2 * integer and t2 = t3 * integer and t3 = t1 * integer *)
              ^^^^^^^^^^^^^^^^^^^^^^^
     Error: The type abbreviation t1 contains a cycle

@@ -10,7 +10,7 @@
 
 (*@ axiom test : let x = 0 in in 0 *)
 (* {gospel_expected|
-[1] File "invalid_let3.mli", line 11, characters 30-32:
+[1] File "./invalid_let3.mli", line 11, characters 30-32:
     11 | (*@ axiom test : let x = 0 in in 0 *)
                                        ^^
     Error: Syntax error

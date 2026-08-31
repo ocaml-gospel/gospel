@@ -11,7 +11,7 @@
 (*@ function (let) (x : integer) (y : integer) : integer *)
 
 (* {gospel_expected|
-[1] File "function_invalid_let.mli", line 11, characters 14-17:
+[1] File "./function_invalid_let.mli", line 11, characters 14-17:
     11 | (*@ function (let) (x : integer) (y : integer) : integer *)
                        ^^^
     Error: Syntax error

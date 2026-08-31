@@ -10,7 +10,7 @@
 
 (*@ axiom test : 0 + *)
 (* {gospel_expected|
-[1] File "invalid_infix.mli", line 11, characters 21-21:
+[1] File "./invalid_infix.mli", line 11, characters 21-21:
     Error: Syntax error
     
 |gospel_expected} *)

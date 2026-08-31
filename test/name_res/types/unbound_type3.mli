@@ -11,7 +11,7 @@
 (*@ type test = integer -> t *)
 
 (* {gospel_expected|
-[1] File "unbound_type3.mli", line 11, characters 27-28:
+[1] File "./unbound_type3.mli", line 11, characters 27-28:
     11 | (*@ type test = integer -> t *)
                                     ^
     Error: Unbound type constructor t

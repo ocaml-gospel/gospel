@@ -14,7 +14,7 @@ val f : int ref -> unit
     preserves x *)
 
 (* {gospel_expected|
-[1] File "cant_return_unit4.mli", line 12, characters 3-38:
+[1] File "./cant_return_unit4.mli", line 12, characters 3-38:
     12 | ... () = f x
     13 |     pure
     14 |     preserves x ..

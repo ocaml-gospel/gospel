@@ -13,7 +13,7 @@
 (*@ predicate test (x : ('b, 'a) t) (y : ('a, 'a) t) = x = y *)
 
 (* {gospel_expected|
-[1] File "neq_vars5.mli", line 13, characters 59-60:
+[1] File "./neq_vars5.mli", line 13, characters 59-60:
     13 | (*@ predicate test (x : ('b, 'a) t) (y : ('a, 'a) t) = x = y *)
                                                                     ^
     Error: Mismatch between type ('a, 'a) t

@@ -10,7 +10,7 @@
 
 (*@ axiom a *)
 (* {gospel_expected|
-[1] File "axiom_no_def1.mli", line 11, characters 12-12:
+[1] File "./axiom_no_def1.mli", line 11, characters 12-12:
     Error: Syntax error
     
 |gospel_expected} *)

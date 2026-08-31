@@ -13,7 +13,7 @@ val f : unit -> unit
     diverges *)
 
 (* {gospel_expected|
-[1] File "pure_cant_diverge.mli", line 11, characters 0-45:
+[1] File "./pure_cant_diverge.mli", line 11, characters 0-45:
     11 | val f : unit -> unit
     12 | (*@ pure
     13 |     diverges *)
