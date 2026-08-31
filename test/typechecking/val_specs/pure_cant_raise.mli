@@ -17,7 +17,7 @@ val f : unit -> unit
       ensures True *)
 
 (* {gospel_expected|
-[1] File "pure_cant_raise.mli", line 13, characters 0-73:
+[1] File "./pure_cant_raise.mli", line 13, characters 0-73:
     13 | val f : unit -> unit
     14 | (*@ f ()
     15 |     pure

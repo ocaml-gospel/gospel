@@ -10,7 +10,7 @@
 
 (*@ predicate F : prop = 0 *)
 (* {gospel_expected|
-[1] File "predicate_ret4.mli", line 11, characters 16-17:
+[1] File "./predicate_ret4.mli", line 11, characters 16-17:
     11 | (*@ predicate F : prop = 0 *)
                          ^
     Error: Syntax error

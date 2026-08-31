@@ -10,7 +10,7 @@
 
 (*@ type 1 *)
 (* {gospel_expected|
-[1] File "invalid_name2.mli", line 11, characters 9-10:
+[1] File "./invalid_name2.mli", line 11, characters 9-10:
     11 | (*@ type 1 *)
                   ^
     Error: Syntax error

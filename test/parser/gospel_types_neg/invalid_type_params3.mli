@@ -10,7 +10,7 @@
 
 (*@ type ('a, b) t *)
 (* {gospel_expected|
-[1] File "invalid_type_params3.mli", line 11, characters 14-15:
+[1] File "./invalid_type_params3.mli", line 11, characters 14-15:
     11 | (*@ type ('a, b) t *)
                        ^
     Error: Syntax error

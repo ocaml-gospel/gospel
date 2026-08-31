@@ -14,7 +14,7 @@ val f : unit -> unit
     consumes x *)
 
 (* {gospel_expected|
-[1] File "duplicate_consumes_top_level1.mli", line 14, characters 13-14:
+[1] File "./duplicate_consumes_top_level1.mli", line 14, characters 13-14:
     14 |     consumes x *)
                       ^
     Error: The variable x is listed as consumes twice

@@ -11,7 +11,7 @@
 (*@ axiom wrong : forall x : (integer * integer). let w, y, z = x in True *)
 
 (* {gospel_expected|
-[1] File "let_destruct2.mli", line 11, characters 64-65:
+[1] File "./let_destruct2.mli", line 11, characters 64-65:
     11 | (*@ axiom wrong : forall x : (integer * integer). let w, y, z = x in True *)
                                                                          ^
     Error: Mismatch between type integer * integer and type 'a * 'b * 'c

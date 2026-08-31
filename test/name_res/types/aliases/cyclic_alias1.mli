@@ -11,7 +11,7 @@
 (*@ type t1 = t1 *)
 
 (* {gospel_expected|
-[1] File "cyclic_alias1.mli", line 11, characters 4-16:
+[1] File "./cyclic_alias1.mli", line 11, characters 4-16:
     11 | (*@ type t1 = t1 *)
              ^^^^^^^^^^^^
     Error: The type abbreviation t1 is cyclic

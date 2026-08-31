@@ -14,7 +14,7 @@ val f : int ref -> unit
     modifies x *)
 
 (* {gospel_expected|
-[1] File "pure_cant_modify.mli", line 11, characters 0-58:
+[1] File "./pure_cant_modify.mli", line 11, characters 0-58:
     11 | val f : int ref -> unit
     12 | (*@ f x
     13 |     pure

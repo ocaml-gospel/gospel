@@ -14,7 +14,7 @@
       Sequence.hd x = y *)
 
 (* {gospel_expected|
-[1] File "neq_vars8.mli", line 14, characters 22-23:
+[1] File "./neq_vars8.mli", line 14, characters 22-23:
     14 |       Sequence.hd x = y *)
                                ^
     Error: Mismatch between type 'b and type 'a

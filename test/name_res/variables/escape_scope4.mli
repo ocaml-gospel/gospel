@@ -11,7 +11,7 @@
 (*@ axiom ax : let f = (fun x -> x) in f x *)
 
 (* {gospel_expected|
-[1] File "escape_scope4.mli", line 11, characters 41-42:
+[1] File "./escape_scope4.mli", line 11, characters 41-42:
     11 | (*@ axiom ax : let f = (fun x -> x) in f x *)
                                                   ^
     Error: Unbound value x

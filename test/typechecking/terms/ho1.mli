@@ -11,7 +11,7 @@
 (*@ axiom fail : forall f : ((integer -> integer) -> integer). f ((/\) True) *)
 
 (* {gospel_expected|
-[1] File "ho1.mli", line 11, characters 65-76:
+[1] File "./ho1.mli", line 11, characters 65-76:
     11 | (*@ axiom fail : forall f : ((integer -> integer) -> integer). f ((/\) True) *)
                                                                           ^^^^^^^^^^^
     Error: Mismatch between type integer -> integer

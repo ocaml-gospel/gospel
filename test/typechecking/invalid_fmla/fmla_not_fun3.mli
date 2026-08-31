@@ -11,7 +11,7 @@
 (*@ axiom ax : (=) *)
 
 (* {gospel_expected|
-[1] File "fmla_not_fun3.mli", line 11, characters 15-18:
+[1] File "./fmla_not_fun3.mli", line 11, characters 15-18:
     11 | (*@ axiom ax : (=) *)
                         ^^^
     Error: Mismatch between type prop and type 'a -> 'a -> prop

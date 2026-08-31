@@ -14,7 +14,7 @@ val f : int -> int
  *)
 
 (* {gospel_expected|
-[1] File "consume_ret.mli", line 13, characters 13-14:
+[1] File "./consume_ret.mli", line 13, characters 13-14:
     13 |     consumes y
                       ^
     Error: Unbound value y

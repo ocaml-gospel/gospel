@@ -11,7 +11,7 @@
 (*@ function f : integer = n *)
 
 (* {gospel_expected|
-[1] File "unbound_var1.mli", line 11, characters 27-28:
+[1] File "./unbound_var1.mli", line 11, characters 27-28:
     11 | (*@ function f : integer = n *)
                                     ^
     Error: Unbound value n

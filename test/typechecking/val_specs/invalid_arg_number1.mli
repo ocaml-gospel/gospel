@@ -13,7 +13,7 @@ val f : int -> unit
     ensures True *)
 
 (* {gospel_expected|
-[1] File "invalid_arg_number1.mli", line 11, characters 0-49:
+[1] File "./invalid_arg_number1.mli", line 11, characters 0-49:
     11 | val f : int -> unit
     12 | (*@ f x y
     13 |     ensures True *)

@@ -10,7 +10,7 @@
 
 (*@ axiom test : exists x : . x*)
 (* {gospel_expected|
-[1] File "invalid_quant4.mli", line 11, characters 28-29:
+[1] File "./invalid_quant4.mli", line 11, characters 28-29:
     11 | (*@ axiom test : exists x : . x*)
                                      ^
     Error: Syntax error

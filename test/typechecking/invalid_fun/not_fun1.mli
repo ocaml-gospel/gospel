@@ -11,7 +11,7 @@
 (*@ axiom test : 0 0 *)
 
 (* {gospel_expected|
-[1] File "not_fun1.mli", line 11, characters 17-18:
+[1] File "./not_fun1.mli", line 11, characters 17-18:
     11 | (*@ axiom test : 0 0 *)
                           ^
     Error: Mismatch between type 'b -> 'a and type integer

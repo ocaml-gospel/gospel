@@ -13,7 +13,7 @@
 (*@ type t = f *)
 
 (* {gospel_expected|
-[1] File "type_not_var.mli", line 13, characters 13-14:
+[1] File "./type_not_var.mli", line 13, characters 13-14:
     13 | (*@ type t = f *)
                       ^
     Error: Unbound type constructor f

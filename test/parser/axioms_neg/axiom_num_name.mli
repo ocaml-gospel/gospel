@@ -10,7 +10,7 @@
 
 (*@ axiom 1 : True *)
 (* {gospel_expected|
-[1] File "axiom_num_name.mli", line 11, characters 10-11:
+[1] File "./axiom_num_name.mli", line 11, characters 10-11:
     11 | (*@ axiom 1 : True *)
                    ^
     Error: Syntax error

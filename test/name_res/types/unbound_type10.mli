@@ -11,7 +11,7 @@
 (*@ type test = (t, t) map *)
 
 (* {gospel_expected|
-[1] File "unbound_type10.mli", line 11, characters 17-18:
+[1] File "./unbound_type10.mli", line 11, characters 17-18:
     11 | (*@ type test = (t, t) map *)
                           ^
     Error: Unbound type constructor t

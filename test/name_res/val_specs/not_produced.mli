@@ -18,7 +18,7 @@ val free : t -> unit
 *)
 
 (* {gospel_expected|
-[1] File "not_produced.mli", line 17, characters 16-17:
+[1] File "./not_produced.mli", line 17, characters 16-17:
     17 |     ensures x = x
                          ^
     Error: Unbound value x

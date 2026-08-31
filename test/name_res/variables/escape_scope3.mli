@@ -11,7 +11,7 @@
 (*@ axiom ax : (fun x -> x) x *)
 
 (* {gospel_expected|
-[1] File "escape_scope3.mli", line 11, characters 28-29:
+[1] File "./escape_scope3.mli", line 11, characters 28-29:
     11 | (*@ axiom ax : (fun x -> x) x *)
                                      ^
     Error: Unbound value x

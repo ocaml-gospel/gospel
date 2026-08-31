@@ -11,7 +11,7 @@
 (*@ type 'b t = 'a sequence *)
 
 (* {gospel_expected|
-[1] File "unbound_var2.mli", line 11, characters 16-18:
+[1] File "./unbound_var2.mli", line 11, characters 16-18:
     11 | (*@ type 'b t = 'a sequence *)
                          ^^
     Error: The type variable 'a is unbound in this type declaration

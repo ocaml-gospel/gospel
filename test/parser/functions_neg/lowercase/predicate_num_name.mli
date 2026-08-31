@@ -10,7 +10,7 @@
 
 (*@ predicate 1 *)
 (* {gospel_expected|
-[1] File "predicate_num_name.mli", line 11, characters 14-15:
+[1] File "./predicate_num_name.mli", line 11, characters 14-15:
     11 | (*@ predicate 1 *)
                        ^
     Error: Syntax error

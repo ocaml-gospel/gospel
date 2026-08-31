@@ -11,7 +11,7 @@
 (*@ axiom ax : (forall x. True) /\ x *)
 
 (* {gospel_expected|
-[1] File "escape_scope5.mli", line 11, characters 35-36:
+[1] File "./escape_scope5.mli", line 11, characters 35-36:
     11 | (*@ axiom ax : (forall x. True) /\ x *)
                                             ^
     Error: Unbound value x

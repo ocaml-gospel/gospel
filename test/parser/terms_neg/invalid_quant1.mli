@@ -10,7 +10,7 @@
 
 (*@ axiom test : forall . True *)
 (* {gospel_expected|
-[1] File "invalid_quant1.mli", line 11, characters 24-25:
+[1] File "./invalid_quant1.mli", line 11, characters 24-25:
     11 | (*@ axiom test : forall . True *)
                                  ^
     Error: Syntax error

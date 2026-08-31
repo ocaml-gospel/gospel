@@ -15,7 +15,7 @@ module N : sig
 end
 
 (* {gospel_expected|
-[1] File "scope_not_found8.mli", line 13, characters 21-22:
+[1] File "./scope_not_found8.mli", line 13, characters 21-22:
     13 |     (*@ axiom test : N.(0 = 0) *)
                               ^
     Error: Unbound module N

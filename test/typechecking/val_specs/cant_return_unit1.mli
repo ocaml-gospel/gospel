@@ -13,7 +13,7 @@ val f : int -> unit
     ensures True *)
 
 (* {gospel_expected|
-[1] File "cant_return_unit1.mli", line 12, characters 3-25:
+[1] File "./cant_return_unit1.mli", line 12, characters 3-25:
     12 | ... f x
     13 |     ensures True ..
     Error: This function has no listed side effects, it cannot return unit

@@ -13,7 +13,7 @@
 (*@ predicate test (x : t) = x.y = x.x *)
 
 (* {gospel_expected|
-[1] File "unbound_field5.mli", line 13, characters 37-38:
+[1] File "./unbound_field5.mli", line 13, characters 37-38:
     13 | (*@ predicate test (x : t) = x.y = x.x *)
                                               ^
     Error: Unbound record label x

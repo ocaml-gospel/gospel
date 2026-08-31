@@ -10,7 +10,7 @@
 
 (*@ axiom test : True) *)
 (* {gospel_expected|
-[1] File "unmatched_paren2.mli", line 11, characters 21-22:
+[1] File "./unmatched_paren2.mli", line 11, characters 21-22:
     11 | (*@ axiom test : True) *)
                               ^
     Error: Syntax error

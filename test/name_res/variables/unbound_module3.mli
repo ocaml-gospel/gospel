@@ -17,7 +17,7 @@ end
 (*@ axiom test : M.f *)
 
 (* {gospel_expected|
-[1] File "unbound_module3.mli", line 17, characters 19-20:
+[1] File "./unbound_module3.mli", line 17, characters 19-20:
     17 | (*@ axiom test : M.f *)
                             ^
     Error: Unbound value M.f

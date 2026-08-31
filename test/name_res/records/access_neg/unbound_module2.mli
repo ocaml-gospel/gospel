@@ -15,7 +15,7 @@ end
 (*@ predicate test (x : M.t) = x.x *)
 
 (* {gospel_expected|
-[1] File "unbound_module2.mli", line 15, characters 33-34:
+[1] File "./unbound_module2.mli", line 15, characters 33-34:
     15 | (*@ predicate test (x : M.t) = x.x *)
                                           ^
     Error: Unbound record label x

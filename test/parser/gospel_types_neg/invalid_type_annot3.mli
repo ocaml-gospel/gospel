@@ -10,7 +10,7 @@
 
 (*@ type t = integer -> *)
 (* {gospel_expected|
-[1] File "invalid_type_annot3.mli", line 11, characters 24-24:
+[1] File "./invalid_type_annot3.mli", line 11, characters 24-24:
     Error: Syntax error
     
 |gospel_expected} *)

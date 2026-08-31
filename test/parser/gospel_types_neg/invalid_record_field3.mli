@@ -10,7 +10,7 @@
 
 (*@ type t = { x : integer; X : integer }*)
 (* {gospel_expected|
-[1] File "invalid_record_field3.mli", line 11, characters 28-29:
+[1] File "./invalid_record_field3.mli", line 11, characters 28-29:
     11 | (*@ type t = { x : integer; X : integer }*)
                                      ^
     Error: Syntax error

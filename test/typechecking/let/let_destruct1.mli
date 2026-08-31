@@ -11,7 +11,7 @@
 (*@ axiom wrong : forall x : integer. let y, z = x in True *)
 
 (* {gospel_expected|
-[1] File "let_destruct1.mli", line 11, characters 49-50:
+[1] File "./let_destruct1.mli", line 11, characters 49-50:
     11 | (*@ axiom wrong : forall x : integer. let y, z = x in True *)
                                                           ^
     Error: Mismatch between type integer and type 'a * 'b

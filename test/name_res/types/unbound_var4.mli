@@ -11,7 +11,7 @@
 (*@ type ('c, 'b) t = ('a, 'b) map *)
 
 (* {gospel_expected|
-[1] File "unbound_var4.mli", line 11, characters 23-25:
+[1] File "./unbound_var4.mli", line 11, characters 23-25:
     11 | (*@ type ('c, 'b) t = ('a, 'b) map *)
                                 ^^
     Error: The type variable 'a is unbound in this type declaration

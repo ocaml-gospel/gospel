@@ -13,7 +13,7 @@
 (*@ function test : t = { x = 0 }  *)
 
 (* {gospel_expected|
-[1] File "unbound_field1.mli", line 13, characters 24-33:
+[1] File "./unbound_field1.mli", line 13, characters 24-33:
     13 | (*@ function test : t = { x = 0 }  *)
                                  ^^^^^^^^^
     Error: No record found with the provided labels

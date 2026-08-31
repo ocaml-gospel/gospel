@@ -13,7 +13,7 @@ val f : int -> int
     consumes x *)
 
 (* {gospel_expected|
-[1] File "own_ghost1.mli", line 13, characters 13-14:
+[1] File "./own_ghost1.mli", line 13, characters 13-14:
     13 |     consumes x *)
                       ^
     Error: Unbound value x

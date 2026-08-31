@@ -11,7 +11,7 @@
 (*@ predicate test = 0 *)
 
 (* {gospel_expected|
-[1] File "pred.mli", line 11, characters 21-22:
+[1] File "./pred.mli", line 11, characters 21-22:
     11 | (*@ predicate test = 0 *)
                               ^
     Error: Mismatch between type prop and type integer

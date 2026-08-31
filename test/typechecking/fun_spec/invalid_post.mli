@@ -11,7 +11,7 @@
 (*@ function f (x : integer) : integer
       ensures x *)
 (* {gospel_expected|
-[1] File "invalid_post.mli", line 12, characters 14-15:
+[1] File "./invalid_post.mli", line 12, characters 14-15:
     12 |       ensures x *)
                        ^
     Error: Mismatch between type integer and type prop

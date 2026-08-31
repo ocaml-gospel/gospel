@@ -11,7 +11,7 @@
 (*@ axiom test : (0, 0) = (0, 0, 0) *)
 
 (* {gospel_expected|
-[1] File "wrong_arity1.mli", line 11, characters 26-35:
+[1] File "./wrong_arity1.mli", line 11, characters 26-35:
     11 | (*@ axiom test : (0, 0) = (0, 0, 0) *)
                                    ^^^^^^^^^
     Error: Mismatch between type integer * integer

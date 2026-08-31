@@ -12,7 +12,7 @@
       forall f. f + f = f (fun x -> x) *)
 
 (* {gospel_expected|
-[1] File "ho4.mli", line 12, characters 24-25:
+[1] File "./ho4.mli", line 12, characters 24-25:
     12 |       forall f. f + f = f (fun x -> x) *)
                                  ^
     Error: Mismatch between type integer and type 'b -> 'a

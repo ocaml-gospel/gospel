@@ -10,7 +10,7 @@
 
 (*@ predicate f (n : integer) (X : integer) *)
 (* {gospel_expected|
-[1] File "predicate_invalid_parameter3.mli", line 11, characters 31-32:
+[1] File "./predicate_invalid_parameter3.mli", line 11, characters 31-32:
     11 | (*@ predicate f (n : integer) (X : integer) *)
                                         ^
     Error: Syntax error

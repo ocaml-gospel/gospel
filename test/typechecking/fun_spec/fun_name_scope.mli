@@ -11,7 +11,7 @@
 (*@ predicate rec f
       requires f *)
 (* {gospel_expected|
-[1] File "fun_name_scope.mli", line 12, characters 15-16:
+[1] File "./fun_name_scope.mli", line 12, characters 15-16:
     12 |       requires f *)
                         ^
     Error: Unbound value f

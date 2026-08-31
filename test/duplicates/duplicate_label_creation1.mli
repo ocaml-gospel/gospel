@@ -12,7 +12,7 @@
 
 (*@ function f : t = { x = 0; x = 0 }*)
 (* {gospel_expected|
-[1] File "duplicate_label_creation1.mli", line 13, characters 21-37:
+[1] File "./duplicate_label_creation1.mli", line 13, characters 21-37:
     13 | (*@ function f : t = { x = 0; x = 0 }*)
                               ^^^^^^^^^^^^^^^^
     Error: No record found with the provided labels

@@ -15,7 +15,7 @@ end
 (*@ axiom test : M.(0 = 0) *)
 
 (* {gospel_expected|
-[1] File "scope_not_found4.mli", line 15, characters 17-18:
+[1] File "./scope_not_found4.mli", line 15, characters 17-18:
     15 | (*@ axiom test : M.(0 = 0) *)
                           ^
     Error: Unbound module M

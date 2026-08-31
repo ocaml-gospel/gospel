@@ -11,7 +11,7 @@
 (*@ axiom test : forall x : ('a * 'b * 'b). let x, y, z = x in x = y *)
 
 (* {gospel_expected|
-[1] File "let_destruct7.mli", line 11, characters 67-68:
+[1] File "./let_destruct7.mli", line 11, characters 67-68:
     11 | (*@ axiom test : forall x : ('a * 'b * 'b). let x, y, z = x in x = y *)
                                                                             ^
     Error: Mismatch between type 'b and type 'a

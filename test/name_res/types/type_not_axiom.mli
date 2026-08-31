@@ -13,7 +13,7 @@
 (*@ type t = ax *)
 
 (* {gospel_expected|
-[1] File "type_not_axiom.mli", line 13, characters 13-15:
+[1] File "./type_not_axiom.mli", line 13, characters 13-15:
     13 | (*@ type t = ax *)
                       ^^
     Error: Unbound type constructor ax

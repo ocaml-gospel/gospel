@@ -12,7 +12,7 @@
                     let y, z, w = x in x *)
 
 (* {gospel_expected|
-[1] File "let_destruct4.mli", line 12, characters 34-35:
+[1] File "./let_destruct4.mli", line 12, characters 34-35:
     12 |                     let y, z, w = x in x *)
                                            ^
     Error: Mismatch between type integer * (integer * integer)

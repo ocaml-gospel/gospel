@@ -15,7 +15,7 @@ val f : unit -> t
     ensures x = x *)
 
 (* {gospel_expected|
-[1] File "no_gospel_rep1.mli", line 15, characters 16-17:
+[1] File "./no_gospel_rep1.mli", line 15, characters 16-17:
     15 |     ensures x = x *)
                          ^
     Error: Unbound value x
