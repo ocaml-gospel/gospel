@@ -19,6 +19,8 @@
 
 ## Improved
 
+- Improve how unsupported OCaml constructs are handled
+  [\#468](https://github.com/ocaml-gospel/gospel/pull/468)
 - Fix filename for `check_file` output
   [\#478](https://github.com/ocaml-gospel/gospel/pull/478)
 - Add `option` as an OCaml primitive type constructor

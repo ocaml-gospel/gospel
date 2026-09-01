@@ -74,6 +74,8 @@ let rec preid_of_long (loc : location) (s : longident) =
   | Ldot (id, s) -> Qdot (preid_of_long id, Preid.create ~loc s)
   | _ -> assert false
 
+exception Unsupported of (string * Location.t)
+
 let rec core_to_pty cty =
   let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
@@ -82,9 +84,17 @@ let rec core_to_pty cty =
       PTtyapp (preid_of_long id.loc id.txt, List.map core_to_pty l)
   | Ptyp_arrow (_, t1, t2) -> PTarrow (core_to_pty t1, core_to_pty t2)
   | Ptyp_tuple l -> PTtuple (List.map core_to_pty l)
-  | _ -> assert false (* TODO replace with unsupported*)
+  | Ptyp_open (_, _) -> raise @@ Unsupported ("local open", loc)
+  | Ptyp_any -> raise @@ Unsupported ("type parameter wild pattern", loc)
+  | Ptyp_object _ -> raise @@ Unsupported ("object", loc)
+  | Ptyp_class _ -> raise @@ Unsupported ("class", loc)
+  | Ptyp_alias _ -> raise @@ Unsupported ("type alias", loc)
+  | Ptyp_variant _ -> raise @@ Unsupported ("polymorphic variant", loc)
+  | Ptyp_poly _ -> raise @@ Unsupported ("polymorhic type variable", loc)
+  | Ptyp_package _ -> raise @@ Unsupported ("first class module", loc)
+  | Ptyp_extension _ -> raise @@ Unsupported ("extension point", loc)
 
-let ptype_kind = function
+let ptype_kind ~loc = function
   | Ptype_abstract -> PTtype_abstract
   | Ptype_record l ->
       let to_gospel_label l =
@@ -99,15 +109,41 @@ let ptype_kind = function
         }
       in
       PTtype_record (List.map to_gospel_label l)
-  | _ -> assert false
+  | Ptype_open -> raise @@ Unsupported ("extensible type", loc)
+  | Ptype_variant _ -> raise @@ Unsupported ("variant type", loc)
+
+let core_to_pty cty =
+  try Result.ok @@ core_to_pty cty with Unsupported info -> Result.Error info
+
+let ptype_kind ~loc tk =
+  try Result.ok @@ ptype_kind ~loc tk
+  with Unsupported info -> Result.Error info
+
+let unwrap_unsupported opt res =
+  match res with
+  | Ok x -> Some x (* the construction is supported *)
+  | Error (str, loc) ->
+      (* the construction is unsupported, raise an error if there are some
+         specifications attached to it, ignore it otherwise *)
+      if Option.is_some opt then W.(error ~loc (Unsupported str)) else None
+
+let unwrap_core_to_pty spec_opt cty =
+  unwrap_unsupported spec_opt (core_to_pty cty)
+
+let unwrap_ptyp_kind ~loc spec_opt tk =
+  unwrap_unsupported spec_opt (ptype_kind ~loc tk)
 
 let mk_tdecl t attrs spec =
-  let* tparams = params_to_id t.ptype_params in
+  let* tparams = params_to_id t.ptype_params
+  and* tkind = unwrap_ptyp_kind ~loc:t.ptype_loc spec t.ptype_kind in
+  let tmanifest =
+    Option.(join @@ map (unwrap_core_to_pty spec) t.ptype_manifest)
+  in
   {
     tname = preid_of_loc t.ptype_name;
     tparams;
-    tkind = ptype_kind t.ptype_kind;
-    tmanifest = Option.map core_to_pty t.ptype_manifest;
+    tkind;
+    tmanifest;
     tattributes = attrs;
     tspec = spec;
     tloc = t.ptype_loc;
@@ -131,9 +167,10 @@ let val_description ~filename v =
     { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
+  let* vtype = unwrap_core_to_pty spec v.pval_type in
   {
     vname = preid_of_loc v.pval_name;
-    vtype = core_to_pty v.pval_type;
+    vtype;
     vattributes = other_attrs;
     vspec = spec;
     vloc = v.pval_loc;
@@ -148,9 +185,11 @@ let sig_exception exn =
   let exn_id = preid_of_loc c.pext_name in
   let exn_loc = c.pext_loc in
   let exn_attributes = c.pext_attributes in
-  let exn_args =
+  let* exn_args =
     match c.pext_kind with
-    | Pext_decl ([], Pcstr_tuple args, _) -> List.map core_to_pty args
+    | Pext_decl ([], Pcstr_tuple args, _) ->
+        (* Exception specification is not supported *)
+        map_option (unwrap_core_to_pty None) args
     | Pext_rebind _ -> assert false (* Cannot occur on an interface file. *)
     | _ -> assert false
   in
@@ -162,8 +201,8 @@ let sig_exception exn =
 *)
 let rec signature_item_desc ~filename = function
   | Psig_value v ->
-      let v = val_description ~filename v in
-      Some (Sig_val v)
+      let* v = val_description ~filename v in
+      Sig_val v
   | Psig_type (_, tl) ->
       let* tl = map_option (type_declaration ~filename) tl in
       Sig_type tl
@@ -173,7 +212,9 @@ let rec signature_item_desc ~filename = function
   | Psig_module m ->
       let* decl = module_declaration ~filename m in
       Sig_module decl
-  | Psig_exception e -> Some (Sig_exception (sig_exception e))
+  | Psig_exception e ->
+      let* exn = sig_exception e in
+      Sig_exception exn
   (* Unsupported *)
   | Psig_recmodule _ -> None
   | Psig_modtype _ -> None
