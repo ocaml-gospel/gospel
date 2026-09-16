@@ -5,8 +5,9 @@ val f : int -> int
     raises E e
       ensures True *)
 (* {gospel_expected|
-[125] gospel: internal error, uncaught exception:
-              File "src/uattr2spec.ml", line 85, characters 9-15: Assertion failed
-              
-      
+[1] File "./exception.mli", line 5, characters 11-12:
+    5 |     raises E e
+                   ^
+    Error: Unbound exception E
+    
 |gospel_expected} *)

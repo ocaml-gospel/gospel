@@ -2,8 +2,9 @@ type t0 = A | B
 type t1 = t0
 (*@ model : integer *)
 (* {gospel_expected|
-[125] gospel: internal error, uncaught exception:
-              File "src/uattr2spec.ml", line 102, characters 9-15: Assertion failed
-              
-      
+[1] File "./type_alias.mli", line 3, characters 10-12:
+    3 | type t1 = t0
+                  ^^
+    Error: Unbound type constructor t0
+    
 |gospel_expected} *)
