@@ -211,6 +211,8 @@ type s_signature_item_desc =
   (* [@@@id] *)
   (* Specific to specification *)
   | Sig_gospel of gospel_signature * string
+  (* Unsupported signature item *)
+  | Sig_unsupported of Ppxlib.signature_item_desc
 
 and s_signature_item = { sdesc : s_signature_item_desc; sloc : Location.t }
 and s_signature = s_signature_item list

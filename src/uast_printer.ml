@@ -338,6 +338,9 @@ let rec signature_item fmt x =
   | Sig_open q -> mod_open fmt q
   | Sig_gospel (g, _) -> (gospel gospel_signature) fmt g
   | Sig_attribute _ -> string fmt "[@@@ attribute]"
+  | Sig_unsupported psig_desc ->
+      pp fmt "%a" Ppxlib.Pprintast.signature_item
+        { psig_loc = x.sloc; psig_desc }
 
 and module_decl fmt m =
   let (Mod_signature l) = m.mdtype.mdesc in

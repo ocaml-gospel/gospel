@@ -1360,6 +1360,7 @@ and signature s env =
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | Sig_exception exn -> process_exception exn env
+    | Sig_unsupported s -> (Sig_unsupported s, env)
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
