@@ -7,9 +7,9 @@ val f : int -> int
     raises E e
       ensures True *)
 (* {gospel_expected|
-[1] File "./exception_type_decl.mli", line 3, characters 15-16:
-    3 | exception E of t
-                       ^
-    Error: Unbound type constructor t
+[1] File "./exception_type_decl.mli", line 7, characters 11-12:
+    7 |     raises E e
+                   ^
+    Error: Unbound exception E
     
 |gospel_expected} *)

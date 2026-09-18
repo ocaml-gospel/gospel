@@ -6,6 +6,6 @@ val f : t -> bool
 [1] File "./variant_as_argument_with_spec.mli", line 3, characters 8-9:
     3 | val f : t -> bool
                 ^
-    Error: Unbound type constructor t
+    Error: Not yet supported: t
     
 |gospel_expected} *)
