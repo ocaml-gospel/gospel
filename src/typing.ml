@@ -1360,6 +1360,14 @@ and signature s env =
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | Sig_exception exn -> process_exception exn env
+    | Sig_unsupported (Psig_type (_, tds) as s) ->
+        let aux acc td =
+          let loc = td.Ppxlib.ptype_loc and str = td.Ppxlib.ptype_name.txt in
+          let id = Ident.mk_id ~loc str in
+          Namespace.add_unsupported_ocaml acc id
+        in
+        let env = List.fold_left aux env tds in
+        (Sig_unsupported s, env)
     | Sig_unsupported s -> (Sig_unsupported s, env)
     | _ -> assert false
   in
