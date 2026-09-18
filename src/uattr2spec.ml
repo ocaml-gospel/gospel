@@ -55,6 +55,11 @@ let parse_gospel ~filename parse attr =
     W.error ~loc W.Syntax_error
 
 exception OCaml_unsupported
+exception OCaml_unsupported_and_annotated of (Location.t * string)
+
+let ocaml_unsupported ~annotated ~loc str =
+  if annotated then raise @@ OCaml_unsupported_and_annotated (loc, str)
+  else raise OCaml_unsupported
 
 let params_to_id =
   let param_to_id (core_type, _) =
@@ -76,17 +81,28 @@ let rec preid_of_long (loc : location) (s : longident) =
   | Ldot (id, s) -> Qdot (preid_of_long id, Preid.create ~loc s)
   | _ -> assert false
 
-let rec core_to_pty cty =
+let rec core_to_pty ~annotated cty =
   let loc = cty.ptyp_loc in
   match cty.ptyp_desc with
   | Ptyp_var str -> PTtyvar (Preid.create ~loc str)
   | Ptyp_constr (id, l) ->
-      PTtyapp (preid_of_long id.loc id.txt, List.map core_to_pty l)
-  | Ptyp_arrow (_, t1, t2) -> PTarrow (core_to_pty t1, core_to_pty t2)
-  | Ptyp_tuple l -> PTtuple (List.map core_to_pty l)
-  | _ -> raise OCaml_unsupported
+      PTtyapp (preid_of_long id.loc id.txt, List.map (core_to_pty ~annotated) l)
+  | Ptyp_arrow (_, t1, t2) ->
+      PTarrow (core_to_pty ~annotated t1, core_to_pty ~annotated t2)
+  | Ptyp_tuple l -> PTtuple (List.map (core_to_pty ~annotated) l)
+  | Ptyp_any -> ocaml_unsupported ~annotated ~loc "anonymous type"
+  | Ptyp_object (_, _) -> ocaml_unsupported ~annotated ~loc "object"
+  | Ptyp_class (_, _) -> ocaml_unsupported ~annotated ~loc "class"
+  | Ptyp_alias (_, _) -> ocaml_unsupported ~annotated ~loc "alias"
+  | Ptyp_variant (_, _, _) ->
+      ocaml_unsupported ~annotated ~loc "polymorphic variant"
+  | Ptyp_poly (_, _) ->
+      ocaml_unsupported ~annotated ~loc "polymorphic type variable"
+  | Ptyp_package _ -> ocaml_unsupported ~annotated ~loc "first class module"
+  | Ptyp_open (_, _) -> ocaml_unsupported ~annotated ~loc "local open"
+  | Ptyp_extension _ -> ocaml_unsupported ~annotated ~loc "type extension"
 
-let ptype_kind = function
+let ptype_kind ~annotated ~loc = function
   | Ptype_abstract -> PTtype_abstract
   | Ptype_record l ->
       let to_gospel_label l =
@@ -96,28 +112,31 @@ let ptype_kind = function
             (match l.pld_mutable with
             | Mutable -> Mutable
             | Immutable -> Immutable);
-          pld_type = core_to_pty l.pld_type;
+          pld_type = core_to_pty ~annotated l.pld_type;
           pld_loc = l.pld_loc;
         }
       in
       PTtype_record (List.map to_gospel_label l)
-  | _ -> raise OCaml_unsupported
+  | Ptype_variant _ -> ocaml_unsupported ~annotated ~loc "variant"
+  | Ptype_open -> ocaml_unsupported ~annotated ~loc "extensible type"
 
 let mk_tdecl t tkind attrs spec =
-  let tparams = params_to_id t.ptype_params in
+  let tparams = params_to_id t.ptype_params
+  and annotated = Option.is_some spec in
   {
     tname = preid_of_loc t.ptype_name;
     tparams;
     tkind;
-    tmanifest = Option.map core_to_pty t.ptype_manifest;
+    tmanifest = Option.map (core_to_pty ~annotated) t.ptype_manifest;
     tattributes = attrs;
     tspec = spec;
     tloc = t.ptype_loc;
   }
 
 let type_declaration ~filename t =
-  let spec_attr, other_attrs = get_spec_attr t.ptype_attributes
-  and tkind = ptype_kind t.ptype_kind in
+  let spec_attr, other_attrs = get_spec_attr t.ptype_attributes in
+  let annotated = Option.is_some spec_attr in
+  let tkind = ptype_kind ~annotated ~loc:t.ptype_loc t.ptype_kind in
   let parse attr =
     let ty_text, spec = parse_gospel ~filename Uparser.type_spec attr in
     let ty_loc = get_spec_loc attr in
@@ -134,9 +153,10 @@ let val_description ~filename v =
     { spec with sp_text; sp_loc }
   in
   let spec = Option.map parse spec_attr in
+  let annotated = Option.is_some spec in
   {
     vname = preid_of_loc v.pval_name;
-    vtype = core_to_pty v.pval_type;
+    vtype = core_to_pty ~annotated v.pval_type;
     vattributes = other_attrs;
     vspec = spec;
     vloc = v.pval_loc;
@@ -153,7 +173,8 @@ let sig_exception exn =
   let exn_attributes = c.pext_attributes in
   let exn_args =
     match c.pext_kind with
-    | Pext_decl ([], Pcstr_tuple args, _) -> List.map core_to_pty args
+    | Pext_decl ([], Pcstr_tuple args, _) ->
+        List.map (core_to_pty ~annotated:false) args
     | Pext_rebind _ -> assert false (* Cannot occur on an interface file. *)
     | _ -> assert false
   in
@@ -163,11 +184,13 @@ let sig_exception exn =
     appropriate Gospel signature. *)
 let rec signature_item_desc ~filename = function
   | Psig_value v as s -> (
-      try Sig_val (val_description ~filename v)
-      with OCaml_unsupported -> Sig_unsupported s)
+      try Sig_val (val_description ~filename v) with
+      | OCaml_unsupported -> Sig_unsupported s
+      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
   | Psig_type (_, tl) as s -> (
-      try Sig_type (List.map (type_declaration ~filename) tl)
-      with OCaml_unsupported -> Sig_unsupported s)
+      try Sig_type (List.map (type_declaration ~filename) tl) with
+      | OCaml_unsupported -> Sig_unsupported s
+      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
   | Psig_attribute a ->
       if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
   | Psig_module m as s -> (
@@ -175,8 +198,9 @@ let rec signature_item_desc ~filename = function
       | None -> Sig_unsupported s
       | Some decl -> Sig_module decl)
   | Psig_exception e as s -> (
-      try Sig_exception (sig_exception e)
-      with OCaml_unsupported -> Sig_unsupported s)
+      try Sig_exception (sig_exception e) with
+      | OCaml_unsupported -> Sig_unsupported s
+      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
   (* Unsupported *)
   | Psig_recmodule _ as s -> Sig_unsupported s
   | Psig_modtype _ as s -> Sig_unsupported s
