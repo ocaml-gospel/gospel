@@ -2,6 +2,8 @@
 
 ## Added
 
+- Fail nicely on, or ignore if not annotated, unsupported OCaml subset
+  [\#498](https://github.com/ocaml-gospel/gospel/pull/498)
 - Fix packaging by making typecheker library a sub-package
   [\#496](https://github.com/ocaml-gospel/gospel/pull/496)
 - Add failing test case about map
