@@ -719,19 +719,26 @@ let tdecl_list ~ocaml env l =
 let process_exception exn defs =
   let exn_id = Ident.from_preid exn.Parse_uast.exn_id in
   let lenv = empty_local_env () in
-  let exn_args =
-    List.map (unique_pty ~ocaml:true ~bind:true (scope defs) lenv) exn.exn_args
-  in
-  let env = add_exn defs exn_id exn_args in
-  let exn =
-    {
-      exn_id;
-      exn_args;
-      exn_attributes = exn.exn_attributes;
-      exn_loc = exn.exn_loc;
-    }
-  in
-  (Tast.Sig_exception exn, env)
+  try
+    let exn_args =
+      List.map
+        (unique_pty ~ocaml:true ~bind:true (scope defs) lenv)
+        exn.exn_args
+    in
+    let env = add_exn defs exn_id exn_args
+    and exn =
+      {
+        exn_id;
+        exn_args;
+        exn_attributes = exn.exn_attributes;
+        exn_loc = exn.exn_loc;
+      }
+    in
+    (Tast.Sig_exception exn, env)
+  with W.(Error (_, Unsupported _)) ->
+    let sig_ = Tast.Sig_unsupported_parsed (Parse_uast.Sig_exception exn)
+    and env = add_unsupported_ocaml defs exn_id in
+    (sig_, env)
 
 (* -------------------------------------------------------------------------- *)
 
