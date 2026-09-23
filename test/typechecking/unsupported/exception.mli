@@ -8,6 +8,6 @@ val f : int -> int
 [1] File "./exception.mli", line 5, characters 11-12:
     5 |     raises E e
                    ^
-    Error: Unbound exception E
+    Error: Not yet supported: E
     
 |gospel_expected} *)

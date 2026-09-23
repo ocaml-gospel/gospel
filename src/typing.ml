@@ -1186,7 +1186,11 @@ let process_produces defs lenv produces hd_args hd_rets consumes modifies
     checks the exceptional specification [xspec]. The process is effectively the
     same as that for normal post conditions. *)
 let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
-  let sp_exn, ret_type = get_exn_info defs xspec.Parse_uast.sp_exn in
+  let q = xspec.Parse_uast.sp_exn in
+  let loc = Parse_uast.get_qualid_loc q in
+  if Namespace.is_unsupported_ocaml defs q then
+    W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q);
+  let sp_exn, ret_type = get_exn_info defs q in
   (* In exceptional specifications, the user is always allowed to
      provide a wildcard value or no return values. *)
   if not (xspec.sp_xrets = [] || xspec.sp_xrets = [ Lwild ]) then
@@ -1381,6 +1385,12 @@ and signature s env =
           Namespace.add_unsupported_ocaml acc id
         in
         let env = List.fold_left aux env tds in
+        (Sig_unsupported s, env)
+    | Sig_unsupported (Psig_exception tyexn as s) ->
+        let loc = tyexn.Ppxlib.ptyexn_constructor.pext_name.loc
+        and str = tyexn.Ppxlib.ptyexn_constructor.pext_name.txt in
+        let id = Ident.mk_id ~loc str in
+        let env = Namespace.add_unsupported_ocaml env id in
         (Sig_unsupported s, env)
     | Sig_unsupported s -> (Sig_unsupported s, env)
     | _ -> assert false
