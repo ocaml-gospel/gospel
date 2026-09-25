@@ -56,6 +56,8 @@ val add_ocaml_type :
   Id_uast.pty option ->
   env
 
+val add_unsupported_ocaml : env -> Ident.t -> env
+
 val add_record :
   env -> Ident.t -> Ident.t list -> (Ident.t * Id_uast.pty) list -> env
 
@@ -135,6 +137,10 @@ val get_exn_info :
   mod_defs -> Parse_uast.qualid -> Id_uast.qualid * Id_uast.pty list
 (** [get_exn_info defs id] receives an exception identifier [id] and the types
     of its arguments. *)
+
+val is_unsupported_ocaml : mod_defs -> Parse_uast.qualid -> bool
+(** [is_unsupported_ocaml defs id] decides whether the type name [id]
+    correspond to a registered unsupported OCaml type. *)
 
 val gospel_open : env -> Parse_uast.qualid -> Id_uast.qualid * env
 (** [gospel_open defs id] adds the definitions in module [id] into the scope
