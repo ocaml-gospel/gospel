@@ -722,26 +722,19 @@ let tdecl_list ~ocaml env l =
 let process_exception exn defs =
   let exn_id = Ident.from_preid exn.Parse_uast.exn_id in
   let lenv = empty_local_env () in
-  try
-    let exn_args =
-      List.map
-        (unique_pty ~ocaml:true ~bind:true (scope defs) lenv)
-        exn.exn_args
-    in
-    let env = add_exn defs exn_id exn_args
-    and exn =
-      {
-        exn_id;
-        exn_args;
-        exn_attributes = exn.exn_attributes;
-        exn_loc = exn.exn_loc;
-      }
-    in
-    (Tast.Sig_exception exn, env)
-  with W.(Error (_, Unsupported _)) ->
-    let sig_ = Tast.Sig_unsupported_parsed (Parse_uast.Sig_exception exn)
-    and env = add_unsupported_ocaml defs exn_id in
-    (sig_, env)
+  let exn_args =
+    List.map (unique_pty ~ocaml:true ~bind:true (scope defs) lenv) exn.exn_args
+  in
+  let env = add_exn defs exn_id exn_args
+  and exn =
+    {
+      exn_id;
+      exn_args;
+      exn_attributes = exn.exn_attributes;
+      exn_loc = exn.exn_loc;
+    }
+  in
+  (Tast.Sig_exception exn, env)
 
 (* -------------------------------------------------------------------------- *)
 
@@ -1333,6 +1326,22 @@ let ocaml_val env v =
 
 (* -------------------------------------------------------------------------- *)
 
+let is_unannotated s =
+  match s.Parse_uast.sdesc with
+  | Sig_val v -> Option.is_none v.vspec
+  | Sig_type l -> List.for_all (fun t -> Option.is_none t.Parse_uast.tspec) l
+  | _ -> true
+
+let signature_ids s =
+  match s.Parse_uast.sdesc with
+  | Sig_val v -> [ Ident.from_preid v.vname ]
+  | Sig_type l -> List.map (fun t -> Ident.from_preid t.Parse_uast.tname) l
+  | Sig_exception e -> [ Ident.from_preid e.exn_id ]
+  | Sig_gospel _ | Sig_unsupported _ | Sig_open _ | Sig_module _
+  | Sig_attribute _ ->
+      assert false
+(* This function is only meant to be called with potentially supported OCaml signatures *)
+
 let rec process_module env m =
   (* TODO figure out when this is None *)
   let id = Ident.from_preid m.Parse_uast.mdname in
@@ -1367,11 +1376,7 @@ and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
-    | Sig_val v as s -> (
-        try ocaml_val env v with
-        | W.Error (_, Unsupported _) when Option.is_none v.Parse_uast.vspec ->
-            (Sig_unsupported_parsed s, env)
-        | e -> raise e)
+    | Sig_val v -> ocaml_val env v
     | Sig_type t ->
         let env, t = tdecl_list ~ocaml:true env t in
         (Tast.Sig_type t, env)
@@ -1422,7 +1427,15 @@ and signatures l env =
   match l with
   | [] -> ([], env)
   | s :: t ->
-      let s, env = signature s env in
+      let s, env =
+        try signature s env with
+        | W.Error (_, Unsupported _) when is_unannotated s ->
+            let env =
+              List.fold_left add_unsupported_ocaml env (signature_ids s)
+            in
+            ({ sdesc = Sig_unsupported_parsed s.sdesc; sloc = s.sloc }, env)
+        | e -> raise e
+      in
       let t, env = signatures t env in
       (s :: t, env)
 

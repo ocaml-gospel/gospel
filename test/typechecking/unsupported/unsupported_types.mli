@@ -10,10 +10,3 @@
 
 type t1 = [ `A | `B ]
 type t2 = { x : t1 }
-(* {gospel_expected|
-[1] File "./unsupported_types.mli", line 12, characters 16-18:
-    12 | type t2 = { x : t1 }
-                         ^^
-    Error: Not yet supported: t1
-    
-|gospel_expected} *)
