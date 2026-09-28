@@ -8,6 +8,8 @@
 (*  (as described in file LICENSE enclosed).                              *)
 (**************************************************************************)
 
+exception Unsupported_signature of Parse_uast.qualid
+
 module Env = Map.Make (String)
 
 module String_list = struct
@@ -209,13 +211,13 @@ functor
             let q, defs = Lookup_module.lookup_toplevel_qualid defs q in
             (Some q, pid, defs.mdefs)
       in
-      let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
+      let loc = Parse_uast.get_qualid_loc q in
       try
         match M.lookup pid.pid_str defs with
         | Supported info ->
             let id = M.id_lookup info in
             (mk_qid pre id, info)
-        | Unsupported -> W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q)
+        | Unsupported -> raise (Unsupported_signature q)
       with Not_found ->
         let id = Uast_utils.flatten q in
 

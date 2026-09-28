@@ -15,12 +15,7 @@ open Ppxlib
 
 type qualid = Qid of id | Qdot of qualid * id
 
-let get_qualid_loc =
-  let rec aux loc_end = function
-    | Qid id -> { id.pid_loc with loc_end }
-    | Qdot (q, _) -> aux loc_end q
-  in
-  function Qid id -> id.pid_loc | Qdot (q, id) -> aux id.pid_loc.loc_end q
+let get_qualid_loc = function Qid id | Qdot (_, id) -> id.pid_loc
 
 type pty =
   | PTtyvar of id

@@ -1400,11 +1400,15 @@ and signatures l env =
   | [] -> ([], env)
   | s :: t ->
       let s, env =
-        try signature s env with
-        | W.Error (_, Unsupported _) when is_unannotated s ->
+        try signature s env
+        with Unsupported_signature q ->
+          if is_unannotated s then
             let env = add_unsupported_ocaml env s.sdesc in
             ({ sdesc = Sig_unsupported_parsed s.sdesc; sloc = s.sloc }, env)
-        | e -> raise e
+          else
+            let loc = Parse_uast.get_qualid_loc q in
+            let ids = Uast_utils.flatten q in
+            W.error ~loc (W.Unsupported ids)
       in
       let t, env = signatures t env in
       (s :: t, env)

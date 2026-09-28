@@ -11,6 +11,11 @@
 (** This module provides operations to keep track of all names defined in the
     top level. *)
 
+exception Unsupported_signature of Parse_uast.qualid
+(** Signals that the identifier being searched is some construct that Gospel
+    does not support. This exception may be raised by any function that looks up
+    an OCaml identifier. *)
+
 type env
 (** The (immutable) environment that keeps track of the definitions in the top
     level. *)

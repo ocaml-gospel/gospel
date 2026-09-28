@@ -186,11 +186,13 @@ let rec signature_item_desc ~filename = function
   | Psig_value v as s -> (
       try Sig_val (val_description ~filename v) with
       | OCaml_unsupported -> Sig_unsupported s
-      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
+      | OCaml_unsupported_and_annotated (loc, str) ->
+          W.error ~loc (Unsupported [ str ]))
   | Psig_type (_, tl) as s -> (
       try Sig_type (List.map (type_declaration ~filename) tl) with
       | OCaml_unsupported -> Sig_unsupported s
-      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
+      | OCaml_unsupported_and_annotated (loc, str) ->
+          W.error ~loc (Unsupported [ str ]))
   | Psig_attribute a ->
       if not (is_spec a) then Sig_attribute a else floating_spec ~filename a
   | Psig_module m as s -> (
@@ -200,7 +202,8 @@ let rec signature_item_desc ~filename = function
   | Psig_exception e as s -> (
       try Sig_exception (sig_exception e) with
       | OCaml_unsupported -> Sig_unsupported s
-      | OCaml_unsupported_and_annotated (loc, str) -> W.unsupported ~loc str)
+      | OCaml_unsupported_and_annotated (loc, str) ->
+          W.error ~loc (Unsupported [ str ]))
   (* Unsupported *)
   | Psig_recmodule _ as s -> Sig_unsupported s
   | Psig_modtype _ as s -> Sig_unsupported s
