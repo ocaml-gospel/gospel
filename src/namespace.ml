@@ -155,9 +155,9 @@ module type LDeps = sig
   (** [id_lookup info] returns the unique identifier from [info]. *)
 
   val env : mod_defs -> info Env.t
-  (** [env ~ocaml defs] returns the environment in which the lookup will be
-      performed. The [ocaml] parameter can be used to differentiate between the
-      Gospel and OCaml namespace if such a distinction is necessary. *)
+  (** [env defs] returns the environment in which the lookup will be performed.
+      The [ocaml] parameter can be used to differentiate between the Gospel and
+      OCaml namespace if such a distinction is necessary. *)
 
   val err : string list -> W.kind
   (** [err s] returns (not raises!) the Gospel error for the case in which the
