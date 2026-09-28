@@ -133,6 +133,34 @@
   (:checker %{project_root}/test/utils/testchecker.exe)
        _gospel)
  (action
+  (with-outputs-to unsupported_types.mli.output
+   (run %{checker} %{dep:unsupported_types.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff unsupported_types.mli unsupported_types.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
+  (with-outputs-to unsupported_value_in_spec.mli.output
+   (run %{checker} %{dep:unsupported_value_in_spec.mli}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff unsupported_value_in_spec.mli unsupported_value_in_spec.mli.output)))
+
+(rule
+ (deps
+  %{bin:gospel}
+  (:checker %{project_root}/test/utils/testchecker.exe)
+       _gospel)
+ (action
   (with-outputs-to value_first_class_module.mli.output
    (run %{checker} %{dep:value_first_class_module.mli}))))
 
