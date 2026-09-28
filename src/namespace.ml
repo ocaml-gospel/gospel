@@ -89,6 +89,12 @@ type exn_info = {
       (* The OCaml types of the arguments this exception receives. *)
 }
 
+(* When an OCaml construct is unsupported by Gospel, we associate its
+   identifier with the [Unsupported] constructor.  Otherwise, we wrap
+   it in [Supported].  Although this type is isomorphic to the
+   [option] type, we use it to make clear the intent behind its usage.  *)
+type 'a opt_supp = Unsupported | Supported of 'a
+
 type mod_info = { mid : Ident.t; mdefs : mod_defs }
 
 and mod_defs = {
@@ -116,12 +122,11 @@ and mod_defs = {
      Invariant: the cardinality of [record_env] is smaller or equal than
      the cardinality of [type_env]. *)
   (* Environments for OCaml definitions *)
-  ocaml_type_env : ty_info Env.t;
+  ocaml_type_env : ty_info opt_supp Env.t;
   (* OCaml type definitions. *)
-  ocaml_val_env : fun_info Env.t;
-  exn_env : exn_info Env.t; (* Exceptions  *)
+  ocaml_val_env : fun_info opt_supp Env.t;
+  exn_env : exn_info opt_supp Env.t; (* Exceptions  *)
   mod_env : mod_info Env.t; (* Nested modules *)
-  unsupported_ocaml_env : Ident.t Env.t;
 }
 (** Set of top level module definitions *)
 
@@ -135,7 +140,6 @@ let empty_defs =
     ocaml_val_env = Env.empty;
     exn_env = Env.empty;
     mod_env = Env.empty;
-    unsupported_ocaml_env = Env.empty;
   }
 
 (* -------------------------------------------------------------------------- *)
@@ -154,10 +158,10 @@ module type LDeps = sig
   val id_lookup : info -> Ident.t
   (** [id_lookup info] returns the unique identifier from [info]. *)
 
-  val env : mod_defs -> info Env.t
-  (** [env defs] returns the environment in which the lookup will be performed.
-      The [ocaml] parameter can be used to differentiate between the Gospel and
-      OCaml namespace if such a distinction is necessary. *)
+  val lookup : string -> mod_defs -> info opt_supp
+  (** [lookup str env] finds the identifier [str] in the environment [env]. This
+      function returns [Unsupported] if [str] is an unsupported OCaml construct.
+  *)
 
   val err : string list -> W.kind
   (** [err s] returns (not raises!) the Gospel error for the case in which the
@@ -198,20 +202,23 @@ functor
     let mk_qid pre id = match pre with None -> Qid id | Some q -> Qdot (q, id)
 
     let lookup_toplevel_qualid defs q =
+      let pre, pid, defs =
+        match q with
+        | Parse_uast.Qid pid -> (None, pid, defs)
+        | Qdot (q, pid) ->
+            let q, defs = Lookup_module.lookup_toplevel_qualid defs q in
+            (Some q, pid, defs.mdefs)
+      in
+      let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
       try
-        let pre, pid, defs =
-          match q with
-          | Parse_uast.Qid pid -> (None, pid, defs)
-          | Qdot (q, pid) ->
-              let q, defs = Lookup_module.lookup_toplevel_qualid defs q in
-              (Some q, pid, defs.mdefs)
-        in
-        let info = Env.find pid.pid_str (M.env defs) in
-        let id = M.id_lookup info in
-        (mk_qid pre id, info)
+        match M.lookup pid.pid_str defs with
+        | Supported info ->
+            let id = M.id_lookup info in
+            (mk_qid pre id, info)
+        | Unsupported -> W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q)
       with Not_found ->
         let id = Uast_utils.flatten q in
-        let loc = match q with Qid id | Qdot (_, id) -> id.pid_loc in
+
         W.error ~loc (M.err id)
 
     let unique_toplevel_qualid defs q =
@@ -231,7 +238,7 @@ and Lookup_module : (L with type info = mod_info) = Lookup (struct
   type info = mod_info
 
   let id_lookup info = info.mid
-  let env defs = defs.mod_env
+  let lookup str defs = Supported (Env.find str defs.mod_env)
   let err l = W.Unbound_module l
 end)
 
@@ -245,7 +252,7 @@ module Lookup_gospel_type = Lookup (struct
   type info = ty_info
 
   let id_lookup info = info.tid
-  let env defs = defs.type_env
+  let lookup str defs = Supported (Env.find str defs.type_env)
   let err id = W.Unbound_type id
 end)
 
@@ -255,31 +262,17 @@ module Lookup_ocaml_type = Lookup (struct
   type info = ty_info
 
   let id_lookup info = info.tid
-  let env defs = defs.ocaml_type_env
+  let lookup str defs = Env.find str defs.ocaml_type_env
   let err id = W.Unbound_type id
 end)
 
 let ocaml_type_info = Lookup_ocaml_type.unique_toplevel_qualid
 
-module Lookup_unsupported_ocaml_type = Lookup (struct
-  type info = Ident.t
-
-  let id_lookup = Fun.id
-  let env defs = defs.unsupported_ocaml_env
-  let err id = W.Unbound_type id
-end)
-
-let is_unsupported_ocaml env id =
-  try
-    let _ = Lookup_unsupported_ocaml_type.unique_toplevel_qualid env id in
-    true
-  with _ -> false
-
 module Lookup_exn = Lookup (struct
   type info = exn_info
 
   let id_lookup info = info.eid
-  let env defs = defs.exn_env
+  let lookup str defs = Env.find str defs.exn_env
   let err id = W.Unbound_exception id
 end)
 
@@ -347,7 +340,7 @@ module Lookup_fun = Lookup (struct
   type info = fun_info
 
   let id_lookup info = info.fid
-  let env defs = defs.fun_env
+  let lookup str defs = Supported (Env.find str defs.fun_env)
   let err id = W.Unbound_variable id
 end)
 
@@ -357,7 +350,7 @@ module Lookup_val = Lookup (struct
   type info = fun_info
 
   let id_lookup info = info.fid
-  let env defs = defs.ocaml_val_env
+  let lookup str defs = Env.find str defs.ocaml_val_env
   let err id = W.Unbound_variable id
 end)
 
@@ -482,7 +475,7 @@ module Lookup_field = Lookup (struct
   type info = field_info
 
   let id_lookup info = info.rfid
-  let env defs = defs.field_env
+  let lookup str defs = Supported (Env.find str defs.field_env)
   let err id = W.Unbound_record_label id
 end)
 
@@ -518,21 +511,46 @@ let add_fun fid tvars fty defs =
 let add_fun env fid tvars fty = add_def (add_fun fid tvars fty) env
 
 let add_ocaml_val vid tvars vty defs =
-  let info = { fid = vid; fty = vty; fparams = tvars } in
+  let info = Supported { fid = vid; fty = vty; fparams = tvars } in
   let env = defs.ocaml_val_env in
   { defs with ocaml_val_env = Env.add vid.Ident.id_str info env }
 
 let add_ocaml_val env tvars id ty = add_def (add_ocaml_val tvars id ty) env
 
-let add_unsupported_ocaml id defs =
-  {
-    defs with
-    unsupported_ocaml_env =
-      Env.add id.Ident.id_str id defs.unsupported_ocaml_env;
-  }
+let add_unsupported_ocaml desc defs =
+  match desc with
+  | Parse_uast.Sig_val v ->
+      let env = defs.ocaml_val_env in
+      { defs with ocaml_val_env = Env.add v.vname.pid_str Unsupported env }
+  | Sig_type l ->
+      let aux defs t =
+        let str = t.Parse_uast.tname.pid_str in
+        let env = defs.ocaml_type_env in
+        { defs with ocaml_type_env = Env.add str Unsupported env }
+      in
+      List.fold_left aux defs l
+  | Sig_exception e ->
+      let env = defs.exn_env in
+      { defs with exn_env = Env.add e.exn_id.pid_str Unsupported env }
+  | Sig_unsupported (Psig_type (_, tds)) ->
+      let aux acc td =
+        let str = td.Ppxlib.ptype_name.txt in
+        {
+          acc with
+          ocaml_type_env = Env.add str Unsupported defs.ocaml_type_env;
+        }
+      in
+      List.fold_left aux defs tds
+  | Sig_unsupported (Psig_exception tyexn) ->
+      let str = tyexn.Ppxlib.ptyexn_constructor.pext_name.txt in
+      { defs with exn_env = Env.add str Unsupported defs.exn_env }
+  | Sig_unsupported _ -> defs
+  | Sig_gospel _ | Sig_open _ | Sig_module _ | Sig_attribute _ -> assert false
+(* This function is only meant to be called with potentially
+   unsupported OCaml signatures that we need to track in our
+   namespace. *)
 
-let add_unsupported_ocaml env id =
-  add_def (add_unsupported_ocaml id) env
+let add_unsupported_ocaml env id = add_def (add_unsupported_ocaml id) env
 
 let add_mod mid mdefs defs =
   let menv = defs.mod_env in
@@ -555,7 +573,8 @@ let rec to_alias = function
 let add_ocaml_type tid tparams tmut talias tmodel defs =
   let tenv = defs.ocaml_type_env in
   let info =
-    { tid; tparams; tmut; talias = Option.map to_alias talias; tmodel }
+    Supported
+      { tid; tparams; tmut; talias = Option.map to_alias talias; tmodel }
   in
   { defs with ocaml_type_env = Env.add tid.Ident.id_str info tenv }
 
@@ -597,7 +616,7 @@ let add_record env rid rparams rfields =
   add_def (add_record rid rparams rfields) env
 
 let add_exn id args env =
-  let info = { eid = id; eargs = args } in
+  let info = Supported { eid = id; eargs = args } in
   { env with exn_env = Env.add id.id_str info env.exn_env }
 
 let add_exn env id args = add_def (add_exn id args) env
@@ -620,8 +639,6 @@ let defs_union ~ocaml m1 m2 =
     ocaml_val_env = ounion m1.ocaml_val_env m2.ocaml_val_env;
     exn_env = ounion m1.exn_env m2.exn_env;
     mod_env = union m1.mod_env m2.mod_env;
-    unsupported_ocaml_env =
-      union m1.unsupported_ocaml_env m2.unsupported_ocaml_env;
   }
 
 let local_open defs qid =
@@ -693,13 +710,14 @@ let init_env ?ocamlprimitives gospelstdlib =
            needed for typechecking specifications, meaning its
            definition must be present at compile time. *)
         let unit_info =
-          {
-            tid = unit_id;
-            tparams = [];
-            tmut = false;
-            talias = None;
-            tmodel = None;
-          }
+          Supported
+            {
+              tid = unit_id;
+              tparams = [];
+              tmut = false;
+              talias = None;
+              tmodel = None;
+            }
         in
         let m =
           { m with ocaml_type_env = Env.add "unit" unit_info m.ocaml_type_env }

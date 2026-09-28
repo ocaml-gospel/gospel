@@ -18,6 +18,6 @@ val f : unit -> unit
 [1] File "./unsupported_value_in_spec.mli", line 15, characters 13-14:
     15 | (*@ modifies x *)
                       ^
-    Error: Unbound value x
+    Error: Not yet supported: x
     
 |gospel_expected} *)

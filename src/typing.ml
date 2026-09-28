@@ -115,9 +115,6 @@ let get_local_type ~ocaml id env =
 let unique_pty ~ocaml ~bind defs env pty =
   let rec unique_pty = function
     | Parse_uast.PTtyvar pid -> PTtyvar (Hashtbl.find env.type_vars pid.pid_str)
-    | PTtyapp (q, _) when ocaml && Namespace.is_unsupported_ocaml defs q ->
-        let loc = Parse_uast.get_qualid_loc q in
-        W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q)
     | PTtyapp (Qid id, l) when is_local_type ~ocaml id env ->
         (* This branch is reached when we are processing a set of recursive type
           definitions and [id] is one of the type names. *)
@@ -1180,9 +1177,6 @@ let process_produces defs lenv produces hd_args hd_rets consumes modifies
     same as that for normal post conditions. *)
 let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
   let q = xspec.Parse_uast.sp_exn in
-  let loc = Parse_uast.get_qualid_loc q in
-  if Namespace.is_unsupported_ocaml defs q then
-    W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q);
   let sp_exn, ret_type = get_exn_info defs q in
   (* In exceptional specifications, the user is always allowed to
      provide a wildcard value or no return values. *)
@@ -1332,16 +1326,6 @@ let is_unannotated s =
   | Sig_type l -> List.for_all (fun t -> Option.is_none t.Parse_uast.tspec) l
   | _ -> true
 
-let signature_ids s =
-  match s.Parse_uast.sdesc with
-  | Sig_val v -> [ Ident.from_preid v.vname ]
-  | Sig_type l -> List.map (fun t -> Ident.from_preid t.Parse_uast.tname) l
-  | Sig_exception e -> [ Ident.from_preid e.exn_id ]
-  | Sig_gospel _ | Sig_unsupported _ | Sig_open _ | Sig_module _
-  | Sig_attribute _ ->
-      assert false
-(* This function is only meant to be called with potentially supported OCaml signatures *)
-
 let rec process_module env m =
   (* TODO figure out when this is None *)
   let id = Ident.from_preid m.Parse_uast.mdname in
@@ -1383,21 +1367,9 @@ and signature s env =
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | Sig_exception exn -> process_exception exn env
-    | Sig_unsupported (Psig_type (_, tds) as s) ->
-        let aux acc td =
-          let loc = td.Ppxlib.ptype_loc and str = td.Ppxlib.ptype_name.txt in
-          let id = Ident.mk_id ~loc str in
-          Namespace.add_unsupported_ocaml acc id
-        in
-        let env = List.fold_left aux env tds in
-        (Sig_unsupported s, env)
-    | Sig_unsupported (Psig_exception tyexn as s) ->
-        let loc = tyexn.Ppxlib.ptyexn_constructor.pext_name.loc
-        and str = tyexn.Ppxlib.ptyexn_constructor.pext_name.txt in
-        let id = Ident.mk_id ~loc str in
-        let env = Namespace.add_unsupported_ocaml env id in
-        (Sig_unsupported s, env)
-    | Sig_unsupported s -> (Sig_unsupported s, env)
+    | Sig_unsupported desc as s ->
+        let env = add_unsupported_ocaml env s in
+        (Sig_unsupported desc, env)
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
@@ -1430,9 +1402,7 @@ and signatures l env =
       let s, env =
         try signature s env with
         | W.Error (_, Unsupported _) when is_unannotated s ->
-            let env =
-              List.fold_left add_unsupported_ocaml env (signature_ids s)
-            in
+            let env = add_unsupported_ocaml env s.sdesc in
             ({ sdesc = Sig_unsupported_parsed s.sdesc; sloc = s.sloc }, env)
         | e -> raise e
       in
