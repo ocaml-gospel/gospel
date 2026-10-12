@@ -6068,7 +6068,7 @@ hasown@^2.0.3:
   dependencies:
     function-bind "^1.1.2"
 
-hast-util-definition-list@^2.0.0:
+hast-util-definition-list@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/hast-util-definition-list/-/hast-util-definition-list-2.1.0.tgz#9bdf16835c91f47d1c8ff53d732c138e128b9506"
   integrity sha512-n3U2gleI8TYZ6eVFjE9TZsGTpaOQlMQj10+WZZFn6Ts5uEu/7XzB8HVLNeu5Sgu7Rv96ThFp79/U6bf/4pS0ew==
@@ -9319,12 +9319,12 @@ relateurl@^0.2.7:
   resolved "https://registry.yarnpkg.com/relateurl/-/relateurl-0.2.7.tgz#54dbf377e51440aca90a4cd274600d3ff2d888a9"
   integrity sha512-G08Dxvm4iDN3MLM0EsP62EDV9IuhXPR6blNz6Utcp7zyV3tr4HVNINt6MpaRWbxoOHT3Q7YN2P+jaHX8vUbgog==
 
-remark-definition-list@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/remark-definition-list/-/remark-definition-list-2.0.0.tgz#0047c727416ffe64ee92f961d91100fda20db87b"
-  integrity sha512-OOJ0zUrfUGITUNxOBnsipyFUjqq1m4AgYOqQk10jDXyz+RoODJL3qYvRn8qzYQDzRnz1wlCP3dbDEOpl05LlQw==
+remark-definition-list@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/remark-definition-list/-/remark-definition-list-2.0.1.tgz#3b99a4e4e1f7abb136692145fca4527abf3ea0d4"
+  integrity sha512-xgmgk9r1R4JtvJpQAej93eGA4SBrPh6qcSUjWdRRyLTNVFxRoFDS9MOK1u9A7fIIIR2EoNEnTYKAAOR+CwPKMg==
   dependencies:
-    hast-util-definition-list "^2.0.0"
+    hast-util-definition-list "^2.1.0"
     mdast-util-definition-list "^2.0.0"
     micromark-extension-definition-list "^2.0.0"
 
