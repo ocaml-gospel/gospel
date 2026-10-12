@@ -298,6 +298,12 @@ let rec signature_item fmt x =
   | Sig_exception e -> exception_decl fmt e
   | Sig_ghost_open q -> mod_open fmt q
   | Sig_attribute _ -> string fmt "[@@@ attribute]"
+  | Sig_unsupported psig_desc ->
+      pp fmt "%a" Ppxlib.Pprintast.signature_item
+        { psig_loc = x.sloc; psig_desc }
+  | Sig_unsupported_parsed sdesc ->
+      Uast_printer.signature_item fmt Parse_uast.{ sloc = x.sloc; sdesc }
+
 
 and module_decl fmt m =
   let (Mod_signature l) = m.mdtype.mdesc in

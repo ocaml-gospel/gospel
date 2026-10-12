@@ -121,6 +121,7 @@ and mod_defs = {
   ocaml_val_env : fun_info Env.t;
   exn_env : exn_info Env.t; (* Exceptions  *)
   mod_env : mod_info Env.t; (* Nested modules *)
+  unsupported_ocaml_env : Ident.t Env.t;
 }
 (** Set of top level module definitions *)
 
@@ -134,6 +135,7 @@ let empty_defs =
     ocaml_val_env = Env.empty;
     exn_env = Env.empty;
     mod_env = Env.empty;
+    unsupported_ocaml_env = Env.empty;
   }
 
 (* -------------------------------------------------------------------------- *)
@@ -258,6 +260,20 @@ module Lookup_ocaml_type = Lookup (struct
 end)
 
 let ocaml_type_info = Lookup_ocaml_type.unique_toplevel_qualid
+
+module Lookup_unsupported_ocaml_type = Lookup (struct
+  type info = Ident.t
+
+  let id_lookup = Fun.id
+  let env defs = defs.unsupported_ocaml_env
+  let err id = W.Unbound_type id
+end)
+
+let is_unsupported_ocaml env id =
+  try
+    let _ = Lookup_unsupported_ocaml_type.unique_toplevel_qualid env id in
+    true
+  with _ -> false
 
 module Lookup_exn = Lookup (struct
   type info = exn_info
@@ -508,6 +524,16 @@ let add_ocaml_val vid tvars vty defs =
 
 let add_ocaml_val env tvars id ty = add_def (add_ocaml_val tvars id ty) env
 
+let add_unsupported_ocaml id defs =
+  {
+    defs with
+    unsupported_ocaml_env =
+      Env.add id.Ident.id_str id defs.unsupported_ocaml_env;
+  }
+
+let add_unsupported_ocaml env id =
+  add_def (add_unsupported_ocaml id) env
+
 let add_mod mid mdefs defs =
   let menv = defs.mod_env in
   let info = { mid; mdefs } in
@@ -594,6 +620,8 @@ let defs_union ~ocaml m1 m2 =
     ocaml_val_env = ounion m1.ocaml_val_env m2.ocaml_val_env;
     exn_env = ounion m1.exn_env m2.exn_env;
     mod_env = union m1.mod_env m2.mod_env;
+    unsupported_ocaml_env =
+      union m1.unsupported_ocaml_env m2.unsupported_ocaml_env;
   }
 
 let local_open defs qid =

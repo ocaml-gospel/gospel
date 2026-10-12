@@ -115,6 +115,9 @@ let get_local_type ~ocaml id env =
 let unique_pty ~ocaml ~bind defs env pty =
   let rec unique_pty = function
     | Parse_uast.PTtyvar pid -> PTtyvar (Hashtbl.find env.type_vars pid.pid_str)
+    | PTtyapp (q, _) when ocaml && Namespace.is_unsupported_ocaml defs q ->
+        let loc = Parse_uast.get_qualid_loc q in
+        W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q)
     | PTtyapp (Qid id, l) when is_local_type ~ocaml id env ->
         (* This branch is reached when we are processing a set of recursive type
           definitions and [id] is one of the type names. *)
@@ -719,19 +722,26 @@ let tdecl_list ~ocaml env l =
 let process_exception exn defs =
   let exn_id = Ident.from_preid exn.Parse_uast.exn_id in
   let lenv = empty_local_env () in
-  let exn_args =
-    List.map (unique_pty ~ocaml:true ~bind:true (scope defs) lenv) exn.exn_args
-  in
-  let env = add_exn defs exn_id exn_args in
-  let exn =
-    {
-      exn_id;
-      exn_args;
-      exn_attributes = exn.exn_attributes;
-      exn_loc = exn.exn_loc;
-    }
-  in
-  (Tast.Sig_exception exn, env)
+  try
+    let exn_args =
+      List.map
+        (unique_pty ~ocaml:true ~bind:true (scope defs) lenv)
+        exn.exn_args
+    in
+    let env = add_exn defs exn_id exn_args
+    and exn =
+      {
+        exn_id;
+        exn_args;
+        exn_attributes = exn.exn_attributes;
+        exn_loc = exn.exn_loc;
+      }
+    in
+    (Tast.Sig_exception exn, env)
+  with W.(Error (_, Unsupported _)) ->
+    let sig_ = Tast.Sig_unsupported_parsed (Parse_uast.Sig_exception exn)
+    and env = add_unsupported_ocaml defs exn_id in
+    (sig_, env)
 
 (* -------------------------------------------------------------------------- *)
 
@@ -1176,7 +1186,11 @@ let process_produces defs lenv produces hd_args hd_rets consumes modifies
     checks the exceptional specification [xspec]. The process is effectively the
     same as that for normal post conditions. *)
 let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
-  let sp_exn, ret_type = get_exn_info defs xspec.Parse_uast.sp_exn in
+  let q = xspec.Parse_uast.sp_exn in
+  let loc = Parse_uast.get_qualid_loc q in
+  if Namespace.is_unsupported_ocaml defs q then
+    W.unsupported ~loc (Fmt.str "%a" Uast_printer.qualid q);
+  let sp_exn, ret_type = get_exn_info defs q in
   (* In exceptional specifications, the user is always allowed to
      provide a wildcard value or no return values. *)
   if not (xspec.sp_xrets = [] || xspec.sp_xrets = [ Lwild ]) then
@@ -1353,13 +1367,32 @@ and signature s env =
   let sdesc, env =
     match s.Parse_uast.sdesc with
     | Sig_gospel (s, _) -> gospel_sig env s
-    | Sig_val v -> ocaml_val env v
+    | Sig_val v as s -> (
+        try ocaml_val env v with
+        | W.Error (_, Unsupported _) when Option.is_none v.Parse_uast.vspec ->
+            (Sig_unsupported_parsed s, env)
+        | e -> raise e)
     | Sig_type t ->
         let env, t = tdecl_list ~ocaml:true env t in
         (Tast.Sig_type t, env)
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | Sig_exception exn -> process_exception exn env
+    | Sig_unsupported (Psig_type (_, tds) as s) ->
+        let aux acc td =
+          let loc = td.Ppxlib.ptype_loc and str = td.Ppxlib.ptype_name.txt in
+          let id = Ident.mk_id ~loc str in
+          Namespace.add_unsupported_ocaml acc id
+        in
+        let env = List.fold_left aux env tds in
+        (Sig_unsupported s, env)
+    | Sig_unsupported (Psig_exception tyexn as s) ->
+        let loc = tyexn.Ppxlib.ptyexn_constructor.pext_name.loc
+        and str = tyexn.Ppxlib.ptyexn_constructor.pext_name.txt in
+        let id = Ident.mk_id ~loc str in
+        let env = Namespace.add_unsupported_ocaml env id in
+        (Sig_unsupported s, env)
+    | Sig_unsupported s -> (Sig_unsupported s, env)
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
