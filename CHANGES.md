@@ -61,6 +61,8 @@
   [#474](https://github.com/ocaml-gospel/gospel/pull/474)
 - Fix bug where non-functional values could not be specified.
   [#475](https://github.com/ocaml-gospel/gospel/pull/475)
+- Remove unnecessary ppx_deriving dependency
+  [#500](https://github.com/ocaml-gospel/gospel/pull/500)
 
 ## Internals
 

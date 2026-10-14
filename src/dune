@@ -9,8 +9,6 @@
 (library
  (name gospel_typecheckerlibs)
  (public_name gospel.typecheckerlibs)
- (preprocess
-  (pps ppx_deriving.show))
  (libraries
   ocaml-compiler-libs.shadow
   fmt
