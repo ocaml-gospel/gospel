@@ -21,6 +21,8 @@
 
 ## Improved
 
+- Fix uast printer on infix symbols
+  [\#503](https://github.com/ocaml-gospel/gospel/pull/503)
 - Fix filename for `check_file` output
   [\#478](https://github.com/ocaml-gospel/gospel/pull/478)
 - Add `option` as an OCaml primitive type constructor

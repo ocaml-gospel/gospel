@@ -85,13 +85,10 @@ let is_infix = is_symbol ~prefix:Infix
 let is_prefix = is_symbol ~prefix:Prefix
 let is_mixfix = is_symbol ~prefix:Mixfix
 
-let sans_prefix v =
-  match String.split_on_char ' ' v.Preid.pid_str with
-  | [ _; id ] -> id
-  | _ -> assert false
+let symbol s =
+  match s with Tvar (Qid v) -> v.Preid.pid_str | _ -> assert false
 
-let symbol s = match s with Tvar (Qid v) -> sans_prefix v | _ -> assert false
-let pp_symbol fmt s = pp fmt "%s" (sans_prefix s)
+let pp_symbol fmt s = pp fmt "%s" s.Preid.pid_str
 
 let needs_paren arg =
   match arg.term_desc with
