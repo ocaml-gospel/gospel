@@ -722,8 +722,8 @@ let process_exception exn defs =
   let exn_args =
     List.map (unique_pty ~ocaml:true ~bind:true (scope defs) lenv) exn.exn_args
   in
-  let env = add_exn defs exn_id exn_args in
-  let exn =
+  let env = add_exn defs exn_id exn_args
+  and exn =
     {
       exn_id;
       exn_args;
@@ -1176,7 +1176,8 @@ let process_produces defs lenv produces hd_args hd_rets consumes modifies
     checks the exceptional specification [xspec]. The process is effectively the
     same as that for normal post conditions. *)
 let type_xspec defs lenv modifies preserves consumes hd_args args xspec =
-  let sp_exn, ret_type = get_exn_info defs xspec.Parse_uast.sp_exn in
+  let q = xspec.Parse_uast.sp_exn in
+  let sp_exn, ret_type = get_exn_info defs q in
   (* In exceptional specifications, the user is always allowed to
      provide a wildcard value or no return values. *)
   if not (xspec.sp_xrets = [] || xspec.sp_xrets = [ Lwild ]) then
@@ -1319,6 +1320,12 @@ let ocaml_val env v =
 
 (* -------------------------------------------------------------------------- *)
 
+let is_unannotated s =
+  match s.Parse_uast.sdesc with
+  | Sig_val v -> Option.is_none v.vspec
+  | Sig_type l -> List.for_all (fun t -> Option.is_none t.Parse_uast.tspec) l
+  | _ -> true
+
 let rec process_module env m =
   (* TODO figure out when this is None *)
   let id = Ident.from_preid m.Parse_uast.mdname in
@@ -1360,6 +1367,9 @@ and signature s env =
     | Sig_module m -> process_module env m
     | Sig_attribute att -> (Sig_attribute att, env)
     | Sig_exception exn -> process_exception exn env
+    | Sig_unsupported desc as s ->
+        let env = add_unsupported_ocaml env s in
+        (Sig_unsupported desc, env)
     | _ -> assert false
   in
   ({ Tast.sdesc; sloc = s.sloc }, env)
@@ -1389,7 +1399,17 @@ and signatures l env =
   match l with
   | [] -> ([], env)
   | s :: t ->
-      let s, env = signature s env in
+      let s, env =
+        try signature s env
+        with Unsupported_signature q ->
+          if is_unannotated s then
+            let env = add_unsupported_ocaml env s.sdesc in
+            ({ sdesc = Sig_unsupported_parsed s.sdesc; sloc = s.sloc }, env)
+          else
+            let loc = Parse_uast.get_qualid_loc q in
+            let ids = Uast_utils.flatten q in
+            W.error ~loc (W.Unsupported ids)
+      in
       let t, env = signatures t env in
       (s :: t, env)
 

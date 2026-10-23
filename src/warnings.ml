@@ -48,7 +48,7 @@ type kind =
   | Unbound_type of string list
   | Unbound_type_variable of string
   | Unbound_variable of string list
-  | Unsupported of string
+  | Unsupported of string list
   | Unterminated_comment
 
 type error = location * kind
@@ -56,7 +56,6 @@ type error = location * kind
 exception Error of error
 
 let error ~loc k = raise (Error (loc, k))
-let unsupported ~loc s = error ~loc (Unsupported s)
 
 open Fmt
 
@@ -179,7 +178,7 @@ let pp_kind ppf = function
   | Unbound_type_variable s ->
       pf ppf "The type variable '%s is unbound in this type declaration" s
   | Unbound_variable s -> pf ppf "Unbound value %a" print_qid s
-  | Unsupported s -> pf ppf "Not yet supported: %s" s
+  | Unsupported s -> pf ppf "Not yet supported: %a" print_qid s
   | Unterminated_comment -> pf ppf "Unterminated comment"
 
 let styled_list l pp = List.fold_left (fun acc x -> styled x acc) pp l
